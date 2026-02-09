@@ -44,7 +44,9 @@ container.style.boxShadow="0 6px 18px rgba(0,0,0,0.12)";
 container.style.borderRadius="8px"; 
 container.style.fontFamily="Segoe UI, Roboto, Arial, sans-serif"; 
 container.style.fontSize="13px"; 
-container.style.width="420px"; 
+container.style.width="420px";
+container.style.minWidth="280px";
+container.style.minHeight="40px";
 container.style.overflow="hidden"; 
 
 const toggleBtn=document.createElement("button"); 
@@ -764,6 +766,7 @@ function renderRows(){
 
         table.appendChild(tr); 
     }); 
+    container.style.height = "auto";
 } 
 renderRows(); 
 
