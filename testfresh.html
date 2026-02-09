@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>Test Mini Excel Chat Tool</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+  }
+
+  h2 {
+    margin-bottom: 10px;
+  }
+
+  /* Giả lập ô chat */
+  .chat-box {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
+    max-width: 600px;
+  }
+
+  .msg-reply-box {
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    min-height: 80px;
+    padding: 8px;
+    margin-bottom: 10px;
+  }
+
+  .msg-reply-box[contenteditable="true"]:focus {
+    outline: 2px solid #0d6efd;
+  }
+
+  .send-btn {
+    display: inline-block;
+    padding: 8px 14px;
+    background: #0d6efd;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .send-btn:hover {
+    background: #0b5ed7;
+  }
+
+  .log {
+    margin-top: 20px;
+    background: #f8f9fa;
+    border: 1px solid #ddd;
+    padding: 10px;
+    white-space: pre-wrap;
+    font-size: 13px;
+  }
+</style>
+</head>
+
+<body>
+
+<h2>🧪 Test môi trường cho Mini Excel Chat Tool</h2>
+
+<p>
+  👉 Mở DevTools → Console → <b>Paste bookmarklet JS của bạn</b> → Enter  
+  <br>
+  👉 Hoặc tạo bookmark rồi click như bình thường
+</p>
+
+<div class="chat-box">
+  <div
+    class="msg-reply-box"
+    contenteditable="true"
+    placeholder="Nhập tin nhắn..."
+  ></div>
+
+  <div
+    class="send-btn"
+    data-test-fc-send-button="root"
+  >
+    Send
+  </div>
+</div>
+
+<div class="log" id="log">
+📜 Log gửi tin:
+</div>
+
+<script>
+  // Giả lập hành vi gửi tin
+  document.querySelector('[data-test-fc-send-button="root"]')
+    .addEventListener("click", () => {
+      const input = document.querySelector(".msg-reply-box");
+      const log = document.getElementById("log");
+
+      const text = input.textContent.trim();
+      if (!text) return;
+
+      log.textContent += "\n\n---\n" + text;
+      input.textContent = "";
+    });
+</script>
+
+</body>
+</html>

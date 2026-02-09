@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<title>Auto Reply Tool – Test Environment</title>
+<style>
+  body {
+    font-family: system-ui, Arial;
+    background: #f5f6f7;
+    margin: 0;
+    padding: 20px;
+  }
+
+  h1 {
+    margin-bottom: 12px;
+  }
+
+  .review-list {
+    max-width: 800px;
+    margin: auto;
+  }
+
+  
+
+  .Box-sc-18eybku-0.idyRmo {
+    background: #fff;
+    border-radius: 10px;
+    padding: 16px;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 10px rgba(0,0,0,.08);
+  }
+
+  .stars {
+    margin-bottom: 6px;
+  }
+
+  svg[color="title"] {
+    width: 16px;
+    height: 16px;
+    margin-right: 2px;
+  }
+
+  .content {
+    margin-bottom: 10px;
+  }
+
+  button {
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+  }
+
+  .reply-btn {
+    background: #007aff;
+    color: white;
+  }
+
+  .edit-btn {
+    background: #6c757d;
+    color: white;
+  }
+
+  /* reply panel */
+  #reply-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-top: 1px solid #ddd;
+    padding: 12px;
+    display: none;
+    box-shadow: 0 -4px 10px rgba(0,0,0,.1);
+  }
+
+  textarea {
+    width: 100%;
+    height: 80px;
+    margin-bottom: 8px;
+    padding: 8px;
+    font-size: 14px;
+  }
+
+  #submitBtn {
+    background: #28a745;
+    color: white;
+  }
+
+  .review-list {
+  max-width: 1000px;
+  margin: auto;
+  display: flex;
+  gap: 16px;
+}
+
+.review-list .col {
+  flex: 1;
+}
+
+</style>
+</head>
+<body>
+
+<h1>🧪 Auto Reply Tool – Test Page</h1>
+
+<div class="review-list" id="reviewList">
+  <div class="col left"></div>
+  <div class="col right"></div>
+</div>
+
+
+<!-- Reply Panel -->
+<div id="reply-panel">
+  <textarea id="developerResponse" placeholder="Developer response..."></textarea>
+  <button id="submitBtn">Submit</button>
+</div>
+
+<script>
+/* ================================
+   FAKE DATA
+================================ */
+const positiveTexts = [
+  "App rất tốt 👍",
+  "Rất hài lòng ❤️",
+  "Thanh toán nhanh gọn",
+  "Dùng ổn định, ít lỗi",
+  "Trải nghiệm rất mượt",
+  "Giao diện đẹp, dễ dùng",
+  "Không có khuyết điểm gì",
+  "Nhanh chóng",
+  "Tiện lợi",
+  "Ngân hàng minh ưng nhất từ lúc mới sử dụng ngân hàng"
+];
+
+const negativeTexts = [
+  "Thanh toán bị lỗi 😡",
+  "Không đăng nhập được",
+  "App hay bị treo",
+  "Không nhận được OTP",
+  "Trừ tiền nhưng không xử lý",
+  "Trải nghiệm không tốt"
+];
+
+const reviews = Array.from({ length: 300 }, (_, i) => {
+  const stars = Math.floor(Math.random() * 5) + 1;
+
+  const text =
+    stars >= 4
+      ? positiveTexts[Math.floor(Math.random() * positiveTexts.length)]
+      : negativeTexts[Math.floor(Math.random() * negativeTexts.length)];
+
+  return {
+    id: i + 1,
+    stars,
+    text: `${text} (case #${i + 1})`
+  };
+});
+
+
+const reviewList = document.getElementById("reviewList");
+const leftCol = reviewList.querySelector(".left");
+const rightCol = reviewList.querySelector(".right");
+let currentReviewEl = null;
+
+/* ================================
+   RENDER REVIEW
+================================ */
+reviews.forEach((r, index) => {
+  const div = document.createElement("div");
+  div.className = "Box-sc-18eybku-0 idyRmo";
+
+  const stars = document.createElement("div");
+  stars.className = "stars";
+  for (let i = 0; i < r.stars; i++) {
+    stars.innerHTML += `<svg color="title"><circle cx="8" cy="8" r="7" fill="#f5c518"/></svg>`;
+  }
+
+  const content = document.createElement("div");
+  content.className = "content";
+  content.textContent = r.text;
+
+  const btn = document.createElement("button");
+  btn.className = "reply-btn";
+  btn.innerText = "Reply";
+
+  btn.onclick = () => {
+    currentReviewEl = div;
+    document.getElementById("reply-panel").style.display = "block";
+  };
+
+  div.appendChild(stars);
+  div.appendChild(content);
+  div.appendChild(btn);
+
+  // 👇 CHỖ QUAN TRỌNG: CHIA 2 CỘT
+  (index % 2 === 0 ? leftCol : rightCol).appendChild(div);
+});
+
+/* ================================
+   SUBMIT LOGIC
+================================ */
+document.getElementById("submitBtn").onclick = async () => {
+  if (!currentReviewEl) return;
+
+  // 👇 đợi textarea update xong
+  await new Promise(r => setTimeout(r, 50));
+
+  const textarea = document.getElementById("developerResponse");
+  const text = textarea.value.trim();
+  if (!text) return; // không cho submit rỗng
+
+  let response = currentReviewEl.querySelector(".dev-response");
+  if (!response) {
+    response = document.createElement("div");
+    response.className = "dev-response";
+    Object.assign(response.style, {
+      marginTop: "10px",
+      padding: "10px",
+      background: "#f1f8ff",
+      borderLeft: "4px solid #007aff",
+      borderRadius: "6px",
+      fontSize: "14px",
+      whiteSpace: "pre-wrap"
+    });
+    currentReviewEl.appendChild(response);
+  }
+
+  response.textContent = "Developer response:\n" + text;
+
+  const btn = currentReviewEl.querySelector("button");
+  btn.innerText = "Edit Response";
+  btn.className = "edit-btn";
+
+  textarea.value = "";
+  document.getElementById("reply-panel").style.display = "none";
+};
+</script>
+
+<!-- ================================
+     👉 PASTE TOOL CỦA BẠN Ở ĐÂY 👈
+================================= -->
+<script>
+/* DÁN NGUYÊN IIFE TOOL CỦA BẠN VÀO ĐÂY */
+</script>
+
+</body>
+</html>

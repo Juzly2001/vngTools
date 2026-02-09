@@ -328,7 +328,7 @@
             updateTbodyHeight();
 
         } catch (e) {
-            console.error(e);
+            // console.error(e);
             alert("❌ Không load được Google Sheet (link sai hoặc chưa public)");
         }
     }

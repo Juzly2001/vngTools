@@ -1072,7 +1072,7 @@
 
               // 🧭 scroll chuẩn bị load hết review
               //thay giá trị ở đây để chạy scroll == (tham số)
-              await scrollBottomNTimes(20, 40000);
+              await scrollBottomNTimes(5, 5000);
 
               // ▶️ bật Auto Mode
               const autoBtn = document.getElementById("__autoReply_autoMode");
