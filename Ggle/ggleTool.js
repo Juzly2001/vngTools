@@ -434,7 +434,7 @@
                 // 4️⃣ Next
                 nextPageBtn.click();
                 if (!autoRunning) break;
-                await sleep(10000);
+                await sleep(15000);
             }
 
             // Khi vòng lặp kết thúc
@@ -444,8 +444,6 @@
             autoBtn.style.color = "#000";
             autoBtn.dataset.active = "false";
         };
-
-
 
         function toggleWidgets() {
             const el = document.getElementById("mini-excel-review-links");
@@ -480,9 +478,25 @@
         initFloatingToggleBtn();
 
         document.addEventListener("keydown", (e) => {
+
+            // Nếu đang nhập trong textarea thì bỏ qua
+            if (document.activeElement.tagName === "TEXTAREA") return;
+
             if (e.ctrlKey && e.code === "Space") {
                 e.preventDefault();
                 toggleWidgets();
+            }
+
+            // Mũi tên trái → Prev
+            if (e.code === "ArrowLeft") {
+                e.preventDefault();
+                prevPageBtn.click();
+            }
+
+            // Mũi tên phải → Next
+            if (e.code === "ArrowRight") {
+                e.preventDefault();
+                nextPageBtn.click();
             }
         });
     }
