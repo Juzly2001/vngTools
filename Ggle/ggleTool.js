@@ -17,7 +17,7 @@
             border: "1px solid #e5e7eb",
             borderRadius: "12px",
             padding: "12px",
-            width: "860px",
+            width: "900px",
             fontSize: "15px",
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             fontFamily: "Segoe UI,Roboto,Arial,sans-serif"
@@ -120,6 +120,13 @@
                 cancelable: true,
                 view: window
             }));
+        }
+
+        function getCurrentRangeText() {
+            const el = document.querySelector(".selected div");
+            if (!el) return "Không rõ";
+
+            return el.textContent.trim();
         }
 
         prevPageBtn.onclick = () => {
@@ -391,6 +398,45 @@
         const sleep = ms => new Promise(r => setTimeout(r, ms));
 
         let autoRunning = false;
+        let rowsSelected = false;
+
+        // TÌM PAGE 50 CMT
+        async function select50RowsOnce(){
+
+            if (rowsSelected) return true;
+
+            // Tìm element hiển thị số hiện tại (10 / 25 / 50)
+            const pageSizeDisplay = [...document.querySelectorAll("span")]
+                .find(el => ["10","25","50"].includes(el.textContent.trim()));
+
+            if (!pageSizeDisplay) {
+                updateInfo("❌ Không tìm thấy phần hiển thị số dòng");
+                return false;
+            }
+
+            // Click mở dropdown
+            pageSizeDisplay.click();
+            await sleep(600);
+
+            // Sau khi mở → tìm option 50
+            const option50 = [...document.querySelectorAll("span")]
+                .find(el => el.textContent.trim() === "50");
+
+            if (!option50) {
+                updateInfo("❌ Không tìm thấy option 50");
+                return false;
+            }
+
+            option50.click();
+
+            rowsSelected = true;
+
+            updateInfo("✅ Đã chuyển sang 50 dòng");
+
+            await sleep(10000);
+
+            return true;
+        }
 
         autoBtn.onclick = async () => {
 
@@ -413,12 +459,25 @@
             autoBtn.dataset.active = "true";
 
             updateInfo("🟢 AUTO START");
+            await select50RowsOnce();
 
             while (autoRunning) {
 
                 // 1️⃣ Scan
-                await scanReviewsWithReply();
+                const scanCount = await scanReviewsWithReply();
                 if (!autoRunning) break;
+
+                // 🚀 Nếu scan = 0 → next luôn
+                if (scanCount === 0) {
+                    const currentRange = getCurrentRangeText();
+                    updateInfo(`➡️ Không có review cần xử lý → NEXT PAGE [ ${currentRange} ]`);
+                    
+                    nextPageBtn.click();
+
+                    await sleep(10000);
+                    continue; // quay lại đầu vòng lặp
+                }
+
                 await sleep(10000);
 
                 // 2️⃣ Paste
@@ -434,7 +493,8 @@
                 // 4️⃣ Next
                 nextPageBtn.click();
                 if (!autoRunning) break;
-                await sleep(15000);
+                await sleep(10000);
+
             }
 
             // Khi vòng lặp kết thúc
