@@ -129,6 +129,24 @@
             return el.textContent.trim();
         }
 
+        async function waitForPageChange(oldRange, timeout = 4000) {
+
+            const start = Date.now();
+
+            while (Date.now() - start < timeout) {
+
+                const newRange = getCurrentRangeText();
+
+                if (newRange && newRange !== oldRange) {
+                    return true;
+                }
+
+                await sleep(150); // polling nhanh hơn
+            }
+
+            return false;
+        }
+
         prevPageBtn.onclick = () => {
             const btn = document.querySelector('material-button.prev[aria-disabled="false"]');
             if (btn) {
@@ -142,7 +160,6 @@
                 triggerAngularClick(btn);
             }
         };
-
 
         // ---------- TABLE ----------
         const table = document.createElement("table");
@@ -292,6 +309,33 @@
         }
 
         async function scanReviewsWithReply() {
+
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+            // Đợi textarea xuất hiện tối đa 5s
+            let waitStart = Date.now();
+            while (!document.querySelector('textarea[aria-label="Trả lời"]')) {
+                if (Date.now() - waitStart > 5000) break;
+                await sleep(300);
+            }
+
+            // Đợi review render đủ (ổn định 1.5s không thay đổi)
+            let lastCount = 0;
+            let stableTime = 0;
+
+            while (stableTime < 1500) {
+                const currentCount = document.querySelectorAll("review").length;
+
+                if (currentCount === lastCount) {
+                    stableTime += 300;
+                } else {
+                    stableTime = 0;
+                    lastCount = currentCount;
+                }
+
+                await sleep(300);
+            }
+
             const reviews = document.querySelectorAll("review");
             let count = 0;
             for (const rev of reviews) {
@@ -308,6 +352,22 @@
             updateInfo(`✅ Đã quét xong link ${count} review!`);
             return count;
         }
+
+        function hasUnrepliedReviews() {
+            const reviews = document.querySelectorAll("review");
+
+            for (const rev of reviews) {
+                const textarea = rev.querySelector('textarea[aria-label="Trả lời"]');
+                const submitBtn = rev.querySelector('material-button[debug-id="submit-button"] button');
+
+                if (textarea && submitBtn) {
+                    return true; // còn review chưa xử lý
+                }
+            }
+
+            return false; // không còn review
+        }
+
 
         async function autoSubmitReplies() {
             const reviews = document.querySelectorAll("review");
@@ -401,42 +461,70 @@
         let rowsSelected = false;
 
         // TÌM PAGE 50 CMT
-        async function select50RowsOnce(){
+        async function select50RowsOnce() {
 
-            if (rowsSelected) return true;
+    if (rowsSelected) return true;
 
-            // Tìm element hiển thị số hiện tại (10 / 25 / 50)
-            const pageSizeDisplay = [...document.querySelectorAll("span")]
-                .find(el => ["10","25","50"].includes(el.textContent.trim()));
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
 
-            if (!pageSizeDisplay) {
-                updateInfo("❌ Không tìm thấy phần hiển thị số dòng");
-                return false;
-            }
+    // 1️⃣ Tìm dropdown theo label tiếng Việt (ổn định nhất)
+    const labelContainer = [...document.querySelectorAll(".dropdown-label")]
+        .find(el => el.textContent.includes("Số bài đánh giá trên mỗi trang"));
 
-            // Click mở dropdown
-            pageSizeDisplay.click();
-            await sleep(600);
+    if (!labelContainer) {
+        updateInfo("❌ Không tìm thấy label page size");
+        return false;
+    }
 
-            // Sau khi mở → tìm option 50
-            const option50 = [...document.querySelectorAll("span")]
-                .find(el => el.textContent.trim() === "50");
+    // 2️⃣ Tìm nút dropdown trong cùng container
+    const container = labelContainer.closest(".dropdown-label-container");
+    const button = container.querySelector("dropdown-button .button");
 
-            if (!option50) {
-                updateInfo("❌ Không tìm thấy option 50");
-                return false;
-            }
+    if (!button) {
+        updateInfo("❌ Không tìm thấy nút dropdown");
+        return false;
+    }
 
-            option50.click();
+    // Nếu đã là 50 thì khỏi chọn
+    const currentValue = button.querySelector(".button-text")?.textContent.trim();
+    if (currentValue === "50") {
+        updateInfo("✅ Đã là 50 dòng rồi");
+        rowsSelected = true;
+        return true;
+    }
 
-            rowsSelected = true;
+    // 3️⃣ Click mở dropdown
+    button.click();
+    await sleep(800);
 
-            updateInfo("✅ Đã chuyển sang 50 dòng");
+    // 4️⃣ Tìm option 50
+    const options = document.querySelectorAll("material-select-dropdown-item");
 
-            await sleep(10000);
+    let option50 = null;
 
-            return true;
+    options.forEach(opt => {
+        const label = opt.querySelector(".label");
+        if (label && label.textContent.trim() === "50") {
+            option50 = opt;
         }
+    });
+
+    if (!option50) {
+        updateInfo("❌ Không tìm thấy option 50");
+        return false;
+    }
+
+    option50.click();
+
+    rowsSelected = true;
+
+    updateInfo("✅ Đã chuyển sang 50 dòng");
+
+    await sleep(10000); // chờ 10s
+
+    return true;
+}
+
 
         autoBtn.onclick = async () => {
 
@@ -461,41 +549,52 @@
             updateInfo("🟢 AUTO START");
             await select50RowsOnce();
 
-            while (autoRunning) {
-
+           while (autoRunning) {
                 // 1️⃣ Scan
                 const scanCount = await scanReviewsWithReply();
                 if (!autoRunning) break;
 
-                // 🚀 Nếu scan = 0 → next luôn
-                if (scanCount === 0) {
-                    const currentRange = getCurrentRangeText();
-                    updateInfo(`➡️ Không có review cần xử lý → NEXT PAGE [ ${currentRange} ]`);
-                    
-                    nextPageBtn.click();
+                const oldRange = getCurrentRangeText();
 
-                    await sleep(10000);
-                    continue; // quay lại đầu vòng lặp
+                // 2️⃣ Nếu có review → xử lý trước
+                if (scanCount > 0) {
+
+                    updateInfo(`🟢 Đã quét ${scanCount} review`);
+                    await sleep(5000);
+
+                    // Paste
+                    await autoPasteAll();
+                    if (!autoRunning) break;
+
+                    await sleep(5000);
+
+                    // Submit
+                    await autoSubmitReplies();
+                    if (!autoRunning) break;
+
+                    await sleep(20000);
+                } 
+                else {
+                    updateInfo(`🔴 Không có review → NEXT [ ${oldRange} ]`);
                 }
 
-                await sleep(10000);
-
-                // 2️⃣ Paste
-                await autoPasteAll();
-                if (!autoRunning) break;
-                await sleep(10000);
-
-                // 3️⃣ Submit
-                await autoSubmitReplies();
-                if (!autoRunning) break;
-                await sleep(10000);
-
-                // 4️⃣ Next
+                // 3️⃣ NEXT (luôn luôn next)
                 nextPageBtn.click();
                 if (!autoRunning) break;
-                await sleep(10000);
 
+                const changed = await waitForPageChange(oldRange);
+
+                if (!changed) {
+                    updateInfo("⚠️ Trang không đổi, có thể đã tới cuối.");
+                    autoRunning = false;
+                    break;
+                }
+
+                await sleep(1500);
             }
+
+
+
 
             // Khi vòng lặp kết thúc
             autoRunning = false;
