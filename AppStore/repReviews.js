@@ -1,6 +1,6 @@
   (() => {
       const positiveMsg =
-          "Cảm ơn bạn đã yêu mến và dành nhiều lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
+          "Cảm ơn bạn đã yêu mến và dành lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
       const negativeMsg =
           "Chúng mình rất tiếc vì trải nghiệm không tốt của bạn. Bạn vui lòng vào ứng dụng Zalopay >> chọn 'Tài khoản' >> 'Trung tâm hỗ trợ' và cung cấp thông tin liên quan để có thể được hỗ trợ nhanh nhất nhé!";
       const delay = ms => new Promise(r => setTimeout(r, ms));
@@ -1072,7 +1072,7 @@
 
               // 🧭 scroll chuẩn bị load hết review
               //thay giá trị ở đây để chạy scroll == (tham số)
-              await scrollBottomNTimes(4, 10000);
+              await scrollBottomNTimes(5, 10000);
 
               // ▶️ bật Auto Mode
               const autoBtn = document.getElementById("__autoReply_autoMode");

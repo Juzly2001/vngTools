@@ -10,10 +10,14 @@
     let actionLocked = false;
     const ACTION_COOLDOWN = 2000; // 2 giây
 
+    // nhận input delay
     const getDelay = () => {
         const el = document.getElementById("delayInput");
         return Math.max(50, parseInt(el?.value || "200", 10));
     };
+
+    // 0s delay cứng
+    // const getDelay = () => 0;
 
     async function selectDropdownChooseFirst(labelText, optionText) {
         const label = [...document.querySelectorAll(".fd-ticket-col label")]
@@ -106,25 +110,28 @@
       #mini-excel-tool [data-tooltip]:hover::after {opacity: 1;}
     </style>
     
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <strong data-tooltip="Hide/Show table (Ctrl + X)" style="font-size:15px;">⚡ Ticket Support</strong>
-       <div>
-        <button id="importExcelBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Import Excel</button>
-        <button id="toggleViewBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Ẩn (Ctrl + X)</button>
-        <button id="resetTableBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Reset Table</button>
-        <button id="Resolve" data-tooltip="Resolve (Ctrl + Q)" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve</button>
-        <button id="ResolveAndCreateTicket" data-tooltip="Resolve & create ticket (Ctrl + Z)" style="margin-right:20px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve & create ticket</button>
-        <button id="closeMiniExcel" style="background:transparent;border:none;font-size:18px;cursor:pointer;">✖</button>
-      </div>
-</div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <strong data-tooltip="Hide/Show table (Ctrl + X)" style="font-size:15px;">⚡ Ticket Support</strong>
+        <div>
+            <button id="importExcelBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Import Excel</button>
+            <button id="toggleViewBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Ẩn (Ctrl + X)</button>
+            <button id="resetTableBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Reset Table</button>
+            <button id="Resolve" data-tooltip="Resolve (Ctrl + Q)" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve</button>
+            <button id="ResolveAndCreateTicket" data-tooltip="Resolve & create ticket (Ctrl + Z)" style="margin-right:20px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve & create ticket</button>
+            <button id="closeMiniExcel" style="background:transparent;border:none;font-size:18px;cursor:pointer;">✖</button>
+        </div>
+    </div>
+    <div style="display:flex;align-items:center;margin-bottom:8px;">
         <input
             id="sheetLinkInput"
             placeholder="🔗 Dán link Google Sheets (public)"
-            style="width:100%;padding:4px 6px;border:1px solid #bbb;border-radius:5px;font-size:12px;"
+            style="flex:1;padding:4px 6px;border:1px solid #bbb;border-radius:5px;font-size:12px;"
         >
+        <button id="sheetReloadBtn"
+            style="margin-left:6px;padding:4px 6px;border:1px solid #ccc;border-radius:6px;background:#fff;cursor:pointer;font-size:14px;">
+            🔄
+        </button>
     </div>
-    
 
     <div style="border:1px solid #ccc;border-radius:6px;overflow:hidden;">
       <div id="mini-excel-scroll">
@@ -252,14 +259,45 @@
     // IMPORT GOOGLE SHEETS (LINK)
     // ==========================
     const sheetInput = document.getElementById("sheetLinkInput");
-    const SHEET_KEY = "__mini_excel_sheet_link__";
+    const reloadBtn = document.getElementById("sheetReloadBtn");
+
+    function setReloadState(state) {
+        if (state === "loading") {
+            reloadBtn.innerHTML = "⏳";
+            reloadBtn.disabled = true;
+        } else if (state === "success") {
+            reloadBtn.innerHTML = "✅";
+            reloadBtn.disabled = true;
+            setTimeout(() => {
+                reloadBtn.innerHTML = "🔄";
+                reloadBtn.disabled = false;
+            }, 1500);
+        } else if (state === "error") {
+            reloadBtn.innerHTML = "❌";
+            reloadBtn.disabled = true;
+            setTimeout(() => {
+                reloadBtn.innerHTML = "🔄";
+                reloadBtn.disabled = false;
+            }, 1500);
+        } else {
+            reloadBtn.innerHTML = "🔄";
+            reloadBtn.disabled = false;
+        }
+    }
+
+    const SHEET_KEY = "__mini_excel_sheet_link_global__";
 
     // load lại link cũ nếu có
-    const savedLink = localStorage.getItem(SHEET_KEY);
+    const savedLink = window.top.localStorage.getItem(SHEET_KEY);
     if (savedLink) {
         sheetInput.value = savedLink;
-        loadGoogleSheet(savedLink);
+        setReloadState("loading");
+        loadGoogleSheet(savedLink).then(ok => {
+            if (ok) setReloadState("success");
+            else setReloadState("error");
+        });
     }
+
 
     let sheetTimer = null;
     sheetInput.addEventListener("input", () => {
@@ -269,14 +307,14 @@
 
             // 🔥 TRƯỜNG HỢP XÓA LINK
             if (!url) {
-                localStorage.removeItem(SHEET_KEY);
+                window.top.localStorage.removeItem(SHEET_KEY);
                 document.getElementById("mini-excel-body").innerHTML = "";
                 updateTbodyHeight();
                 return;
             }
 
             // 🔥 CÓ LINK → LOAD
-            localStorage.setItem(SHEET_KEY, url);
+            window.top.localStorage.setItem(SHEET_KEY, url);
             loadGoogleSheet(url);
 
         }, 600);
@@ -292,10 +330,14 @@
             const gidMatch = url.match(/gid=(\d+)/);
             const gid = gidMatch ? gidMatch[1] : "0";
 
-            const jsonUrl =
-                `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?gid=${gid}&tqx=out:json`;
+            const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?gid=${gid}&tqx=out:json&nocache=${Date.now()}`;
 
-            const res = await fetch(jsonUrl);
+            const res = await fetch(jsonUrl, {
+                cache: "no-store"
+            });
+
+            if (!res.ok) throw "Fetch error";
+
             const text = await res.text();
 
             const json = JSON.parse(
@@ -305,35 +347,47 @@
             const rows = json.table.rows;
             const tbody = document.getElementById("mini-excel-body");
 
-            tbody.innerHTML = ""; // clear cũ
+            tbody.innerHTML = "";
 
             rows.forEach(r => {
                 if (!r.c || r.c.length < 4) return;
 
                 const tr = document.createElement("tr");
                 tr.innerHTML = `
-<td style="border:1px solid #ccc;padding:4px;"><input value="${r.c[0]?.v || ''}"></td>
-<td style="border:1px solid #ccc;padding:4px;"><input value="${r.c[1]?.v || ''}"></td>
-<td style="border:1px solid #ccc;padding:4px;"><input value="${r.c[2]?.v || ''}"></td>
-<td style="border:1px solid #ccc;padding:4px;"><input value="${r.c[3]?.v || ''}"></td>
-<td style="border:1px solid #ccc;text-align:center;">
-  <button class="doAction" style="padding:4px 8px;border-radius:4px;border:1px solid #4285f4;background:#4285f4;color:#fff;">▶</button>
-</td>
-<td data-col="del" style="border:1px solid #ccc;text-align:center;">
-  <button class="deleteRow" style="padding:4px 8px;border-radius:4px;border:1px solid #d33;background:#d33;color:#fff;">🗑️</button>
-</td>`;
+                <td style="border:1px solid #ccc;padding:4px;"><input value="${r.c[0]?.v || ''}"></td>
+                <td style="border:1px solid #ccc;padding:4px;"><input value="${r.c[1]?.v || ''}"></td>
+                <td style="border:1px solid #ccc;padding:4px;"><input value="${r.c[2]?.v || ''}"></td>
+                <td style="border:1px solid #ccc;padding:4px;"><input value="${r.c[3]?.v || ''}"></td>
+                <td style="border:1px solid #ccc;text-align:center;">
+                <button class="doAction" style="padding:4px 8px;border-radius:4px;border:1px solid #4285f4;background:#4285f4;color:#fff;">▶</button>
+                </td>
+                <td data-col="del" style="border:1px solid #ccc;text-align:center;">
+                <button class="deleteRow" style="padding:4px 8px;border-radius:4px;border:1px solid #d33;background:#d33;color:#fff;">🗑️</button>
+                </td>`;
                 tbody.appendChild(tr);
             });
 
             updateTbodyHeight();
+            toggleWrap();
+            return true;
 
         } catch (e) {
-            // console.error(e);
             alert("❌ Không load được Google Sheet (link sai hoặc chưa public)");
+            return false;
         }
     }
 
+    reloadBtn.addEventListener("click", async () => {
+        const url = sheetInput.value.trim();
+        if (!url) return;
 
+        setReloadState("loading");
+
+        const ok = await loadGoogleSheet(url);
+
+        if (ok) setReloadState("success");
+        else setReloadState("error");
+    });
 
     // ==========================
     // KÍCH THƯỚC BOX

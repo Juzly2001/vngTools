@@ -261,6 +261,60 @@ keyboardToggle.addEventListener("click", () => {
 });
 
 const gsInput = document.createElement("input");
+// Nút reload Google Sheet
+const reloadBtn = document.createElement("button");
+reloadBtn.innerHTML = "🔄";
+reloadBtn.style.height = "36px";
+reloadBtn.style.width = "44px";
+reloadBtn.style.border = "1px solid #ccc";
+reloadBtn.style.borderRadius = "6px";
+reloadBtn.style.background = "#fff";
+reloadBtn.style.cursor = "pointer";
+reloadBtn.style.marginLeft = "6px";
+reloadBtn.style.fontSize = "16px";
+reloadBtn.style.transition = "0.2s";
+attachTooltip(reloadBtn, "Reload Google Sheet");
+
+// Hàm set trạng thái nút
+function setReloadState(state) {
+    if (state === "loading") {
+        reloadBtn.innerHTML = "⏳";
+        reloadBtn.style.pointerEvents = "none";
+    }
+    else if (state === "success") {
+        reloadBtn.innerHTML = "✅";
+        reloadBtn.style.pointerEvents = "none";
+        setTimeout(() => {
+            reloadBtn.innerHTML = "🔄";
+            reloadBtn.style.pointerEvents = "auto";
+        }, 1500);
+    }
+    else if (state === "error") {
+        reloadBtn.innerHTML = "❌";
+        reloadBtn.style.pointerEvents = "none";
+        setTimeout(() => {
+            reloadBtn.innerHTML = "🔄";
+            reloadBtn.style.pointerEvents = "auto";
+        }, 1500);
+    }
+    else {
+        reloadBtn.innerHTML = "🔄";
+        reloadBtn.style.pointerEvents = "auto";
+    }
+}
+
+reloadBtn.addEventListener("click", async () => {
+    const url = gsInput.value.trim();
+    if (!url) return;
+
+    setReloadState("loading");
+
+    const ok = await importFromGoogleSheetByInput(url);
+
+    if (ok) setReloadState("success");
+    else setReloadState("error");
+});
+
 gsInput.type = "text";
 gsInput.placeholder = "🔗 Dán link Google Sheets (public)";
 gsInput.style.height = "36px";
@@ -269,7 +323,7 @@ gsInput.style.border = "1px solid #ccc";
 gsInput.style.borderRadius = "6px";
 gsInput.style.outline = "none";
 gsInput.style.width = "100%";
-gsInput.style.marginRight = "8px";
+// gsInput.style.marginRight = "8px";
 gsInput.style.fontSize = "13px";
 
 gsInput.addEventListener("input", (e) => {
@@ -277,7 +331,7 @@ gsInput.addEventListener("input", (e) => {
 
     // 💾 lưu lại link
     if (url) {
-        localStorage.setItem("GSHEET_LINK", url);
+        window.top.localStorage.setItem("GLOBAL_GSHEET_LINK", url);
     } else {
         localStorage.removeItem("GSHEET_LINK");
     }
@@ -287,7 +341,15 @@ gsInput.addEventListener("input", (e) => {
 
 
 // thTools.appendChild(importLabel);
-thTools.appendChild(gsInput);
+const gsContainer = document.createElement("div");
+gsContainer.style.display = "flex";
+gsContainer.style.alignItems = "center";
+gsContainer.style.marginBottom = "6px";
+
+gsContainer.appendChild(gsInput);
+gsContainer.appendChild(reloadBtn);
+
+thTools.appendChild(gsContainer);
 thTools.appendChild(searchContainer);
 thTools.appendChild(keyboard);
 
@@ -799,56 +861,52 @@ importInput.addEventListener("change",async e=>{
 let gsImportTimer = null;
 
 async function importFromGoogleSheetByInput(url){
-    clearTimeout(gsImportTimer);
 
-    gsImportTimer = setTimeout(async () => {
+    if (!url || !url.trim()) {
+        clearAllRows();
+        return false;
+    }
 
-        if (!url || !url.trim()) {
-            clearAllRows();
-            return;
-        }
+    const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
+    if (!match) {
+        clearAllRows();
+        return false;
+    }
 
-        const match = url.match(/\/d\/([a-zA-Z0-9-_]+)/);
-        if (!match) {
-            clearAllRows();
-            return;
-        }
+    const sheetId = match[1];
+    const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
 
-        const sheetId = match[1];
-        const jsonUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+    try {
+        const res = await fetch(jsonUrl);
+        if (!res.ok) throw new Error("fetch fail");
 
-        try {
-            const res = await fetch(jsonUrl);
-            if (!res.ok) throw new Error("fetch fail");
+        const text = await res.text();
 
-            const text = await res.text();
+        const json = JSON.parse(
+            text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1)
+        );
 
-            // 🔥 parse JSON đúng chuẩn gviz
-            const json = JSON.parse(
-                text.substring(text.indexOf("{"), text.lastIndexOf("}") + 1)
-            );
+        clearAllRows();
 
-            clearAllRows();
+        json.table.rows.forEach(r => {
+            const id = r.c[0]?.v?.toString().trim();
+            const value = r.c[1]?.v?.toString() || "";
 
-            json.table.rows.forEach(r => {
-                const id = r.c[0]?.v?.toString().trim();
-                const value = r.c[1]?.v?.toString() || "";
+            if (!id || !value) return;
+            if (id.toLowerCase() === "id") return;
 
-                if (!id || !value) return;
-                if (id.toLowerCase() === "id") return;
+            addRow(id, value);
+        });
 
-                addRow(id, value);
-            });
+        renderRows();
+        return true;
 
-            renderRows();
-
-        } catch (e) {
-            console.error(e);
-            clearAllRows();
-        }
-    }, 600);
+    } catch (e) {
+        console.error(e);
+        clearAllRows();
+        return false;
+    }
 }
-
 
 function parseExcel(data){ 
     const wb=XLSX.read(data,{type:"array"}); 
@@ -869,15 +927,18 @@ tableWrapper.appendChild(table);
 container.appendChild(tableWrapper); 
 document.body.appendChild(container); 
 // 🔁 Auto load Google Sheets khi reload trang
-const savedSheet = localStorage.getItem("GSHEET_LINK");
+const savedSheet = window.top.localStorage.getItem("GLOBAL_GSHEET_LINK");
+
 if (savedSheet) {
     gsInput.value = savedSheet;
 
-    // giả lập người dùng nhập
-    gsInput.dispatchEvent(new Event("input"));
+    setReloadState("loading");
+    importFromGoogleSheetByInput(savedSheet)
+        .then(ok => {
+            if (ok) setReloadState("success");
+            else setReloadState("error");
+        });
 }
-
-
 
 // Cho phép kéo thả container
 let isDragging = false;

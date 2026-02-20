@@ -17,7 +17,7 @@
             border: "1px solid #e5e7eb",
             borderRadius: "12px",
             padding: "12px",
-            width: "900px",
+            width: "876px",
             fontSize: "15px",
             boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
             fontFamily: "Segoe UI,Roboto,Arial,sans-serif"
@@ -70,15 +70,19 @@
         const againBtn = document.createElement("button");
         againBtn.textContent = "Again";
         styleBtn(againBtn);
+        
         const toggleBtn = document.createElement("button");
         toggleBtn.textContent = "Hide";
         styleBtn(toggleBtn);
+
         const copyAllBtn = document.createElement("button");
         copyAllBtn.textContent = "Copy Links";
         styleBtn(copyAllBtn);
+
         const scanBtn = document.createElement("button");
         scanBtn.textContent = "Scan";
         styleBtn(scanBtn);
+
         const submitBtn = document.createElement("button");
         submitBtn.textContent = "Auto Submit";
         styleBtn(submitBtn);
@@ -353,22 +357,21 @@
             return count;
         }
 
-        function hasUnrepliedReviews() {
-            const reviews = document.querySelectorAll("review");
+        // function hasUnrepliedReviews() {
+        //     const reviews = document.querySelectorAll("review");
 
-            for (const rev of reviews) {
-                const textarea = rev.querySelector('textarea[aria-label="Trả lời"]');
-                const submitBtn = rev.querySelector('material-button[debug-id="submit-button"] button');
+        //     for (const rev of reviews) {
+        //         const textarea = rev.querySelector('textarea[aria-label="Trả lời"]');
+        //         const submitBtn = rev.querySelector('material-button[debug-id="submit-button"] button');
 
-                if (textarea && submitBtn) {
-                    return true; // còn review chưa xử lý
-                }
-            }
+        //         if (textarea && submitBtn) {
+        //             return true; // còn review chưa xử lý
+        //         }
+        //     }
 
-            return false; // không còn review
-        }
-
-
+        //     return false; // không còn review
+        // }
+        
         async function autoSubmitReplies() {
             const reviews = document.querySelectorAll("review");
             let done = 0;
@@ -387,7 +390,7 @@
         // AUTO PASTE ALL
         async function autoPasteAll() {
 
-            const goodText = "Cảm ơn bạn đã yêu mến và dành nhiều lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
+            const goodText = "Cảm ơn bạn đã yêu mến và dành lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
             const badText = "Chúng mình rất tiếc vì trải nghiệm không tốt của bạn. Bạn vui lòng vào ứng dụng Zalopay >> chọn 'Tài khoản' >> 'Trung tâm hỗ trợ' và cung cấp thông tin liên quan để có thể được hỗ trợ nhanh nhất nhé!";
 
             const reviews = document.querySelectorAll("review");
@@ -488,7 +491,7 @@
     // Nếu đã là 50 thì khỏi chọn
     const currentValue = button.querySelector(".button-text")?.textContent.trim();
     if (currentValue === "50") {
-        updateInfo("✅ Đã là 50 dòng rồi");
+        updateInfo("✅ Bắt đầu chạy");
         rowsSelected = true;
         return true;
     }
