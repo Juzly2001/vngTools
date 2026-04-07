@@ -51,7 +51,7 @@ container.style.overflow="hidden";
 
 const toggleBtn=document.createElement("button"); 
 toggleBtn.innerText="⚡FreshChat Support"; 
-attachTooltip(toggleBtn, "Ẩn/Hiện FreshChat Tool (Ctrl + Space)");
+attachTooltip(toggleBtn, "Ẩn/Hiện FreshChat Tool ((Ctrl hoặc ⌘) + Space)");
 toggleBtn.style.width="100%"; 
 toggleBtn.style.padding="8px"; 
 toggleBtn.style.cursor="pointer"; 
@@ -676,8 +676,29 @@ tooltip.style.userSelect = "text";
 tooltip.style.cursor = "text";
 tooltip.style.maxHeight = "200px";
 tooltip.style.overflowY = "auto";
+tooltip.style.boxSizing = "border-box";
 
 document.body.appendChild(tooltip);
+
+// copy tooltip
+const copyBtn = document.createElement("button");
+copyBtn.innerText = "Copy";
+copyBtn.style.position = "absolute";
+copyBtn.style.top = "4px";
+copyBtn.style.right = "6px";
+copyBtn.style.border = "none";
+copyBtn.style.background = "transparent";
+copyBtn.style.cursor = "pointer";
+copyBtn.style.fontSize = "12px";
+copyBtn.style.opacity = "0.7";
+
+copyBtn.onmouseenter = () => copyBtn.style.opacity = "1";
+copyBtn.onmouseleave = () => copyBtn.style.opacity = "0.7";
+
+tooltip.appendChild(copyBtn);
+
+// biến lưu nội dung tooltip
+let currentTooltipText = "";
 
 // =========================
 // Hàm css tooltip
@@ -690,6 +711,7 @@ function attachTooltip(el, text) {
     clearTimeout(hideTooltipTimeout);
 
     tooltip.textContent = text;
+    tooltip.style.paddingTop = "6px"; // hoặc "8px" tùy bạn
 
     // Hiện trước để lấy offsetWidth đúng
     tooltip.style.opacity = 1;
@@ -752,7 +774,14 @@ function renderRows(){
         td2.style.borderBottom="1px solid #f1f1f1"; 
         td2.onmouseenter = (e) => {
             clearTimeout(hideTooltipTimeout);
+            currentTooltipText = r.text;
+
             tooltip.innerHTML = "";
+
+            // ✅ chỉ thêm padding khi có nút copy
+            tooltip.style.paddingTop = "28px";
+
+            tooltip.appendChild(copyBtn);
             tooltip.appendChild(createFragmentFromText(r.text));
 
             const rect = td2.getBoundingClientRect();
@@ -968,6 +997,22 @@ document.addEventListener("mouseup", () => {
     isDragging = false;
     document.body.style.userSelect = "auto";
 });
+
+copyBtn.addEventListener("click", async () => {
+    if (!currentTooltipText) return;
+
+    try {
+        await navigator.clipboard.writeText(currentTooltipText);
+
+        copyBtn.innerText = "✓";
+        setTimeout(() => {
+            copyBtn.innerText = "Copy";
+        }, 1000);
+    } catch (e) {
+        console.error("Copy failed", e);
+    }
+});
+
 // Thêm nút kéo resize ở góc phải dưới
 const resizeHandle = document.createElement("div");
 resizeHandle.style.width = "12px";
@@ -1010,7 +1055,7 @@ let isVisible = true;
 
 
 document.addEventListener("keydown", e => {
-    if (e.ctrlKey && e.code === "Space") {
+    if ((e.ctrlKey || e.metaKey) && e.code === "Space") {
         isVisible = !isVisible;
         container.style.display = isVisible ? "block" : "none";
         e.preventDefault();

@@ -250,10 +250,7 @@
 
           scheduleWrap.appendChild(timeInput);
           scheduleWrap.appendChild(scheduleBtn);
-          card.appendChild(scheduleWrap);
-
-
-
+          
           // Giới hạn rep (giao diện giống auto submit)
           const limitToggle = document.createElement("button");
           limitToggle.id = "__autoReply_limitToggle";
@@ -288,6 +285,8 @@
           });
           card.appendChild(limitInput);
 
+          // UI schedule
+          card.appendChild(scheduleWrap);
 
           // Ghi chú
           const footer = document.createElement("div");

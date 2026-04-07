@@ -90,8 +90,9 @@
     font-size:13px;
     min-width:444px;
     min-height:340px;
-    width:550px;     /* bắt buộc width */
-    height:482px;    /* bắt buộc height */
+    /* width:550px; */    /* bắt buộc width */
+    /* height:482px; */    /* bắt buộc height */
+    width:444px; height:446px;
     box-sizing:border-box;  /* ✅ quan trọng */
     transition:all .2s ease;
     resize:both;
@@ -110,14 +111,14 @@
       #mini-excel-tool [data-tooltip]:hover::after {opacity: 1;}
     </style>
     
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-        <strong data-tooltip="Hide/Show table (Ctrl + X)" style="font-size:15px;">⚡ Ticket Support</strong>
+    <div id="mini-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;cursor:move;">
+        <strong data-tooltip="Hide/Show table ((Ctrl hoặc ⌘) + X)" style="font-size:15px;">⚡ Ticket Support</strong>
         <div>
             <button id="importExcelBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Import Excel</button>
             <button id="toggleViewBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Ẩn (Ctrl + X)</button>
             <button id="resetTableBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Reset Table</button>
-            <button id="Resolve" data-tooltip="Resolve (Ctrl + Q)" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve</button>
-            <button id="ResolveAndCreateTicket" data-tooltip="Resolve & create ticket (Ctrl + Z)" style="margin-right:20px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve & create ticket</button>
+            <button id="Resolve" data-tooltip="Resolve ((Ctrl hoặc ⌘) + Q)" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve</button>
+            <button id="ResolveAndCreateTicket" data-tooltip="Resolve & create ticket ((Ctrl hoặc ⌘) + Z)" style="margin-right:20px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve & create ticket</button>
             <button id="closeMiniExcel" style="background:transparent;border:none;font-size:18px;cursor:pointer;">✖</button>
         </div>
     </div>
@@ -685,11 +686,11 @@
     // phím tắt
     document.addEventListener("keydown", e => {
         // Check Ctrl + X
-        if (e.ctrlKey && e.key.toLowerCase() === "x") {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "x") {
             box.style.display = (box.style.display === "none" ? "block" : "none");
         }
         // Check Ctrl + Q
-        if (e.ctrlKey && e.key.toLowerCase() === "q") {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "q") {
             const resolveBtn = document.getElementById("Resolve");
             if (resolveBtn) {
                 e.preventDefault(); // chặn browser
@@ -702,7 +703,7 @@
     document.addEventListener(
     "keydown",
     (e) => {
-        if (e.ctrlKey && e.key.toLowerCase() === "z") {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") {
         e.preventDefault();
         e.stopPropagation();
         e.stopImmediatePropagation();
@@ -714,36 +715,73 @@
     );
 
     (function enableDrag(el) {
-        let offsetX = 0,
-            offsetY = 0,
-            isDown = false,
-            startX = 0,
-            startY = 0;
+        let isMouseDown = false;
+        let isDragging = false;
 
-        const header = el.querySelector("div"); // header đầu tiên
-        header.style.cursor = "move";
+        let startX = 0;
+        let startY = 0;
 
-        header.addEventListener("mousedown", e => {
-            isDown = true;
+        let currentX = 0;
+        let currentY = 0;
+
+        let rafId = null;
+
+        const DRAG_THRESHOLD = 6; // giảm xuống cho mượt hơn
+
+        const header = el.querySelector("#mini-header");
+
+        // Lấy vị trí ban đầu
+        const rect = el.getBoundingClientRect();
+        currentX = rect.left;
+        currentY = rect.top;
+
+        function updatePosition() {
+            el.style.transform = `translate(${currentX}px, ${currentY}px)`;
+            rafId = null;
+        }
+
+        header.addEventListener("mousedown", (e) => {
+            if (e.target.closest("button")) return;
+
+            isMouseDown = true;
+            isDragging = false;
+
             startX = e.clientX;
             startY = e.clientY;
-            const rect = el.getBoundingClientRect();
-            offsetX = rect.left;
-            offsetY = rect.top;
+
             document.body.style.userSelect = "none";
         });
 
+        document.addEventListener("mousemove", (e) => {
+            if (!isMouseDown) return;
+
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+
+            // threshold
+            if (!isDragging && (Math.abs(dx) > DRAG_THRESHOLD || Math.abs(dy) > DRAG_THRESHOLD)) {
+                isDragging = true;
+            }
+
+            if (!isDragging) return;
+
+            currentX += dx;
+            currentY += dy;
+
+            startX = e.clientX;
+            startY = e.clientY;
+
+            if (!rafId) {
+                rafId = requestAnimationFrame(updatePosition);
+            }
+        });
+
         document.addEventListener("mouseup", () => {
-            isDown = false;
+            isMouseDown = false;
+            isDragging = false;
             document.body.style.userSelect = "";
         });
 
-        document.addEventListener("mousemove", e => {
-            if (!isDown) return;
-            const dx = e.clientX - startX;
-            const dy = e.clientY - startY;
-            el.style.transform = `translate(${offsetX + dx}px, ${offsetY + dy}px)`;
-        });
     })(box);
 
 })();
