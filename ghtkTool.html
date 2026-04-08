@@ -137,11 +137,12 @@ function handleSearch() {
         
         // Kiểm tra xem Regex có khớp với Tên hoặc bất kỳ Địa điểm nào không
         const isNameMatch = fuzzyRegex.test(superNormalize(item.name));
+        const isAreaMatch = fuzzyRegex.test(superNormalize(item.area));
         const matchedLocations = item.locations.filter(loc => 
             fuzzyRegex.test(superNormalize(loc))
         );
 
-        if (matchedLocations.length > 0 || isNameMatch) {
+        if (matchedLocations.length > 0 || isNameMatch || isAreaMatch) {
             card.classList.add('active');
             count++;
             
