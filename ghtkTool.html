@@ -84,62 +84,101 @@ locations: ["Nhà thờ Khiết Tâm", "Chợ Khiết Tâm", "KDC Bình Đức",
         }
     ];
 
-    function renderCards() {
-        const container = document.getElementById('resultList');
-        container.innerHTML = database.map((item, index) => `
-            <div class="card" id="card-${index}">
-                <div class="shipper-info">
-                    <div class="name">👤 ${item.name}</div>
-                    <div class="code">${item.code}</div>
-                </div>
-                <div class="area">📍 Khu vực: ${item.area}</div>
-                <div class="tags" id="tags-${index}">
-                    ${item.locations.map(loc => `<span class="tag">${loc}</span>`).join('')}
-                </div>
-            </div>
-        `).join('');
+    // 1. Hàm chuẩn hóa dữ liệu: Biến mọi thứ về dạng viết tắt, không dấu, không khoảng trắng
+function superNormalize(str) {
+    if (!str) return "";
+    return str.toLowerCase()
+        .replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a")
+        .replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e")
+        .replace(/ì|í|ị|ỉ|ĩ/g, "i")
+        .replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o")
+        .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
+        .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
+        .replace(/đ/g, "d")
+        // Xử lý các cụm từ viết tắt phổ biến
+        .replace(/quoc lo/g, "ql")
+        .replace(/duong so/g, "d")
+        .replace(/duong/g, "d")
+        .replace(/hem/g, "h")
+        .replace(/tinh lo/g, "tl")
+        .replace(/khu dan cu/g, "kdc")
+        // Xóa sạch khoảng trắng để so khớp dính liền (ví dụ: ql 13 thành ql13)
+        .replace(/\s+/g, "");
+}
+
+// 2. Hàm tạo mẫu tìm kiếm linh hoạt (cho phép có ký tự ở giữa, vd: d9 khớp "đường số 9")
+function createFuzzyRegex(query) {
+    const cleanQuery = superNormalize(query);
+    // Tách từng chữ cái và nối lại bằng .* (đại diện cho ký tự bất kỳ)
+    // Ví dụ: "d9" -> /d.*9/i
+    const pattern = cleanQuery.split('').join('.*');
+    return new RegExp(pattern, 'i');
+}
+
+function handleSearch() {
+    const rawQuery = document.getElementById('searchInput').value;
+    const cards = document.getElementsByClassName('card');
+    const noResult = document.getElementById('noResult');
+    let count = 0;
+
+    // Nếu ô tìm kiếm trống, ẩn tất cả kết quả
+    if (rawQuery.trim() === "") {
+        for (let card of cards) card.classList.remove('active');
+        noResult.style.display = "none";
+        document.getElementById('stats').innerText = "Sẵn sàng tra cứu";
+        return;
     }
 
-    function handleSearch() {
-        const query = document.getElementById('searchInput').value.toLowerCase().trim();
-        const cards = document.getElementsByClassName('card');
-        const noResult = document.getElementById('noResult');
-        let count = 0;
+    const fuzzyRegex = createFuzzyRegex(rawQuery);
 
-        if (query === "") {
-            for (let card of cards) card.classList.remove('active');
-            noResult.style.display = "none";
-            document.getElementById('stats').innerText = "Sẵn sàng tra cứu";
-            return;
+    database.forEach((item, index) => {
+        const card = document.getElementById(`card-${index}`);
+        const tagContainer = document.getElementById(`tags-${index}`);
+        
+        // Kiểm tra xem Regex có khớp với Tên hoặc bất kỳ Địa điểm nào không
+        const isNameMatch = fuzzyRegex.test(superNormalize(item.name));
+        const matchedLocations = item.locations.filter(loc => 
+            fuzzyRegex.test(superNormalize(loc))
+        );
+
+        if (matchedLocations.length > 0 || isNameMatch) {
+            card.classList.add('active');
+            count++;
+            
+            // Cập nhật giao diện tag để highlight những chỗ khớp
+            tagContainer.innerHTML = item.locations.map(loc => {
+                const isMatch = fuzzyRegex.test(superNormalize(loc));
+                return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
+            }).join('');
+        } else {
+            card.classList.remove('active');
         }
+    });
 
-        database.forEach((item, index) => {
-            const card = document.getElementById(`card-${index}`);
-const tagContainer = document.getElementById(`tags-${index}`);
-            
-            // Tìm các tag khớp với từ khóa
-            const matchedLocations = item.locations.filter(loc => loc.toLowerCase().includes(query));
-            
-            if (matchedLocations.length > 0 || item.name.toLowerCase().includes(query)) {
-                card.classList.add('active');
-                count++;
-                
-                // Highlight các tag khớp
-                tagContainer.innerHTML = item.locations.map(loc => {
-                    const isMatch = loc.toLowerCase().includes(query);
-                    return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
-                }).join('');
-            } else {
-                card.classList.remove('active');
-            }
-        });
+    // Hiển thị thông báo nếu không tìm thấy
+    noResult.style.display = count === 0 ? "block" : "none";
+    document.getElementById('stats').innerText = `Tìm thấy ${count} kết quả cho "${rawQuery}"`;
+}
 
-        noResult.style.display = count === 0 ? "block" : "none";
-        document.getElementById('stats').innerText = `Tìm thấy ${count} shipper phù hợp`;
-    }
+// Khởi tạo hiển thị danh sách ban đầu (nhưng ẩn card cho đến khi search)
+function renderCards() {
+    const container = document.getElementById('resultList');
+    container.innerHTML = database.map((item, index) => `
+        <div class="card" id="card-${index}">
+            <div class="shipper-info">
+                <div class="name">👤 ${item.name}</div>
+                <div class="code">${item.code}</div>
+            </div>
+            <div class="area">📍 Khu vực: ${item.area}</div>
+            <div class="tags" id="tags-${index}">
+                ${item.locations.map(loc => `<span class="tag">${loc}</span>`).join('')}
+            </div>
+        </div>
+    `).join('');
+}
 
-    // Khởi tạo trang
-    renderCards();
+// Chạy hàm khởi tạo
+renderCards();
 </script>
 
 </body>
