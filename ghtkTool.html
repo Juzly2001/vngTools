@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Tra Cứu Tuyến Shipper Thủ Đức</title>
+    <style>
+        :root { --primary: #2563eb; --bg: #f8fafc; --text: #1e293b; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background-color: var(--bg); color: var(--text); padding: 20px; margin: 0; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .search-wrapper { position: sticky; top: 10px; z-index: 100; background: white; padding: 15px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .search-box { width: 100%; padding: 15px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 18px; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        .search-box:focus { border-color: var(--primary); }
+        .stats { font-size: 13px; color: #64748b; margin-top: 8px; text-align: right; }
+        .result-list { margin-top: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; margin-bottom: 15px; border-left: 6px solid #cbd5e1; display: none; animation: fadeIn 0.3s ease; }
+        .card.active { display: block; border-left-color: var(--primary); }
+        .shipper-info { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .name { font-size: 1.3em; font-weight: bold; color: var(--primary); }
+        .code { background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-size: 0.8em; }
+        .area { font-weight: 600; color: #475569; margin-bottom: 8px; font-size: 0.95em; }
+        .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .tag { background: #f1f5f9; padding: 4px 10px; border-radius: 6px; font-size: 13px; color: #334155; }
+        .highlight { background: #fef08a; font-weight: bold; }
+        .no-result { text-align: center; padding: 40px; color: #94a3b8; display: none; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="header">
+        <h1>🚚 Tra Cứu Tuyến Shipper</h1>
+        <p>Thành phố Thủ Đức (Hiệp Bình Phước - Tam Bình - Bình Chiểu)</p>
+    </div>
+
+    <div class="search-wrapper">
+        <input type="text" id="searchInput" class="search-box" placeholder="Nhập tên đường, hẻm, công ty, hoặc chung cư..." onkeyup="handleSearch()">
+        <div class="stats" id="stats">Sẵn sàng tra cứu</div>
+    </div>
+
+    <div id="resultList" class="result-list"></div>
+    <div id="noResult" class="no-result">Không tìm thấy địa chỉ này trong danh sách hiện có.</div>
+</div>
+
+<script>
+    const database = [
+        {
+name: "LÊ THỊ MỸ DUYÊN", code: "T716885", area: "Hiệp Bình Phước",
+            locations: ["Vạn Phúc City", "KDC Garden Homes", "Nguyễn Khuyến", "Quốc Lộ 13 (213-349)", "Hẻm 351 QL13", "Hẻm 313 QL13", "Hẻm 357 QL13", "Hẻm 277 QL13", "Hẻm 299 QL13", "Đường số 1", "Đường số 3", "Đường số 4", "Đường số 5", "Đường số 8", "Đường số 9", "Đường số 10", "Đường số 12", "Đường số 29", "Đường số 37", "Đường số 38", "Đường số 40", "Đường số 42", "Đinh Thị Thi", "Nguyễn Thị Nhung"]
+        },
+        {
+            name: "NGUYỄN THANH PHONG", code: "T74480", area: "Hiệp Bình Phước",
+            locations: ["Sunview Town", "KDC Hiệp Bình", "KDC Hồng Long", "Jamona", "Xa lộ Trường Sơn", "Quốc Lộ 13 (585-739, 606-668, 900-998)", "Quốc Lộ 1A (88-108, 65-113, 1-63, 2-80)", "Hẻm 647 QL13", "Hẻm 104 QL13", "Hẻm 904-996 QL13", "Hẻm 635 QL13", "Hẻm 631 QL13", "Hẻm 625 QL13", "Hẻm 609 QL13", "Hẻm 606 QL13", "Hẻm 652 QL13", "Hẻm 233 QL13", "Hẻm 907 QL13", "Hẻm 273 QL13", "Hẻm 247 QL13", "Hẻm 241 QL13", "Hẻm 866 QL13", "Hẻm 197 QL13", "Hẻm 255 QL13", "Đường số 2", "Đường số 10", "Đường số 11", "Đường số 12", "Đường số 15", "Đường số 17", "Đường số 19", "Đường số 21"]
+        },
+        {
+            name: "NGUYỄN HIỆP ÂN", code: "T726543", area: "Hiệp Bình Phước (KP5, KP6)",
+            locations: ["Đào Sơn Tây", "Urban Green", "Quốc Lộ 13 (479-585, 520-566, 520-552)", "Hẻm 505 QL13", "Hẻm 520 QL13", "Đường số 3", "Đường số 6", "Đường số 7"]
+        },
+        {
+            name: "ĐẶNG ĐỨC ĐẠT", code: "T726540", area: "Hiệp Bình Phước (KP5, KP6)",
+            locations: ["Hẻm 389 QL13", "Quốc Lộ 13 (552-598, 402-510, 349-479)", "Đường số 2", "Đường số 4"]
+        },
+        {
+            name: "NGUYỄN THÀNH ĐẠT", code: "T722033", area: "Tam Bình",
+            locations: ["Chợ nông sản Tam Bình", "Chợ đầu mối", "Chợ Tam Bình", "Gò Dưa (154-338, 77-151, 153-277, 2-84, 1-75, 90-152)", "Quốc Lộ 1A (186-538, 113-143, 112-184, 528-700)", "Tô Ngọc Vân (601-757)", "Mitsubishi", "Trường Sơn (243)", "KDC Vạn Xuân", "Đường số 1", "Đường số 2", "Đường số 3", "Đường số 4", "Đường số 5", "Đường số 6", "Đường số 7", "Đường lô A", "Đường lô C", "Tam Châu", "Phú Châu", "B"]
+        },
+        {
+            name: "BÙI XUÂN DŨNG", code: "T551880", area: "Tam Bình - Bình Chiểu",
+locations: ["Nhà thờ Khiết Tâm", "Chợ Khiết Tâm", "KDC Bình Đức", "Savimex", "Tỉnh Lộ 43 (879-1045, 765-877)", "Ngô Chí Quốc (2-68, 1-175)", "Ngọc Lan", "Hướng Dương", "Huỳnh Anh", "Phượng Vỹ", "Đường số 1A", "Đường số 1B", "Đường số 1C", "Đường số 2", "Đường số 4", "Đường số 13", "Đường số 15", "Đường số 23"]
+        },
+        {
+            name: "DƯƠNG TRÍ TÀI", code: "T538111", area: "Tam Bình - Bình Chiểu",
+            locations: ["Trường THPT Bình Chiểu", "Lê Thị Hoa (1-125, 94-256, 2-92, 127-257)", "KCN Bình Chiểu", "Đường Bình Chiểu (1-43, 45-131, 42-122, 2-40)", "Quốc Lộ 1A (149-195, 197-309)", "Chung cư Sen Hồng", "Nicotex", "Đường số 20", "Đường số 21", "Đường số 22"]
+        },
+        {
+            name: "LÊ VĂN ÚT", code: "T437677", area: "Hiệp Bình - Tam Bình - Bình Chiểu",
+            locations: ["Fresca Riverside", "TDH Riverview", "Ngô Chí Quốc (70-310, 203-309)", "Tỉnh Lộ 43 (1047-1171, 1173-1379)", "Quốc Lộ 13 (630, 686, 700, 748, 712, 808, 714, 724, 630-898)", "Đường số 6", "Đường số 8", "Hiệp Bình"]
+        },
+        {
+            name: "LÊ HÙNG CƯỜNG", code: "T405421", area: "Tam Bình - Bình Chiểu",
+            locations: ["Miwon", "Sadevina", "New Toyo", "Youyouwings", "Greystone", "Thiên Phát", "Linh Trung 2", "Vinawood", "Co.opmart Tam Bình", "Navita", "Saigon Avenue", "Savico", "Đường số 8", "Đường số 9", "Đường số 10", "Đường số 11", "Đường số 12"]
+        }
+    ];
+
+    function renderCards() {
+        const container = document.getElementById('resultList');
+        container.innerHTML = database.map((item, index) => `
+            <div class="card" id="card-${index}">
+                <div class="shipper-info">
+                    <div class="name">👤 ${item.name}</div>
+                    <div class="code">${item.code}</div>
+                </div>
+                <div class="area">📍 Khu vực: ${item.area}</div>
+                <div class="tags" id="tags-${index}">
+                    ${item.locations.map(loc => `<span class="tag">${loc}</span>`).join('')}
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function handleSearch() {
+        const query = document.getElementById('searchInput').value.toLowerCase().trim();
+        const cards = document.getElementsByClassName('card');
+        const noResult = document.getElementById('noResult');
+        let count = 0;
+
+        if (query === "") {
+            for (let card of cards) card.classList.remove('active');
+            noResult.style.display = "none";
+            document.getElementById('stats').innerText = "Sẵn sàng tra cứu";
+            return;
+        }
+
+        database.forEach((item, index) => {
+            const card = document.getElementById(`card-${index}`);
+const tagContainer = document.getElementById(`tags-${index}`);
+            
+            // Tìm các tag khớp với từ khóa
+            const matchedLocations = item.locations.filter(loc => loc.toLowerCase().includes(query));
+            
+            if (matchedLocations.length > 0 || item.name.toLowerCase().includes(query)) {
+                card.classList.add('active');
+                count++;
+                
+                // Highlight các tag khớp
+                tagContainer.innerHTML = item.locations.map(loc => {
+                    const isMatch = loc.toLowerCase().includes(query);
+                    return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
+                }).join('');
+            } else {
+                card.classList.remove('active');
+            }
+        });
+
+        noResult.style.display = count === 0 ? "block" : "none";
+        document.getElementById('stats').innerText = `Tìm thấy ${count} shipper phù hợp`;
+    }
+
+    // Khởi tạo trang
+    renderCards();
+</script>
+
+</body>
+</html>
