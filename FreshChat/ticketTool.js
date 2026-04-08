@@ -117,8 +117,8 @@
             <button id="importExcelBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Import Excel</button>
             <button id="toggleViewBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Ẩn (Ctrl + X)</button>
             <button id="resetTableBtn" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;display:none;">Reset Table</button>
-            <button id="Resolve" data-tooltip="Resolve ((Ctrl hoặc ⌘) + Q)" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve</button>
-            <button id="ResolveAndCreateTicket" data-tooltip="Resolve & create ticket ((Ctrl hoặc ⌘) + Z)" style="margin-right:20px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve & create ticket</button>
+            <button id="Resolve" data-tooltip="(Ctrl hoặc ⌘) + Q" style="margin-right:6px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve</button>
+            <button id="ResolveAndCreateTicket" data-tooltip="(Ctrl hoặc ⌘) + Z" style="margin-right:20px;padding:2px 8px;border-radius:5px;border:1px solid #999;background:#eee;cursor:pointer;">Resolve & create ticket</button>
             <button id="closeMiniExcel" style="background:transparent;border:none;font-size:18px;cursor:pointer;">✖</button>
         </div>
     </div>

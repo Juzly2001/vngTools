@@ -1,9 +1,16 @@
   (() => {
-      const positiveMsg =
-          "Cảm ơn bạn đã yêu mến và dành lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
-      const negativeMsg =
-          "Chúng mình rất tiếc vì trải nghiệm không tốt của bạn. Bạn vui lòng vào ứng dụng Zalopay >> chọn 'Tài khoản' >> 'Trung tâm hỗ trợ' và cung cấp thông tin liên quan để có thể được hỗ trợ nhanh nhất nhé!";
-      const delay = ms => new Promise(r => setTimeout(r, ms));
+    //   const positiveMsg =
+    //       "Cảm ơn bạn đã yêu mến và dành lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
+    //   const negativeMsg =
+    //       "Chúng mình rất tiếc vì trải nghiệm không tốt của bạn. Bạn vui lòng vào ứng dụng Zalopay >> chọn 'Tài khoản' >> 'Trung tâm hỗ trợ' và cung cấp thông tin liên quan để có thể được hỗ trợ nhanh nhất nhé!";
+    
+    // let positiveMsg = localStorage.getItem("__autoReply_positiveMsg") || "Cảm ơn bạn đã yêu mến và dành lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
+    // let negativeMsg = localStorage.getItem("__autoReply_negativeMsg") || "Chúng mình rất tiếc vì trải nghiệm không tốt của bạn. Bạn vui lòng vào ứng dụng Zalopay >> chọn 'Tài khoản' >> 'Trung tâm hỗ trợ' và cung cấp thông tin liên quan để có thể được hỗ trợ nhanh nhất nhé!";
+    
+    let positiveMsg = localStorage.getItem("__autoReply_positiveMsg");
+    let negativeMsg = localStorage.getItem("__autoReply_negativeMsg");
+
+    const delay = ms => new Promise(r => setTimeout(r, ms));
 
       function playBeep() {
           if (!soundOn) return;
@@ -51,6 +58,145 @@
               boxSizing: "border-box",
           });
           document.body.appendChild(root);
+                    // === NÚT MỞ PANEL (<) ===
+            const toggleBtn = document.createElement("div");
+            toggleBtn.innerText = "❮";
+            Object.assign(toggleBtn.style, {
+                position: "absolute",
+                left: "-26px",
+                top: "30px",
+                width: "26px",
+                height: "60px",
+                background: "linear-gradient(135deg,#007aff,#00c6ff)",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: "12px 0 0 12px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                boxShadow: "0 4px 12px rgba(0,122,255,0.4)",
+                transition: "0.2s"
+            });
+            root.appendChild(toggleBtn);
+
+            // === PANEL CONFIG ===
+            const panel = document.createElement("div");
+            Object.assign(panel.style, {
+                position: "absolute",
+                right: "100%",
+                top: "40px",
+                width: "600px",
+                background: "rgba(255,255,255,0.95)",
+                backdropFilter: "blur(10px)",
+                borderRadius: "16px 0 16px 16px",
+                boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+                padding: "14px",
+                transform: "translateX(110%)",
+                transition: "all 0.35s cubic-bezier(0.4,0,0.2,1)",
+                opacity: "0",
+                border: "1px solid rgba(0,0,0,0.08)"
+            });
+            root.appendChild(panel);
+
+            // nội dung panel
+            panel.innerHTML = `
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+                    <div style="font-weight:600;font-size:14px;">⚙️ Config Reply</div>
+                    <div id="closePanelBtn" style="
+                        cursor:pointer;
+                        font-size:14px;
+                        padding:2px 6px;
+                        border-radius:6px;
+                        background:#eee;
+                    ">✖</div>
+                </div>
+
+                <label style="font-size:12px;color:#666;">1–3⭐ (Negative)</label>
+                <textarea spellcheck="false" id="msg_negative" style="
+                    margin-top: 6px;
+                    resize:none;
+                    width:100%;
+                    height:62px;
+                    border-radius:10px;
+                    border:1px solid #ddd;
+                    padding:6px;
+                    margin-bottom:10px;
+                    font-size:12px;
+                "></textarea>
+
+                <label style="font-size:12px;color:#666;">4–5⭐ (Positive)</label>
+                <textarea spellcheck="false" id="msg_positive" style="
+                    margin-top: 6px;
+                    resize:none;
+                    width:100%;
+                    height:62px;
+                    border-radius:10px;
+                    border:1px solid #ddd;
+                    padding:6px;
+                    font-size:12px;
+                "></textarea>
+
+                <div style="display:flex; justify-content:flex-end;">
+                    <button id="saveMsgBtn" style="
+                        margin-top:12px;
+                        padding:10px 16px;
+                        width:16%;
+                        text-align: center;
+                        border:none;
+                        border-radius:10px;
+                        background:linear-gradient(135deg,#28a745,#20c997);
+                        color:#fff;
+                        cursor:pointer;
+                        font-weight:600;
+                        box-shadow:0 4px 10px rgba(40,167,69,0.3);
+                    ">Save</button>
+                </div>
+                `;
+            // toggle panel
+            let panelOpen = false;
+
+            function togglePanel(forceState = null) {
+                panelOpen = forceState !== null ? forceState : !panelOpen;
+
+                panel.style.transform = panelOpen 
+                    ? "translateX(0)" 
+                    : "translateX(110%)";
+
+                panel.style.opacity = panelOpen ? "1" : "0";
+
+                toggleBtn.style.display = panelOpen ? "none" : "flex";
+
+                card.style.borderRadius = panelOpen ? "14px 14px 14px 0" : "14px";
+            }
+
+            toggleBtn.onclick = () => togglePanel();
+
+            // nút đóng ✖
+            const closeBtn = panel.querySelector("#closePanelBtn");
+            if (closeBtn) {
+                closeBtn.onclick = () => togglePanel(false);
+            }
+
+            // load + save
+            const negInput = panel.querySelector("#msg_negative");
+            const posInput = panel.querySelector("#msg_positive");
+            const saveBtn = panel.querySelector("#saveMsgBtn");
+
+            // load data
+            negInput.value = negativeMsg;
+            posInput.value = positiveMsg;
+
+            // save data
+            saveBtn.onclick = () => {
+                positiveMsg = posInput.value.trim();
+                negativeMsg = negInput.value.trim();
+
+                localStorage.setItem("__autoReply_positiveMsg", positiveMsg);
+                localStorage.setItem("__autoReply_negativeMsg", negativeMsg);
+
+                alert("✅ Saved");
+            };
 
           const card = document.createElement("div");
           card.id = "__autoReply_card";
@@ -58,7 +204,7 @@
               background: "rgba(255,255,255,0.95)",
               backdropFilter: "blur(8px)",
               borderRadius: "14px",
-              boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
+            //   boxShadow: "0 8px 24px rgba(0,0,0,0.2)",
               border: "1px solid rgba(0,0,0,0.06)",
               padding: "14px 16px",
               color: "#111",
