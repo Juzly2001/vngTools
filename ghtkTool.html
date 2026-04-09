@@ -423,34 +423,38 @@ function handleSearch() {
         return;
     }
 
-    const queryTextOnly = rawQuery.replace(/\d+/g, "").trim();
-    const textRegex = new RegExp(superNormalize(queryTextOnly), 'i');
-    const fullFuzzyRegex = new RegExp(superNormalize(rawQuery), 'i');
+    // 1. Tách từ khóa nguyên bản (không normalize sớm để phân biệt số/chữ)
+    const searchWords = rawQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
 
-    // 1. Tính điểm và lọc dữ liệu
     const searchResults = database.map(item => {
         let score = 0;
-        
-        // Trọng số ưu tiên
-        if (fullFuzzyRegex.test(superNormalize(item.name))) score += 100;
-        if (fullFuzzyRegex.test(superNormalize(item.area))) score += 50;
 
         const checkMatch = (loc) => {
-            const rangeMatch = isHouseNumberInRange(rawQuery, loc);
-            const textMatch = textRegex.test(superNormalize(loc));
-            const fullMatch = fullFuzzyRegex.test(superNormalize(loc));
-            if (rawQuery.match(/\d+/) && queryTextOnly.length > 1) {
-                return rangeMatch && textMatch;
-            }
-            return rangeMatch || fullMatch;
+            const normalizedLoc = superNormalize(loc);
+            
+            // KIỂM TRA TẤT CẢ TỪ KHÓA (Logic AND)
+            return searchWords.every(word => {
+                // Kiểm tra xem từ khóa có phải là số thuần túy không
+                const isPureNumber = /^\d+$/.test(word);
+
+                if (isPureNumber) {
+                    // Nếu là số: Tìm trong khoảng số nhà (giữ logic cũ của bạn)
+                    // Hoặc đơn giản là kiểm tra xem số đó có nằm trong chuỗi không
+                    return isHouseNumberInRange(word, loc) || normalizedLoc.includes(word);
+                } else {
+                    // Nếu là chữ hoặc hỗn hợp (ql, 1a): Tìm chính xác cụm đó
+                    // Sử dụng bản đã normalize để so khớp không dấu
+                    return normalizedLoc.includes(superNormalize(word));
+                }
+            });
         };
 
         const matchedSpecial = item.locations.filter(loc => checkMatch(loc));
         const matchedLevel4 = (item.locations4 || []).filter(loc => checkMatch(loc));
 
-        // Cộng điểm nếu khớp địa chỉ
+        // Tính điểm: Chỉ lấy nếu thỏa mãn ĐÚNG và ĐỦ từ khóa
         if (matchedSpecial.length > 0 || matchedLevel4.length > 0) {
-            score += (matchedSpecial.length + matchedLevel4.length) * 20;
+            score = (matchedSpecial.length + matchedLevel4.length) * 20;
         }
 
         return { ...item, score, matchedSpecial, matchedLevel4 };
@@ -458,44 +462,35 @@ function handleSearch() {
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score);
 
-    // 2. Vẽ lại giao diện với đầy đủ các phần
+    // 2. Render kết quả
     if (searchResults.length > 0) {
         noResult.style.display = "none";
+        // Thay thế đoạn render cũ trong handleSearch
         resultList.innerHTML = searchResults.map(item => `
             <div class="card active">
                 <div class="shipper-info">
-                    <div class="name">👤 <span class="${fullFuzzyRegex.test(superNormalize(item.name)) ? 'highlight' : ''}">${item.name}</span></div>
+                    <div class="name">👤 ${item.name}</div>
                     <div class="code">${item.code}</div>
                 </div>
-                <div class="area">📍 Khu vực: <span class="${fullFuzzyRegex.test(superNormalize(item.area)) ? 'highlight' : ''}">${item.area}</span></div>
+                <div class="area">📍 ${item.area}</div>
                 
-                <div style="margin-top: 10px;">
-                    <div style="font-size: 0.85em; color: #64748b; margin-bottom: 5px; font-weight: bold;">🏠 Địa chỉ đặc biệt:</div>
-                    <div class="tags">
-                        ${item.locations.map(loc => {
-                            const isMatch = item.matchedSpecial.includes(loc);
-                            return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
-                        }).join('')}
-                    </div>
+                <div style="font-size: 0.85em; color: #64748b; margin-top: 10px; font-weight: bold;">🏠 Địa chỉ đặc biệt:</div>
+                <div class="tags">
+                    ${item.locations.map(loc => `<span class="tag ${item.matchedSpecial.includes(loc) ? 'highlight' : ''}">${loc}</span>`).join('')}
                 </div>
 
-                ${item.locations4 && item.locations4.length > 0 ? `
-                <div style="margin-top: 10px;">
-                    <div style="font-size: 0.85em; color: #64748b; margin-bottom: 5px; font-weight: bold;">🏢 Địa chỉ cấp 4:</div>
+                ${item.matchedLevel4.length > 0 || (item.locations4 && item.locations4.length > 0) ? `
+                    <div style="font-size: 0.85em; color: #64748b; margin-top: 10px; font-weight: bold;">🏢 Địa chỉ cấp 4:</div>
                     <div class="tags">
-                        ${item.locations4.map(loc => {
-                            const isMatch = item.matchedLevel4.includes(loc);
-                            return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
-                        }).join('')}
+                        ${(item.locations4 || []).map(loc => `<span class="tag ${item.matchedLevel4.includes(loc) ? 'highlight' : ''}">${loc}</span>`).join('')}
                     </div>
-                </div>` : ''}
+                ` : ''}
             </div>
         `).join('');
     } else {
         resultList.innerHTML = "";
         noResult.style.display = "block";
     }
-
     stats.innerText = `Tìm thấy ${searchResults.length} kết quả cho "${rawQuery}"`;
 }
 
