@@ -377,93 +377,127 @@
             .replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u")
             .replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y")
             .replace(/đ/g, "d")
-            .replace(/quoc lo/g, "ql").replace(/duong so/g, "d").replace(/duong/g, "d").replace(/hem/g, "h")
+            .replace(/quoc lo/g, "ql").replace(/tinh lo/g, "tl").replace(/duong so/g, "d").replace(/duong/g, "d").replace(/hem/g, "h")
             .replace(/\s+/g, "");
     }
 
     // LOGIC MỚI: Kiểm tra số nhà có nằm trong khoảng chẵn/lẻ không
     function isHouseNumberInRange(query, locationStr) {
+        // Tách lấy số đầu tiên trong chuỗi tìm kiếm (ví dụ: "1000 tl 43" -> "1000")
+        const queryNumbers = query.match(/\d+/);
+        if (!queryNumbers) return false;
+        
+        const queryNum = parseInt(queryNumbers[0]);
         const rangeMatch = locationStr.match(/(\d+)\s*-\s*(\d+)/);
-        const queryNum = parseInt(query);
 
-        // Nếu query không phải là số đơn thuần (ví dụ gõ "đường số 9") thì bỏ qua logic này
-        if (!rangeMatch || isNaN(queryNum) || query.match(/[a-zA-Z]/)) return false;
+        if (rangeMatch && !isNaN(queryNum)) {
+            const start = parseInt(rangeMatch[1]);
+            const end = parseInt(rangeMatch[2]);
+            const isEvenRange = locationStr.toLowerCase().includes("chẵn");
+            const isOddRange = locationStr.toLowerCase().includes("lẻ");
 
-        const start = parseInt(rangeMatch[1]);
-        const end = parseInt(rangeMatch[2]);
-        const isEvenRange = locationStr.toLowerCase().includes("chẵn");
-        const isOddRange = locationStr.toLowerCase().includes("lẻ");
+            const inRange = (queryNum >= Math.min(start, end) && queryNum <= Math.max(start, end));
 
-        const inRange = (queryNum >= Math.min(start, end) && queryNum <= Math.max(start, end));
-
-        if (inRange) {
-            if (isEvenRange && queryNum % 2 === 0) return true;
-            if (isOddRange && queryNum % 2 !== 0) return true;
-            if (!isEvenRange && !isOddRange) return true;
+            if (inRange) {
+                if (isEvenRange && queryNum % 2 === 0) return true;
+                if (isOddRange && queryNum % 2 !== 0) return true;
+                if (!isEvenRange && !isOddRange) return true;
+            }
         }
         return false;
     }
 
-    function handleSearch() {
-        const rawQuery = document.getElementById('searchInput').value.trim();
-        const clearBtn = document.getElementById('clearBtn');
-        clearBtn.style.display = rawQuery.length > 0 ? "block" : "none";
+function handleSearch() {
+    const rawQuery = document.getElementById('searchInput').value.trim();
+    const clearBtn = document.getElementById('clearBtn');
+    clearBtn.style.display = rawQuery.length > 0 ? "block" : "none";
 
-        const noResult = document.getElementById('noResult');
-        const stats = document.getElementById('stats');
-        let count = 0;
+    const resultList = document.getElementById('resultList');
+    const noResult = document.getElementById('noResult');
+    const stats = document.getElementById('stats');
 
-        if (rawQuery === "") {
-            database.forEach((_, i) => document.getElementById(`card-${i}`).classList.remove('active'));
-            noResult.style.display = "none";
-            stats.innerText = "Sẵn sàng tra cứu";
-            return;
+    if (rawQuery === "") {
+        resultList.innerHTML = "";
+        noResult.style.display = "none";
+        stats.innerText = "Sẵn sàng tra cứu";
+        return;
+    }
+
+    const queryTextOnly = rawQuery.replace(/\d+/g, "").trim();
+    const textRegex = new RegExp(superNormalize(queryTextOnly), 'i');
+    const fullFuzzyRegex = new RegExp(superNormalize(rawQuery), 'i');
+
+    // 1. Tính điểm và lọc dữ liệu
+    const searchResults = database.map(item => {
+        let score = 0;
+        
+        // Trọng số ưu tiên
+        if (fullFuzzyRegex.test(superNormalize(item.name))) score += 100;
+        if (fullFuzzyRegex.test(superNormalize(item.area))) score += 50;
+
+        const checkMatch = (loc) => {
+            const rangeMatch = isHouseNumberInRange(rawQuery, loc);
+            const textMatch = textRegex.test(superNormalize(loc));
+            const fullMatch = fullFuzzyRegex.test(superNormalize(loc));
+            if (rawQuery.match(/\d+/) && queryTextOnly.length > 1) {
+                return rangeMatch && textMatch;
+            }
+            return rangeMatch || fullMatch;
+        };
+
+        const matchedSpecial = item.locations.filter(loc => checkMatch(loc));
+        const matchedLevel4 = (item.locations4 || []).filter(loc => checkMatch(loc));
+
+        // Cộng điểm nếu khớp địa chỉ
+        if (matchedSpecial.length > 0 || matchedLevel4.length > 0) {
+            score += (matchedSpecial.length + matchedLevel4.length) * 20;
         }
 
-        const fuzzyRegex = new RegExp(superNormalize(rawQuery), 'i');
+        return { ...item, score, matchedSpecial, matchedLevel4 };
+    })
+    .filter(item => item.score > 0)
+    .sort((a, b) => b.score - a.score);
 
-        database.forEach((item, index) => {
-            const card = document.getElementById(`card-${index}`);
-            
-            // Logic kiểm tra khớp
-            const isNameMatch = fuzzyRegex.test(superNormalize(item.name));
-            const isAreaMatch = fuzzyRegex.test(superNormalize(item.area));
-
-            const matchedSpecial = item.locations.filter(loc => 
-                isHouseNumberInRange(rawQuery, loc) || fuzzyRegex.test(superNormalize(loc))
-            );
-
-            const matchedLevel4 = (item.locations4 || []).filter(loc => 
-                isHouseNumberInRange(rawQuery, loc) || fuzzyRegex.test(superNormalize(loc))
-            );
-
-            if (matchedSpecial.length > 0 || matchedLevel4.length > 0 || isNameMatch || isAreaMatch) {
-                card.classList.add('active');
-                count++;
-
-                // Highlight nội dung
-                document.getElementById(`name-${index}`).classList.toggle('highlight', isNameMatch);
-                document.getElementById(`area-${index}`).classList.toggle('highlight', isAreaMatch);
+    // 2. Vẽ lại giao diện với đầy đủ các phần
+    if (searchResults.length > 0) {
+        noResult.style.display = "none";
+        resultList.innerHTML = searchResults.map(item => `
+            <div class="card active">
+                <div class="shipper-info">
+                    <div class="name">👤 <span class="${fullFuzzyRegex.test(superNormalize(item.name)) ? 'highlight' : ''}">${item.name}</span></div>
+                    <div class="code">${item.code}</div>
+                </div>
+                <div class="area">📍 Khu vực: <span class="${fullFuzzyRegex.test(superNormalize(item.area)) ? 'highlight' : ''}">${item.area}</span></div>
                 
-                document.getElementById(`tags-special-${index}`).innerHTML = item.locations.map(loc => {
-                    const isMatch = isHouseNumberInRange(rawQuery, loc) || fuzzyRegex.test(superNormalize(loc));
-                    return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
-                }).join('');
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 0.85em; color: #64748b; margin-bottom: 5px; font-weight: bold;">🏠 Địa chỉ đặc biệt:</div>
+                    <div class="tags">
+                        ${item.locations.map(loc => {
+                            const isMatch = item.matchedSpecial.includes(loc);
+                            return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
+                        }).join('')}
+                    </div>
+                </div>
 
-                if (item.locations4) {
-                    document.getElementById(`tags-level4-${index}`).innerHTML = item.locations4.map(loc => {
-                        const isMatch = isHouseNumberInRange(rawQuery, loc) || fuzzyRegex.test(superNormalize(loc));
-                        return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
-                    }).join('');
-                }
-            } else {
-                card.classList.remove('active');
-            }
-        });
-
-        noResult.style.display = count === 0 ? "block" : "none";
-        stats.innerText = `Tìm thấy ${count} kết quả cho "${rawQuery}"`;
+                ${item.locations4 && item.locations4.length > 0 ? `
+                <div style="margin-top: 10px;">
+                    <div style="font-size: 0.85em; color: #64748b; margin-bottom: 5px; font-weight: bold;">🏢 Địa chỉ cấp 4:</div>
+                    <div class="tags">
+                        ${item.locations4.map(loc => {
+                            const isMatch = item.matchedLevel4.includes(loc);
+                            return `<span class="tag ${isMatch ? 'highlight' : ''}">${loc}</span>`;
+                        }).join('')}
+                    </div>
+                </div>` : ''}
+            </div>
+        `).join('');
+    } else {
+        resultList.innerHTML = "";
+        noResult.style.display = "block";
     }
+
+    stats.innerText = `Tìm thấy ${searchResults.length} kết quả cho "${rawQuery}"`;
+}
 
     function clearSearch(e) {
         e.preventDefault();
