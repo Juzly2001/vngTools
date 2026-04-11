@@ -33,8 +33,8 @@
 
 <div class="container">
     <div class="header">
-        <h1>🚚 Tra Cứu Tuyến</h1>
-        <p>Thành phố Thủ Đức (Hiệp Bình Phước - Tam Bình - Bình Chiểu)</p>
+        <h1>🚚 Tra Cứu Tuyến (New)</h1>
+        <p>Thành phố Thủ Đức <br/> (Hiệp Bình Phước - Tam Bình - Bình Chiểu)</p>
     </div>
 
     <div style="position: relative;">
@@ -45,327 +45,395 @@
                      cursor: pointer; font-size: 26px; color: #94a3b8; display: none; 
                      padding: 10px; z-index: 101;">&times;</span>
     </div>
-    
+    <div style="margin-top: 15px; display: flex; align-items: center; gap: 10px;">
+            <input type="checkbox" id="showAllCbx" onchange="handleSearch()" style="width: 18px; height: 18px; cursor: pointer;">
+            <label for="showAllCbx" style="font-size: 14px; cursor: pointer; color: #475569; font-weight: 600;">Hiện tất cả danh sách</label>
+    </div>
     <div id="stats" class="stats">Sẵn sàng tra cứu</div>
+
     <div id="resultList" class="result-list"></div>
     <div id="noResult" class="no-result">Không tìm thấy địa chỉ này trong danh sách hiện có.</div>
 </div>
 
 <script>
     // Dữ liệu giữ nguyên như cũ
-   const database = [
-        {
-            name: "LÊ THỊ MỸ DUYÊN", code: "T716885 - Q51", area: "Hiệp Bình Phước",
-            locations: [
-                "Đường Số 4 Khu Đô Thị Vạn Phúc",
-                "Khu dân cư Garden Homes",
-                "Trường THCS - THPT Nguyễn Khuyến",
-                "Đường số 9 Khu phố 5, hiệp bình phước",
-                "Đường số 1 Khu phố 5",
-                "Đường số 3 Khu phố 5, hiệp bình phước",
-                "Đường số 3 - kp 5 - hiệp bình phước",
-                "Lẻ 213-349 Quốc Lộ 13",
-                "Hẻm 351 Quốc Lộ 13",
-                "Hẻm 313 Quốc Lộ 13",
-                "Hẻm 357 Quốc Lộ 13",
-                "Hẻm 277 Quốc Lộ 13",
-                "Hẻm 299 Quốc Lộ 13",
-                "Đường Số 10 khu đô thị Vạn Phúc",
-                "Khu Đô Thị Vạn Phúc",
-                "Đường 37 Khu Dân Cư Vạn Phúc City",
-                "Đường số 42 Khu Đô Thị Vạn Phúc",
-                "Đường số 40 Khu Đô Thị Vạn Phúc",
-                "Đường Số 9 Khu Đô Thị Vạn Phúc"
-            ],
-            locations4: [
-                "Đường số 5 Đô Thị Vạn Phúc phường Hiệp Bình Phước",
-                "Đường 38 Đô Thị Vạn Phúc Phường Hiệp Bình Phước",
-                "Đường 37 Đô Thị Vạn Phúc phường Hiệp Bình Phước",
-                "Đường Đinh Thị Thi",
-                "Đường số 29 Đô thị Vạn Phúc phường Hiệp Bình Phước",
-                "Đường số 12 Đô Thị Vạn Phúc phường Hiệp Bình Phước",
-                "Đường Nguyễn Thị Nhung"
-            ]
-        },
-        {
-            name: "NGUYỄN THANH PHONG", code: "T74480 - Q49", area: "Hiệp Bình Phước",
-            locations: [
-                "Chung cư Sunview Hiệp Bình Phước",
-                "Lẻ 585-739 Quốc Lộ 13",
-                "Chẵn 606-668 Quốc Lộ 13",
-                "Chung Cư Sunview Town",
-                "Chẵn 900-998 Quốc Lộ 13",
-                "Hẻm 647 Quốc Lộ 13",
-                "Hẻm 104 Quốc Lộ 13 Khu Phố 3",
-                "904-996 Quốc lộ 13 phường Hiệp Bình Phước",
-                "Hẻm 635 Quốc lộ 13",
-                "Hẻm 631 Quốc lộ 13",
-                "Hẻm 625 Quốc lộ 13",
-                "Hẻm 609 Quốc lộ 13",
-                "Khu Dân Cư Hiệp Bình Hiệp Bình Phước - Khu phố 4",
-                "Hẻm 606 Quốc lộ 13",
-                "Hẻm 652 Quốc lộ 13",
-                "Đường số 11 - Khu phố 3",
-                "Hẻm 233 Quốc Lộ 13",
-                "Đường số 15 Khu phố 3, hiệp bình phước",
-                "Hẻm 907 Quốc Lộ 13",
-                "Đường số 19 Khu phố 3, hiệp bình phước",
-                "Hẻm 273 Quốc Lộ 13",
-                "Hẻm 247 Quốc Lộ 13",
-                "Đường số 12 Khu phố 2",
-                "Hẻm 241 Quốc Lộ 13",
-                "Đường số 15 Khu phố 3",
-                "3-88 Đường số 19 Khu phố 3",
-                "Khu dân cư Hồng Long Hiệp Bình Phước",
-                "Lẻ 1-167 Quốc lộ 13 cũ",
-                "Chẵn 2-148 Quốc lộ 13 cũ",
-                "Số 2, Xa lộ Trường Sơn",
-                "Đường số 10 Khu phố 2",
-                "Hẻm 866 Quốc Lộ 13",
-                "Chẵn 88-108 Quốc Lộ 1A",
-                "Lẻ 65-113 Quốc Lộ 1A",
-                "Hẻm 197 Quốc Lộ 13",
-                "Lẻ 737-911 Quốc Lộ 13",
-                "Lẻ 1-63 Quốc Lộ 1A - Khu Phố 1",
-                "Chẵn 2-80 Quốc Lộ 1A",
-                "Hẻm 255 Quốc lộ 13"
-            ],
-            locations4: [
-                "Hẻm 625 khu phố 3 phường Hiệp Bình Phước",
-                "Hẻm 635 khu phố 3 phường Hiệp Bình Phước",
-                "Hẻm 647, khu phố 3, phường Hiệp Bình Phước",
-                "Hẻm 31 khu phố 3 phường Hiệp Bình Phước",
-                "Đường 11 khu phố 3 phường Hiệp Bình Phước",
-                "Đường số 21 - hiệp bình phước",
-                "Đường 15 khu phố 3 phường Hiệp Bình Phước",
-                "Đường 17 khu phố 3 phường Hiệp Bình Phước",
-                "Hẻm 609 khu phố 3 phường Hiệp Bình Phước",
-                "Khu phố 2",
-                "Đường số 19 Khu phố 3 Hiệp Bình Phước",
-                "Hẻm 104 khu phố 3 phường Hiệp Bình Phước",
-                "Đường số 17 - khu phố 3, hiệp bình phước",
-                "Quốc lộ 13 khu phố 2 phường Hiệp Bình Phước",
-                "Hẻm 606 quốc lộ 13 Phường Hiệp Bình Phước",
-                "652 Quốc lộ 13, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
-                "Đường số 10, khu jamona, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
-                "Đường số 12, khu jamona, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
-                "Quốc lộ 13 cũ",
-                "Đường Số 10, Khu phố 2, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
-                "Quốc lộ 1A, khu phố 2, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
-                "Khu phố 1 phường Hiệp Bình Phước"
-            ]
-        },
-        {
-            name: "NGUYỄN HIỆP ÂN", code: "T726543 - Q48", area: "Hiệp Bình Phước (KP5, KP6)",
-            locations: [
-                "Lẻ 479-585 Quốc Lộ 13",
-                "Chẵn 520-566",
-                "Trường Tiểu học Đào Sơn Tây",
-                "Hẻm 505 Quốc Lộ 13 - Khu phố 5",
-                "Chẵn 520-552 Quốc Lộ 13",
-                "Hẻm 520 Quốc lộ 13",
-                "Đường số 6 Khu phố 6, hiệp bình phước",
-                "Đường số 7 Khu phố 5 phường Hiệp Bình Phước",
-                "Chung cư Urban Green"
-            ],
-            locations4: [
-                "Hẻm 520 phường Hiệp Bình Phước",
-                "Đường số 7 - Khu phố 5",
-                "Đường số 3"
-            ]
-        },
-        {
-            name: "ĐẶNG ĐỨC ĐẠT", code: "T726540 - Q47", area: "Hiệp Bình Phước (KP5, KP6)",
-            locations: [
-                "Hẻm 389- Quốc Lộ 13- Khu Phố 5",
-                "Lẻ 552-598 Quốc Lộ 13",
-                "Chẵn 402-510 Quốc Lộ 13",
-                "Lẻ 349-479 Quốc Lộ 13",
-                "Đường số 2 Khu phố 6",
-                "Đường số 4 Khu phố 6",
-                "Hiệp Bình Phước"
-            ],
-            locations4: [
-                "chưa chọn"
-            ]
-        },
-        {
-            name: "NGUYỄN THÀNH ĐẠT", code: "T722033 - P11", area: "Tam Bình",
-            locations: [
-                "Chẵn 154-338 Gò Dưa",
-                "Chợ nông sản Tam Bình",
-                "Lẻ 77-151 Gò Dưa",
-                "Công ty ô tô Mitsubishi",
-                "243 Trường Sơn",
-                "Chẵn 186-538 Quốc Lộ 1A",
-                "Lẻ 113-143 Quốc Lộ 1A",
-                "Lẻ 153-277 Gò Dưa",
-                "Chợ đầu mối",
-                "Lẻ 601-757 Tô Ngọc Vân",
-                "Chẵn 2-84 Gò Dưa",
-                "Chẵn 112-184 Quốc Lộ 1A",
-                "Lẻ 1-75 Gò Dưa",
-                "Chẵn 528-700 Tô Ngọc Vân",
-                "Khu Dân Cư Vạn Xuân",
-                "Chợ Tam Bình",
-                "Chẵn 90-152 Gò Dưa"
-            ],
-            locations4: [
-                "Đường số 4",
-                "Đường số 3",
-                "Đường lô C",
-                "Đường Tam Châu, Tam Bình",
-                "Đường Phú Châu, tam bình",
-                "Đường số 6",
-                "Đường Số 1",
-                "Đường B",
-                "Quốc lộ 1A",
-                "Đường lô A",
-                "Đường số 7",
-                "Đường Tô Ngọc Vân",
-                "Đường số 2",
-                "Đường số 5"
-            ]
-        },
-        {
-            name: "BÙI XUÂN DŨNG", code: "T551880 - P06", area: "Tam Bình - Bình Chiểu",
-            locations: [
-                "Nhà thờ Khiết Tâm",
-                "Chợ Khiết Tâm",
-                "Lẻ 879-1045 Tỉnh Lộ 43",
-                "Khu Dân Cư Bình Đức",
-                "Công ty Savimex",
-                "Cư Xá Savimex",
-                "Chẵn 2-68 Ngô Chí Quốc",
-                "Trường mầm non Khiết Tâm",
-                "Giáo xứ khiết tâm",
-                "Lẻ 1-175 Ngô Chí Quốc",
-                "Lẻ 765 -877 Tỉnh Lộ 43"
-            ],
-            locations4: [
-                "Đường Ngọc Lan",
-                "Đường Hướng Dương",
-                "Đường Huỳnh Anh",
-                "Đường số 1A",
-                "Đường số 1B",
-                "Đường số 1C",
-                "Đường số 2 Khu phố 2",
-                "Đường số 4 Khu phố 2",
-                "Đường số 15 Khu phố 5",
-                "Khu phố 4",
-                "Đường Số 23 Khu phố 2",
-                "Khu phố 5",
-                "Đường Phượng Vỹ",
-                "Đường số 13",
-                "Đường Tỉnh lộ 43"
-            ]
-        },
-        {
-            name: "DƯƠNG TRÍ TÀI", code: "T538111 - P03", area: "Tam Bình - Bình Chiểu",
-            locations: [
-                "Trường THPT Bình Chiểu",
-                "Lẻ 1-125 Lê Thị Hoa",
-                "Chẵn 94-256 Lê Thị Hoa",
-                "Chẵn 2-92 Lê Thị Hoa",
-                "Lẻ 127-257 Lê Thị Hoa",
-                "Khu Công Nghiệp Bình Chiểu",
-                "Lẻ 1-43 Bình Chiểu",
-                "Lẻ 45-131 Đường Bình Chiểu",
-                "Chẵn 42-122 Đường Bình Chiểu",
-                "Chẵn 2-40 Đường Bình Chiểu",
-                "Lẻ 149-195 Quốc Lộ 1A",
-                "Lẻ 197-309 Quốc Lộ 1A",
-                "Chung cư Sen Hồng"
-            ],
-            locations4: [
-                "Khu phố 6",
-                "Đường số 20",
-                "Khu nhà ở Nicotex",
-                "Đường số 22",
-                "Đường Số 21 Khu phố 3"
-            ]
-        },
-        {
-            name: "LÊ VĂN ÚT", code: "T437677 - P02", area: "Hiệp Bình - Tam Bình - Bình Chiểu",
-            locations: [
-                "Chung cư Fresca Riverside",
-                "Chẵn 70-310 Ngô Chí Quốc",
-                "Lẻ 1047-1171 Tỉnh Lộ 43",
-                "Lẻ 203-309 Ngô Chí Quốc",
-                "Lẻ 1173-1379 tỉnh lộ 43",
-                "Chung Cư TDH Riverview",
-                "Hẻm 630 Quốc lộ 13",
-                "Hẻm 686 Quốc lộ 13",
-                "Hẻm 700 Quốc Lộ 13",
-                "Hẻm 748 Quốc lộ 13",
-                "Hẻm 712 Quốc lộ 13",
-                "Hẻm 808 Quốc Lộ 13",
-                "Hẻm 714 Quốc lộ 13",
-                "Hẻm 724 Quốc lộ 13",
-                "Chẵn 630-898 Quốc Lộ 13"
-            ],
-            locations4: [
-                "Đường số 6 Khu phố 2",
-                "Hẻm 748 Quốc Lộ 13 phường Hiệp Bình Phước",
-                "Đường Số 8 - Khu Phố 4, hiệp bình phước",
-                "Hẻm 718 quốc lộ 13 Phường Hiệp Bình Phước",
-                "Hẻm 766 quốc lộ 13 Phường Hiệp Bình Phước",
-                "hẻm 808, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
-                "Hẻm 686 Quốc lộ 13, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
-                "Hẻm 740 Quốc Lộ 13 phường Hiệp Bình Phước",
-                "Hẻm 630 Quốc Lộ 13 phường Hiệp Bình Phước",
-                "Đường Hiệp Bình"
-            ]
-        },
-        {
-            name: "LÊ HÙNG CƯỜNG", code: "T405421 - P01", area: "Tam Bình - Bình Chiểu",
-              locations: [
-                "Công ty Miwon",
-                "Công ty Sadevina Decolletage",
-                "Công ty 99 Vina",
-                "Công ty New Toyo aluminum",
-                "Công ty SAP",
-                "Công ty E-Won",
-                "Công ty Youyouwings",
-                "Công ty Super Art",
-                "Chẵn 902-1150 Tỉnh Lộ 43",
-                "Công ty Build-Up",
-                "Chẵn 702-900 Tỉnh Lộ 43",
-                "Công Ty Đài Phát",
-                "Công ty Greystone Data Systems",
-                "Chung Cư Thiên Phát",
-                "Khu Chế Xuất Linh Trung 2",
-                "Công ty Fongtech",
-                "Công ty VDH Safes Saigon",
-                "Công ty Saigon Gia Công Kim Loại",
-                "Công ty May mặc Kim Hồng",
-                "Công ty Iwasaki Electric",
-                "Công ty Sprinta",
-                "Công ty Vinawood",
-                "Công ty Quint Major",
-                "Công ty DID",
-                "Nhà máy cấp nước",
-                "Công ty MENAM",
-                "Hẻm 1231",
-                "Lẻ 177-201 Ngô Chí Quốc",
-                "Hẻm 185 Ngô Chí Quốc",
-                "Công Ty Long Rich",
-                "Công ty Freetrend",
-                "Công Ty Theodore Alexander",
-                "Saigon Avenue",
-                "Khu Dân Cư Savico",
-                "Siêu thị Co.opmart Tam Bình",
-                "Chung cư Navita"
-            ],
-            locations4: [
-                "Đường Số 8",
-                "Đường số 9",
-                "Đường số 12",
-                "Đường số 11",
-                "Đường Số 10"
-            ]
-        }
-    ];
+//    const database = [
+//         {
+//             name: "LÊ THỊ MỸ DUYÊN", code: "T716885 - Q51", area: "Hiệp Bình Phước",
+//             locations: [
+//                 "Đường Số 4 Khu Đô Thị Vạn Phúc",
+//                 "Khu dân cư Garden Homes",
+//                 "Trường THCS - THPT Nguyễn Khuyến",
+//                 "Đường số 9 Khu phố 5, hiệp bình phước",
+//                 "Đường số 1 Khu phố 5",
+//                 "Đường số 3 Khu phố 5, hiệp bình phước",
+//                 "Đường số 3 - kp 5 - hiệp bình phước",
+//                 "Lẻ 213-349 Quốc Lộ 13",
+//                 "Hẻm 351 Quốc Lộ 13",
+//                 "Hẻm 313 Quốc Lộ 13",
+//                 "Hẻm 357 Quốc Lộ 13",
+//                 "Hẻm 277 Quốc Lộ 13",
+//                 "Hẻm 299 Quốc Lộ 13",
+//                 "Đường Số 10 khu đô thị Vạn Phúc",
+//                 "Khu Đô Thị Vạn Phúc",
+//                 "Đường 37 Khu Dân Cư Vạn Phúc City",
+//                 "Đường số 42 Khu Đô Thị Vạn Phúc",
+//                 "Đường số 40 Khu Đô Thị Vạn Phúc",
+//                 "Đường Số 9 Khu Đô Thị Vạn Phúc"
+//             ],
+//             locations4: [
+//                 "Đường số 5 Đô Thị Vạn Phúc phường Hiệp Bình Phước",
+//                 "Đường 38 Đô Thị Vạn Phúc Phường Hiệp Bình Phước",
+//                 "Đường 37 Đô Thị Vạn Phúc phường Hiệp Bình Phước",
+//                 "Đường Đinh Thị Thi",
+//                 "Đường số 29 Đô thị Vạn Phúc phường Hiệp Bình Phước",
+//                 "Đường số 12 Đô Thị Vạn Phúc phường Hiệp Bình Phước",
+//                 "Đường Nguyễn Thị Nhung"
+//             ]
+//         },
+//         {
+//             name: "NGUYỄN THANH PHONG", code: "T74480 - Q49", area: "Hiệp Bình Phước",
+//             locations: [
+//                 "Chung cư Sunview Hiệp Bình Phước",
+//                 "Lẻ 585-739 Quốc Lộ 13",
+//                 "Chẵn 606-668 Quốc Lộ 13",
+//                 "Chung Cư Sunview Town",
+//                 "Chẵn 900-998 Quốc Lộ 13",
+//                 "Hẻm 647 Quốc Lộ 13",
+//                 "Hẻm 104 Quốc Lộ 13 Khu Phố 3",
+//                 "904-996 Quốc lộ 13 phường Hiệp Bình Phước",
+//                 "Hẻm 635 Quốc lộ 13",
+//                 "Hẻm 631 Quốc lộ 13",
+//                 "Hẻm 625 Quốc lộ 13",
+//                 "Hẻm 609 Quốc lộ 13",
+//                 "Khu Dân Cư Hiệp Bình Hiệp Bình Phước - Khu phố 4",
+//                 "Hẻm 606 Quốc lộ 13",
+//                 "Hẻm 652 Quốc lộ 13",
+//                 "Đường số 11 - Khu phố 3",
+//                 "Hẻm 233 Quốc Lộ 13",
+//                 "Đường số 15 Khu phố 3, hiệp bình phước",
+//                 "Hẻm 907 Quốc Lộ 13",
+//                 "Đường số 19 Khu phố 3, hiệp bình phước",
+//                 "Hẻm 273 Quốc Lộ 13",
+//                 "Hẻm 247 Quốc Lộ 13",
+//                 "Đường số 12 Khu phố 2",
+//                 "Hẻm 241 Quốc Lộ 13",
+//                 "Đường số 15 Khu phố 3",
+//                 "3-88 Đường số 19 Khu phố 3",
+//                 "Khu dân cư Hồng Long Hiệp Bình Phước",
+//                 "Lẻ 1-167 Quốc lộ 13 cũ",
+//                 "Chẵn 2-148 Quốc lộ 13 cũ",
+//                 "Số 2, Xa lộ Trường Sơn",
+//                 "Đường số 10 Khu phố 2",
+//                 "Hẻm 866 Quốc Lộ 13",
+//                 "Chẵn 88-108 Quốc Lộ 1A",
+//                 "Lẻ 65-113 Quốc Lộ 1A",
+//                 "Hẻm 197 Quốc Lộ 13",
+//                 "Lẻ 737-911 Quốc Lộ 13",
+//                 "Lẻ 1-63 Quốc Lộ 1A - Khu Phố 1",
+//                 "Chẵn 2-80 Quốc Lộ 1A",
+//                 "Hẻm 255 Quốc lộ 13"
+//             ],
+//             locations4: [
+//                 "Hẻm 625 khu phố 3 phường Hiệp Bình Phước",
+//                 "Hẻm 635 khu phố 3 phường Hiệp Bình Phước",
+//                 "Hẻm 647, khu phố 3, phường Hiệp Bình Phước",
+//                 "Hẻm 31 khu phố 3 phường Hiệp Bình Phước",
+//                 "Đường 11 khu phố 3 phường Hiệp Bình Phước",
+//                 "Đường số 21 - hiệp bình phước",
+//                 "Đường 15 khu phố 3 phường Hiệp Bình Phước",
+//                 "Đường 17 khu phố 3 phường Hiệp Bình Phước",
+//                 "Hẻm 609 khu phố 3 phường Hiệp Bình Phước",
+//                 "Khu phố 2",
+//                 "Đường số 19 Khu phố 3 Hiệp Bình Phước",
+//                 "Hẻm 104 khu phố 3 phường Hiệp Bình Phước",
+//                 "Đường số 17 - khu phố 3, hiệp bình phước",
+//                 "Quốc lộ 13 khu phố 2 phường Hiệp Bình Phước",
+//                 "Hẻm 606 quốc lộ 13 Phường Hiệp Bình Phước",
+//                 "652 Quốc lộ 13, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
+//                 "Đường số 10, khu jamona, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
+//                 "Đường số 12, khu jamona, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
+//                 "Quốc lộ 13 cũ",
+//                 "Đường Số 10, Khu phố 2, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
+//                 "Quốc lộ 1A, khu phố 2, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
+//                 "Khu phố 1 phường Hiệp Bình Phước"
+//             ]
+//         },
+//         {
+//             name: "NGUYỄN HIỆP ÂN", code: "T726543 - Q48", area: "Hiệp Bình Phước (KP5, KP6)",
+//             locations: [
+//                 "Lẻ 479-585 Quốc Lộ 13",
+//                 "Chẵn 520-566",
+//                 "Trường Tiểu học Đào Sơn Tây",
+//                 "Hẻm 505 Quốc Lộ 13 - Khu phố 5",
+//                 "Chẵn 520-552 Quốc Lộ 13",
+//                 "Hẻm 520 Quốc lộ 13",
+//                 "Đường số 6 Khu phố 6, hiệp bình phước",
+//                 "Đường số 7 Khu phố 5 phường Hiệp Bình Phước",
+//                 "Chung cư Urban Green"
+//             ],
+//             locations4: [
+//                 "Hẻm 520 phường Hiệp Bình Phước",
+//                 "Đường số 7 - Khu phố 5",
+//                 "Đường số 3"
+//             ]
+//         },
+//         {
+//             name: "ĐẶNG ĐỨC ĐẠT", code: "T726540 - Q47", area: "Hiệp Bình Phước (KP5, KP6)",
+//             locations: [
+//                 "Hẻm 389- Quốc Lộ 13- Khu Phố 5",
+//                 "Lẻ 552-598 Quốc Lộ 13",
+//                 "Chẵn 402-510 Quốc Lộ 13",
+//                 "Lẻ 349-479 Quốc Lộ 13",
+//                 "Đường số 2 Khu phố 6",
+//                 "Đường số 4 Khu phố 6",
+//                 "Hiệp Bình Phước"
+//             ],
+//             locations4: [
+//                 "chưa chọn"
+//             ]
+//         },
+//         {
+//             name: "NGUYỄN THÀNH ĐẠT", code: "T722033 - P11", area: "Tam Bình",
+//             locations: [
+//                 "Chẵn 154-338 Gò Dưa",
+//                 "Chợ nông sản Tam Bình",
+//                 "Lẻ 77-151 Gò Dưa",
+//                 "Công ty ô tô Mitsubishi",
+//                 "243 Trường Sơn",
+//                 "Chẵn 186-538 Quốc Lộ 1A",
+//                 "Lẻ 113-143 Quốc Lộ 1A",
+//                 "Lẻ 153-277 Gò Dưa",
+//                 "Chợ đầu mối",
+//                 "Lẻ 601-757 Tô Ngọc Vân",
+//                 "Chẵn 2-84 Gò Dưa",
+//                 "Chẵn 112-184 Quốc Lộ 1A",
+//                 "Lẻ 1-75 Gò Dưa",
+//                 "Chẵn 528-700 Tô Ngọc Vân",
+//                 "Khu Dân Cư Vạn Xuân",
+//                 "Chợ Tam Bình",
+//                 "Chẵn 90-152 Gò Dưa"
+//             ],
+//             locations4: [
+//                 "Đường số 4",
+//                 "Đường số 3",
+//                 "Đường lô C",
+//                 "Đường Tam Châu, Tam Bình",
+//                 "Đường Phú Châu, tam bình",
+//                 "Đường số 6",
+//                 "Đường Số 1",
+//                 "Đường B",
+//                 "Quốc lộ 1A",
+//                 "Đường lô A",
+//                 "Đường số 7",
+//                 "Đường Tô Ngọc Vân",
+//                 "Đường số 2",
+//                 "Đường số 5"
+//             ]
+//         },
+//         {
+//             name: "BÙI XUÂN DŨNG", code: "T551880 - P06", area: "Tam Bình - Bình Chiểu",
+//             locations: [
+//                 "Nhà thờ Khiết Tâm",
+//                 "Chợ Khiết Tâm",
+//                 "Lẻ 879-1045 Tỉnh Lộ 43",
+//                 "Khu Dân Cư Bình Đức",
+//                 "Công ty Savimex",
+//                 "Cư Xá Savimex",
+//                 "Chẵn 2-68 Ngô Chí Quốc",
+//                 "Trường mầm non Khiết Tâm",
+//                 "Giáo xứ khiết tâm",
+//                 "Lẻ 1-175 Ngô Chí Quốc",
+//                 "Lẻ 765 -877 Tỉnh Lộ 43"
+//             ],
+//             locations4: [
+//                 "Đường Ngọc Lan",
+//                 "Đường Hướng Dương",
+//                 "Đường Huỳnh Anh",
+//                 "Đường số 1A",
+//                 "Đường số 1B",
+//                 "Đường số 1C",
+//                 "Đường số 2 Khu phố 2",
+//                 "Đường số 4 Khu phố 2",
+//                 "Đường số 15 Khu phố 5",
+//                 "Khu phố 4",
+//                 "Đường Số 23 Khu phố 2",
+//                 "Khu phố 5",
+//                 "Đường Phượng Vỹ",
+//                 "Đường số 13",
+//                 "Đường Tỉnh lộ 43"
+//             ]
+//         },
+//         {
+//             name: "DƯƠNG TRÍ TÀI", code: "T538111 - P03", area: "Tam Bình - Bình Chiểu",
+//             locations: [
+//                 "Trường THPT Bình Chiểu",
+//                 "Lẻ 1-125 Lê Thị Hoa",
+//                 "Chẵn 94-256 Lê Thị Hoa",
+//                 "Chẵn 2-92 Lê Thị Hoa",
+//                 "Lẻ 127-257 Lê Thị Hoa",
+//                 "Khu Công Nghiệp Bình Chiểu",
+//                 "Lẻ 1-43 Bình Chiểu",
+//                 "Lẻ 45-131 Đường Bình Chiểu",
+//                 "Chẵn 42-122 Đường Bình Chiểu",
+//                 "Chẵn 2-40 Đường Bình Chiểu",
+//                 "Lẻ 149-195 Quốc Lộ 1A",
+//                 "Lẻ 197-309 Quốc Lộ 1A",
+//                 "Chung cư Sen Hồng"
+//             ],
+//             locations4: [
+//                 "Khu phố 6",
+//                 "Đường số 20",
+//                 "Khu nhà ở Nicotex",
+//                 "Đường số 22",
+//                 "Đường Số 21 Khu phố 3"
+//             ]
+//         },
+//         {
+//             name: "LÊ VĂN ÚT", code: "T437677 - P02", area: "Hiệp Bình - Tam Bình - Bình Chiểu",
+//             locations: [
+//                 "Chung cư Fresca Riverside",
+//                 "Chẵn 70-310 Ngô Chí Quốc",
+//                 "Lẻ 1047-1171 Tỉnh Lộ 43",
+//                 "Lẻ 203-309 Ngô Chí Quốc",
+//                 "Lẻ 1173-1379 tỉnh lộ 43",
+//                 "Chung Cư TDH Riverview",
+//                 "Hẻm 630 Quốc lộ 13",
+//                 "Hẻm 686 Quốc lộ 13",
+//                 "Hẻm 700 Quốc Lộ 13",
+//                 "Hẻm 748 Quốc lộ 13",
+//                 "Hẻm 712 Quốc lộ 13",
+//                 "Hẻm 808 Quốc Lộ 13",
+//                 "Hẻm 714 Quốc lộ 13",
+//                 "Hẻm 724 Quốc lộ 13",
+//                 "Chẵn 630-898 Quốc Lộ 13"
+//             ],
+//             locations4: [
+//                 "Đường số 6 Khu phố 2",
+//                 "Hẻm 748 Quốc Lộ 13 phường Hiệp Bình Phước",
+//                 "Đường Số 8 - Khu Phố 4, hiệp bình phước",
+//                 "Hẻm 718 quốc lộ 13 Phường Hiệp Bình Phước",
+//                 "Hẻm 766 quốc lộ 13 Phường Hiệp Bình Phước",
+//                 "hẻm 808, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
+//                 "Hẻm 686 Quốc lộ 13, Hiệp Bình Phước, Thủ Đức, Thành phố Hồ Chí Minh",
+//                 "Hẻm 740 Quốc Lộ 13 phường Hiệp Bình Phước",
+//                 "Hẻm 630 Quốc Lộ 13 phường Hiệp Bình Phước",
+//                 "Đường Hiệp Bình"
+//             ]
+//         },
+//         {
+//             name: "LÊ HÙNG CƯỜNG", code: "T405421 - P01", area: "Tam Bình - Bình Chiểu",
+//               locations: [
+//                 "Công ty Miwon",
+//                 "Công ty Sadevina Decolletage",
+//                 "Công ty 99 Vina",
+//                 "Công ty New Toyo aluminum",
+//                 "Công ty SAP",
+//                 "Công ty E-Won",
+//                 "Công ty Youyouwings",
+//                 "Công ty Super Art",
+//                 "Chẵn 902-1150 Tỉnh Lộ 43",
+//                 "Công ty Build-Up",
+//                 "Chẵn 702-900 Tỉnh Lộ 43",
+//                 "Công Ty Đài Phát",
+//                 "Công ty Greystone Data Systems",
+//                 "Chung Cư Thiên Phát",
+//                 "Khu Chế Xuất Linh Trung 2",
+//                 "Công ty Fongtech",
+//                 "Công ty VDH Safes Saigon",
+//                 "Công ty Saigon Gia Công Kim Loại",
+//                 "Công ty May mặc Kim Hồng",
+//                 "Công ty Iwasaki Electric",
+//                 "Công ty Sprinta",
+//                 "Công ty Vinawood",
+//                 "Công ty Quint Major",
+//                 "Công ty DID",
+//                 "Nhà máy cấp nước",
+//                 "Công ty MENAM",
+//                 "Hẻm 1231",
+//                 "Lẻ 177-201 Ngô Chí Quốc",
+//                 "Hẻm 185 Ngô Chí Quốc",
+//                 "Công Ty Long Rich",
+//                 "Công ty Freetrend",
+//                 "Công Ty Theodore Alexander",
+//                 "Saigon Avenue",
+//                 "Khu Dân Cư Savico",
+//                 "Siêu thị Co.opmart Tam Bình",
+//                 "Chung cư Navita"
+//             ],
+//             locations4: [
+//                 "Đường Số 8",
+//                 "Đường số 9",
+//                 "Đường số 12",
+//                 "Đường số 11",
+//                 "Đường Số 10"
+//             ]
+//         }
+//     ];
+const database = [
+  {
+    name: "NGUYỄN THÀNH ĐẠT",
+    code: "T722033 - P11",
+    area: "Tam Bình",
+    locations: [
+      "Đinh Thị Thi", "Đường 36", "Đường 37", "Đường 32", "Đường 34", 
+      "Đường 38", "Đường 42", "Đường 40", "Đường 41", "Đường 50", "Đường 52"
+    ],
+    locations4: []
+  },
+  {
+    name: "ĐẶNG ĐỨC ĐẠT",
+    code: "T726540 - Q47",
+    area: "Hiệp Bình Phước (KP5, KP6)",
+    locations: [
+      "Hẻm 389", "Khu văn phòng chính phủ", "Hẻm 505", "Hẻm 479", 
+      "Quốc lộ lẻ từ 389-505", "Đường 7", "Đường 9 kp5", "Đường 6", 
+      "Hẻm 520", "Quốc lộ chẵn 500-598"
+    ],
+    locations4: []
+  },
+  {
+    name: "LÊ THỊ MỸ DUYÊN",
+    code: "T716885 - Q51",
+    area: "Hiệp Bình Phước",
+    locations: [
+      "Nguyễn Thị Nhung", "Đường 1", "Đường 2", "Đường 3", "Đường 4", 
+      "Đường 5", "Đường 6", "Đường 7", "Đường 9", "Đường 10", "Đường 11", 
+      "Đường 12", "Đường 13", "Đường 14", "Đường 15", "Đường 16", "Đường 27", 
+      "Đường 29", "Đường 3 kp5", "Gardens home", "Quốc lộ lẻ từ 261-357"
+    ],
+    locations4: []
+  },
+  {
+    name: "LÊ HÙNG CƯỜNG",
+    code: "T405421 - P01",
+    area: "Tam Bình - Bình Chiểu",
+    locations: [
+      "Đường 2", "Đường 4 kp6", "Quốc lộ chẵn từ 402-500"
+    ],
+    locations4: []
+  },
+  {
+    name: "LÊ VĂN ÚT",
+    code: "T437677 - P02",
+    area: "Hiệp Bình - Tam Bình - Bình Chiểu",
+    locations: [
+      "Đường hiệp bình", "Đường 8 kp4", "Quốc lộ chẵn từ 600-838"
+    ],
+    locations4: []
+  },
+  {
+    name: "NGUYỄN THANH PHONG",
+    code: "T74480 - Q49",
+    area: "Hiệp Bình Phước",
+    locations: [
+      "Quốc lộ 13 cũ", "Đường 21", "Đường 12", "Đường 10", "Chung cư Sunview", 
+      "Khu Jamona", "Quốc lộ chẵn từ 840-996", "Quốc lộ lẻ từ 585-991", 
+      "Khu dân cư Hồng Long", "QL1A", "Xa lộ Trường Sơn"
+    ],
+    locations4: []
+  }
+];
 
     function superNormalize(str) {
         if (!str) return "";
@@ -407,91 +475,177 @@
         return false;
     }
 
+// function handleSearch() {
+//     const rawQuery = document.getElementById('searchInput').value.trim();
+//     const clearBtn = document.getElementById('clearBtn');
+//     clearBtn.style.display = rawQuery.length > 0 ? "block" : "none";
+
+//     const resultList = document.getElementById('resultList');
+//     const noResult = document.getElementById('noResult');
+//     const stats = document.getElementById('stats');
+
+//     if (rawQuery === "") {
+//         resultList.innerHTML = "";
+//         noResult.style.display = "none";
+//         stats.innerText = "Sẵn sàng tra cứu";
+//         return;
+//     }
+
+//     // 1. Tách từ khóa nguyên bản (không normalize sớm để phân biệt số/chữ)
+//     const searchWords = rawQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+
+//     const searchResults = database.map(item => {
+//         let score = 0;
+
+//         const checkMatch = (loc) => {
+//             const normalizedLoc = superNormalize(loc);
+            
+//             // KIỂM TRA TẤT CẢ TỪ KHÓA (Logic AND)
+//             return searchWords.every(word => {
+//                 // Kiểm tra xem từ khóa có phải là số thuần túy không
+//                 const isPureNumber = /^\d+$/.test(word);
+
+//                 if (isPureNumber) {
+//                     // Nếu là số: Tìm trong khoảng số nhà (giữ logic cũ của bạn)
+//                     // Hoặc đơn giản là kiểm tra xem số đó có nằm trong chuỗi không
+//                     return isHouseNumberInRange(word, loc) || normalizedLoc.includes(word);
+//                 } else {
+//                     // Nếu là chữ hoặc hỗn hợp (ql, 1a): Tìm chính xác cụm đó
+//                     // Sử dụng bản đã normalize để so khớp không dấu
+//                     return normalizedLoc.includes(superNormalize(word));
+//                 }
+//             });
+//         };
+
+//         const matchedSpecial = item.locations.filter(loc => checkMatch(loc));
+//         const matchedLevel4 = (item.locations4 || []).filter(loc => checkMatch(loc));
+
+//         // Tính điểm: Chỉ lấy nếu thỏa mãn ĐÚNG và ĐỦ từ khóa
+//         if (matchedSpecial.length > 0 || matchedLevel4.length > 0) {
+//             score = (matchedSpecial.length + matchedLevel4.length) * 20;
+//         }
+
+//         return { ...item, score, matchedSpecial, matchedLevel4 };
+//     })
+//     .filter(item => item.score > 0)
+//     .sort((a, b) => b.score - a.score);
+
+//     // 2. Render kết quả
+//     if (searchResults.length > 0) {
+//         noResult.style.display = "none";
+//         // Thay thế đoạn render cũ trong handleSearch
+//         resultList.innerHTML = searchResults.map(item => `
+//             <div class="card active">
+//                 <div class="shipper-info">
+//                     <div class="name">👤 ${item.name}</div>
+//                     <div class="code">${item.code}</div>
+//                 </div>
+//                 <div class="area">📍 ${item.area}</div>
+                
+//                 <div style="font-size: 0.85em; color: #64748b; margin-top: 10px; font-weight: bold;">🏠 Địa chỉ đặc biệt:</div>
+//                 <div class="tags">
+//                     ${item.locations.map(loc => `<span class="tag ${item.matchedSpecial.includes(loc) ? 'highlight' : ''}">${loc}</span>`).join('')}
+//                 </div>
+
+//                 ${item.matchedLevel4.length > 0 || (item.locations4 && item.locations4.length > 0) ? `
+//                     <div style="font-size: 0.85em; color: #64748b; margin-top: 10px; font-weight: bold;">🏢 Địa chỉ cấp 4:</div>
+//                     <div class="tags">
+//                         ${(item.locations4 || []).map(loc => `<span class="tag ${item.matchedLevel4.includes(loc) ? 'highlight' : ''}">${loc}</span>`).join('')}
+//                     </div>
+//                 ` : ''}
+//             </div>
+//         `).join('');
+//     } else {
+//         resultList.innerHTML = "";
+//         noResult.style.display = "block";
+//     }
+//     stats.innerText = `Tìm thấy ${searchResults.length} kết quả cho "${rawQuery}"`;
+// }
+
 function handleSearch() {
     const rawQuery = document.getElementById('searchInput').value.trim();
+    const isShowAll = document.getElementById('showAllCbx').checked;
     const clearBtn = document.getElementById('clearBtn');
+    
     clearBtn.style.display = rawQuery.length > 0 ? "block" : "none";
 
     const resultList = document.getElementById('resultList');
     const noResult = document.getElementById('noResult');
     const stats = document.getElementById('stats');
 
-    if (rawQuery === "") {
+    // Nếu không nhập gì VÀ không tick "Hiện tất cả" thì xóa trắng kết quả
+    if (rawQuery === "" && !isShowAll) {
         resultList.innerHTML = "";
         noResult.style.display = "none";
         stats.innerText = "Sẵn sàng tra cứu";
         return;
     }
 
-    // 1. Tách từ khóa nguyên bản (không normalize sớm để phân biệt số/chữ)
     const searchWords = rawQuery.toLowerCase().split(/\s+/).filter(w => w.length > 0);
+    const normalizedQuery = superNormalize(rawQuery);
 
     const searchResults = database.map(item => {
-        let score = 0;
+        // Nếu chọn "Hiện tất cả", mặc định điểm là 1 để được hiển thị
+        let score = isShowAll ? 1 : 0;
+        
+        // Logic tìm kiếm theo tên
+        const nameMatch = normalizedQuery !== "" && superNormalize(item.name).includes(normalizedQuery);
+        if (nameMatch) score += 100;
 
+        // Logic tìm kiếm theo địa chỉ
         const checkMatch = (loc) => {
-            const normalizedLoc = superNormalize(loc);
-            
-            // KIỂM TRA TẤT CẢ TỪ KHÓA (Logic AND)
+            if (normalizedQuery === "") return false;
             return searchWords.every(word => {
-                // Kiểm tra xem từ khóa có phải là số thuần túy không
                 const isPureNumber = /^\d+$/.test(word);
-
                 if (isPureNumber) {
-                    // Nếu là số: Tìm trong khoảng số nhà (giữ logic cũ của bạn)
-                    // Hoặc đơn giản là kiểm tra xem số đó có nằm trong chuỗi không
-                    return isHouseNumberInRange(word, loc) || normalizedLoc.includes(word);
-                } else {
-                    // Nếu là chữ hoặc hỗn hợp (ql, 1a): Tìm chính xác cụm đó
-                    // Sử dụng bản đã normalize để so khớp không dấu
-                    return normalizedLoc.includes(superNormalize(word));
+                    return isHouseNumberInRange(word, loc) || superNormalize(loc).includes(word);
                 }
+                return superNormalize(loc).includes(superNormalize(word));
             });
         };
 
         const matchedSpecial = item.locations.filter(loc => checkMatch(loc));
         const matchedLevel4 = (item.locations4 || []).filter(loc => checkMatch(loc));
 
-        // Tính điểm: Chỉ lấy nếu thỏa mãn ĐÚNG và ĐỦ từ khóa
         if (matchedSpecial.length > 0 || matchedLevel4.length > 0) {
-            score = (matchedSpecial.length + matchedLevel4.length) * 20;
+            score += (matchedSpecial.length + matchedLevel4.length) * 20;
         }
 
-        return { ...item, score, matchedSpecial, matchedLevel4 };
+        return { ...item, score, matchedSpecial, matchedLevel4, nameMatch };
     })
     .filter(item => item.score > 0)
     .sort((a, b) => b.score - a.score);
 
-    // 2. Render kết quả
+    // Render kết quả
     if (searchResults.length > 0) {
         noResult.style.display = "none";
-        // Thay thế đoạn render cũ trong handleSearch
         resultList.innerHTML = searchResults.map(item => `
-            <div class="card active">
+            <div class="card active" style="${item.nameMatch ? 'border-left-color: #ef4444;' : ''}">
                 <div class="shipper-info">
-                    <div class="name">👤 ${item.name}</div>
+                    <div class="name">👤 ${item.nameMatch ? `<span class="highlight">${item.name}</span>` : item.name}</div>
                     <div class="code">${item.code}</div>
                 </div>
                 <div class="area">📍 ${item.area}</div>
                 
-                <div style="font-size: 0.85em; color: #64748b; margin-top: 10px; font-weight: bold;">🏠 Địa chỉ đặc biệt:</div>
+                <div style="font-size: 0.85em; color: #64748b; margin-top: 10px; font-weight: bold;">🏠 Địa chỉ:</div>
                 <div class="tags">
                     ${item.locations.map(loc => `<span class="tag ${item.matchedSpecial.includes(loc) ? 'highlight' : ''}">${loc}</span>`).join('')}
                 </div>
 
-                ${item.matchedLevel4.length > 0 || (item.locations4 && item.locations4.length > 0) ? `
-                    <div style="font-size: 0.85em; color: #64748b; margin-top: 10px; font-weight: bold;">🏢 Địa chỉ cấp 4:</div>
+                ${item.locations4 && item.locations4.length > 0 ? `
+                    <div style="font-size: 0.85em; color: #64748b; margin-top: 10px; font-weight: bold;">🏢 Địa chỉ khác:</div>
                     <div class="tags">
-                        ${(item.locations4 || []).map(loc => `<span class="tag ${item.matchedLevel4.includes(loc) ? 'highlight' : ''}">${loc}</span>`).join('')}
+                        ${item.locations4.map(loc => `<span class="tag ${item.matchedLevel4.includes(loc) ? 'highlight' : ''}">${loc}</span>`).join('')}
                     </div>
                 ` : ''}
             </div>
         `).join('');
+        stats.innerText = isShowAll ? `Đang hiển thị toàn bộ danh sách (${searchResults.length} người)` : `Tìm thấy ${searchResults.length} kết quả cho "${rawQuery}"`;
     } else {
         resultList.innerHTML = "";
         noResult.style.display = "block";
+        stats.innerText = "Không có dữ liệu phù hợp";
     }
-    stats.innerText = `Tìm thấy ${searchResults.length} kết quả cho "${rawQuery}"`;
 }
 
     function clearSearch(e) {
