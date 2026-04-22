@@ -29,15 +29,6 @@
             background: #f4f7f9;
         }
 
-        /* Mặc định ẩn ô nhập link để giống App */
-        .input-group {
-            display: none; 
-        }
-
-        /* Chỉ hiện ô nhập link khi người dùng nhấn giữ vào Logo Header 3 giây (để thay link khi cần) */
-        .input-group.show {
-            display: flex;
-        }
         .main-wrapper {
             display: flex;
             flex-direction: column;
@@ -462,43 +453,6 @@
         input.value = ""; // Xóa chữ trong ô
         render("");       // Tải lại bảng đầy đủ
         input.focus();    // Đưa con trỏ chuột trở lại ô nhập
-    };
-
-    // ... (Giữ nguyên các biến rows, shortcuts và hàm render, renderKeys bên trên)
-
-    const header = document.querySelector('.header');
-    const inputGroup = document.querySelector('.input-group');
-
-    // Nhấn giữ Header 2 giây để hiện/ẩn ô nhập link (Dùng khi cần đổi Sheets)
-    let headerTimer;
-    header.ontouchstart = () => { headerTimer = setTimeout(() => inputGroup.classList.toggle('show'), 2000); };
-    header.ontouchend = () => clearTimeout(headerTimer);
-
-    // Hàm kích hoạt Full Screen (Phải có tương tác người dùng)
-    function requestFullScreen() {
-        const el = document.documentElement;
-        if (el.requestFullscreen) el.requestFullscreen();
-        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        else if (el.msRequestFullscreen) el.msRequestFullscreen();
-    }
-
-    // Chạm bất kỳ đâu lần đầu tiên là bật Full Screen
-    document.addEventListener('click', () => {
-        requestFullScreen();
-    }, { once: true });
-
-    window.onload = () => {
-        const saved = localStorage.getItem("GS_SAVED_LINK_FC");
-        if (saved) {
-            gsInput.value = saved;
-            loadGS(saved);
-            // Nếu đã có link thì không hiện ô nhập nữa cho giống App
-            inputGroup.classList.remove('show');
-        } else {
-            // Nếu chưa có link thì hiện ra để nhập
-            inputGroup.classList.add('show');
-        }
-        renderKeys();
     };
 </script>
 
