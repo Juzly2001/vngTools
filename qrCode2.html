@@ -92,7 +92,7 @@ button:active{
 }
 
 #copyBtn{
-    background:linear-gradient(135deg,#007bff,#4da3ff);
+    background:linear-gradient(135deg,#00ff66,#4dff8b);
     color:#fff;
 }
 
@@ -160,6 +160,173 @@ button:active{
     flex:none;
 }
 
+.copy-line-btn{
+    background:#2dff73;
+    color:white;
+    border:none;
+    border-radius:8px;
+
+    padding:6px 6px;
+    width:fit-content;
+
+    flex:none;
+}
+
+.dropdown{
+    position:relative;
+    flex:none;
+}
+
+.drop-btn{
+
+    padding:8px 10px;
+
+    border:1px solid #ccc;
+
+    border-radius:10px;
+
+    background:#fff;
+
+    min-width:90px;
+
+    cursor:pointer;
+
+    font-size:13px;
+}
+
+.dropdown-menu{
+
+    display:none;
+
+    position:absolute;
+
+    top:110%;
+    left:0;
+
+    background:white;
+
+    border:1px solid #ddd;
+
+    border-radius:12px;
+
+    width:170px;
+
+    z-index:999;
+
+    box-shadow:
+    0 8px 24px rgba(0,0,0,.12);
+
+    max-height:280px;
+
+    overflow-y:auto;
+
+    padding:8px;
+}
+
+.dropdown-menu.show{
+    display:block;
+}
+
+.drop-item{
+
+    display:flex;
+
+    gap:8px;
+
+    padding:6px 4px;
+
+    cursor:pointer;
+}
+
+.groups-container{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:10px;
+}
+
+.checkbox-group{
+
+    border-bottom:
+    1px solid #eee;
+
+    padding-bottom:8px;
+}
+
+.add-group-btn{
+
+    width:100%;
+
+    margin-top:8px;
+
+    padding:8px;
+
+    border:none;
+
+    border-radius:8px;
+
+    background:#f3f6fa;
+
+    color:#007bff;
+
+    cursor:pointer;
+
+    font-weight:700;
+}
+
+.group-title{
+
+    font-size:13px;
+
+    font-weight:700;
+
+    color:#007bff;
+
+    margin-bottom:8px;
+}
+
+.action-panel{
+
+    margin-top:8px;
+
+    border-top:1px solid #eee;
+
+    padding-top:8px;
+}
+
+.action-toggle{
+
+    width:100%;
+
+    background:#f3f6fa;
+
+    border:none;
+
+    border-radius:8px;
+
+    padding:8px;
+
+    color:#007bff;
+
+    cursor:pointer;
+
+    font-weight:700;
+}
+
+.action-content{
+
+    display:none;
+
+    margin-top:8px;
+}
+
+.action-content.show{
+
+    display:block;
+}
+
 @media(max-width:600px){
 
     h1{
@@ -196,7 +363,16 @@ button:active{
 </div>
 
 <script>
-
+const dropdownOptions=["Út","Cường","Phong", "Dũng", "Đạt", "Minh", "Tùng", "Lâm"];
+const actionOptions=[
+    "Đẩy đơn",
+    "Đẩy app",
+    "Đẩy ra",
+    "Kiểm kho",
+    "Xác nhận BC",
+    "Chuyển tuyến",
+    "Chốt ca",
+];
 let scannedCodes=[];
 
 let lastScanned="";
@@ -243,11 +419,18 @@ function onScanSuccess(decodedText){
     lastScanned=decodedText;
     lastScanTime=now;
 
-    if(scannedCodes.includes(decodedText)){
+    if(
+        scannedCodes.find(
+            x=>x.code===decodedText
+        )
+    ){
         return;
     }
 
-    scannedCodes.push(decodedText);
+    scannedCodes.push({
+        code:decodedText,
+        tags:[]
+    });
 
     playBeep();
     vibratePhone();
@@ -256,15 +439,249 @@ function onScanSuccess(decodedText){
     item.className="barcode-item";
 
     item.innerHTML=`
-        <div class="barcode-text">${decodedText}</div>
-        <button class="delete-btn">Xóa</button>
+        <div class="barcode-text">
+            ${decodedText}
+        </div>
+
+        <div class="dropdown">
+
+            <button class="drop-btn">
+                Chọn ID ▼
+            </button>
+
+<div class="dropdown-menu">
+
+    <div class="groups-container"></div>
+
+
+</div>
+
+        </div>
+
+                <div style="display:flex;gap:6px;flex:none;">
+                    <button class="copy-line-btn">📋</button>
+                    <button class="delete-btn">Xóa</button>
+                </div>
     `;
 
-    item.querySelector("button")
+    const dropdown=
+item.querySelector(".dropdown");
+
+const dropBtn=
+item.querySelector(".drop-btn");
+
+const menu=
+item.querySelector(".dropdown-menu");
+
+const groupsContainer=
+item.querySelector(".groups-container");
+
+
+const obj=
+scannedCodes.find(
+    x=>x.code===decodedText
+);
+
+
+dropBtn.onclick=(e)=>{
+
+    e.stopPropagation();
+
+    menu.classList.toggle("show");
+};
+
+
+menu.onclick=(e)=>{
+
+    e.stopPropagation();
+
+};
+
+
+function createGroup(
+
+    title="+ COD",
+
+    options=dropdownOptions
+
+){
+
+    const panel=
+    document.createElement("div");
+
+    panel.className=
+    "action-panel";
+
+    panel.innerHTML=`
+
+        <button class="action-toggle">
+
+            ${title}
+
+        </button>
+
+        <div class="action-content">
+
+            ${
+                options
+                .map(x=>`
+
+                    <label class="drop-item">
+
+                        <input
+                            type="checkbox"
+                            value="${x}"
+                        >
+
+                        ${x}
+
+                    </label>
+
+                `)
+                .join("")
+            }
+
+        </div>
+
+    `;
+
+    groupsContainer.append(panel);
+
+    const toggle=
+    panel.querySelector(
+        ".action-toggle"
+    );
+
+    const content=
+    panel.querySelector(
+        ".action-content"
+    );
+
+    toggle.onclick=(e)=>{
+
+        e.stopPropagation();
+
+        content.classList.toggle(
+            "show"
+        );
+
+        toggle.innerText=
+
+            content.classList.contains(
+                "show"
+            )
+
+            ? "− "+title.replace("+ ","")
+
+            : title;
+
+        refreshChecks();
+    };
+
+}
+
+
+function refreshChecks(){
+
+    const checks=
+    menu.querySelectorAll(
+        'input[type="checkbox"]'
+    );
+
+    checks.forEach(check=>{
+
+        check.onchange=()=>{
+
+            obj.tags=
+
+            [...checks]
+
+            .filter(
+                x=>x.checked
+            )
+
+            .map(
+                x=>x.value
+            );
+
+            dropBtn.innerText=
+
+                obj.tags.length
+
+                ? "Đã chọn ▼"
+
+                : "Chọn ID ▼";
+
+        };
+
+    });
+
+}
+
+
+
+
+createGroup(
+    "+ COD",
+    dropdownOptions
+);
+
+createGroup(
+    "+ Thao tác",
+    actionOptions
+);
+
+
+document.addEventListener(
+    "click",
+    (e)=>{
+
+        if(
+            !dropdown.contains(e.target)
+        ){
+            menu.classList.remove("show");
+        }
+
+    }
+);
+
+
+    item.querySelector(".copy-line-btn")
+    .onclick=async()=>{
+
+        const obj=scannedCodes.find(
+            x=>x.code===decodedText
+        );
+
+        const text=
+            obj.code+
+            obj.tags
+            .map(
+                x=>` (${x})`
+            )
+            .join("");
+
+        await navigator.clipboard.writeText(
+            text
+        );
+
+        const btn=
+            item.querySelector(
+                ".copy-line-btn"
+            );
+
+        btn.innerText="✓";
+
+        setTimeout(()=>{
+            btn.innerText="📋";
+        },800);
+    };
+
+    item.querySelector(".delete-btn")
     .onclick=()=>{
 
         scannedCodes=scannedCodes.filter(
-            x=>x!==decodedText
+            x=>x.code!==decodedText
         );
 
         item.remove();
@@ -277,8 +694,6 @@ function onScanSuccess(decodedText){
     updateStatus();
 }
 
-
-
 copyBtn.onclick=async()=>{
 
     if(!scannedCodes.length){
@@ -287,7 +702,19 @@ copyBtn.onclick=async()=>{
     }
 
     await navigator.clipboard.writeText(
-        scannedCodes.join(", ")
+
+    scannedCodes
+    .map(x=>
+
+        x.code+
+
+        x.tags
+        .map(t=>` (${t})`)
+        .join("")
+
+    )
+    .join(", ")
+
     );
 
     alert("Đã copy.");
