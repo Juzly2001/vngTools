@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+
+<title>Quét QR & Barcode</title>
+
+<script src="https://unpkg.com/html5-qrcode"></script>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#eef2f7;
+    padding:16px;
+    color:#222;
+}
+
+.container{
+    max-width:520px;
+    margin:auto;
+}
+
+h1{
+    text-align:center;
+    font-size:24px;
+    margin-bottom:16px;
+}
+
+#reader{
+    background:#fff;
+    padding:12px;
+    border-radius:18px;
+    overflow:hidden;
+    box-shadow:0 8px 22px rgba(0,0,0,.08);
+}
+
+#reader video{
+    width:100% !important;
+    border-radius:14px;
+    transform:translateZ(0);
+    backface-visibility:hidden;
+    will-change:transform;
+}
+
+.top-bar{
+    display:flex;
+    gap:10px;
+    margin:14px 0;
+}
+
+button{
+    flex:1;
+    border:none;
+    border-radius:12px;
+    padding:14px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    transition:.2s;
+}
+
+button:active{
+    transform:scale(.96);
+}
+
+#copyBtn{
+    background:linear-gradient(135deg,#007bff,#4da3ff);
+    color:#fff;
+}
+
+#clearBtn{
+    background:linear-gradient(135deg,#e53935,#ff6a6a);
+    color:#fff;
+}
+
+#status{
+    background:#fff;
+    padding:12px;
+    border-radius:14px;
+    text-align:center;
+    font-weight:bold;
+    margin-bottom:14px;
+    box-shadow:0 4px 10px rgba(0,0,0,.05);
+}
+
+#result-container{
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+
+.barcode-item{
+    background:#fff;
+    border-radius:16px;
+    padding:14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    box-shadow:0 5px 14px rgba(0,0,0,.06);
+
+    animation:fadeIn .2s ease;
+}
+
+@keyframes fadeIn{
+    from{
+        opacity:0;
+        transform:translateY(-8px);
+    }
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+}
+
+.barcode-text{
+    flex:1;
+    word-break:break-all;
+    font-weight:bold;
+    font-size:15px;
+}
+
+.delete-btn{
+    background:#ff4d4d;
+    color:#fff;
+    padding:9px 12px;
+    border:none;
+    border-radius:10px;
+    flex-shrink:0;
+}
+
+@media(max-width:600px){
+
+    h1{
+        font-size:21px;
+    }
+
+    button{
+        padding:12px;
+    }
+
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<h1>📷 Quét QR & Barcode</h1>
+
+<div id="reader"></div>
+
+<div class="top-bar">
+    <button id="copyBtn">📋 Copy tất cả</button>
+    <button id="clearBtn">🗑 Xóa tất cả</button>
+</div>
+
+<div id="status">
+    Chưa có mã nào
+</div>
+
+<div id="result-container"></div>
+
+</div>
+
+<script>
+
+let scannedCodes=[];
+
+let lastScanned="";
+let lastScanTime=0;
+
+const status=document.getElementById("status");
+const resultContainer=document.getElementById("result-container");
+
+
+// preload audio (đỡ lag)
+
+const beep=new Audio(
+'https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg'
+);
+
+function playBeep(){
+    beep.currentTime=0;
+    beep.play().catch(()=>{});
+}
+
+function vibratePhone(){
+    navigator.vibrate?.(80);
+}
+
+function updateStatus(){
+
+    status.innerText =
+    scannedCodes.length
+        ? `✅ Đã quét ${scannedCodes.length} mã`
+        : "Chưa có mã nào";
+}
+
+function onScanSuccess(decodedText){
+
+    const now=Date.now();
+
+    if(
+        decodedText===lastScanned &&
+        now-lastScanTime<1200
+    ){
+        return;
+    }
+
+    lastScanned=decodedText;
+    lastScanTime=now;
+
+    if(scannedCodes.includes(decodedText)){
+        return;
+    }
+
+    scannedCodes.push(decodedText);
+
+    playBeep();
+    vibratePhone();
+
+    const item=document.createElement("div");
+    item.className="barcode-item";
+
+    item.innerHTML=`
+        <div class="barcode-text">${decodedText}</div>
+        <button class="delete-btn">Xóa</button>
+    `;
+
+    item.querySelector("button")
+    .onclick=()=>{
+
+        scannedCodes=scannedCodes.filter(
+            x=>x!==decodedText
+        );
+
+        item.remove();
+
+        updateStatus();
+    };
+
+    resultContainer.prepend(item);
+
+    updateStatus();
+}
+
+
+
+copyBtn.onclick=async()=>{
+
+    if(!scannedCodes.length){
+        alert("Chưa có mã.");
+        return;
+    }
+
+    await navigator.clipboard.writeText(
+        scannedCodes.join(", ")
+    );
+
+    alert("Đã copy.");
+};
+
+
+clearBtn.onclick=()=>{
+
+    scannedCodes=[];
+
+    resultContainer.innerHTML="";
+
+    updateStatus();
+};
+
+
+const html5QrCode=new Html5Qrcode("reader");
+
+html5QrCode.start(
+{
+    facingMode:{
+        exact:"environment"
+    }
+},
+{
+
+    fps:6, // giảm tải CPU
+
+    qrbox:{
+        width:220,
+        height:220
+    },
+
+    aspectRatio:1.333,
+
+    videoConstraints:{
+
+        facingMode:"environment",
+
+        width:{ ideal:1280 },
+        height:{ ideal:720 }
+
+    },
+
+    rememberLastUsedCamera:true,
+
+    disableFlip:true,
+
+    experimentalFeatures:{
+        useBarCodeDetectorIfSupported:true
+    }
+
+},
+onScanSuccess
+).catch(err=>{
+
+    console.error(err);
+
+    alert(
+        "Không mở được camera. Hãy cấp quyền camera."
+    );
+
+});
+
+</script>
+
+</body>
+</html>
