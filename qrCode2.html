@@ -56,18 +56,36 @@ h1{
 }
 
 #reader{
+
     background:#fff;
-    padding:12px;
+
+    padding:8px;
+
     border-radius:18px;
+
     overflow:hidden;
+
     box-shadow:0 8px 22px rgba(0,0,0,.08);
+
+    aspect-ratio:4/3;
+
+    max-height:340px;
 }
 
 #reader video{
+
     width:100% !important;
+
+    height:100% !important;
+
     border-radius:14px;
+
+    object-fit:cover;
+
     transform:translateZ(0);
+
     backface-visibility:hidden;
+
     will-change:transform;
 }
 
@@ -337,6 +355,32 @@ button:active{
     button{
         padding:12px;
     }
+
+    #reader{
+
+    aspect-ratio:4/3;
+
+    max-height:300px;
+}
+
+.barcode-item{
+
+    gap:8px;
+
+    padding:10px;
+}
+
+.drop-btn{
+
+    min-width:78px;
+
+    font-size:12px;
+}
+
+.dropdown-menu{
+
+    width:150px;
+}
 
 }
 
@@ -714,7 +758,7 @@ copyBtn.onclick=async()=>{
         .join("")
 
     )
-    .join(", \n")
+    .join(",\n")
 
     );
 
@@ -744,10 +788,10 @@ html5QrCode.start(
 
     fps:6, // giảm tải CPU
 
-    qrbox:{
-        width:220,
-        height:220
-    },
+   qrbox:{
+    width:180,
+    height:180
+},
 
     aspectRatio:1.333,
 
