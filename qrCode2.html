@@ -480,8 +480,9 @@ function onScanSuccess(decodedText){
     }
 
     scannedCodes.push({
-        code:decodedText,
-        tags:[]
+    code:decodedText,
+    actions:[],
+    cod:[]
     });
 
     playBeep();
@@ -648,17 +649,23 @@ function refreshChecks(){
 
         check.onchange=()=>{
 
-            obj.tags=
-
-            [...checks]
-
-            .filter(
-                x=>x.checked
-            )
-
-            .map(
-                x=>x.value
+            const actionChecks=
+            menu.querySelectorAll(
+            '.action-panel:nth-child(1) input'
             );
+
+            const codChecks=
+            menu.querySelectorAll(
+            '.action-panel:nth-child(2) input'
+            );
+
+            obj.actions=[...actionChecks]
+            .filter(x=>x.checked)
+            .map(x=>x.value);
+
+            obj.cod=[...codChecks]
+            .filter(x=>x.checked)
+            .map(x=>x.value);
 
             dropBtn.innerText=
 
@@ -709,13 +716,15 @@ document.addEventListener(
             x=>x.code===decodedText
         );
 
-        const text=
-            obj.code+
-            obj.tags
-            .map(
-                x=>` (${x})`
-            )
-            .join("");
+        obj.code+
+
+        obj.actions
+        .map(x=>` (${x})`)
+        .join("")+
+
+        obj.cod
+        .map(x=>` (${x})`)
+        .join("")
 
         await navigator.clipboard.writeText(
             text
@@ -764,7 +773,11 @@ copyBtn.onclick=async()=>{
 
         x.code+
 
-        x.tags
+        x.actions
+        .map(t=>` (${t})`)
+        .join("")+
+
+        x.cod
         .map(t=>` (${t})`)
         .join("")
 
