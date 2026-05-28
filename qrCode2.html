@@ -416,6 +416,60 @@ button:active{
 </div>
 
 <script>
+
+// Desktop block
+
+const isPhone =
+
+window.innerWidth <= 430
+
+&& window.matchMedia(
+    "(pointer:coarse)"
+).matches;
+
+
+if(!isPhone){
+
+    document.body.innerHTML=`
+
+        <div style="
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            height:100vh;
+            text-align:center;
+            font-family:Arial;
+            padding:20px;
+            background:#eef2f7;
+        ">
+
+            <div>
+
+                <h2>
+                    📱 Chỉ hỗ trợ điện thoại
+                </h2>
+
+                <p>
+                    Thiết bị hoặc kích thước màn hình không được hỗ trợ.
+                </p>
+                </br>
+                <p style="color:red;">
+                    Vì tôi thích như vậy ~
+                </p>
+
+
+            </div>
+
+        </div>
+
+    `;
+
+    throw new Error(
+        "Phone only"
+    );
+}
+// End desktop block
+
 const dropdownOptions=["Út","Cường","Phong", "Dũng", "Đạt", "Minh", "Tùng", "Lâm"];
 const actionOptions=[
     "Đẩy đơn",
@@ -435,6 +489,9 @@ let lastScanTime=0;
 
 const status=document.getElementById("status");
 const resultContainer=document.getElementById("result-container");
+
+
+// preload audio (đỡ lag)
 
 const beep=new Audio(
 'https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg'
@@ -480,9 +537,8 @@ function onScanSuccess(decodedText){
     }
 
     scannedCodes.push({
-    code:decodedText,
-    actions:[],
-    cod:[]
+        code:decodedText,
+        tags:[]
     });
 
     playBeep();
@@ -649,23 +705,17 @@ function refreshChecks(){
 
         check.onchange=()=>{
 
-            const actionChecks=
-            menu.querySelectorAll(
-            '.action-panel:nth-child(1) input'
+            obj.tags=
+
+            [...checks]
+
+            .filter(
+                x=>x.checked
+            )
+
+            .map(
+                x=>x.value
             );
-
-            const codChecks=
-            menu.querySelectorAll(
-            '.action-panel:nth-child(2) input'
-            );
-
-            obj.actions=[...actionChecks]
-            .filter(x=>x.checked)
-            .map(x=>x.value);
-
-            obj.cod=[...codChecks]
-            .filter(x=>x.checked)
-            .map(x=>x.value);
 
             dropBtn.innerText=
 
@@ -716,15 +766,13 @@ document.addEventListener(
             x=>x.code===decodedText
         );
 
-        obj.code+
-
-        obj.actions
-        .map(x=>` (${x})`)
-        .join("")+
-
-        obj.cod
-        .map(x=>` (${x})`)
-        .join("")
+        const text=
+            obj.code+
+            obj.tags
+            .map(
+                x=>` (${x})`
+            )
+            .join("");
 
         await navigator.clipboard.writeText(
             text
@@ -773,11 +821,7 @@ copyBtn.onclick=async()=>{
 
         x.code+
 
-        x.actions
-        .map(t=>` (${t})`)
-        .join("")+
-
-        x.cod
+        x.tags
         .map(t=>` (${t})`)
         .join("")
 
@@ -810,7 +854,7 @@ html5QrCode.start(
 },
 {
 
-    fps:6,
+    fps:6, // giảm tải CPU
 
    qrbox:{
     width:180,
