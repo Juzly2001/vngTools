@@ -153,14 +153,14 @@
 
         prevPageBtn.onclick = () => {
             const btn = document.querySelector('material-button.prev[aria-disabled="false"]');
-            if (btn) {
+            if (btn && !btn.disabled) {
                 triggerAngularClick(btn);
             }
         };
 
         nextPageBtn.onclick = () => {
             const btn = document.querySelector('material-button.next[aria-disabled="false"]');
-            if (btn) {
+            if (btn && !btn.disabled) {
                 triggerAngularClick(btn);
             }
         };
@@ -318,7 +318,7 @@
 
             // Đợi textarea xuất hiện tối đa 5s
             let waitStart = Date.now();
-            while (!document.querySelector('textarea[aria-label="Trả lời"]')) {
+            while (!document.querySelector('textarea[aria-label="Trả lời"], textarea[aria-label="Reply"]')) {
                 if (Date.now() - waitStart > 5000) break;
                 await sleep(300);
             }
@@ -340,15 +340,43 @@
                 await sleep(300);
             }
 
-            const reviews = document.querySelectorAll("review");
+            const reviews = [...document.querySelectorAll("review")].filter(rev => rev.offsetParent !== null);
             let count = 0;
             for (const rev of reviews) {
-                const replyBox = rev.querySelector('textarea[aria-label="Trả lời"]');
-                const shareBtn = rev.querySelector('material-button[debug-id="link-share-button"] button');
+                const replyBox = rev.querySelector('textarea[aria-label="Trả lời"], textarea[aria-label="Reply"]');
+                const shareBtn = rev.querySelector(
+                    '[debug-id="link-share-button"] button, button[debug-id="link-share-button"]'
+                );
                 if (replyBox && shareBtn) {
                     const oldLink = lastClipboardLink;
-                    shareBtn.click();
-                    const newLink = await captureClipboardLink(true, oldLink);
+
+                    triggerAngularClick(shareBtn);
+
+                    await sleep(250);
+
+                    // Ưu tiên popup link
+                    const popupInput = document.querySelector(
+                        'input[type="text"][readonly]'
+                    );
+
+                    let newLink = null;
+
+                    if (popupInput?.value?.startsWith("http")) {
+
+                        newLink = popupInput.value;
+
+                        if (!addedLinks.has(newLink)) {
+                            addRow(newLink);
+                            lastClipboardLink = newLink;
+                        }
+
+                    } else {
+
+                        newLink = await captureClipboardLink(
+                            true,
+                            oldLink
+                        );
+                    }
                     if (newLink) count++;
                     await new Promise(r => setTimeout(r, 400));
                 }
@@ -358,10 +386,10 @@
         }
 
         // function hasUnrepliedReviews() {
-        //     const reviews = document.querySelectorAll("review");
+        //     const reviews = [...document.querySelectorAll("review")].filter(rev => rev.offsetParent !== null);
 
         //     for (const rev of reviews) {
-        //         const textarea = rev.querySelector('textarea[aria-label="Trả lời"]');
+        //         const textarea = rev.querySelector('textarea[aria-label="Trả lời"], textarea[aria-label="Reply"]');
         //         const submitBtn = rev.querySelector('material-button[debug-id="submit-button"] button');
 
         //         if (textarea && submitBtn) {
@@ -373,11 +401,11 @@
         // }
         
         async function autoSubmitReplies() {
-            const reviews = document.querySelectorAll("review");
+            const reviews = [...document.querySelectorAll("review")].filter(rev => rev.offsetParent !== null);
             let done = 0;
             for (const rev of reviews) {
-                const btn = rev.querySelector('material-button[debug-id="submit-button"] button');
-                if (btn) {
+                const btn = rev.querySelector('[debug-id="submit-button"] button');
+                if (btn && !btn.disabled) {
                     btn.click();
                     done++;
                     await new Promise(r => setTimeout(r, 300))
@@ -393,27 +421,41 @@
             const goodText = "Cảm ơn bạn đã yêu mến và dành lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
             const badText = "Chúng mình rất tiếc vì trải nghiệm không tốt của bạn. Bạn vui lòng vào ứng dụng Zalopay >> chọn 'Tài khoản' >> 'Trung tâm hỗ trợ' và cung cấp thông tin liên quan để có thể được hỗ trợ nhanh nhất nhé!";
 
-            const reviews = document.querySelectorAll("review");
+            const reviews = [...document.querySelectorAll("review")].filter(rev => rev.offsetParent !== null);
             let goodCount = 0,
                 badCount = 0;
 
             for (const rev of reviews) {
 
-                const textArea = rev.querySelector('textarea[aria-label="Trả lời"]');
+                const textArea = rev.querySelector('textarea[aria-label="Trả lời"], textarea[aria-label="Reply"]');
                 if (textArea) {
 
                     const stars = rev.querySelectorAll("material-icon.star-filled").length;
                     const txt = stars > 3 ? goodText : badText;
 
                     textArea.focus();
-                    textArea.value = txt;
 
-                    textArea.dispatchEvent(new Event("input", {
-                        bubbles: true
-                    }));
-                    textArea.dispatchEvent(new Event("change", {
-                        bubbles: true
-                    }));
+                    const nativeSetter =
+                        Object.getOwnPropertyDescriptor(
+                            HTMLTextAreaElement.prototype,
+                            "value"
+                        ).set;
+
+                    nativeSetter.call(textArea, txt);
+
+                    textArea.dispatchEvent(
+                        new InputEvent("input", {
+                            bubbles: true,
+                            inputType: "insertText",
+                            data: txt
+                        })
+                    );
+
+                    textArea.dispatchEvent(
+                        new Event("change", {
+                            bubbles: true
+                        })
+                    );
 
                     if (stars > 3) goodCount++;
                     else badCount++;
@@ -433,7 +475,7 @@
 
 
         // GẮN NÚT SHARE
-        document.querySelectorAll('material-button[debug-id="link-share-button"] button')
+        document.querySelectorAll('button[debug-id="link-share-button"]')
             .forEach(btn => {
                 const newBtn = btn.cloneNode(true);
                 btn.parentNode.replaceChild(newBtn, btn);
@@ -441,7 +483,7 @@
             });
 
         copyAllBtn.onclick = () => {
-            const links = [...tbody.querySelectorAll("tr td:nth-child(2)")].map(td => td.textContent.trim());
+            const links = [...tbody.querySelectorAll("tr td:nth-child(2) a")].map(a => a.href);
             if (links.length) {
                 navigator.clipboard.writeText(links.join("\n"));
                 updateInfo("✅ Đã copy tất cả link!");

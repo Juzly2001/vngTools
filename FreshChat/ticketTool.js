@@ -79,7 +79,7 @@
     box.id = "mini-excel-tool";
     box.style.cssText = `
     position:fixed;
-    top:40px; left:40px;
+    top:10px; right:440px;
     z-index:99999;
     background:#fdfdfd;
     border:1px solid #ccc;

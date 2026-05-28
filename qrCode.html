@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+    <title>Quét Mã Vạch & QR</title>
+
+    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+
+        body{
+            margin:0;
+            padding:15px;
+            font-family: Arial, sans-serif;
+            background:#f4f4f4;
+        }
+
+        h1{
+            text-align:center;
+            font-size:24px;
+            margin-bottom:15px;
+        }
+
+        #reader{
+            width:100%;
+            max-width:500px;
+            margin:0 auto;
+            background:white;
+            padding:10px;
+            border-radius:12px;
+            box-shadow:0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .top-bar{
+            width:100%;
+            max-width:500px;
+            margin:15px auto;
+            display:flex;
+            gap:10px;
+        }
+
+        button{
+            flex:1;
+            padding:14px;
+            border:none;
+            border-radius:10px;
+            font-size:16px;
+            font-weight:bold;
+            cursor:pointer;
+        }
+
+        #copyBtn{
+            background:#007bff;
+            color:white;
+        }
+
+        #clearBtn{
+            background:#dc3545;
+            color:white;
+        }
+
+        #result-container{
+            width:100%;
+            max-width:500px;
+            margin:0 auto;
+        }
+
+        .barcode-item{
+            background:white;
+            border-radius:10px;
+            padding:14px;
+            margin-bottom:10px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.08);
+            border-left:5px solid #28a745;
+            word-break:break-all;
+            font-size:18px;
+            font-weight:bold;
+            color:#222;
+        }
+
+        #status{
+            width:100%;
+            max-width:500px;
+            margin:15px auto;
+            text-align:center;
+            font-weight:bold;
+            color:#333;
+        }
+
+        @media (max-width:600px){
+
+            h1{
+                font-size:20px;
+            }
+
+            button{
+                font-size:15px;
+                padding:12px;
+            }
+
+            .barcode-item{
+                font-size:16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Quét Mã Vạch & QR</h1>
+
+    <div id="reader"></div>
+
+    <!-- Nút copy nằm trên danh sách mã -->
+    <div class="top-bar">
+        <button id="copyBtn">📋 Copy tất cả</button>
+        <button id="clearBtn">🗑 Xóa tất cả</button>
+    </div>
+
+    <div id="status">
+        Chưa có mã nào
+    </div>
+
+    <div id="result-container"></div>
+
+    <script>
+
+        let scannedCodes = [];
+
+        // Chống quét trùng liên tục
+        let lastScanned = "";
+        let lastScanTime = 0;
+
+        function beepSuccess(){
+            const audio = new Audio(
+                "https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"
+            );
+            audio.play();
+        }
+
+        function vibratePhone(){
+            if(navigator.vibrate){
+                navigator.vibrate(120);
+            }
+        }
+
+        function onScanSuccess(decodedText){
+
+            const now = Date.now();
+
+            // Chặn quét spam cùng mã trong 1.5 giây
+            if(decodedText === lastScanned && now - lastScanTime < 1500){
+                return;
+            }
+
+            lastScanned = decodedText;
+            lastScanTime = now;
+
+            // Không thêm mã trùng
+            if(scannedCodes.includes(decodedText)){
+                return;
+            }
+
+            scannedCodes.push(decodedText);
+
+            // Rung + âm thanh
+            beepSuccess();
+            vibratePhone();
+
+            // Tạo ô mã
+            const item = document.createElement("div");
+            item.className = "barcode-item";
+            item.innerText = decodedText;
+
+            // Thêm lên đầu danh sách
+            const container = document.getElementById("result-container");
+            container.prepend(item);
+
+            updateStatus();
+        }
+
+        function onScanFailure(error){
+            // bỏ qua lỗi để tránh spam
+        }
+
+        function updateStatus(){
+            document.getElementById("status").innerText =
+                `Đã quét ${scannedCodes.length} mã`;
+        }
+
+        // Copy tất cả
+        document.getElementById("copyBtn")
+            .addEventListener("click", async () => {
+
+            if(scannedCodes.length === 0){
+                alert("Chưa có mã để copy");
+                return;
+            }
+
+            const text = scannedCodes.join(", ");
+
+            try{
+                await navigator.clipboard.writeText(text);
+                alert("Đã copy tất cả mã");
+            }catch(err){
+                alert("Copy thất bại");
+            }
+        });
+
+        // Xóa tất cả
+        document.getElementById("clearBtn")
+            .addEventListener("click", () => {
+
+            scannedCodes = [];
+
+            document.getElementById("result-container").innerHTML = "";
+
+            updateStatus();
+        });
+
+        // Khởi tạo scanner
+        const html5QrcodeScanner = new Html5QrcodeScanner(
+            "reader",
+            {
+                fps: 20, // tăng fps để quét nhạy hơn
+                qrbox: function(viewfinderWidth, viewfinderHeight) {
+
+                    let minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+
+                    let size = Math.floor(minEdge * 0.8);
+
+                    return {
+                        width: size,
+                        height: size
+                    };
+                },
+
+                rememberLastUsedCamera: true,
+
+                supportedScanTypes: [
+                    Html5QrcodeScanType.SCAN_TYPE_CAMERA
+                ],
+
+                formatsToSupport: [
+                    Html5QrcodeSupportedFormats.QR_CODE,
+                    Html5QrcodeSupportedFormats.CODE_128,
+                    Html5QrcodeSupportedFormats.CODE_39,
+                    Html5QrcodeSupportedFormats.EAN_13,
+                    Html5QrcodeSupportedFormats.EAN_8,
+                    Html5QrcodeSupportedFormats.UPC_A,
+                    Html5QrcodeSupportedFormats.UPC_E
+                ]
+            },
+            false
+        );
+
+        html5QrcodeScanner.render(
+            onScanSuccess,
+            onScanFailure
+        );
+
+    </script>
+
+</body>
+</html>
