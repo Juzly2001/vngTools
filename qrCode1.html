@@ -71,17 +71,43 @@
         }
 
         .barcode-item{
-            background:white;
-            border-radius:10px;
-            padding:14px;
-            margin-bottom:10px;
-            box-shadow:0 2px 6px rgba(0,0,0,0.08);
-            border-left:5px solid #28a745;
-            word-break:break-all;
-            font-size:18px;
-            font-weight:bold;
-            color:#222;
-        }
+    background:white;
+    border-radius:10px;
+    padding:12px;
+    margin-bottom:10px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.08);
+    border-left:5px solid #28a745;
+
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.barcode-text{
+    flex:1;
+    word-break:break-all;
+    font-size:16px;
+    font-weight:bold;
+    color:#222;
+}
+
+.delete-btn{
+    background:#dc3545;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:8px 12px;
+    cursor:pointer;
+    font-size:14px;
+    font-weight:bold;
+    flex-shrink:0;
+}
+
+.delete-btn:active{
+    transform:scale(0.95);
+}
+
 
         #status{
             width:100%;
@@ -177,15 +203,41 @@
         beepSuccess();
         vibratePhone();
 
-        const item = document.createElement("div");
+const item = document.createElement("div");
+item.className = "barcode-item";
 
-        item.className = "barcode-item";
+// TEXT
+const textDiv = document.createElement("div");
+textDiv.className = "barcode-text";
+textDiv.innerText = decodedText;
 
-        item.innerText = decodedText;
+// BUTTON DELETE
+const deleteBtn = document.createElement("button");
+deleteBtn.className = "delete-btn";
+deleteBtn.innerText = "Xóa";
 
-        document
-            .getElementById("result-container")
-            .prepend(item);
+// sự kiện xóa
+deleteBtn.onclick = () => {
+
+    // xóa khỏi mảng
+    scannedCodes = scannedCodes.filter(
+        code => code !== decodedText
+    );
+
+    // xóa khỏi giao diện
+    item.remove();
+
+    updateStatus();
+};
+
+// thêm vào item
+item.appendChild(textDiv);
+item.appendChild(deleteBtn);
+
+// thêm lên đầu danh sách
+document
+    .getElementById("result-container")
+    .prepend(item);
 
         updateStatus();
     }
