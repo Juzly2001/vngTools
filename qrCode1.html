@@ -134,33 +134,41 @@
     let lastScanned = "";
     let lastScanTime = 0;
 
-    function beepSuccess(){
+    function beepSuccess() {
         const audio = new Audio(
             "https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg"
         );
         audio.play();
     }
 
-    function vibratePhone(){
-        if(navigator.vibrate){
-            navigator.vibrate(120);
+    function vibratePhone() {
+        if (navigator.vibrate) {
+            navigator.vibrate(100);
         }
     }
 
-    function onScanSuccess(decodedText){
+    function updateStatus() {
+        document.getElementById("status").innerText =
+            `Đã quét ${scannedCodes.length} mã`;
+    }
+
+    function onScanSuccess(decodedText) {
 
         const now = Date.now();
 
-        // chống spam quét liên tục
-        if(decodedText === lastScanned && now - lastScanTime < 1500){
+        // chống spam
+        if (
+            decodedText === lastScanned &&
+            now - lastScanTime < 1200
+        ) {
             return;
         }
 
         lastScanned = decodedText;
         lastScanTime = now;
 
-        // không thêm mã trùng
-        if(scannedCodes.includes(decodedText)){
+        // bỏ mã trùng
+        if (scannedCodes.includes(decodedText)) {
             return;
         }
 
@@ -170,97 +178,81 @@
         vibratePhone();
 
         const item = document.createElement("div");
+
         item.className = "barcode-item";
+
         item.innerText = decodedText;
 
-        document.getElementById("result-container")
+        document
+            .getElementById("result-container")
             .prepend(item);
 
         updateStatus();
     }
 
-    function updateStatus(){
-        document.getElementById("status").innerText =
-            `Đã quét ${scannedCodes.length} mã`;
-    }
-
     // COPY
-    document.getElementById("copyBtn")
+    document
+        .getElementById("copyBtn")
         .addEventListener("click", async () => {
 
-        if(scannedCodes.length === 0){
-            alert("Chưa có mã để copy");
-            return;
-        }
+            if (scannedCodes.length === 0) {
+                alert("Chưa có mã");
+                return;
+            }
 
-        const text = scannedCodes.join(", ");
+            const text = scannedCodes.join(", ");
 
-        await navigator.clipboard.writeText(text);
+            await navigator.clipboard.writeText(text);
 
-        alert("Đã copy tất cả mã");
-    });
+            alert("Đã copy");
+        });
 
-    // XÓA
-    document.getElementById("clearBtn")
+    // CLEAR
+    document
+        .getElementById("clearBtn")
         .addEventListener("click", () => {
 
-        scannedCodes = [];
+            scannedCodes = [];
 
-        document.getElementById("result-container").innerHTML = "";
+            document.getElementById(
+                "result-container"
+            ).innerHTML = "";
 
-        updateStatus();
-    });
+            updateStatus();
+        });
 
-    // KHỞI TẠO CAMERA SAU
+    // CAMERA
     const html5QrCode = new Html5Qrcode("reader");
 
-    Html5Qrcode.getCameras()
-        .then(devices => {
+    html5QrCode.start(
+        {
+            facingMode: "environment" // ép camera sau
+        },
+        {
+            fps: 20,
 
-            if(devices && devices.length){
+            qrbox: {
+                width: 280,
+                height: 280
+            },
 
-                // ưu tiên camera sau
-                let backCamera = devices.find(device =>
-                    device.label.toLowerCase().includes('back') ||
-                    device.label.toLowerCase().includes('rear') ||
-                    device.label.toLowerCase().includes('environment')
-                );
+            aspectRatio: 1.777,
 
-                // nếu không tìm thấy thì dùng camera đầu tiên
-                let cameraId = backCamera
-                    ? backCamera.id
-                    : devices[0].id;
+            disableFlip: false,
 
-                html5QrCode.start(
-                    cameraId,
-                    {
-                        fps: 20,
-
-                        qrbox: function(viewfinderWidth, viewfinderHeight) {
-
-                            let minEdge =
-                                Math.min(viewfinderWidth, viewfinderHeight);
-
-                            let size = Math.floor(minEdge * 0.8);
-
-                            return {
-                                width: size,
-                                height: size
-                            };
-                        },
-
-                        aspectRatio: 1.7778,
-
-                        disableFlip: false
-                    },
-                    onScanSuccess
-                );
-
+            experimentalFeatures: {
+                useBarCodeDetectorIfSupported: true
             }
-        })
-        .catch(err => {
-            console.error("Không tìm thấy camera", err);
-        });
+        },
+        onScanSuccess
+    ).catch(err => {
+
+        console.error(err);
+
+        alert(
+            "Không mở được camera. Hãy cấp quyền camera cho trình duyệt."
+        );
+    });
 
 </script>
 
