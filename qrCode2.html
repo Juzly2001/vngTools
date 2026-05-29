@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 
-<title>HBP 0.1</title>
+<title>HBP 0.2</title>
 
 <link rel="icon" href="data:image/svg+xml,
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
@@ -373,7 +373,8 @@ button:active{
     }
 
     button{
-        padding:12px;
+        padding:10px 16px;
+        font-size: 12px;
     }
 
     #reader{
@@ -415,8 +416,8 @@ button:active{
 <div id="reader"></div>
 
 <div class="top-bar">
-    <button id="copyBtn">📋 Copy tất cả</button>
-    <button id="clearBtn">🗑 Xóa tất cả</button>
+    <button id="copyBtn">📋 Copy hết</button>
+    <button id="clearBtn">🗑 Xóa hết</button>
     <button id="importBtn">
         ☁ Import
     </button>
@@ -868,21 +869,25 @@ importBtn.onclick=async()=>{
         importBtn.innerText=
         "⏳ Upload...";
 
-        const data=
+const data = scannedCodes.map(x=>({
 
-        scannedCodes.map(x=>({
+    code: x.code,
 
-            code:x.code,
+    cod:
+    x.tags.filter(
+        t=>dropdownOptions.includes(t)
+    ).join(", "),
 
-            tags:x.tags.join(", "),
+    action:
+    x.tags.filter(
+        t=>actionOptions.includes(t)
+    ).join(", "),
 
-            time:
-            new Date()
-            .toLocaleString(
-                "vi-VN"
-            )
+    time:
+    new Date()
+    .toLocaleString("vi-VN")
 
-        }));
+}));
 
 await fetch(
     SHEET_WEBHOOK,
