@@ -854,12 +854,12 @@ html5QrCode.start(
 },
 {
 
-    fps:20, // giảm tải CPU
+    fps:15,
 
-   qrbox:{
-    width:180,
-    height:180
-},
+    qrbox:{
+        width:180,
+        height:180
+    },
 
     aspectRatio:1.333,
 
@@ -867,18 +867,39 @@ html5QrCode.start(
 
         facingMode:"environment",
 
-        width:{ ideal:1280 },
-        height:{ ideal:720 }
+        width:{ideal:1920},
+
+        height:{ideal:1080},
+
+        advanced:[
+
+            {
+                focusMode:"continuous"
+            }
+
+        ]
 
     },
 
     rememberLastUsedCamera:true,
 
-    disableFlip:true,
+    disableFlip:false,
 
     experimentalFeatures:{
         useBarCodeDetectorIfSupported:true
-    }
+    },
+
+    formatsToSupport:[
+
+        Html5QrcodeSupportedFormats.QR_CODE,
+
+        Html5QrcodeSupportedFormats.CODE_128,
+
+        Html5QrcodeSupportedFormats.EAN_13,
+
+        Html5QrcodeSupportedFormats.CODE_39
+
+    ]
 
 },
 onScanSuccess
