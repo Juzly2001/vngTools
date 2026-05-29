@@ -120,6 +120,18 @@ button:active{
     color:#fff;
 }
 
+#importBtn{
+
+    background:
+    linear-gradient(
+        135deg,
+        #2196f3,
+        #42a5f5
+    );
+
+    color:#fff;
+}
+
 #status{
     background:#fff;
     padding:12px;
@@ -405,6 +417,9 @@ button:active{
 <div class="top-bar">
     <button id="copyBtn">📋 Copy tất cả</button>
     <button id="clearBtn">🗑 Xóa tất cả</button>
+    <button id="importBtn">
+        ☁ Import
+    </button>
 </div>
 
 <div id="status">
@@ -483,11 +498,17 @@ const actionOptions=[
     "Duyệt đơn"
 ];
 let scannedCodes=[];
-
+// link ggsheets
+const SHEET_WEBHOOK=
+"https://script.google.com/macros/s/AKfycbyMinlMSUi2quS9phTXnV3GfEilYY65KhPJE8p3qB4WT03XBBnXAblpwEDux0ebs3KP/exec"; 
 let lastScanned="";
 let lastScanTime=0;
 
 const status=document.getElementById("status");
+const importBtn =
+document.getElementById(
+    "importBtn"
+);
 const resultContainer=document.getElementById("result-container");
 
 
@@ -833,6 +854,67 @@ copyBtn.onclick=async()=>{
     alert("Đã copy.");
 };
 
+importBtn.onclick=async()=>{
+
+    if(!scannedCodes.length){
+
+        alert("Chưa có dữ liệu.");
+
+        return;
+    }
+
+    try{
+
+        importBtn.innerText=
+        "⏳ Upload...";
+
+        const data=
+
+        scannedCodes.map(x=>({
+
+            code:x.code,
+
+            tags:x.tags.join(", "),
+
+            time:
+            new Date()
+            .toLocaleString(
+                "vi-VN"
+            )
+
+        }));
+
+await fetch(
+    SHEET_WEBHOOK,
+    {
+        method:"POST",
+
+        mode:"no-cors",
+
+        headers:{
+            "Content-Type":"text/plain"
+        },
+
+        body:JSON.stringify(data)
+    }
+);
+        alert(
+            "✅ Import thành công"
+        );
+
+    }catch(err){
+
+        console.error(err);
+
+        alert(
+            "❌ Import lỗi"
+        );
+    }
+
+    importBtn.innerText=
+    "☁️ Import";
+
+};
 
 clearBtn.onclick=()=>{
 
