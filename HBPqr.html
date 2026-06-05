@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBP QrCode & Barcode</title>
+    <title>HBP QrCode</title>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     
@@ -70,7 +70,6 @@
             padding: 10px;
             background: #fff;
         }
-        /* Style text hiển thị dưới QR Code */
         .qr-label {
             margin-top: 5px;
             font-size: 14px;
@@ -78,9 +77,10 @@
         }
 
         /* =================================================== */
-        /* CSS ĐẶC BIỆT KHI IN (Ctrl + P hoặc bấm nút In)      */
+        /* CSS ĐẶC BIỆT KHI IN (ĐÃ SỬA LỖI TRANG TRẮNG)       */
         /* =================================================== */
         @media print {
+            /* Ẩn toàn bộ các phần tử khác trừ vùng in */
             body * {
                 visibility: hidden;
             }
@@ -95,19 +95,31 @@
                 border: none;
                 padding: 0;
                 margin: 0;
-                display: block;
+                display: block; /* Trả về block chuẩn khi in */
             }
             .barcode-item {
-                page-break-inside: avoid;
-                page-break-after: always;
+                /* Tránh việc một mã bị cắt đôi giữa 2 trang */
+                page-break-inside: avoid; 
+                
+                /* NẾU BẠN MUỐN: Mỗi mã nằm riêng 1 trang, hãy dùng dòng dưới */
+                page-break-after: always; 
+                
+                /* NẾU BẠN MUỐN: In liên tục nhiều mã trên 1 trang (tiết kiệm giấy), 
+                   hãy đổi thành page-break-after: auto; */
+
                 border: none;
-                margin: 0;
-                padding: 5px;
+                margin: 0 0 20px 0; /* Khoảng cách giữa các mã khi in */
+                padding: 10px;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 justify-content: center;
-                height: 100vh;
+                height: auto; /* Sửa từ 100vh thành auto để không bị dư tràn trang */
+            }
+
+            /* Xóa bỏ trang trống cuối cùng do lệnh page-break-after gây ra */
+            .barcode-item:last-child {
+                page-break-after: avoid;
             }
         }
     </style>
@@ -125,8 +137,8 @@
     </div>
     
     <div>
-        <button class="btn-generate" onclick="generateCodes()">Tạo Mã</button>
-        <button class="btn-print" onclick="window.print()">In Qua Máy In Wi-Fi</button>
+        <button class="btn-generate" onclick="generateCodes()">Tạo mã</button>
+        <button class="btn-print" onclick="window.print()">In mã</button>
     </div>
 
     <h3>Bản xem trước:</h3>
@@ -137,7 +149,6 @@
     function generateCodes() {
         const textarea = document.getElementById('barcode-inputs');
         const printZone = document.getElementById('print-zone');
-        // Lấy loại mã đang được chọn (barcode hoặc qrcode)
         const codeType = document.querySelector('input[name="code-type"]:checked').value;
         
         const lines = textarea.value.split('\n').map(line => line.trim()).filter(line => line !== "");
@@ -153,7 +164,6 @@
             itemDiv.className = 'barcode-item';
             
             if (codeType === 'barcode') {
-                // TẠO MÃ VẠCH
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
                 svg.id = "code-" + index;
                 itemDiv.appendChild(svg);
@@ -172,12 +182,10 @@
                 }
                 
             } else {
-                // TẠO MÃ QR
                 const canvas = document.createElement('canvas');
                 canvas.id = "code-" + index;
                 itemDiv.appendChild(canvas);
                 
-                // Thêm chữ text bên dưới QR giống như Barcode cho dễ nhìn
                 const labelDiv = document.createElement('div');
                 labelDiv.className = 'qr-label';
                 labelDiv.innerText = code;
@@ -185,11 +193,10 @@
                 
                 printZone.appendChild(itemDiv);
                 
-                // Gọi thư viện QRCode vẽ lên canvas
                 QRCode.toCanvas(document.getElementById("code-" + index), code, {
-                    width: 120, // Kích thước vuông của QR code
+                    width: 120,
                     margin: 2,
-                    errorCorrectionLevel: 'H' // Độ bền sửa lỗi cao
+                    errorCorrectionLevel: 'H'
                 }, function (error) {
                     if (error) console.error("Lỗi tạo QR cho: " + code, error);
                 });
