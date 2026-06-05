@@ -7,6 +7,13 @@
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
     
+    <style id="dynamic-print-style">
+        /* Khổ giấy mặc định lúc khởi tạo sẽ là 40mm x 30mm */
+        @media print {
+            @page { size: 40mm 40mm; margin: 0; }
+        }
+    </style>
+
     <style>
         /* CSS cho giao diện hiển thị trên máy tính */
         body {
@@ -43,6 +50,18 @@
             font-weight: bold;
             cursor: pointer;
         }
+        .input-size {
+            width: 60px;
+            padding: 5px;
+            font-size: 14px;
+            text-align: center;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin: 0 5px;
+        }
+        .actions-group {
+            margin-bottom: 20px;
+        }
         button {
             padding: 10px 20px;
             font-size: 16px;
@@ -77,49 +96,65 @@
         }
 
         /* =================================================== */
-        /* CSS ĐẶC BIỆT KHI IN (ĐÃ SỬA LỖI TRANG TRẮNG)       */
+        /* CSS ĐẶC BIỆT KHI IN (ẨN GIAO DIỆN & CĂN GIỮA)        */
         /* =================================================== */
         @media print {
-            /* Ẩn toàn bộ các phần tử khác trừ vùng in */
-            body * {
-                visibility: hidden;
+            body {
+                background: #fff !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                height: 100vh;
+                width: 100vw;
             }
-            #print-zone, #print-zone * {
-                visibility: visible;
+            .container {
+                box-shadow: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                max-width: 100% !important;
+                height: 100% !important;
             }
+            .container > p, 
+            textarea, 
+            .options-group, 
+            .actions-group, 
+            h3 {
+                display: none !important;
+            }
+
             #print-zone {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                border: none;
-                padding: 0;
-                margin: 0;
-                display: block; /* Trả về block chuẩn khi in */
+                display: flex !important;
+                flex-wrap: wrap !important;
+                border: none !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: transparent !important;
+                width: 100% !important;
+                height: 100% !important;
+                align-items: center !important;     /* Căn giữa dọc */
+                justify-content: center !important;   /* Căn giữa ngang */
             }
+
             .barcode-item {
-                /* Tránh việc một mã bị cắt đôi giữa 2 trang */
-                page-break-inside: avoid; 
-                
-                /* NẾU BẠN MUỐN: Mỗi mã nằm riêng 1 trang, hãy dùng dòng dưới */
-                page-break-after: always; 
-                
-                /* NẾU BẠN MUỐN: In liên tục nhiều mã trên 1 trang (tiết kiệm giấy), 
-                   hãy đổi thành page-break-after: auto; */
-
-                border: none;
-                margin: 0 0 20px 0; /* Khoảng cách giữa các mã khi in */
-                padding: 10px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-                height: auto; /* Sửa từ 100vh thành auto để không bị dư tràn trang */
+                border: none !important;
+                padding: 0 !important;
+                background: #fff !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                page-break-inside: avoid !important;
             }
-
-            /* Xóa bỏ trang trống cuối cùng do lệnh page-break-after gây ra */
-            .barcode-item:last-child {
-                page-break-after: avoid;
+            
+            /* Tự động co giãn kích thước mã vừa vặn 90% khổ giấy bạn nhập */
+            .barcode-item svg, .barcode-item canvas {
+                max-width: 90% !important;
+                max-height: 75% !important;
+                width: auto !important;
+                height: auto !important;
+            }
+            .qr-label {
+                font-size: 12px !important;
+                margin-top: 2px !important;
             }
         }
     </style>
@@ -135,8 +170,15 @@
         <label><input type="radio" name="code-type" value="barcode" checked> Mã vạch (Barcode)</label>
         <label><input type="radio" name="code-type" value="qrcode"> Mã QR (QR Code)</label>
     </div>
+
+    <div class="options-group">
+        <span>Cấu hình khổ giấy in (mm): </span>
+        <label>Rộng: <input type="number" id="paper-width" class="input-size" value="40" oninput="updatePaperSize()"></label>
+        <label>Cao: <input type="number" id="paper-height" class="input-size" value="40" oninput="updatePaperSize()"></label>
+        <small style="color: #666; font-weight: normal;">(Thay đổi số để đổi khổ giấy ngay lập tức)</small>
+    </div>
     
-    <div>
+    <div class="actions-group">
         <button class="btn-generate" onclick="generateCodes()">Tạo mã</button>
         <button class="btn-print" onclick="window.print()">In mã</button>
     </div>
@@ -146,6 +188,22 @@
 </div>
 
 <script>
+    // Hàm lấy giá trị từ 2 ô nhập liệu để tự động tính toán kích thước khổ in
+    function updatePaperSize() {
+        const width = document.getElementById('paper-width').value || 40;
+        const height = document.getElementById('paper-height').value || 40;
+        const styleElement = document.getElementById('dynamic-print-style');
+        
+        styleElement.innerHTML = `
+            @media print {
+                @page { 
+                    size: ${width}mm ${height}mm; 
+                    margin: 0; 
+                }
+            }
+        `;
+    }
+
     function generateCodes() {
         const textarea = document.getElementById('barcode-inputs');
         const printZone = document.getElementById('print-zone');
@@ -174,7 +232,7 @@
                         format: "CODE128",
                         lineColor: "#000",
                         width: 2,
-                        height: 60,
+                        height: 100,
                         displayValue: true
                     });
                 } catch (error) {
@@ -194,7 +252,7 @@
                 printZone.appendChild(itemDiv);
                 
                 QRCode.toCanvas(document.getElementById("code-" + index), code, {
-                    width: 120,
+                    width: 150,
                     margin: 2,
                     errorCorrectionLevel: 'H'
                 }, function (error) {
