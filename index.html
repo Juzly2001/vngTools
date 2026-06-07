@@ -43,6 +43,19 @@
             --context-bg: rgba(30, 41, 59, 0.95);
         }
 
+        /* Ẩn thanh cuộn cho toàn bộ trang và tất cả các thẻ có thanh cuộn */
+        * {
+            /* Ẩn thanh cuộn cho Firefox */
+            scrollbar-width: none;
+            /* Ẩn thanh cuộn cho IE và Edge cũ */
+            -ms-overflow-style: none;
+        }
+
+        /* Ẩn thanh cuộn cho Chrome, Safari và Opera */
+        *::-webkit-scrollbar {
+            display: none;
+        }
+
         body.light-mode {
             --bg-gradient: linear-gradient(
                 135deg,
@@ -290,12 +303,14 @@
         }
 
         .schedule-table th {
-            text-align: left;
+            position: sticky;
+            top: 0;
+            background: var(--schedule-accent);
             padding: 8px 10px;
             font-size: 11px;
-            color: var(--text-sub);
+            color: var(--text-main);
             text-transform: uppercase;
-            border-bottom: 1px solid rgba(255,255,255,0.08);
+            border-bottom: 1px solid var(--border-color);
         }
 
         body.light-mode .schedule-table th {
@@ -326,14 +341,41 @@
         }
 
         .schedule-date {
-            width: 90px;
             white-space: nowrap;
             color: var(--text-sub);
             font-size: 13px;
         }
 
         .schedule-name {
-            font-weight: 500;
+            max-width: 80px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Ẩn thanh cuộn cho Chrome, Safari và Edge */
+        .schedule-table-wrapper::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* Ẩn thanh cuộn cho Firefox */
+        .schedule-table-wrapper {
+            scrollbar-width: none;
+            /* Giữ nguyên các thuộc tính cũ */
+            max-height: 250px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            /* Tùy chọn: Thêm thuộc tính này nếu muốn cuộn mượt hơn trên cảm ứng */
+            -ms-overflow-style: none; /* Ẩn cho IE 10+ */
+        }
+        
+
+        .schedule-table-wrapper {
+            max-height: 250px; /* Giới hạn khoảng 7 dòng */
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
         }
 
         /* 2LIGHT MÀU NỔI BẬT CHO CÁC BUTTON LỊCH QUAN TRỌNG */
@@ -494,7 +536,7 @@
         .emoji-picker-container { margin-bottom: 15px; }
         .emoji-grid {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
-            max-height: 100px; overflow-y: auto; background: rgba(0, 0, 0, 0.2);
+            max-height: 100px; overflow-y: auto;
             padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
         }
         .emoji-item {
@@ -1149,6 +1191,9 @@
 
                 } else {
 
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'schedule-table-wrapper';
+
                     const table = document.createElement('table');
                     table.className = 'schedule-table';
 
@@ -1156,6 +1201,7 @@
                         <thead>
                             <tr>
                                 <th>Ngày</th>
+                                <th>Giờ</th>
                                 <th>Công việc</th>
                             </tr>
                         </thead>
@@ -1164,50 +1210,25 @@
 
                     const tbody = table.querySelector('tbody');
 
-                    group.schedules.forEach((schObj,index)=>{
-
+                    group.schedules.forEach((schObj, index) => {
                         const dateParts = schObj.date.split('-');
-
-                        const displayDate =
-                            `${dateParts[2]}/${dateParts[1]}`;
-
+                        const displayDate = `${dateParts[2]}/${dateParts[1]}`;
+                        
                         const row = document.createElement('tr');
-
-                        row.className =
-                            schObj.important
-                                ? 'schedule-row important'
-                                : 'schedule-row';
-
-                        row.onclick = () =>
-                            showContentDetail(
-                                group.id,
-                                index,
-                                'schedule'
-                            );
-
-                        row.oncontextmenu = (e) =>
-                            openContextMenu(
-                                e,
-                                'schedule',
-                                group.id,
-                                index
-                            );
-
+                        row.className = schObj.important ? 'schedule-row important' : 'schedule-row';
+                        row.onclick = () => showContentDetail(group.id, index, 'schedule');
+                        row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, index);
+                        
                         row.innerHTML = `
-                            <td class="schedule-date">
-                                ${displayDate}
-                            </td>
-
-                            <td class="schedule-name">
-                                ${schObj.important ? '⚠️ ' : ''}
-                                ${schObj.title}
-                            </td>
+                            <td class="schedule-date">${displayDate}</td>
+                            <td class="schedule-date" style="width: 50px;">${schObj.time}</td>
+                            <td class="schedule-name">${schObj.important ? '⚠️ ' : ''}${schObj.title}</td>
                         `;
-
                         tbody.appendChild(row);
                     });
 
-                    contentArea.appendChild(table);
+                    wrapper.appendChild(table);
+                    contentArea.appendChild(wrapper);
                 }
             }
 
@@ -1217,9 +1238,11 @@
         initDragAndDrop();
     }
 
-    function initDragAndDrop() {
+   function initDragAndDrop() {
+        // 1. Kéo thả nhóm (Group card)
         Sortable.create(document.getElementById('groupsContainer'), {
-            animation: 250, ghostClass: 'sortable-ghost-group',
+            animation: 250, 
+            ghostClass: 'sortable-ghost-group',
             onEnd: function () {
                 const currentOrderIds = Array.from(document.getElementById('groupsContainer').children).map(card => card.getAttribute('data-id'));
                 dashboardData.sort((a, b) => currentOrderIds.indexOf(a.id) - currentOrderIds.indexOf(b.id));
@@ -1227,25 +1250,33 @@
             }
         });
 
-        document.querySelectorAll('.buttons-area, .notes-area, .schedules-area').forEach(area => {
+        // 2. Kéo thả các phần tử con trong nhóm (Links, Notes, Schedules)
+        // Chúng ta sẽ dùng querySelectorAll với tất cả các class có đuôi -area
+        document.querySelectorAll('.links-area, .notes-area, .schedules-area').forEach(area => {
             const groupId = area.getAttribute('data-group-id');
             const classList = area.classList;
+            
             let currentItemType = 'link';
             if (classList.contains('notes-area')) currentItemType = 'note';
             if (classList.contains('schedules-area')) currentItemType = 'schedule';
 
             Sortable.create(area, {
-                animation: 200, ghostClass: 'sortable-ghost-link',
+                animation: 200, 
+                ghostClass: 'sortable-ghost-link',
                 onEnd: function () {
-                    const group = dashboardData.find(g => g.id === groupId); if (!group) return;
-                    const newIndices = Array.from(area.children).map(item => parseInt(item.getAttribute('data-index')));
+                    const group = dashboardData.find(g => g.id === groupId); 
+                    if (!group) return;
+
+                    // Lấy tất cả các phần tử con có data-index
+                    const items = Array.from(area.children).filter(item => item.hasAttribute('data-index'));
+                    const newIndices = items.map(item => parseInt(item.getAttribute('data-index')));
                     
                     if(currentItemType === 'link') group.links = newIndices.map(idx => group.links[idx]);
                     else if(currentItemType === 'note') group.notes = newIndices.map(idx => group.notes[idx]);
                     else if(currentItemType === 'schedule') group.schedules = newIndices.map(idx => group.schedules[idx]);
 
                     localStorage.setItem('myDashboardDataButtonsEdition', JSON.stringify(dashboardData));
-                    renderDashboard();
+                    // Chỉ render lại nếu cần thiết, thường thì Sortable đã tự làm việc này qua DOM
                 }
             });
         });
