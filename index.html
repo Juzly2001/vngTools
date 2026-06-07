@@ -12,30 +12,15 @@
     <stop offset='100%' stop-color='%23006eff'/>
     </linearGradient>
     </defs>
-
     <rect width='64' height='64' rx='16' fill='%23111'/>
-
-
     <rect x='10' y='10' width='44' height='44' rx='8' fill='%231a1a1a' stroke='url(%23g)' stroke-width='2'/>
-
-
     <rect x='18' y='36' width='6' height='12' rx='2' fill='url(%23g)'/>
     <rect x='29' y='28' width='6' height='20' rx='2' fill='url(%23g)'/>
     <rect x='40' y='20' width='6' height='28' rx='2' fill='url(%23g)'/>
-
-
-    <polyline points='18,28 32,22 43,16'
-    fill='none'
-    stroke='white'
-    stroke-width='3'
-    stroke-linecap='round'
-    stroke-linejoin='round'/>
-
-
+    <polyline points='18,28 32,22 43,16' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/>
     <circle cx='18' cy='28' r='2' fill='white'/>
     <circle cx='32' cy='22' r='2' fill='white'/>
     <circle cx='43' cy='16' r='2' fill='white'/>
-
     </svg>">
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
@@ -51,9 +36,39 @@
             --accent-hover: #4f46e5;
             --note-accent: #eab308;
             --note-accent-hover: #ca8a04;
+            --schedule-accent: #10b981;
+            --schedule-accent-hover: #059669;
             --danger-color: #ef4444;
             --modal-bg: rgba(15, 23, 42, 0.95);
             --context-bg: rgba(30, 41, 59, 0.95);
+        }
+
+        body.light-mode {
+            --bg-gradient: linear-gradient(
+                135deg,
+                #edf2f7 0%,
+                #dbeafe 100%
+            );
+
+            --panel-bg: rgba(255,255,255,0.75);
+
+            --border-color: rgba(0,0,0,0.12);
+
+            --text-main: #0f172a;
+            --text-sub: #475569;
+
+            --modal-bg: #ffffff;
+            --context-bg: #ffffff;
+        }
+
+        body.light-mode h1 {
+            background: linear-gradient(
+                90deg,
+                #4f46e5,
+                #7c3aed
+            );
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
         body {
@@ -97,6 +112,38 @@
             margin-bottom: 30px;
         }
 
+        body.light-mode .toolbar {
+            background: rgba(255,255,255,0.85);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+        }
+
+        body.light-mode .link-button,
+        body.light-mode .note-button,
+        body.light-mode .schedule-button {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid #dbe2ea;
+        }
+
+        body.light-mode .tag-link {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        body.light-mode .tag-note {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        body.light-mode .tag-schedule {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        body.light-mode .group-title::before {
+            color: #64748b;
+        }
+
         .btn-group { display: flex; gap: 10px; }
 
         button {
@@ -116,6 +163,8 @@
         .btn-primary:hover { background-color: var(--accent-hover); }
         .btn-warning { background-color: var(--note-accent); color: #0f172a; }
         .btn-warning:hover { background-color: var(--note-accent-hover); }
+        .btn-success { background-color: var(--schedule-accent); color: white; }
+        .btn-success:hover { background-color: var(--schedule-accent-hover); }
         .btn-secondary { background-color: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--border-color); }
         .btn-secondary:hover { background-color: rgba(255,255,255,0.15); }
         .btn-real-danger { background-color: var(--danger-color); color: white; }
@@ -134,7 +183,9 @@
             border: 1px solid var(--border-color);
             border-radius: 20px;
             padding: 25px;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
+            box-shadow:
+            0 8px 24px rgba(15,23,42,0.08),
+            0 2px 8px rgba(15,23,42,0.06);
             display: flex;
             flex-direction: column;
             align-self: start;
@@ -144,6 +195,7 @@
         .group-card:hover { border-color: rgba(255, 255, 255, 0.15); }
         
         .group-card.type-note { border-left: 4px solid var(--note-accent); }
+        .group-card.type-schedule { border-left: 4px solid var(--schedule-accent); }
 
         .sortable-ghost-group { opacity: 0.3; border: 2px dashed var(--accent-color); }
         .sortable-ghost-link { opacity: 0.4; transform: scale(0.95); }
@@ -157,10 +209,14 @@
             padding-bottom: 12px;
         }
 
+        body.light-mode .group-header {
+            border-bottom: 1px solid rgba(15,23,42,0.12);
+        }
+
         .group-title {
             font-size: 1.2rem;
             font-weight: 700;
-            color: #fff;
+            color: var(--text-main);
             display: inline-flex;
             align-items: center;
             gap: 8px;
@@ -181,22 +237,26 @@
         }
         .tag-link { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
         .tag-note { background: rgba(234, 179, 8, 0.2); color: #fde047; }
+        .tag-schedule { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
 
-        /* Đồng bộ hai khu vực bấm nút giống hệt nhau về mặt giao diện gọn gàng */
-        .buttons-area, .notes-area {
+        .buttons-area, .notes-area, .schedules-area {
             display: flex;
             flex-direction: row;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 16px;
+            padding: 12px;
             min-height: 50px;
-            padding: 8px;
             border-radius: 8px;
-            background: rgba(0, 0, 0, 0.12);
         }
 
-        .item-wrapper { display: inline-flex; align-items: center; cursor: grab; }
+        .item-wrapper {
+            display: inline-flex;
+            align-items: center;
+            cursor: grab;
+            margin: 2px;
+        }
 
-        .link-button, .note-button {
+        .link-button, .note-button, .schedule-button {
             color: var(--text-main);
             text-decoration: none;
             font-size: 14px;
@@ -212,7 +272,6 @@
             cursor: pointer;
         }
         
-        /* Hiệu ứng Hover nút Link */
         .link-button:hover {
             background: linear-gradient(90deg, #6366f1, #a855f7);
             border-color: transparent;
@@ -220,13 +279,81 @@
             box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
         }
 
-        /* Hiệu ứng Hover nút Ghi chú (Màu vàng theo đặc trưng Note) */
         .note-button:hover {
             background: linear-gradient(90deg, #eab308, #f59e0b);
             color: #0f172a;
             border-color: transparent;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
+        }
+
+        .schedule-button:hover {
+            background: linear-gradient(90deg, #10b981, #059669);
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .schedule-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .schedule-table th {
+            text-align: left;
+            padding: 8px 10px;
+            font-size: 11px;
+            color: var(--text-sub);
+            text-transform: uppercase;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        body.light-mode .schedule-table th {
+            border-bottom: 1px solid rgba(15,23,42,0.12);
+        }
+
+        .schedule-table td {
+            padding: 10px;
+            font-size: 14px;
+            color: var(--text-main);
+        }
+
+        body.light-mode .schedule-table td {
+            border-bottom: 1px solid rgba(15,23,42,0.08);
+        }
+
+        .schedule-row {
+            cursor: pointer;
+            transition: all .2s ease;
+        }
+
+        .schedule-row:hover {
+            background: rgba(255,255,255,.05);
+        }
+
+        .schedule-row.important {
+            border-left: 3px solid #ef4444;
+        }
+
+        .schedule-date {
+            width: 90px;
+            white-space: nowrap;
+            color: var(--text-sub);
+            font-size: 13px;
+        }
+
+        .schedule-name {
+            font-weight: 500;
+        }
+
+        /* 2LIGHT MÀU NỔI BẬT CHO CÁC BUTTON LỊCH QUAN TRỌNG */
+        .schedule-button.important-highlight {
+            background: rgba(239, 68, 68, 0.15) !important;
+            border: 1px solid rgba(239, 68, 68, 0.4) !important;
+            color: #fca5a5 !important;
+            font-weight: 600;
+            box-shadow: none;
+            animation: none;
         }
 
         .no-data-text { color: var(--text-sub); font-size: 13px; font-style: italic; width: 100%; padding: 8px;}
@@ -281,24 +408,70 @@
             border-radius: 20px;
             padding: 30px;
             width: 90%;
-            max-width: 450px;
+            max-width: 500px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
             transform: translateY(-20px);
             transition: transform 0.3s ease;
         }
         .modal-overlay.active .modal-box { transform: translateY(0); }
+        
         .modal-box label { font-size: 12px; color: var(--text-sub); display: block; margin-bottom: 5px; }
-        .modal-box input, .modal-box textarea {
+        .modal-box input, .modal-box textarea, .modal-box select {
             width: 100%; padding: 12px; background: rgba(255,255,255,0.04);
             border: 1px solid var(--border-color); border-radius: 8px;
-            color: #fff; font-size: 15px; box-sizing: border-box;
-            margin-bottom: 15px; outline: none; font-family: inherit;
+            color: var(--text-main); font-size: 15px; box-sizing: border-box;
+            margin-bottom: 12px; outline: none; font-family: inherit;
         }
-        .modal-box textarea { resize: vertical; height: 160px; line-height: 1.5; }
-        .modal-box input:focus, .modal-box textarea:focus { border-color: var(--accent-color); }
+        .modal-box textarea { resize: vertical; height: 60px; line-height: 1.4; }
+        .modal-box input:focus, .modal-box textarea:focus, .modal-box select:focus { border-color: var(--accent-color); }
+        
+        .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+        /* Vùng thiết kế cuộn thêm NHIỀU MỐC LỊCH CÙNG LÚC */
+        .schedules-blocks-container {
+            max-height: 340px;
+            overflow-y: auto;
+            background: rgba(0,0,0,0.2);
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 15px;
+        }
+        .schedule-block-item {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.06);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        .schedule-block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.04);
+            padding: 6px 10px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+        }
+        .important-checkbox-label {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px !important;
+            color: #f87171 !important;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 0 !important;
+        }
+        .important-checkbox-label input { width: auto !important; margin: 0 !important; cursor: pointer; }
+        .btn-remove-block {
+            background: none; color: var(--text-sub); padding: 2px 8px; font-size: 11px; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .btn-remove-block:hover { color: var(--danger-color); border-color: var(--danger-color); }
+
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
         
-        /* Giao diện xem ghi chú chi tiết */
         .view-note-content {
             background: rgba(0, 0, 0, 0.25);
             border: 1px solid var(--border-color);
@@ -313,13 +486,26 @@
             overflow-y: auto;
             text-align: left;
         }
-        .view-note-content a { color: #6366f1; text-decoration: underline; }
+
+        /* --- CHI TIẾT KHI XEM MỐC LỊCH --- */
+        .single-schedule-detail {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .single-schedule-detail h4 { margin-top: 0; font-size: 17px; color: #fff; }
+        .schedule-info-line { font-size: 14px; color: var(--text-sub); margin-bottom: 15px; }
+        .schedule-tasks-list {
+            background: rgba(0,0,0,0.15); border-radius: 8px; padding: 15px; border: 1px solid rgba(255,255,255,0.04);
+            white-space: pre-wrap; word-break: break-word; font-size: 14px; line-height: 1.5; color: var(--text-main);
+        }
 
         /* Emoji picker */
         .emoji-picker-container { margin-bottom: 15px; }
         .emoji-grid {
             display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
-            max-height: 120px; overflow-y: auto; background: rgba(0, 0, 0, 0.2);
+            max-height: 100px; overflow-y: auto; background: rgba(0, 0, 0, 0.2);
             padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
         }
         .emoji-item {
@@ -328,43 +514,61 @@
         }
         .emoji-item:hover { background: rgba(99, 102, 241, 0.2); transform: scale(1.1); }
         .emoji-item.selected { background: var(--accent-color); border-color: rgba(255,255,255,0.3); }
+
         @media screen and (max-width: 768px) {
-
-            .toolbar {
-                display: grid !important;
-                grid-template-columns: 1fr !important;
-                gap: 12px !important;
-            }
-
-            .btn-group {
-                display: grid !important;
-                grid-template-columns: 1fr 1fr !important;
-                gap: 10px !important;
-                width: 100%;
-            }
-
-            .btn-group button {
-                width: 100%;
-                min-height: 56px;
-                justify-content: center;
-                white-space: normal;
-                text-align: center;
-            }
+            .toolbar { display: grid !important; grid-template-columns: 1fr !important; gap: 12px !important; }
+            .btn-group { display: grid !important; grid-template-columns: 1fr 1fr 1fr !important; gap: 8px !important; width: 100%; }
+            .toolbar .btn-group:last-child { grid-template-columns: 1fr 1fr !important; }
+            .btn-group button { width: 100%; min-height: 50px; padding: 6px 8px; justify-content: center; white-space: normal; text-align: center; font-size: 12px; }
+            .datetime-row { grid-template-columns: 1fr; gap: 0; }
         }
+
+        .theme-fab {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            cursor: pointer;
+            z-index: 5000;
+            background: none;
+        }
+        #backToTop {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            display: none; /* Ẩn mặc định */
+            padding: 12px 16px;
+            border-radius: 50%;
+            border: none;
+            background: var(--accent-color);
+            color: white;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: 0.3s;
+            z-index: 10000;
+        }
+        #backToTop:hover { transform: scale(1.1); background: var(--accent-hover); }
     </style>
 </head>
 <body>
-
+<button id="themeBtn"
+        class="theme-fab"
+        onclick="toggleTheme()"
+        title="Chuyển giao diện">
+    💡
+</button>
 <div class="container">
     <header>
         <h1>🌟 WORKSPACE DASHBOARD</h1>
-        <p style="color: var(--text-sub)">💡 <b>Chuột trái</b> để mở liên kết hoặc đọc nhanh Note. <b>Chuột phải</b> để mở Menu nâng cao.</p>
+        <p style="color: var(--text-sub)">💡 <b>Chuột trái</b> để tương tác xem nhanh. <b>Chuột phải</b> để tùy chọn Thêm / Sửa / Xóa.</p>
     </header>
 
     <div class="toolbar">
         <div class="btn-group">
-            <button class="btn-primary" onclick="openGroupModal(false, 'link')">➕ Tạo Nhóm Link</button>
-            <button class="btn-warning" onclick="openGroupModal(false, 'note')">📝 Tạo Nhóm Ghi Chú</button>
+            <button class="btn-primary" onclick="openGroupModal(false, 'link')">➕ Nhóm Link</button>
+            <button class="btn-warning" onclick="openGroupModal(false, 'note')">📝 Nhóm Note</button>
+            <button class="btn-success" onclick="openGroupModal(false, 'schedule')">📅 Nhóm Lịch</button>
         </div>
         
         <div class="btn-group">
@@ -379,10 +583,10 @@
 
 <div class="modal-overlay" id="groupModal">
     <div class="modal-box">
-        <h3 id="groupModalTitle">📂 Cấu Hình Nhóm</h3>
+        <h3 id="groupModalTitle">📂 Cấu Thiết Lập Nhóm</h3>
         <label>Tên nhóm:</label>
         <input type="text" id="groupNameInput" placeholder="Nhập tên nhóm...">
-        <label>Chọn Emoji:</label>
+        <label>Chọn Emoji tiêu đề:</label>
         <div class="emoji-picker-container"><div class="emoji-grid" id="groupEmojiGrid"></div></div>
         <div class="modal-footer">
             <button class="btn-secondary" onclick="closeModal('groupModal')">Hủy</button>
@@ -395,7 +599,7 @@
     <div class="modal-box">
         <h3 id="linkModalTitle">🔗 Cấu Hình Nút Bấm</h3>
         <label>Tên hiển thị:</label>
-        <input type="text" id="linkNameInput" placeholder="Ví dụ: Google, Facebook...">
+        <input type="text" id="linkNameInput" placeholder="Ví dụ: Google...">
         <label>Địa chỉ URL:</label>
         <input type="text" id="linkUrlInput" placeholder="Ví dụ: google.com">
         <label>Chọn Emoji:</label>
@@ -411,24 +615,40 @@
     <div class="modal-box">
         <h3 id="noteModalTitle">📝 Thêm Nút Ghi Chú</h3>
         <label>Tiêu đề hiển thị trên nút:</label>
-        <input type="text" id="noteTitleInput" placeholder="Ví dụ:Tài khoản BIDV...">
+        <input type="text" id="noteTitleInput" placeholder="Ví dụ: Ghi chú gấp...">
         <label>Nội dung ghi chú chi tiết:</label>
-        <textarea id="noteContentInput" placeholder="Nhập nội dung đầy đủ của ghi chú tại đây... (Có thể xuống dòng thoải mái)"></textarea>
-        <label>Chọn Emoji cho nút:</label>
+        <textarea id="noteContentInput" placeholder="Nhập nội dung đầy đủ..."></textarea>
+        <label>Chọn Emoji:</label>
         <div class="emoji-picker-container"><div class="emoji-grid" id="noteEmojiGrid"></div></div>
         <div class="modal-footer">
             <button class="btn-secondary" onclick="closeModal('noteModal')">Hủy</button>
-            <button class="btn-primary" onclick="submitNoteForm()">Lưu Cấu Hình</button>
+            <button class="btn-primary" onclick="submitNoteForm()">Lưu Lại</button>
         </div>
     </div>
 </div>
 
-<div class="modal-overlay" id="readNoteModal">
-    <div class="modal-box" style="max-width: 550px;">
-        <h3 id="readNoteTitle" style="color: var(--note-accent); margin-top: 0; display:flex; align-items:center; gap:8px;">📋 Ghi Chú</h3>
-        <div class="view-note-content" id="readNoteBody"></div>
+<div class="modal-overlay" id="scheduleModal">
+    <div class="modal-box" style="max-width: 580px; width: 95%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 id="scheduleModalTitle" style="margin:0;">📅 Thiết Lập Mốc Lịch</h3>
+            <button type="button" class="btn-primary" id="addScheduleBlockBtn" style="padding: 6px 12px; font-size:12px;" onclick="addScheduleBlock()">➕ Thêm Mốc Lịch Mới</button>
+        </div>
+
+        <div class="schedules-blocks-container" id="scheduleBlocksWrapper"></div>
+        
         <div class="modal-footer">
-            <button class="btn-warning" onclick="closeModal('readNoteModal')">Đóng</button>
+            <button class="btn-secondary" onclick="closeModal('scheduleModal')">Hủy</button>
+            <button class="btn-success" onclick="submitScheduleForm()">Lưu Tất Cả Lịch</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="readModal">
+    <div class="modal-box" style="max-width: 550px; width: 95%;">
+        <h3 id="readModalTitle" style="margin-top: 0; display:flex; align-items:center; gap:8px;">📋 Chi Tiết</h3>
+        <div id="readModalBody"></div>
+        <div class="modal-footer">
+            <button class="btn-secondary" id="readModalCloseBtn" onclick="closeModal('readModal')">Đóng</button>
         </div>
     </div>
 </div>
@@ -447,7 +667,7 @@
 <div class="context-menu" id="customContextMenu"><div id="menuItemsContent"></div></div>
 
 <script>
-    const emojiList = ["NONE", "🚀", "🤖", "🔥", "✨", "🌟", "💻", "💼", "📚", "🛠️", "🎨", "🎵", "💬", "❤️", "📌", "🔔", "🔑", "💳"];
+    const emojiList = ["NONE", "📅", "⏰", "⏳", "🚀", "🤖", "🔥", "✨", "🌟", "💻", "💼", "📚", "🛠️", "💬", "📌", "✅", "⚠️"];
 
     let selectedEmoji = ""; 
     let isEditMode = false;
@@ -455,15 +675,18 @@
     let currentActiveGroupId = null;
     let currentActiveIndex = null;
 
-    // Khởi tạo dữ liệu mẫu theo cấu trúc mới (Mỗi note là một Object gồm title, content, emoji)
     let dashboardData = JSON.parse(localStorage.getItem('myDashboardDataButtonsEdition')) || [
         {
-            id: "g1", title: "Mạng Xã Hội", emoji: "NONE", type: "link",
-            links: [
-                { name: "Facebook", url: "https://facebook.com", emoji: "💬" },
-                { name: "YouTube", url: "https://youtube.com", emoji: "NONE" }
-            ]
+            id: "g1", title: "Hệ Thống GHTK", emoji: "🚀", type: "link",
+            links: [{ name: "Titan Admin", url: "https://titan-admin.ghtk.vn", emoji: "⚙️" }]
         },
+        {
+            id: "g2", title: "Lịch Trình Core", emoji: "📅", type: "schedule",
+            schedules: [
+                { title: "Họp Giao Ban", date: "2026-06-08", time: "08:30", content: "Báo cáo tiến độ hoàn thiện tool phân loại địa chỉ cấp 4 và địa chỉ đặc biệt.", important: true, emoji: "⏰" },
+                { title: "Fix bug API", date: "2026-06-08", time: "14:00", content: "Xử lý payload lỗi token hệ thống titan-admin.", important: false, emoji: "💻" }
+            ]
+        }
     ];
 
     function saveData() {
@@ -472,10 +695,11 @@
     }
 
     function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
-        const grid = document.getElementById(gridId); grid.innerHTML = ""; selectedEmoji = preSelectedEmoji;
+        const grid = document.getElementById(gridId); if(!grid) return;
+        grid.innerHTML = ""; selectedEmoji = preSelectedEmoji;
         emojiList.forEach((emoji) => {
             const item = document.createElement('div'); item.className = 'emoji-item';
-            item.innerHTML = emoji === "NONE" ? `<span style="font-size:11px;color:var(--text-sub);font-weight:bold;">🚫 Ẩn</span>` : emoji;
+            item.innerHTML = emoji === "NONE" ? `<span style="font-size:11px;color:var(--text-sub);font-weight:bold;">🚫 Không</span>` : emoji;
             if(emoji === preSelectedEmoji) item.classList.add('selected');
             item.onclick = function() {
                 grid.querySelectorAll('.emoji-item').forEach(el => el.classList.remove('selected'));
@@ -498,12 +722,12 @@
             buildEmojiPicker('groupEmojiGrid', group.emoji || "NONE");
         } else {
             isEditMode = false;
-            document.getElementById('groupModalTitle').innerText = defaultType === 'link' ? "📂 Tạo Nhóm Link Mới" : "📝 Tạo Nhóm Ghi Chú Mới";
+            let typeText = defaultType === 'link' ? "Nhóm Link" : (defaultType === 'note' ? "Nhóm Ghi Chú" : "Nhóm Lịch Trình");
+            document.getElementById('groupModalTitle').innerText = `📂 Tạo ${typeText} Mới`;
             document.getElementById('groupNameInput').value = '';
             buildEmojiPicker('groupEmojiGrid', "NONE");
         }
         openModal('groupModal');
-        document.getElementById('groupNameInput').focus();
     }
 
     function submitGroupForm() {
@@ -515,7 +739,8 @@
         } else {
             const newGroup = { id: 'g_' + Date.now(), title: name, emoji: selectedEmoji, type: currentGroupType };
             if(currentGroupType === 'link') newGroup.links = [];
-            else newGroup.notes = [];
+            else if(currentGroupType === 'note') newGroup.notes = [];
+            else if(currentGroupType === 'schedule') newGroup.schedules = [];
             dashboardData.push(newGroup);
         }
         saveData(); closeModal('groupModal');
@@ -553,7 +778,6 @@
         closeModal('linkModal');
     }
 
-    // Mở form điền thông tin Ghi Chú Mới (Có tiêu đề + nội dung đầy đủ)
     function openNoteModal(groupId, noteIndex = false) {
         currentActiveGroupId = groupId;
         if(noteIndex !== false) {
@@ -571,13 +795,13 @@
             buildEmojiPicker('noteEmojiGrid', "NONE");
         }
         openModal('noteModal');
-        document.getElementById('noteTitleInput').focus();
     }
 
     function submitNoteForm() {
         const title = document.getElementById('noteTitleInput').value.trim();
         const content = document.getElementById('noteContentInput').value;
-        if(!title || !content.trim()) return;
+        const date = document.getElementById('noteDateInput').value;
+        if(!title || !date ) return;
 
         const group = dashboardData.find(g => g.id === currentActiveGroupId);
         if(group) {
@@ -589,28 +813,183 @@
         closeModal('noteModal');
     }
 
-    // ĐỌC GHI CHÚ KHI BẤM CHUỘT TRÁI VÀO NÚT NOTE
-    function readNoteDetail(groupId, index) {
+    // ĐỘNG: THÊM KHỐI MỐC LỊCH (MỖI KHỐI LÀM NÊN 1 BUTTON ĐỘC LẬP)
+    function addScheduleBlock(data = null) {
+        const wrapper = document.getElementById('scheduleBlocksWrapper');
+        const blockId = 'block_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
+        const blockDiv = document.createElement('div');
+        blockDiv.className = 'schedule-block-item';
+        blockDiv.id = blockId;
+
+        // Thiết lập giá trị mặc định nếu sửa hoặc tạo mới
+        const titleVal = data ? (data.title || "") : "";
+        const dateVal = data ? (data.date || "") : new Date().toISOString().split('T')[0];
+        const timeVal = data ? (data.time || "") : "08:00";
+        const contentVal = data ? (data.content || "") : "";
+        const isImportant = data ? (data.important || false) : false;
+        const currentBlockEmoji = data ? (data.emoji || "📆") : "📆";
+
+        blockDiv.innerHTML = `
+            <div class="schedule-block-header">
+                <label class="important-checkbox-label">
+                    <input type="checkbox" class="sch-important-cb" ${isImportant ? 'checked' : ''}> ⚠️ Mốc lịch này Quan Trọng
+                </label>
+                <button type="button" class="btn-remove-block" onclick="removeScheduleBlock('${blockId}')">Xóa mốc này</button>
+            </div>
+
+            <label>Tên nút mốc thời gian (Tên hiển thị tổng quát):</label>
+            <input type="text" class="sch-title-input" placeholder="Ví dụ: Họp phòng ban, Giao việc..." value="${titleVal}">
+
+            <div class="datetime-row">
+                <div>
+                    <label>Chọn Ngày Áp Dụng:</label>
+                    <input type="date" class="sch-date-input" id="noteDateInput" value="${dateVal}">
+                </div>
+                <div>
+                    <label>Chọn Giờ Bắt Đầu:</label>
+                    <input type="time" class="sch-time-input" value="${timeVal}">
+                </div>
+            </div>
+
+            <label>📋 Danh sách các đầu việc cần làm:</label>
+            <textarea class="sch-content-input" placeholder="Nhập các chi tiết đầu việc của mốc thời gian này...">${contentVal}</textarea>
+            
+            <input type="hidden" class="sch-emoji-hidden" value="${currentBlockEmoji}">
+        `;
+        
+        wrapper.appendChild(blockDiv);
+        // Tự động cuộn xuống dưới cùng khi người dùng nhấn thêm mốc mới
+        wrapper.scrollTop = wrapper.scrollHeight;
+    }
+
+    function removeScheduleBlock(id) {
+        const wrapper = document.getElementById('scheduleBlocksWrapper');
+        if(wrapper.children.length <= 1 && !isEditMode) {
+            alert("Phải giữ lại ít nhất 1 mốc lịch để nhập dữ liệu!");
+            return;
+        }
+        document.getElementById(id).remove();
+    }
+
+    // MỞ MODAL LỊCH TRÌNH
+    function openScheduleModal(groupId, scheduleIndex = false) {
+        currentActiveGroupId = groupId;
+        document.getElementById('scheduleBlocksWrapper').innerHTML = ''; // Làm trống danh sách cũ
+
+        if(scheduleIndex !== false) {
+            // Chế độ CHỈNH SỬA 1 BUTTON đơn lẻ
+            isEditMode = true; currentActiveIndex = scheduleIndex;
+            document.getElementById('scheduleModalTitle').innerText = "📝 Chỉnh Sửa Mốc Lịch";
+            document.getElementById('addScheduleBlockBtn').style.display = 'none'; // Ẩn nút tạo thêm mốc hàng loạt khi sửa
+
+            const schObj = dashboardData.find(g => g.id === groupId).schedules[scheduleIndex];
+            addScheduleBlock(schObj);
+        } else {
+            // Chế độ THÊM MỚI HÀNG LOẠT BUTTONS cùng lúc
+            isEditMode = false;
+            document.getElementById('scheduleModalTitle').innerText = "📅 Thêm Mốc Lịch Trình";
+            document.getElementById('addScheduleBlockBtn').style.display = 'inline-flex'; // Hiện nút thêm mốc hàng loạt
+            addScheduleBlock(); // Khởi tạo sẵn mốc đầu tiên
+        }
+        openModal('scheduleModal');
+    }
+
+    function submitScheduleForm() {
+        const group = dashboardData.find(g => g.id === currentActiveGroupId);
+        if(!group) return;
+
+        const blockElements = document.querySelectorAll('#scheduleBlocksWrapper .schedule-block-item');
+        let hasError = false;
+
+        if(isEditMode) {
+            // Cập nhật mốc đơn lẻ hiện tại
+            const block = blockElements[0];
+            const title = block.querySelector('.sch-title-input').value.trim() || "Nhiệm vụ";
+            const date = block.querySelector('.sch-date-input').value;
+            const time = block.querySelector('.sch-time-input').value;
+            const content = block.querySelector('.sch-content-input').value;
+            const important = block.querySelector('.sch-important-cb').checked;
+            const emoji = block.querySelector('.sch-emoji-hidden').value;
+
+            if(!date || !time || !content.trim()) { hasError = true; }
+            else {
+                group.schedules[currentActiveIndex] = { title, date, time, content, important, emoji };
+            }
+        } else {
+            // Đọc mảng và thêm NHIỀU BUTTONS mốc lịch mới cùng 1 lúc
+            blockElements.forEach(block => {
+                const title = block.querySelector('.sch-title-input').value.trim() || "Nhiệm vụ";
+                const date = block.querySelector('.sch-date-input').value;
+                const time = block.querySelector('.sch-time-input').value;
+                const content = block.querySelector('.sch-content-input').value;
+                const important = block.querySelector('.sch-important-cb').checked;
+                const emoji = important ? "⚠️" : "📅"; // Tự động gán emoji phù hợp nếu là việc quan trọng
+
+                if(!date || !time || !content.trim()) {
+                    hasError = true;
+                } else {
+                    group.schedules.push({ title, date, time, content, important, emoji });
+                }
+            });
+        }
+
+        if(hasError) {
+            alert("Vui lòng điền đầy đủ thông tin Ngày, Giờ và nội dung danh sách đầu việc!");
+            return;
+        }
+
+        // Tự động sắp xếp các button lịch trình theo thứ tự thời gian tăng dần
+        group.schedules.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+        saveData();
+        closeModal('scheduleModal');
+    }
+
+    // HÀM CLICK CHUỘT TRÁI XEM CHI TIẾT ĐẦU VIỆC TRONG NÚT LỊCH / NOTE
+    function showContentDetail(groupId, index, type) {
         const group = dashboardData.find(g => g.id === groupId);
-        if(!group || !group.notes[index]) return;
-        
-        const noteObj = group.notes[index];
-        const titleText = (noteObj.emoji && noteObj.emoji !== "NONE") ? `${noteObj.emoji} ${noteObj.title}` : `📋 ${noteObj.title}`;
-        
-        document.getElementById('readNoteTitle').innerHTML = titleText;
-        document.getElementById('readNoteBody').innerHTML = linkify(noteObj.content);
-        openModal('readNoteModal');
+        if(!group) return;
+
+        const titleEl = document.getElementById('readModalTitle');
+        const bodyEl = document.getElementById('readModalBody');
+        const closeBtn = document.getElementById('readModalCloseBtn');
+
+        if(type === 'note') {
+            titleEl.style.color = "var(--note-accent)"; closeBtn.className = "btn-warning";
+            const noteObj = group.notes[index];
+            titleEl.innerHTML = (noteObj.emoji && noteObj.emoji !== "NONE") ? `${noteObj.emoji} ${noteObj.title}` : `📝 ${noteObj.title}`;
+            bodyEl.innerHTML = `<div class="view-note-content">${linkify(noteObj.content)}</div>`;
+        } 
+        else if(type === 'schedule') {
+            titleEl.style.color = "var(--schedule-accent)"; closeBtn.className = "btn-success";
+            const schObj = group.schedules[index];
+            
+            const formatDate = (dateStr) => {
+                if(!dateStr) return ""; const parts = dateStr.split('-');
+                return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateStr;
+            };
+
+            titleEl.innerHTML = schObj.important ? `⚠️ [QUAN TRỌNG] ${schObj.title}` : `📅 Mốc Lịch Trình: ${schObj.title}`;
+            
+            bodyEl.innerHTML = `
+                <div class="single-schedule-detail">
+                    <h4>${schObj.title}</h4>
+                    <div class="schedule-info-line">⏰ Thời gian áp dụng: <b>${formatDate(schObj.date)} vào lúc ${schObj.time}</b></div>
+                    <label style="display:block; margin-bottom:6px; color:var(--text-sub); font-size:12px;">📋 Nội dung đầu việc cần thực hiện:</label>
+                    <div class="schedule-tasks-list">${linkify(schObj.content)}</div>
+                </div>
+            `;
+        }
+        openModal('readModal');
     }
 
     function openContextMenu(e, targetType, groupId, index = null) {
-
         e.preventDefault(); e.stopPropagation();
         currentActiveGroupId = groupId; currentActiveIndex = index;
 
         const menu = document.getElementById('customContextMenu');
         const menuContent = document.getElementById('menuItemsContent');
-        menu.style.display = 'none';
-        menuContent.innerHTML = '';
+        menu.style.display = 'none'; menuContent.innerHTML = '';
 
         if (targetType === 'group-link') {
             menuContent.innerHTML = `
@@ -626,6 +1005,13 @@
                 <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'note')">📝 Sửa tên/icon nhóm</div>
                 <div class="context-menu-item delete" onclick="triggerDeleteGroup()">❌ Xóa toàn bộ nhóm</div>
             `;
+        } else if (targetType === 'group-schedule') {
+            menuContent.innerHTML = `
+                <div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Thêm mốc lịch trình</div>
+                <div class="context-menu-divider"></div>
+                <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'schedule')">📝 Sửa tên/icon nhóm</div>
+                <div class="context-menu-item delete" onclick="triggerDeleteGroup()">❌ Xóa toàn bộ nhóm</div>
+            `;
         } else if (targetType === 'link') {
             menuContent.innerHTML = `
                 <div class="context-menu-item" onclick="openLinkModal('${groupId}', ${index})">📝 Chỉnh sửa nút</div>
@@ -635,6 +1021,11 @@
             menuContent.innerHTML = `
                 <div class="context-menu-item" onclick="openNoteModal('${groupId}', ${index})">📝 Chỉnh sửa ghi chú</div>
                 <div class="context-menu-item delete" onclick="triggerDeleteNote()">❌ Xóa ghi chú này</div>
+            `;
+        } else if (targetType === 'schedule') {
+            menuContent.innerHTML = `
+                <div class="context-menu-item" onclick="openScheduleModal('${groupId}', ${index})">📝 Chỉnh sửa mốc lịch</div>
+                <div class="context-menu-item delete" onclick="triggerDeleteSchedule()">❌ Xóa mốc lịch này</div>
             `;
         }
 
@@ -647,8 +1038,7 @@
         const group = dashboardData.find(g => g.id === currentActiveGroupId);
         document.getElementById('confirmMessage').innerText = `Xóa nhóm "${group.title}" cùng toàn bộ dữ liệu bên trong?`;
         document.getElementById('confirmDeleteBtn').onclick = function() {
-            dashboardData = dashboardData.filter(g => g.id !== currentActiveGroupId);
-            saveData(); closeModal('confirmModal');
+            dashboardData = dashboardData.filter(g => g.id !== currentActiveGroupId); saveData(); closeModal('confirmModal');
         };
         openModal('confirmModal');
     }
@@ -671,34 +1061,44 @@
         openModal('confirmModal');
     }
 
+    function triggerDeleteSchedule() {
+        const group = dashboardData.find(g => g.id === currentActiveGroupId);
+        document.getElementById('confirmMessage').innerText = `Xóa mốc lịch trình "${group.schedules[currentActiveIndex].title}"?`;
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            group.schedules.splice(currentActiveIndex, 1); saveData(); closeModal('confirmModal');
+        };
+        openModal('confirmModal');
+    }
+
     function linkify(text) {
+        if(!text) return "";
         const urlRegex = /(https?:\/\/[^\s]+)/g;
         return text.replace(urlRegex, function(url) { return '<a href="' + url + '" target="_blank">' + url + '</a>'; });
     }
 
     function renderDashboard() {
         const container = document.getElementById('groupsContainer'); container.innerHTML = '';
-        
         if(dashboardData.length === 0) {
-            container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-sub)">Chưa có nhóm nào cả.</p>`;
-            return;
+            container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-sub)">Chưa có nhóm nào cả.</p>`; return;
         }
         
         dashboardData.forEach(group => {
-
-        // Tự động bổ sung type cho dữ liệu cũ
-        if (!group.type) {
-            group.type = group.notes ? 'note' : 'link';
-        }
-            const isNoteType = group.type === 'note';
+            if (!group.type) {
+                group.type = group.notes ? 'note' : (group.schedules ? 'schedule' : 'link');
+            }
+            
+            const groupType = group.type;
             const groupCard = document.createElement('div');
-            groupCard.className = `group-card ${isNoteType ? 'type-note' : ''}`;
+            groupCard.className = `group-card type-${groupType}`;
             groupCard.setAttribute('data-id', group.id);
-            groupCard.setAttribute('oncontextmenu', `openContextMenu(event, 'group-${group.type}', '${group.id}')`);
+            groupCard.setAttribute('oncontextmenu', `openContextMenu(event, 'group-${groupType}', '${group.id}')`);
 
             const showGroupEmoji = (group.emoji && group.emoji !== "NONE");
             const gEmojiHtml = showGroupEmoji ? `<span>${group.emoji}</span> ` : '';
-            const tagHtml = isNoteType ? `<span class="group-tag tag-note">Notes</span>` : `<span class="group-tag tag-link">Links</span>`;
+            
+            let tagHtml = `<span class="group-tag tag-link">Links</span>`;
+            if (groupType === 'note') tagHtml = `<span class="group-tag tag-note">Notes</span>`;
+            if (groupType === 'schedule') tagHtml = `<span class="group-tag tag-schedule">Schedule</span>`;
 
             const headerDiv = document.createElement('div');
             headerDiv.className = 'group-header';
@@ -706,61 +1106,120 @@
             groupCard.appendChild(headerDiv);
 
             const contentArea = document.createElement('div');
-            contentArea.className = isNoteType ? 'notes-area' : 'buttons-area';
+            contentArea.className = `${groupType}s-area`;
             contentArea.setAttribute('data-group-id', group.id);
 
-            if(!isNoteType) {
+            if(groupType === 'link') {
                 if(!group.links || group.links.length === 0) {
                     contentArea.innerHTML = `<span class="no-data-text">Chuột phải để thêm liên kết...</span>`;
                 } else {
                     group.links.forEach((link, index) => {
                         const showLinkEmoji = (link.emoji && link.emoji !== "NONE");
                         const lEmojiHtml = showLinkEmoji ? `<span>${link.emoji}</span> ` : '';
-                        
-                        const itemWrap = document.createElement('div');
-                        itemWrap.className = 'item-wrapper';
+                        const itemWrap = document.createElement('div'); itemWrap.className = 'item-wrapper';
                         itemWrap.setAttribute('data-index', index);
                         
                         const aLink = document.createElement('a');
-                        aLink.href = link.url;
-                        aLink.target = '_blank';
-                        aLink.className = 'link-button';
+                        aLink.href = link.url; aLink.target = '_blank'; aLink.className = 'link-button';
                         aLink.setAttribute('oncontextmenu', `openContextMenu(event, 'link', '${group.id}', ${index})`);
                         aLink.innerHTML = `${lEmojiHtml}${link.name}`;
                         
-                        itemWrap.appendChild(aLink);
-                        contentArea.appendChild(itemWrap);
+                        itemWrap.appendChild(aLink); contentArea.appendChild(itemWrap);
                     });
                 }
-            } else {
-                // RENDER CÁC NÚT BẤM GHI CHÚ (Đã đồng bộ giao diện gọn đẹp giống Link)
+            } else if(groupType === 'note') {
                 if(!group.notes || group.notes.length === 0) {
                     contentArea.innerHTML = `<span class="no-data-text">Chuột phải để thêm ghi chú...</span>`;
                 } else {
                     group.notes.forEach((noteObj, index) => {
-                        // Xử lý dữ liệu cũ sang cấu trúc mới nếu có lỗi tương thích
-                        const noteTitle = noteObj.title || "Ghi chú không tên";
                         const showNoteEmoji = (noteObj.emoji && noteObj.emoji !== "NONE");
                         const nEmojiHtml = showNoteEmoji ? `<span>${noteObj.emoji}</span> ` : '';
-
-                        const itemWrap = document.createElement('div');
-                        itemWrap.className = 'item-wrapper';
+                        const itemWrap = document.createElement('div'); itemWrap.className = 'item-wrapper';
                         itemWrap.setAttribute('data-index', index);
                         
                         const btnNote = document.createElement('div');
                         btnNote.className = 'note-button';
-                        btnNote.setAttribute('onclick', `readNoteDetail('${group.id}', ${index})`);
+                        btnNote.setAttribute('onclick', `showContentDetail('${group.id}', ${index}, 'note')`);
                         btnNote.setAttribute('oncontextmenu', `openContextMenu(event, 'note', '${group.id}', ${index})`);
-                        btnNote.innerHTML = `${nEmojiHtml}${noteTitle}`;
+                        btnNote.innerHTML = `${nEmojiHtml}${noteObj.title || "Ghi chú"}`;
                         
-                        itemWrap.appendChild(btnNote);
-                        contentArea.appendChild(itemWrap);
+                        itemWrap.appendChild(btnNote); contentArea.appendChild(itemWrap);
                     });
+                }
+            } else if(groupType === 'schedule') {
+
+                if(!group.schedules || group.schedules.length === 0) {
+
+                    contentArea.innerHTML =
+                        `<span class="no-data-text">
+                            Chuột phải để thêm lịch trình...
+                        </span>`;
+
+                } else {
+
+                    const table = document.createElement('table');
+                    table.className = 'schedule-table';
+
+                    table.innerHTML = `
+                        <thead>
+                            <tr>
+                                <th>Ngày</th>
+                                <th>Công việc</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    `;
+
+                    const tbody = table.querySelector('tbody');
+
+                    group.schedules.forEach((schObj,index)=>{
+
+                        const dateParts = schObj.date.split('-');
+
+                        const displayDate =
+                            `${dateParts[2]}/${dateParts[1]}`;
+
+                        const row = document.createElement('tr');
+
+                        row.className =
+                            schObj.important
+                                ? 'schedule-row important'
+                                : 'schedule-row';
+
+                        row.onclick = () =>
+                            showContentDetail(
+                                group.id,
+                                index,
+                                'schedule'
+                            );
+
+                        row.oncontextmenu = (e) =>
+                            openContextMenu(
+                                e,
+                                'schedule',
+                                group.id,
+                                index
+                            );
+
+                        row.innerHTML = `
+                            <td class="schedule-date">
+                                ${displayDate}
+                            </td>
+
+                            <td class="schedule-name">
+                                ${schObj.important ? '⚠️ ' : ''}
+                                ${schObj.title}
+                            </td>
+                        `;
+
+                        tbody.appendChild(row);
+                    });
+
+                    contentArea.appendChild(table);
                 }
             }
 
-            groupCard.appendChild(contentArea);
-            container.appendChild(groupCard);
+            groupCard.appendChild(contentArea); container.appendChild(groupCard);
         });
 
         initDragAndDrop();
@@ -776,28 +1235,25 @@
             }
         });
 
-        document.querySelectorAll('.buttons-area, .notes-area').forEach(area => {
+        document.querySelectorAll('.buttons-area, .notes-area, .schedules-area').forEach(area => {
             const groupId = area.getAttribute('data-group-id');
-            const isNote = area.classList.contains('notes-area');
+            const classList = area.classList;
+            let currentItemType = 'link';
+            if (classList.contains('notes-area')) currentItemType = 'note';
+            if (classList.contains('schedules-area')) currentItemType = 'schedule';
+
             Sortable.create(area, {
                 animation: 200, ghostClass: 'sortable-ghost-link',
                 onEnd: function () {
                     const group = dashboardData.find(g => g.id === groupId); if (!group) return;
                     const newIndices = Array.from(area.children).map(item => parseInt(item.getAttribute('data-index')));
                     
-                    if(!isNote) group.links = newIndices.map(idx => group.links[idx]);
-                    else group.notes = newIndices.map(idx => group.notes[idx]);
+                    if(currentItemType === 'link') group.links = newIndices.map(idx => group.links[idx]);
+                    else if(currentItemType === 'note') group.notes = newIndices.map(idx => group.notes[idx]);
+                    else if(currentItemType === 'schedule') group.schedules = newIndices.map(idx => group.schedules[idx]);
 
                     localStorage.setItem('myDashboardDataButtonsEdition', JSON.stringify(dashboardData));
-                    
-                    Array.from(area.children).forEach((child, newIdx) => {
-                        child.setAttribute('data-index', newIdx);
-                        const innerBtn = child.querySelector('.link-button, .note-button');
-                        if(innerBtn) {
-                            innerBtn.setAttribute('oncontextmenu', `openContextMenu(event, '${isNote ? 'note' : 'link'}', '${groupId}', ${newIdx})`);
-                            if(isNote) innerBtn.setAttribute('onclick', `readNoteDetail('${groupId}', ${newIdx})`);
-                        }
-                    });
+                    renderDashboard();
                 }
             });
         });
@@ -822,60 +1278,82 @@
         reader.readAsText(file); event.target.value = '';
     }
 
-    window.onload = renderDashboard;
+    // Hàm cuộn lên đầu trang mượt mà
+    function scrollToTop() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 
-    let pressTimer;
+    // Hiển thị nút khi cuộn xuống 300px
+    window.onscroll = function() {
+        const btn = document.getElementById("backToTop");
+        if (document.body.scrollTop > 300 || document.documentElement.scrollTop > 300) {
+            btn.style.display = "block";
+        } else {
+            btn.style.display = "none";
+        }
+    };
 
-    document.addEventListener('touchstart', function(e) {
+    function toggleTheme() {
 
-        const target = e.target.closest(
-            '.link-button, .note-button, .group-card'
+        document.body.classList.toggle('light-mode');
+
+        const isLight =
+            document.body.classList.contains('light-mode');
+
+        localStorage.setItem(
+            'dashboardTheme',
+            isLight ? 'light' : 'dark'
         );
 
+        document.getElementById('themeBtn').innerHTML =
+            isLight ? '🌙' : '💡';
+    }
+
+    window.onload = () => {
+        const theme = localStorage.getItem('dashboardTheme');
+
+        if(theme === 'light') {
+            document.body.classList.add('light-mode');
+        }
+
+        renderDashboard();
+    };
+
+    // Hỗ trợ nhấn giữ cảm ứng trên điện thoại
+    let pressTimer;
+    document.addEventListener('touchstart', function(e) {
+        const target = e.target.closest('.link-button, .note-button, .schedule-button, .group-card');
         if (!target) return;
 
         pressTimer = setTimeout(() => {
-
-            let groupId = null;
-            let index = null;
-            let targetType = null;
-
+            let groupId = null; let index = null; let targetType = null;
             const card = target.closest('.group-card');
 
             if (target.classList.contains('link-button')) {
-                groupId = card.dataset.id;
-                index = parseInt(target.parentElement.dataset.index);
-                targetType = 'link';
+                groupId = card.dataset.id; index = parseInt(target.parentElement.dataset.index); targetType = 'link';
             }
             else if (target.classList.contains('note-button')) {
-                groupId = card.dataset.id;
-                index = parseInt(target.parentElement.dataset.index);
-                targetType = 'note';
+                groupId = card.dataset.id; index = parseInt(target.parentElement.dataset.index); targetType = 'note';
+            }
+            else if (target.classList.contains('schedule-button')) {
+                groupId = card.dataset.id; index = parseInt(target.parentElement.dataset.index); targetType = 'schedule';
             }
             else {
                 groupId = card.dataset.id;
-
                 const group = dashboardData.find(g => g.id === groupId);
-
-                targetType =
-                    group.type === 'note'
-                        ? 'group-note'
-                        : 'group-link';
+                targetType = `group-${group.type}`;
             }
 
             openContextMenu({
-                preventDefault(){},
-                stopPropagation(){},
-                pageX: e.touches[0].pageX,
-                pageY: e.touches[0].pageY
+                preventDefault(){}, stopPropagation(){},
+                pageX: e.touches[0].pageX, pageY: e.touches[0].pageY
             }, targetType, groupId, index);
-
         }, 500);
-
     });
 
     document.addEventListener('touchend', () => clearTimeout(pressTimer));
     document.addEventListener('touchmove', () => clearTimeout(pressTimer));
 </script>
+<button id="backToTop" onclick="scrollToTop()">▲</button>
 </body>
 </html>
