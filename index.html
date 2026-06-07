@@ -239,16 +239,6 @@
         .tag-note { background: rgba(234, 179, 8, 0.2); color: #fde047; }
         .tag-schedule { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; }
 
-        .buttons-area, .notes-area, .schedules-area {
-            display: flex;
-            flex-direction: row;
-            flex-wrap: wrap;
-            gap: 16px;
-            padding: 12px;
-            min-height: 50px;
-            border-radius: 8px;
-        }
-
         .item-wrapper {
             display: inline-flex;
             align-items: center;
@@ -431,7 +421,6 @@
         .schedules-blocks-container {
             max-height: 340px;
             overflow-y: auto;
-            background: rgba(0,0,0,0.2);
             padding: 12px;
             border-radius: 10px;
             border: 1px solid var(--border-color);
@@ -800,8 +789,7 @@
     function submitNoteForm() {
         const title = document.getElementById('noteTitleInput').value.trim();
         const content = document.getElementById('noteContentInput').value;
-        const date = document.getElementById('noteDateInput').value;
-        if(!title || !date ) return;
+        if(!title) return;
 
         const group = dashboardData.find(g => g.id === currentActiveGroupId);
         if(group) {
@@ -902,44 +890,48 @@
         const blockElements = document.querySelectorAll('#scheduleBlocksWrapper .schedule-block-item');
         let hasError = false;
 
+        blockElements.forEach(block => {
+            const title = block.querySelector('.sch-title-input').value.trim();
+            const date = block.querySelector('.sch-date-input').value;
+            const time = block.querySelector('.sch-time-input').value;
+            
+            // Kiểm tra bắt buộc Tiêu đề, Ngày, Giờ
+            if(!title || !date || !time) {
+                hasError = true;
+            }
+        });
+
+        if(hasError) {
+            // Thay vì alert(), ta mở modal riêng của web
+            document.getElementById('alertMessage').innerText = "Vui lòng điền đầy đủ: Tiêu đề, Ngày và Giờ!";
+            openModal('alertModal');
+            return;
+        }
+
+        // ... (Giữ nguyên các đoạn xử lý lưu dữ liệu bên dưới)
         if(isEditMode) {
-            // Cập nhật mốc đơn lẻ hiện tại
             const block = blockElements[0];
-            const title = block.querySelector('.sch-title-input').value.trim() || "Nhiệm vụ";
+            const title = block.querySelector('.sch-title-input').value.trim();
             const date = block.querySelector('.sch-date-input').value;
             const time = block.querySelector('.sch-time-input').value;
             const content = block.querySelector('.sch-content-input').value;
             const important = block.querySelector('.sch-important-cb').checked;
             const emoji = block.querySelector('.sch-emoji-hidden').value;
 
-            if(!date || !time || !content.trim()) { hasError = true; }
-            else {
-                group.schedules[currentActiveIndex] = { title, date, time, content, important, emoji };
-            }
+            group.schedules[currentActiveIndex] = { title, date, time, content, important, emoji };
         } else {
-            // Đọc mảng và thêm NHIỀU BUTTONS mốc lịch mới cùng 1 lúc
             blockElements.forEach(block => {
-                const title = block.querySelector('.sch-title-input').value.trim() || "Nhiệm vụ";
+                const title = block.querySelector('.sch-title-input').value.trim();
                 const date = block.querySelector('.sch-date-input').value;
                 const time = block.querySelector('.sch-time-input').value;
                 const content = block.querySelector('.sch-content-input').value;
                 const important = block.querySelector('.sch-important-cb').checked;
-                const emoji = important ? "⚠️" : "📅"; // Tự động gán emoji phù hợp nếu là việc quan trọng
+                const emoji = important ? "⚠️" : "📅";
 
-                if(!date || !time || !content.trim()) {
-                    hasError = true;
-                } else {
-                    group.schedules.push({ title, date, time, content, important, emoji });
-                }
+                group.schedules.push({ title, date, time, content, important, emoji });
             });
         }
 
-        if(hasError) {
-            alert("Vui lòng điền đầy đủ thông tin Ngày, Giờ và nội dung danh sách đầu việc!");
-            return;
-        }
-
-        // Tự động sắp xếp các button lịch trình theo thứ tự thời gian tăng dần
         group.schedules.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
         saveData();
         closeModal('scheduleModal');
@@ -1355,5 +1347,12 @@
     document.addEventListener('touchmove', () => clearTimeout(pressTimer));
 </script>
 <button id="backToTop" onclick="scrollToTop()">▲</button>
+<div class="modal-overlay" id="alertModal">
+    <div class="modal-box" style="max-width: 300px; text-align: center;">
+        <h3 style="color: var(--danger-color)">⚠️ Thông báo</h3>
+        <p id="alertMessage" style="color: var(--text-main);"></p>
+        <button class="btn-primary" style=" text-align: center;" onclick="closeModal('alertModal')">Đã hiểu</button>
+    </div>
+</div>
 </body>
 </html>
