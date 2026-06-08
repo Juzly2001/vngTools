@@ -1205,7 +1205,7 @@ function updateScheduleUI() {
             
             // Trigger gửi thông báo hệ thống (chỉ gửi 1 lần khi còn dưới 30 phút cho đỡ phiền)
             if (diffMinutes <= 30 && Notification.permission === "granted" && !row.dataset.notified) {
-                new Notification("🚨 SẮP ĐẾN CA LÀM VIỆC!", {
+                new Notification("🚨 SẮP ĐẾN MỐC HẸN!", {
                     body: `Lịch: ${jobCell} lúc ${timeCell} hôm nay (${dateCell}).`,
                 });
                 row.dataset.notified = "true";
