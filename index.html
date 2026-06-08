@@ -637,6 +637,20 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 .blink-effect {
     animation: blink 1s linear infinite;
 }
+/* --- TỐI ƯU MƯỢT MÀ KHI KÉO THẢ TRÊN MOBILE --- */
+.sortable-chosen {
+    /* Ép trình duyệt kích hoạt tăng tốc phần cứng (Hardware Acceleration) */
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    
+    /* Hiệu ứng đổ bóng đổ nhẹ cho khối đang được kéo để tạo chiều sâu */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Chặn việc trình duyệt tự động kích hoạt các hành vi vuốt mặc định gây khựng */
+.links-area, .notes-area, .schedules-area, #groupsContainer {
+    touch-action: pan-y; /* Chỉ cho phép cuộn dọc tự nhiên, không cho cuộn ngang làm rối Sortable */
+}
     </style>
 </head>
 <body>
@@ -1310,21 +1324,22 @@ function renderDashboard() {
 function initDragAndDrop() {
     if (typeof Sortable === 'undefined') return;
 
+    // Kiểm tra nhanh xem có phải thiết bị di động/máy tính bảng không
+    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
+
     // Kéo thả sắp xếp thứ tự giữa các Nhóm Lớn (Group Cards)
     Sortable.create(getEl('groupsContainer'), {
-        animation: 250, 
+        animation: 200, 
         ghostClass: 'sortable-ghost-group',
-        // --- THÊM DÒNG NÀY ---
-        // Chỉ cho phép kéo khối lớn khi chạm đúng vào phần tiêu đề chứa dấu ⋮⋮
         handle: '.group-title', 
-        onEnd: () => {
-            const currentOrderIds = Array.from(getEl('groupsContainer').children).map(card => card.getAttribute('data-id'));
-            state.dashboardData.sort((a, b) => currentOrderIds.indexOf(a.id) - currentOrderIds.indexOf(b.id));
-            saveData(); 
-        }
+        
+        // Tối ưu mượt mà cho Mobile
+        forceFallback: isMobile, // Ép dùng fallback trên mobile để kích hoạt kéo mượt
+        fallbackClass: 'sortable-fallback',
+        fallbackTolerance: 5,     // Ngón tay dịch chuyển quá 5px mới tính là kéo, tránh chạm nhầm
     });
 
-    // Kéo thả sắp xếp phần tử con bên trong Nhóm
+    // Kéo thả sắp xếp phần tử con bên trong Nhóm (Link, Note)
     document.querySelectorAll('.links-area, .notes-area, .schedules-area').forEach(area => {
         const groupId = area.getAttribute('data-group-id');
         const type = area.classList.contains('links-area') ? 'link' : (area.classList.contains('notes-area') ? 'note' : 'schedule');
@@ -1332,12 +1347,17 @@ function initDragAndDrop() {
         if (type === 'schedule') return; 
 
         Sortable.create(area, {
-            animation: 200, 
+            animation: 150, 
             ghostClass: 'sortable-ghost-link',
-            // --- THÊM DÒNG NÀY ---
-            // Trên Mobile, chạm vào nút link/note giữ 150ms mới cho phép kéo (giúp vuốt cuộn mượt mà)
-            delay: 150,
+            
+            // Cấu hình chạm giữ nhạy hơn nhưng cực mượt
+            delay: 100, // Giảm từ 150ms xuống 100ms để phản hồi nhanh hơn, không bị cảm giác "chậm"
             delayOnTouchOnly: true,
+            
+            // Tối ưu hiệu năng chuyển động
+            forceFallback: isMobile,
+            fallbackTolerance: 3, 
+            
             onEnd: () => {
                 const group = getGroup(groupId); 
                 if (!group) return;
