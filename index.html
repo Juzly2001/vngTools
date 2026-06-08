@@ -619,6 +619,19 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 @media screen and (max-width: 600px) {
     .groups-grid { column-count: 1; }
 }
+
+.highlight-warning {
+    background-color: rgba(239, 68, 68, 0.2) !important; /* Màu nền đỏ nhạt cảnh báo */
+    color: #f87171 !important;
+    font-weight: bold;
+}
+
+@keyframes blink {
+    50% { opacity: 0.5; }
+}
+.blink-effect {
+    animation: blink 1s linear infinite;
+}
     </style>
 </head>
 <body>
@@ -771,6 +784,7 @@ const getGroup = id => state.dashboardData.find(g => g.id === id);
 function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
     renderDashboard();
+    updateScheduleUI();
 }
 
 function openModal(id) { getEl(id)?.classList.add('active'); }
@@ -1006,6 +1020,79 @@ function submitScheduleForm() {
     saveData();
     closeModal('scheduleModal');
 }
+
+function updateScheduleUI() {
+    const now = new Date();
+    const currentYear = now.getFullYear(); 
+
+    // Lấy tất cả các dòng dữ liệu trong các bảng lịch trình
+    const rows = document.querySelectorAll('.schedule-table tbody tr');
+
+    rows.forEach(row => {
+        const dateCell = row.cells[0]?.innerText.trim(); // VD: "08/06"
+        const timeCell = row.cells[1]?.innerText.trim(); // VD: "07:00"
+        const jobCell = row.cells[2]?.innerText.trim();  
+
+        if (!dateCell || !timeCell) return;
+
+        // Tách ngày/tháng/giờ/phút
+        const [day, month] = dateCell.split('/').map(Number);
+        const [hours, minutes] = timeCell.split(':').map(Number);
+        
+        // Tạo mốc thời gian của ca làm việc
+        const scheduleTime = new Date(currentYear, month - 1, day, hours, minutes);
+        const diffMs = scheduleTime - now; 
+        const diffMinutes = Math.floor(diffMs / 60000);
+
+        // ĐẢM BẢO LUÔN HIỆN DÒNG TRƯỚC KHI XỬ LÝ
+        row.style.display = ""; 
+        row.classList.remove('highlight-warning', 'blink-effect');
+
+        // 1. Nếu ca làm việc ĐÃ QUA (Quá 1 phút trở lên)
+        if (diffMs < -60000) {
+            row.style.textDecoration = "line-through";
+            Array.from(row.cells).forEach(cell => {
+                cell.style.opacity = "0.45"; // Làm mờ ca đã qua
+                cell.style.color = "var(--text-sub)";
+            });
+        }
+        // 2. Nếu ca sắp đến trong vòng 30 phút (và chưa quá giờ)
+        else if (diffMinutes >= -1 && diffMinutes <= 30) {
+            row.style.textDecoration = "none";
+            row.classList.add('highlight-warning', 'blink-effect'); // Bật hiệu ứng nhấp nháy cảnh báo
+            
+            Array.from(row.cells).forEach(cell => {
+                cell.style.opacity = "1";
+                cell.style.color = ""; 
+            });
+            
+            // Gọi thông báo đẩy (Notification System)
+            if (Notification.permission === "granted" && !row.dataset.notified) {
+                new Notification("🚨 SẮP ĐẾN CA LÀM VIỆC!", {
+                    body: `Lịch: ${jobCell} lúc ${timeCell} hôm nay (${dateCell}).`,
+                });
+                row.dataset.notified = "true";
+            }
+        } 
+        // 3. Các ca trong tương lai xa
+        else {
+            row.style.textDecoration = "none";
+            Array.from(row.cells).forEach(cell => {
+                cell.style.opacity = "1";
+                cell.style.color = ""; // Trả về màu mặc định
+            });
+        }
+    });
+}
+
+// Xin quyền thông báo khi web vừa tải xong
+if (Notification.permission !== "granted" && Notification.permission !== "denied") {
+    Notification.requestPermission();
+}
+
+// Chạy kiểm tra ngay khi tải trang và lặp lại mỗi 30 giây để chính xác hơn
+updateScheduleUI();
+setInterval(updateScheduleUI, 30000);
 
 // --- THAO TÁC XEM CHI TIẾT & COPY (VIEW DETAILS) ---
 function showContentDetail(groupId, index, type) {
@@ -1317,10 +1404,21 @@ function showTodayImportantTasks() {
 
 // --- KHỞI CHẠY ỨNG DỤNG ---
 window.onload = () => {
+    // 1. Áp dụng giao diện sáng/tối
     if (localStorage.getItem(THEME_KEY) === 'light') document.body.classList.add('light-mode');
+    
+    // 2. Dựng giao diện Dashboard
     renderDashboard();
+    
+    // 3. GỌI NGAY LẬP TỨC hàm xử lý lịch trình để gạch ca cũ không có độ trễ
+    updateScheduleUI();
+    
+    // 4. Hiển thị thông báo công việc quan trọng sau đó
     setTimeout(showTodayImportantTasks, 300);
 };
+
+// Giữ nguyên vòng lặp quét mỗi 30 giây ở dưới
+setInterval(updateScheduleUI, 30000);
 
 // Thiết lập Touch Long Press tối ưu cho Mobile
 let pressTimer;
