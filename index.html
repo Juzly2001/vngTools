@@ -95,8 +95,10 @@
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1400px;
             margin: 0 auto;
+            width: 95%; /* Tránh việc dính sát vào mép màn hình điện thoại */
+            box-sizing: border-box;
         }
 
         header {
@@ -184,10 +186,49 @@
 
         input[type="file"] { display: none; }
 
+        /* Tối ưu hóa layout để các nhóm khít nhau hoàn toàn */
         .groups-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
+            column-count: 3; /* Chia làm 3 cột trên màn hình lớn */
+            column-gap: 15px;
+            padding: 15px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* Đảm bảo mỗi nhóm nằm trọn vẹn, không bị cắt ngang */
+        .group-card {
+            display: inline-block; /* Quan trọng để card không bị kéo giãn */
+            width: 100%;
+            break-inside: avoid; /* Ngăn card bị ngắt đôi giữa trang */
+            margin-bottom: 15px; /* Khoảng cách giữa các nhóm */
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+
+        .item-wrapper {
+            display: inline-flex;
+            align-items: center;
+            cursor: grab;
+            margin: 6px; /* Tăng margin để các nút không bị dính vào nhau */
+        }
+
+        .schedule-table-wrapper {
+            max-height: 300px; /* Giới hạn chiều cao cho group Lịch */
+            overflow-y: auto; /* Tạo thanh cuộn nội bộ khi lịch quá dài */
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+
+        /* Tự động co giãn theo màn hình */
+        @media screen and (max-width: 1024px) {
+            .groups-grid { column-count: 2; }
+        }
+        @media screen and (max-width: 600px) {
+            .groups-grid { column-count: 1; }
         }
 
         .group-card {
