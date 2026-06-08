@@ -437,9 +437,12 @@ body.light-mode .schedule-row:hover {
 }
 
 /* Cột mốc đặc biệt quan trọng (Có dấu ⚠️ đầu dòng) */
-.schedule-row.important { 
-    border-left: 3px solid var(--danger-color); 
-    background: rgba(239, 68, 68, 0.03);
+/* Cột mốc đặc biệt quan trọng (Có dấu gạch đỏ ở ô đầu tiên thay vì cả hàng) */
+.schedule-row.important td:first-child { 
+    border-left: 2px solid var(--danger-color); 
+}
+.schedule-row.important {
+    background: rgba(239, 68, 68, 0.04) !important;
 }
 
 /* --- HIỆU ỨNG NHẤP NHÁY ĐỎ CAO CẤP (CHUYÊN NGHIỆP HƠN) --- */
