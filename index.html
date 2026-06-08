@@ -772,6 +772,8 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
             <button id="btn-sync-google" class="btn-success" onclick="syncToGoogleDrive()" style="display: none;">🔄 Đồng bộ Drive</button>
             <button class="btn-secondary" onclick="exportData()">📥 Export (.json)</button>
             <button class="btn-secondary" onclick="document.getElementById('uploadFile').click()">📤 Import</button>
+            
+            <input type="file" id="uploadFile" accept=".json" onchange="importData(event)" style="display: none;" />
             <input type="file" id="excelScheduleInput" accept=".xlsx, .xls, .csv" style="display: none;" />
         </div>
     </div>
