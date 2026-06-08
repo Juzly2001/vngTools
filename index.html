@@ -1218,18 +1218,23 @@ function renderDashboard() {
 function initDragAndDrop() {
     if (typeof Sortable === 'undefined') return;
 
+    // Kéo thả sắp xếp thứ tự giữa các Nhóm Lớn (Group Cards)
     Sortable.create(getEl('groupsContainer'), {
         animation: 250, ghostClass: 'sortable-ghost-group',
         onEnd: () => {
             const currentOrderIds = Array.from(getEl('groupsContainer').children).map(card => card.getAttribute('data-id'));
             state.dashboardData.sort((a, b) => currentOrderIds.indexOf(a.id) - currentOrderIds.indexOf(b.id));
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+            saveData(); // Sử dụng hàm saveData() đồng bộ thay vì chỉ ghi localStorage
         }
     });
 
+    // Kéo thả sắp xếp phần tử con bên trong Nhóm
     document.querySelectorAll('.links-area, .notes-area, .schedules-area').forEach(area => {
         const groupId = area.getAttribute('data-group-id');
         const type = area.classList.contains('links-area') ? 'link' : (area.classList.contains('notes-area') ? 'note' : 'schedule');
+
+        // CHẶN: Không cho phép kéo thả các hàng trong bảng lịch trình để tránh mất dữ liệu
+        if (type === 'schedule') return; 
 
         Sortable.create(area, {
             animation: 200, ghostClass: 'sortable-ghost-link',
@@ -1239,7 +1244,8 @@ function initDragAndDrop() {
                 const items = Array.from(area.children).filter(item => item.hasAttribute('data-index'));
                 const newIndices = items.map(item => parseInt(item.getAttribute('data-index')));
                 group[`${type}s`] = newIndices.map(idx => group[`${type}s`][idx]);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+                
+                saveData(); // Cập nhật lại giao diện và lưu trữ để tránh lệch chỉ mục (index) khi bấm sửa/xóa
             }
         });
     });
