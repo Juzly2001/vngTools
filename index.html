@@ -621,6 +621,23 @@
             z-index: 10000;
         }
         #backToTop:hover { transform: scale(1.1); background: var(--accent-hover); }
+        .today-important-item{
+            padding:12px;
+            margin-bottom:10px;
+            border-radius:10px;
+            border-left:4px solid #ef4444;
+            background:rgba(239,68,68,0.08);
+        }
+
+        .today-important-item h4{
+            margin:0 0 6px 0;
+            color:#f87171;
+        }
+
+        .today-important-item p{
+            margin:0;
+            white-space:pre-wrap;
+        }
     </style>
 </head>
 <body>
@@ -1406,14 +1423,64 @@
             isLight ? '🌙' : '💡';
     }
 
+    function showTodayImportantTasks() {
+
+        const today = new Date().toISOString().split('T')[0];
+
+        let html = '';
+        let count = 0;
+
+        dashboardData.forEach(group => {
+
+            if(group.type !== 'schedule' || !group.schedules)
+                return;
+
+            group.schedules.forEach(item => {
+
+                if(
+                    item.important === true &&
+                    item.date === today
+                ) {
+
+                    count++;
+
+                    html += `
+                        <div class="today-important-item">
+                            <h4>
+                                ⚠️ ${item.title}
+                                (${item.time})
+                            </h4>
+
+                            <p>${item.content || 'Không có nội dung'}</p>
+                        </div>
+                    `;
+                }
+            });
+        });
+
+        if(count === 0) return;
+
+        document.getElementById(
+            'todayImportantContent'
+        ).innerHTML = html;
+
+        openModal('todayImportantModal');
+    }
+
     window.onload = () => {
-        const theme = localStorage.getItem('dashboardTheme');
+
+        const theme =
+            localStorage.getItem('dashboardTheme');
 
         if(theme === 'light') {
             document.body.classList.add('light-mode');
         }
 
         renderDashboard();
+
+        setTimeout(() => {
+            showTodayImportantTasks();
+        }, 300);
     };
 
     // Hỗ trợ nhấn giữ cảm ứng trên điện thoại
@@ -1457,6 +1524,22 @@
         <h3 style="color: var(--danger-color)">⚠️ Thông báo</h3>
         <p id="alertMessage" style="color: var(--text-main);"></p>
         <button class="btn-primary" style=" text-align: center;" onclick="closeModal('alertModal')">Đã hiểu</button>
+    </div>
+</div>
+<div class="modal-overlay" id="todayImportantModal">
+    <div class="modal-box" style="max-width:700px;">
+        <h3 style="color:#ef4444;">
+            ⚠️ Công việc quan trọng hôm nay
+        </h3>
+
+        <div id="todayImportantContent"></div>
+
+        <div class="modal-footer">
+            <button class="btn-secondary"
+                    onclick="closeModal('todayImportantModal')">
+                Đóng
+            </button>
+        </div>
     </div>
 </div>
 </body>
