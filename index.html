@@ -22,9 +22,8 @@
     <circle cx='32' cy='22' r='2' fill='white'/>
     <circle cx='43' cy='16' r='2' fill='white'/>
     </svg>">
-
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-    
     <style>
        :root {
     /* --- DARK MODE (Mặc định) --- */
@@ -191,6 +190,7 @@ button {
     color: var(--text-main); 
     border: 1px solid var(--border-color); 
 }
+
 .btn-secondary:hover { background-color: rgba(255,255,255,0.15); }
 
 body.light-mode .btn-secondary {
@@ -237,6 +237,7 @@ body.light-mode .group-card:hover {
 
 .group-card.type-note { border-left: 4px solid var(--note-accent); }
 .group-card.type-schedule { border-left: 4px solid var(--schedule-accent); }
+.group-card.type-link { border-left: 4px solid var(--accent-color); }
 
 /* --- DRAG & DROP GHOST --- */
 .sortable-ghost-group { opacity: 0.3; border: 2px dashed var(--accent-color); }
@@ -322,6 +323,11 @@ body.light-mode .schedule-button {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
 }
+
+body.light-mode .link-button:hover {
+    color: #0f172a;
+}
+
 .note-button:hover {
     background: linear-gradient(90deg, #eab308, #f59e0b);
     color: #0f172a;
@@ -350,48 +356,115 @@ body.light-mode .schedule-button.important-highlight {
 }
 
 /* --- SCHEDULE TABLE --- */
+/* --- SCHEDULE TABLE & OPTIMIZATION --- */
 .schedule-table-wrapper {
-    max-height: 250px;
+    max-height: 280px;
     overflow-y: auto;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-top: 10px;
+    border-radius: 12px; /* Tăng bo góc mượt hơn */
+    margin-top: 12px;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .schedule-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate; /* Đổi sang separate để bo góc border không bị lỗi */
+    border-spacing: 0;
+    table-layout: fixed; /* Ép cố định tỷ lệ cột, không bị méo khi chữ dài ngắn */
 }
+
+/* Định hình tỷ lệ chuẩn cho các cột */
+.schedule-table th:nth-child(1), 
+.schedule-table td:nth-child(1) { width: 22%; text-align: center; } /* Cột Ngày */
+
+.schedule-table th:nth-child(2), 
+.schedule-table td:nth-child(2) { width: 18%; text-align: center; } /* Cột Giờ */
+
+/* THAY ĐỔI: Tiêu đề th ở giữa (center), dữ liệu td bên dưới vẫn canh trái (left) cho dễ đọc tên việc */
+.schedule-table th:nth-child(3) { width: 60%; text-align: center; }  /* Tiêu đề Công việc */
+.schedule-table td:nth-child(3) { width: 60%; text-align: left; }    /* Nội dung Công việc */
 
 .schedule-table th {
     position: sticky;
     top: 0;
     background: var(--schedule-accent);
-    padding: 8px 10px;
-    font-size: 11px;
+    padding: 10px 8px;
+    font-size: 12px;
+    font-weight: 700;
     color: white;
     text-transform: uppercase;
-    border-bottom: 1px solid var(--border-color);
+    letter-spacing: 0.5px;
     z-index: 10;
+    border-bottom: 1px solid var(--border-color);
 }
 
 .schedule-table td {
-    padding: 10px;
-    font-size: 14px;
+    padding: 12px 10px;
+    font-size: 13.5px;
     color: var(--text-main);
     border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+}
+
+/* Xóa border ở hàng cuối cùng để không bị đè vào bo góc của wrapper */
+.schedule-table tr:last-child td {
+    border-bottom: none;
 }
 
 .schedule-row {
     cursor: pointer;
-    transition: all .2s ease;
+    transition: background-color 0.2s ease, transform 0.1s ease;
 }
-.schedule-row:hover { background: rgba(255,255,255,.05); }
-body.light-mode .schedule-row:hover { background: rgba(0,0,0,0.03); }
 
-.schedule-row.important { border-left: 3px solid var(--danger-color); }
-.schedule-date { white-space: nowrap; color: var(--text-sub); font-size: 13px; }
-.schedule-name { max-width: 80px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.schedule-row:hover { 
+    background: rgba(255, 255, 255, 0.05) !important; 
+}
+body.light-mode .schedule-row:hover { 
+    background: rgba(0, 0, 0, 0.03) !important; 
+}
+
+/* Thao tác hiển thị text thông minh, không làm vỡ layout */
+.schedule-date { 
+    white-space: nowrap; 
+    color: var(--text-sub); 
+    font-weight: 500;
+}
+.schedule-name { 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    padding-right: 5px;
+}
+
+/* Cột mốc đặc biệt quan trọng (Có dấu ⚠️ đầu dòng) */
+.schedule-row.important { 
+    border-left: 3px solid var(--danger-color); 
+    background: rgba(239, 68, 68, 0.03);
+}
+
+/* --- HIỆU ỨNG NHẤP NHÁY ĐỎ CAO CẤP (CHUYÊN NGHIỆP HƠN) --- */
+.highlight-warning {
+    background-color: rgba(239, 68, 68, 0.25) !important;
+}
+.highlight-warning td {
+    color: #fecaca !important; /* Chữ hồng nhạt tinh tế thay vì đỏ chói */
+    font-weight: 600;
+}
+body.light-mode .highlight-warning {
+    background-color: #fee2e2 !important;
+}
+body.light-mode .highlight-warning td {
+    color: #991b1b !important;
+}
+
+@keyframes smoothBlink {
+    0% { opacity: 1; }
+    50% { opacity: 0.65; }
+    100% { opacity: 1; }
+}
+.blink-effect {
+    animation: smoothBlink 1.6s ease-in-out infinite; /* Nhấp nháy mượt dịu mắt hơn */
+}
 
 /* --- INTERIOR PANELS & LISTS --- */
 .today-important-item {
@@ -645,7 +718,31 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 .links-area, .notes-area, .schedules-area, #groupsContainer {
     touch-action: pan-y;
 }
-    </style>
+
+/* CSS cho nút X đóng modal */
+.close-modal-x {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.close-modal-x:hover {
+    color: var(--danger-color);
+}
+
+/* Giới hạn chiều cao và tạo thanh cuộn cho bảng thông báo đầu việc hôm nay */
+#todayImportantContent {
+    max-height: 450px; /* Chiều cao hợp lý, vừa vặn trên cả máy tính lẫn điện thoại */
+    overflow-y: auto;  /* Tự động hiện thanh cuộn dọc khi danh sách quá dài */
+    padding-right: 8px; /* Tạo khoảng trống nhỏ bên phải để không bị dính sát vào thanh cuộn */
+    margin-bottom: 10px;
+}
+
+</style>
 </head>
 <body>
 <button id="themeBtn"
@@ -672,7 +769,7 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
             <button id="btn-sync-google" class="btn-success" onclick="syncToGoogleDrive()" style="display: none;">🔄 Đồng bộ Drive</button>
             <button class="btn-secondary" onclick="exportData()">📥 Export (.json)</button>
             <button class="btn-secondary" onclick="document.getElementById('uploadFile').click()">📤 Import</button>
-            <input type="file" id="uploadFile" accept=".json" onchange="importData(event)">
+            <input type="file" id="excelScheduleInput" accept=".xlsx, .xls, .csv" style="display: none;" />
         </div>
     </div>
 
@@ -953,6 +1050,19 @@ function addScheduleBlock(data = null) {
     if (!wrapper) return;
     const blockId = `block_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
+    // --- ĐOẠN ĐỢC SỬA: Tự động lấy ngày/giờ hiện tại của hệ thống ---
+    const localNow = new Date();
+    const currentYear = localNow.getFullYear();
+    const currentMonth = String(localNow.getMonth() + 1).padStart(2, '0');
+    const currentDay = String(localNow.getDate()).padStart(2, '0');
+    
+    // Tạo chuỗi ngày định dạng YYYY-MM-DD
+    const defaultDate = `${currentYear}-${currentMonth}-${currentDay}`;
+    
+    // Tạo chuỗi giờ định dạng HH:MM
+    const defaultTime = `${String(localNow.getHours()).padStart(2, '0')}:${String(localNow.getMinutes()).padStart(2, '0')}`;
+    // -------------------------------------------------------------
+
     const blockDiv = document.createElement('div');
     blockDiv.className = 'schedule-block-item';
     blockDiv.id = blockId;
@@ -969,11 +1079,11 @@ function addScheduleBlock(data = null) {
         <div class="datetime-row">
             <div>
                 <label>Chọn Ngày Áp Dụng:</label>
-                <input type="date" class="sch-date-input" value="${data?.date || new Date().toISOString().split('T')[0]}">
+                <input type="date" class="sch-date-input" value="${data?.date || defaultDate}">
             </div>
             <div>
                 <label>Chọn Giờ Bắt Đầu:</label>
-                <input type="time" class="sch-time-input" value="${data?.time || '08:00'}">
+                <input type="time" class="sch-time-input" value="${data?.time || defaultTime}">
             </div>
         </div>
         <label>📋 Danh sách các đầu việc cần làm:</label>
@@ -1059,7 +1169,7 @@ function updateScheduleUI() {
     rows.forEach(row => {
         const dateCell = row.cells[0]?.innerText.trim(); 
         const timeCell = row.cells[1]?.innerText.trim(); 
-        const jobCell = row.cells[2]?.innerText.trim();  
+        const jobCell = row.querySelector('.job-title-text')?.innerText.trim() || row.cells[2]?.innerText.trim();  
 
         if (!dateCell || !timeCell) return;
 
@@ -1070,9 +1180,13 @@ function updateScheduleUI() {
         const diffMs = scheduleTime - now; 
         const diffMinutes = Math.floor(diffMs / 60000);
 
+        // Reset lại trạng thái ban đầu trước khi tính toán
         row.style.display = ""; 
+        row.style.textDecoration = "none";
         row.classList.remove('highlight-warning', 'blink-effect');
+        row.querySelector('.countdown-badge')?.remove();
 
+        // 1. Nếu công việc đã quá giờ (quá 1 phút trở lên)
         if (diffMs < -60000) {
             row.style.textDecoration = "line-through";
             Array.from(row.cells).forEach(cell => {
@@ -1080,8 +1194,8 @@ function updateScheduleUI() {
                 cell.style.color = "var(--text-sub)";
             });
         }
+        // 2. Nếu CÒN DƯỚI 1 TIẾNG (từ -1 phút đến 60 phút) -> BẬT NHẤP NHÁY ĐỎ
         else if (diffMinutes >= -1 && diffMinutes <= 30) {
-            row.style.textDecoration = "none";
             row.classList.add('highlight-warning', 'blink-effect'); 
             
             Array.from(row.cells).forEach(cell => {
@@ -1089,15 +1203,16 @@ function updateScheduleUI() {
                 cell.style.color = ""; 
             });
             
-            if (Notification.permission === "granted" && !row.dataset.notified) {
+            // Trigger gửi thông báo hệ thống (chỉ gửi 1 lần khi còn dưới 30 phút cho đỡ phiền)
+            if (diffMinutes <= 30 && Notification.permission === "granted" && !row.dataset.notified) {
                 new Notification("🚨 SẮP ĐẾN CA LÀM VIỆC!", {
                     body: `Lịch: ${jobCell} lúc ${timeCell} hôm nay (${dateCell}).`,
                 });
                 row.dataset.notified = "true";
             }
         } 
+        // 3. Các công việc còn thong thả (trên 1 tiếng nữa mới tới)
         else {
-            row.style.textDecoration = "none";
             Array.from(row.cells).forEach(cell => {
                 cell.style.opacity = "1";
                 cell.style.color = ""; 
@@ -1164,6 +1279,7 @@ function copyNoteContent(btnElement) {
 }
 
 // --- CONTEXT MENU CHUỘT PHẢI / LONG PRESS ĐỘNG ---
+// --- TÌM ĐẾN HÀM NÀY VÀ THAY THẾ PHẦN 'group-schedule' ---
 function openContextMenu(e, targetType, groupId, index = null) {
     e.preventDefault(); 
     e.stopPropagation();
@@ -1186,18 +1302,29 @@ function openContextMenu(e, targetType, groupId, index = null) {
             <div class="context-menu-divider"></div>
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'note')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
+        
+        // CẬP NHẬT RIÊNG KHỐI NÀY:
         'group-schedule': `
             <div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Thêm mốc lịch trình</div>
+            <div class="context-menu-item" onclick="triggerExcelImport('${groupId}')">📥 Import từ Excel</div>
             <div class="context-menu-divider"></div>
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'schedule')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
+            
+        // [Tìm trong hàm openContextMenu - Thay thế 3 key dưới đây]
         'link': `
+            <div class="context-menu-item" onclick="duplicateItem('link', '${groupId}', ${index})">✨ Nhân bản nút</div>
+            ${buildMoveSubMenuHTML('link', groupId, index)}
             <div class="context-menu-item" onclick="openLinkModal('${groupId}', ${index})">📝 Chỉnh sửa nút</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Link')">❌ Xóa nút bấm này</div>`,
         'note': `
+            <div class="context-menu-item" onclick="duplicateItem('note', '${groupId}', ${index})">✨ Nhân bản ghi chú</div>
+            ${buildMoveSubMenuHTML('note', groupId, index)}
             <div class="context-menu-item" onclick="openNoteModal('${groupId}', ${index})">📝 Chỉnh sửa ghi chú</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Note')">❌ Xóa ghi chú này</div>`,
         'schedule': `
+            <div class="context-menu-item" onclick="duplicateItem('schedule', '${groupId}', ${index})">✨ Nhân bản mốc lịch</div>
+            ${buildMoveSubMenuHTML('schedule', groupId, index)}
             <div class="context-menu-item" onclick="openScheduleModal('${groupId}', ${index})">📝 Chỉnh sửa mốc lịch</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Schedule')">❌ Xóa mốc lịch này</div>`
     };
@@ -1229,6 +1356,239 @@ function triggerDelete(type) {
     openModal('confirmModal');
 }
 
+// Hàm kích hoạt mở hộp thoại chọn file Excel
+function triggerExcelImport(groupId) {
+    // Lưu chắc chắn ID của nhóm vào thuộc tính của chính input file để không bị mất dữ liệu khi đóng mở modal
+    const fileInput = getEl('excelScheduleInput');
+    if (fileInput) {
+        fileInput.setAttribute('data-target-group-id', groupId);
+    }
+    state.activeGroupId = groupId; // Dự phòng cho state toàn cục
+    
+    // 1. Nội dung bảng hướng dẫn bằng HTML
+    const huongDanHTML = `
+        <p style="color: var(--text-sub); font-size: 13px; text-align: left; margin-bottom: 15px;">
+            Vui lòng chuẩn bị file Excel (.xlsx, .xls, .csv) có các <b>tiêu đề cột ở hàng đầu tiên</b> chính xác như bảng sau:
+        </p>
+        <div style="overflow-x: auto; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+                <thead>
+                    <tr style="background: var(--schedule-accent); color: white;">
+                        <th style="padding: 6px 8px;">Ngay</th>
+                        <th style="padding: 6px 8px;">Gio</th>
+                        <th style="padding: 6px 8px;">CongViec</th>
+                        <th style="padding: 6px 8px;">QuanTrong</th>
+                        <th style="padding: 6px 8px;">NoiDung</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
+                        <td style="padding: 6px 8px; color: var(--text-sub);">2026-06-09<br><small>(hoặc 09/06)</small></td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">17:00</td>
+                        <td style="padding: 6px 8px;">FreshChat</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">FALSE</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">Ca tối vng</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    // 2. Cập nhật giao diện alertModal
+    const alertBox = getEl('alertModal')?.querySelector('.modal-box');
+    if (alertBox) {
+        alertBox.style.maxWidth = "550px";
+        const titleH3 = alertBox.querySelector('h3');
+        if (titleH3) {
+            titleH3.innerHTML = "📊 Cấu trúc File Excel Chuẩn";
+            titleH3.style.color = "var(--text-main)";
+        }
+        
+        getEl('alertMessage').innerHTML = huongDanHTML;
+        
+        const resetAlertModal = () => {
+            if (titleH3) {
+                titleH3.innerHTML = "⚠️ Thông báo";
+                titleH3.style.color = "var(--danger-color)";
+            }
+            if (gốcBtn) gốcBtn.style.display = 'block';
+            alertBox.querySelector('.modal-footer-excel')?.remove();
+        };
+
+        const closeX = alertBox.querySelector('.close-modal-x');
+        if (closeX) {
+            closeX.onclick = function() {
+                closeModal('alertModal');
+                resetAlertModal();
+            };
+        }
+        
+        let footer = alertBox.querySelector('.modal-footer-excel');
+        if (!footer) {
+            footer = document.createElement('div');
+            footer.className = 'modal-footer-excel';
+            footer.style.display = 'flex';
+            footer.style.justifyContent = 'center';
+            footer.style.gap = '12px';
+            footer.style.marginTop = '20px';
+            getEl('alertMessage').after(footer);
+        }
+        
+        const gốcBtn = alertBox.querySelector('.btn-primary');
+        if (gốcBtn) gốcBtn.style.display = 'none';
+
+        footer.innerHTML = `
+            <button class="btn-secondary" style="background-color: var(--accent-color); color: #fff !important; padding: 10px 16px;" onclick="downloadExcelTemplate()">📥 Tải File Mẫu</button>
+            <button class="btn-success" style="padding: 10px 16px;" id="btnConfirmExcelSelect">🎯 Đã hiểu & Chọn File Excel</button>
+        `;
+
+        getEl('btnConfirmExcelSelect').onclick = function() {
+            closeModal('alertModal');
+            resetAlertModal();
+            
+            // ÉP TRÌNH DUYỆT MỞ HỘP THOẠI CHỌN FILE SAU KHI MODAL ĐÃ ĐÓNG HOÀN TOÀN
+            setTimeout(() => {
+                const fileInput = document.getElementById('excelScheduleInput');
+                if (fileInput) {
+                    fileInput.click();
+                } else {
+                    alert("❌ Không tìm thấy thẻ HTML có id='excelScheduleInput'!");
+                }
+            }, 200); // Chờ 200ms để modal đóng hẳn, tránh bị chặn click
+        };
+    }
+    
+    openModal('alertModal');
+}
+
+// Hàm bổ sung: Tự động khởi tạo và tải file Excel mẫu (.xlsx) về máy người dùng
+function downloadExcelTemplate() {
+    try {
+        // Đổi key thành KHÔNG DẤU để khớp 100% với hàm đọc file Excel hiện tại của bạn
+        const sampleData = [
+            { "Ngay": "2026-06-09", "Gio": "17:00", "CongViec": "FreshChat", "QuanTrong": "FALSE", "NoiDung": "Ca tối vng" },
+            { "Ngay": "10/06/2026", "Gio": "07:00", "CongViec": "Ca sáng", "QuanTrong": "TRUE", "NoiDung": "Trực GHTK" }
+        ];
+
+        const worksheet = XLSX.utils.json_to_sheet(sampleData);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "LichTrinhMau");
+
+        XLSX.writeFile(workbook, "mau_import_lich_trinh.xlsx");
+    } catch (error) {
+        console.error("Lỗi khi tải file mẫu:", error);
+        alert("Có lỗi xảy ra khi tạo file mẫu!");
+    }
+}
+
+// Bắt sự kiện khi file Excel được chọn
+getEl('excelScheduleInput')?.addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) {
+        alert("❌ Chưa chọn được file!");
+        return;
+    }
+    
+    // LOG 1: Kiểm tra xem hàm có chạy khi chọn file không
+    console.log(">>> Đã nhận file:", file.name);
+
+    // KIỂM TRA THƯ VIỆN: Nếu chưa nạp thư viện XLSX thì báo ngay
+    if (typeof XLSX === 'undefined') {
+        alert("❌ LỖI HỆ THỐNG: Thư viện đọc Excel (SheetJS) chưa được tải vào trang web! Hãy kiểm tra lại thẻ <script src='...xlsx.full.min.js'>");
+        return;
+    }
+
+    const targetGroupId = this.getAttribute('data-target-group-id') || state.activeGroupId;
+    // LOG 2: Kiểm tra ID nhóm nhận dữ liệu
+    console.log(">>> Target Group ID:", targetGroupId);
+
+    if (!targetGroupId) {
+        alert("❌ Lỗi: Không xác định được nhóm lịch cần import!");
+        return;
+    }
+
+    const group = getGroup(targetGroupId);
+    if (!group) {
+        alert("❌ Lỗi: Không tìm thấy dữ liệu của nhóm này!");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            console.log(">>> FileReader bắt đầu đọc nội dung...");
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const rawData = XLSX.utils.sheet_to_json(firstSheet);
+            
+            console.log(">>> Dữ liệu thô đọc từ Excel:", rawData);
+
+            if (!rawData || rawData.length === 0) {
+                alert("❌ File Excel trống hoặc không đúng định dạng!");
+                return;
+            }
+            
+            const newSchedules = rawData.map((row, index) => {
+                const title = String(row["CongViec"] || row["Congviec"] || row["Công Việc"] || row["Công việc"] || "").trim();
+                let rawDate = row["Ngay"] || row["Ngày"];
+                const time = String(row["Gio"] || row["Giờ"] || "").trim();
+                const content = String(row["NoiDung"] || row["Nội Dung"] || "").trim();
+                const rawImportant = row["QuanTrong"] || row["Quan Trọng"];
+                const important = rawImportant === true || String(rawImportant).toLowerCase() === 'true';
+
+                let date = "";
+                if (rawDate instanceof Date && !isNaN(rawDate)) {
+                    const utcDate = new Date(rawDate.getTime() + rawDate.getTimezoneOffset() * 60000);
+                    const y = utcDate.getFullYear();
+                    const m = String(utcDate.getMonth() + 1).padStart(2, '0');
+                    const d = String(utcDate.getDate()).padStart(2, '0');
+                    date = `${y}-${m}-${d}`;
+                } else {
+                    date = String(rawDate || "").trim();
+                    if (date.includes('/')) {
+                        const parts = date.split('/');
+                        if (parts.length === 3) date = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                        else if (parts.length === 2) date = `2026-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                    }
+                }
+
+                return { title, date, time, content: content === "undefined" ? "" : content, important, emoji: important ? "⚠️" : "📅" };
+            }).filter(item => item.title && item.date && item.date !== "undefined" && item.time);
+
+            console.log(">>> Dữ liệu sau khi lọc chuẩn hóa:", newSchedules);
+
+            if (newSchedules.length === 0) {
+                alert("❌ Không lọc được mốc lịch hợp lệ! Hãy kiểm tra lại tên cột (Ngay, Gio, CongViec) trong file.");
+                return;
+            }
+
+            if (!group.schedules) group.schedules = [];
+            group.schedules.push(...newSchedules);
+            group.schedules.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+
+            saveData();
+            
+            // ÉP GIAO DIỆN RENDER LẠI NGAY LẬP TỨC
+            if (typeof renderDashboard === 'function') {
+                renderDashboard();
+            } else {
+                location.reload(); // Cách dự phòng nếu hàm render tên khác
+            }
+
+            alert(`📥 Thành công! Đã thêm ${newSchedules.length} lịch vào nhóm "${group.title}".`);
+
+        } catch (err) {
+            console.error("❌ Lỗi xử lý file:", err);
+            alert("Lỗi hệ thống khi phân tích file Excel!");
+        } finally {
+            event.target.value = ''; 
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
+});
+
 // --- CORE RENDERING GIAO DIỆN CHÍNH ---
 function renderDashboard() {
     const container = getEl('groupsContainer'); 
@@ -1251,12 +1611,17 @@ function renderDashboard() {
         const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
         const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
         
+        const isCollapsed = group.collapsed || false; // Kiểm tra trạng thái lưu trong state
+
         groupCard.innerHTML = `
-            <div class="group-header">
+            <div class="group-header" onclick="toggleCollapseGroup('${group.id}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <span class="group-title">${gEmoji}${group.title}</span>
-                <span class="group-tag tag-${group.type}">${tags[group.type]}</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span class="group-tag tag-${group.type}">${tags[group.type]}</span>
+                    <span class="arrow-${group.id}" style="font-size: 10px; transition: transform 0.2s; display: inline-block; transform: ${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'}; color: var(--text-sub);">▼</span>
+                </div>
             </div>
-            <div class="${group.type}s-area" data-group-id="${group.id}"></div>
+            <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed ? 'display: none;' : ''}"></div>
         `;
 
         const contentArea = groupCard.querySelector(`.${group.type}s-area`);
@@ -1505,29 +1870,89 @@ function toggleTheme() {
 }
 
 function showTodayImportantTasks() {
-    const today = new Date().toISOString().split('T')[0];
-    let html = '';
-    let count = 0;
+    // Lấy ngày hiện tại theo múi giờ địa phương (Việt Nam) định dạng YYYY-MM-DD
+    const localNow = new Date();
+    const year = localNow.getFullYear();
+    const month = String(localNow.getMonth() + 1).padStart(2, '0');
+    const day = String(localNow.getDate()).padStart(2, '0');
+    const today = `${year}-${month}-${day}`;
 
+    let count = 0;
+    let groupsWithImportant = []; // Chứa các nhóm có ít nhất 1 việc quan trọng
+    let groupsNormalOnly = [];     // Chứa các nhóm chỉ có việc bình thường
+
+    // 1. Phân loại và lọc dữ liệu của ngày hôm nay
     state.dashboardData.forEach(group => {
         if (group.type !== 'schedule' || !group.schedules) return;
-        group.schedules.forEach(item => {
-            if (item.important && item.date === today) {
-                count++;
-                html += `
-                    <div class="today-important-item">
-                        <h4>⚠️ ${item.title} (${item.time})</h4>
-                        <p>${item.content || 'Không có nội dung'}</p>
-                    </div>`;
+        
+        // Lọc ra các lịch trình của ngày hôm nay và sắp xếp theo thứ tự thời gian tăng dần
+        const todaySchedules = group.schedules
+            .filter(item => item.date === today)
+            .sort((a, b) => a.time.localeCompare(b.time));
+        
+        if (todaySchedules.length > 0) {
+            count += todaySchedules.length;
+            
+            // Kiểm tra xem trong nhóm này hôm nay có việc nào được tick quan trọng không
+            const hasImportant = todaySchedules.some(item => item.important);
+            
+            const groupData = {
+                groupObj: group,
+                schedules: todaySchedules
+            };
+
+            if (hasImportant) {
+                groupsWithImportant.push(groupData);
+            } else {
+                groupsNormalOnly.push(groupData);
             }
-        });
+        }
     });
 
     if (count === 0) return;
-    const contentBox = getEl('todayImportantContent');
-    if (contentBox) { contentBox.innerHTML = html; openModal('todayImportantModal'); }
-}
 
+    // 2. Gộp lại: các nhóm có việc quan trọng đứng đầu, các nhóm thường đứng sau
+    const sortedGroups = [...groupsWithImportant, ...groupsNormalOnly];
+
+    // 3. Tiến hành dựng giao diện HTML y hệt UI cũ của bạn
+    let html = '';
+    sortedGroups.forEach(itemData => {
+        const group = itemData.groupObj;
+        const gEmoji = (group.emoji && group.emoji !== "NONE") ? `${group.emoji} ` : '📅 ';
+        
+        // Tiêu đề của nhóm
+        html += `<h3 style="color: var(--accent-color); margin-top: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">${gEmoji}${group.title}</h3>`;
+        
+        // Danh sách các công việc bên trong nhóm
+        itemData.schedules.forEach(item => {
+            const isImportant = item.important ? 'border-left: 4px solid var(--danger-color); background: rgba(239, 68, 68, 0.08);' : 'border-left: 4px solid var(--schedule-accent); background: rgba(16, 185, 129, 0.05);';
+            const titleColor = item.important ? 'color: #f87171;' : 'color: var(--schedule-accent);';
+            const prefix = item.important ? '⚠️ [QUAN TRỌNG] ' : '⏰ ';
+            
+            html += `
+                <div class="today-important-item" style="${isImportant}; margin-bottom: 10px;">
+                    <h4 style="margin: 0 0 6px 0; ${titleColor}">${prefix}${item.title} (${item.time})</h4>
+                    <p style="margin: 0; white-space: pre-wrap; font-size: 13px; color: var(--text-main);">${item.content || 'Không có nội dung chi tiết'}</p>
+                </div>`;
+        });
+    });
+
+    // 4. Cập nhật tiêu đề hiển thị ngày tháng
+    const modalTitle = getEl('todayImportantModal')?.querySelector('h3');
+    if (modalTitle) {
+        modalTitle.style.color = "var(--accent-color)";
+        const ngay = String(localNow.getDate()).padStart(2, '0');
+        const thang = String(localNow.getMonth() + 1).padStart(2, '0');
+        modalTitle.innerHTML = `📌 ĐẦU LỊCH HÔM NAY (${ngay}/${thang})`;
+    }
+
+    // 5. Đổ dữ liệu vào khung và bật Modal
+    const contentBox = getEl('todayImportantContent');
+    if (contentBox) { 
+        contentBox.innerHTML = html; 
+        openModal('todayImportantModal'); 
+    }
+}
 // --- KHỞI CHẠY ỨNG DỤNG ---
 window.onload = () => {
     if (localStorage.getItem(THEME_KEY) === 'light') document.body.classList.add('light-mode');
@@ -1567,6 +1992,94 @@ document.addEventListener('touchend', () => clearTimeout(pressTimer));
 document.addEventListener('touchmove', () => {
     clearTimeout(pressTimer); 
 });
+
+// Hàm dựng Submenu hiển thị danh sách các nhóm cùng loại để chuyển sang
+function buildMoveSubMenuHTML(type, currentGroupId, itemIndex) {
+    const targets = state.dashboardData.filter(g => g.type === type && g.id !== currentGroupId);
+    if (targets.length === 0) return '';
+    
+    // CSS inline xử lý việc hover chuột vào mục "Di chuyển" sẽ tự bật menu phụ sang bên phải
+    return `
+        <div class="move-submenu-container" style="position: relative;" 
+             onmouseenter="this.querySelector('.sub-items').style.display='block'" 
+             onmouseleave="this.querySelector('.sub-items').style.display='none'">
+            <div class="context-menu-item">🔄 Đổi group</div>
+            <div class="sub-items" style="display: none; position: absolute; left: 100%; top: 0; background: var(--context-bg); border: 1px solid var(--border-color); border-radius: 8px; width: 180px; box-shadow: var(--shadow-main); z-index: 2500;">
+                ${targets.map(g => `
+                    <div class="context-menu-item" onclick="event.stopPropagation(); moveItem('${type}', '${currentGroupId}', ${itemIndex}, '${g.id}')">
+                        ${g.emoji && g.emoji !== 'NONE' ? g.emoji : '📁'} ${g.title}
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+
+// Logic nhân bản bản ghi
+function duplicateItem(type, groupId, index) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    
+    const arrayKey = type === 'link' ? 'links' : (type === 'note' ? 'notes' : 'schedules');
+    const originalItem = group[arrayKey][index];
+    if (!originalItem) return;
+    
+    // Tạo bản sao độc lập (Deep clone) tránh dính reference trùng vùng nhớ
+    const newItem = JSON.parse(JSON.stringify(originalItem));
+    
+    // Thêm hậu tố phân biệt tên
+    if (type === 'link') newItem.name += ' (Copy)';
+    else newItem.title += ' (Copy)';
+    
+    group[arrayKey].splice(index + 1, 0, newItem); // Chèn ngay phía dưới item cũ
+    saveData();
+}
+
+// Logic bốc phần tử ra khỏi mảng nhóm cũ và push vào mảng nhóm mới
+function moveItem(type, sourceGroupId, index, targetGroupId) {
+    const sourceGroup = getGroup(sourceGroupId);
+    const targetGroup = getGroup(targetGroupId);
+    if (!sourceGroup || !targetGroup) return;
+    
+    const arrayKey = type === 'link' ? 'links' : (type === 'note' ? 'notes' : 'schedules');
+    const [movedItem] = sourceGroup[arrayKey].splice(index, 1);
+    
+    if (movedItem) {
+        if (!targetGroup[arrayKey]) targetGroup[arrayKey] = [];
+        targetGroup[arrayKey].push(movedItem);
+        
+        // Nếu là lịch trình, sắp xếp lại mốc thời gian sau khi nhận lịch mới
+        if (type === 'schedule') {
+            targetGroup.schedules.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+        }
+        
+        saveData();
+    }
+}
+
+function toggleCollapseGroup(groupId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+
+    // Đảo ngược trạng thái đóng/mở và đồng bộ vào bộ nhớ máy
+    group.collapsed = !group.collapsed;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+    
+    // Thao tác trực tiếp với DOM để đóng mở mượt mà không cần re-render toàn bộ Grid Masonry
+    const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
+    if (card) {
+        const contentArea = card.querySelector(`.${group.type}s-area`);
+        const arrow = card.querySelector(`.arrow-${groupId}`);
+        
+        if (group.collapsed) {
+            if (contentArea) contentArea.style.display = 'none';
+            if (arrow) arrow.style.transform = 'rotate(-90deg)';
+        } else {
+            if (contentArea) contentArea.style.display = '';
+            if (arrow) arrow.style.transform = 'rotate(0deg)';
+        }
+    }
+}
 </script>
 
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
@@ -1574,10 +2087,13 @@ document.addEventListener('touchmove', () => {
 
 <button id="backToTop" onclick="scrollToTop()">▲</button>
 <div class="modal-overlay" id="alertModal">
-    <div class="modal-box" style="max-width: 300px; text-align: center;">
-        <h3 style="color: var(--danger-color)">⚠️ Thông báo</h3>
-        <p id="alertMessage" style="color: var(--text-main);"></p>
-        <button class="btn-primary" style=" text-align: center;" onclick="closeModal('alertModal')">Đã hiểu</button>
+    <div class="modal-box" style="max-width: 300px; text-align: center; position: relative;">
+        <span class="close-modal-x" onclick="closeModal('alertModal'); document.querySelector('.modal-footer-excel')?.remove();">&times;</span>
+        
+        <h3 style="color: var(--danger-color); margin-top: 10px;">⚠️ Thông báo</h3>
+        <p id="alertMessage" style="color: var(--text-main); margin-bottom: 20px;"></p>
+        <button class="btn-primary" style="text-align: center; margin: 0 auto;" 
+                onclick="closeModal('alertModal'); document.querySelector('.modal-footer-excel')?.remove();">Đã hiểu</button>
     </div>
 </div>
 <div class="modal-overlay" id="todayImportantModal">
