@@ -212,6 +212,7 @@ input[type="file"] { display: none; }
     margin: 0 auto;
 }
 
+/* Tìm và sửa lại class .group-card (Xóa cursor: grab đi) */
 .group-card {
     display: flex;
     flex-direction: column;
@@ -225,7 +226,7 @@ input[type="file"] { display: none; }
     padding: 25px;
     box-shadow: var(--shadow-main);
     align-self: start;
-    cursor: grab;
+    /* cursor: grab;  <--- XÓA HOẶC BỎ DÒNG NÀY ĐI */
     transition: border-color 0.2s, transform 0.2s;
 }
 
@@ -253,6 +254,7 @@ body.light-mode .group-card:hover {
     padding-bottom: 12px;
 }
 
+/* Tìm và sửa lại class .group-title (Thêm cursor: grab để biến vùng này thành tay cầm) */
 .group-title {
     font-size: 1.2rem;
     font-weight: 700;
@@ -260,7 +262,10 @@ body.light-mode .group-card:hover {
     display: inline-flex;
     align-items: center;
     gap: 8px;
+    cursor: grab; /* <--- THÊM DÒNG NÀY: Chỉ vùng tiêu đề chứa dấu ⋮⋮ mới có thể nắm kéo */
+    user-select: none; /* Tránh việc bôi đen text khi nhấn giữ trên mobile */
 }
+
 .group-title::before {
     content: "⋮⋮";
     color: var(--text-sub);
@@ -1307,11 +1312,15 @@ function initDragAndDrop() {
 
     // Kéo thả sắp xếp thứ tự giữa các Nhóm Lớn (Group Cards)
     Sortable.create(getEl('groupsContainer'), {
-        animation: 250, ghostClass: 'sortable-ghost-group',
+        animation: 250, 
+        ghostClass: 'sortable-ghost-group',
+        // --- THÊM DÒNG NÀY ---
+        // Chỉ cho phép kéo khối lớn khi chạm đúng vào phần tiêu đề chứa dấu ⋮⋮
+        handle: '.group-title', 
         onEnd: () => {
             const currentOrderIds = Array.from(getEl('groupsContainer').children).map(card => card.getAttribute('data-id'));
             state.dashboardData.sort((a, b) => currentOrderIds.indexOf(a.id) - currentOrderIds.indexOf(b.id));
-            saveData(); // Sử dụng hàm saveData() đồng bộ thay vì chỉ ghi localStorage
+            saveData(); 
         }
     });
 
@@ -1320,11 +1329,15 @@ function initDragAndDrop() {
         const groupId = area.getAttribute('data-group-id');
         const type = area.classList.contains('links-area') ? 'link' : (area.classList.contains('notes-area') ? 'note' : 'schedule');
 
-        // CHẶN: Không cho phép kéo thả các hàng trong bảng lịch trình để tránh mất dữ liệu
         if (type === 'schedule') return; 
 
         Sortable.create(area, {
-            animation: 200, ghostClass: 'sortable-ghost-link',
+            animation: 200, 
+            ghostClass: 'sortable-ghost-link',
+            // --- THÊM DÒNG NÀY ---
+            // Trên Mobile, chạm vào nút link/note giữ 150ms mới cho phép kéo (giúp vuốt cuộn mượt mà)
+            delay: 150,
+            delayOnTouchOnly: true,
             onEnd: () => {
                 const group = getGroup(groupId); 
                 if (!group) return;
@@ -1332,7 +1345,7 @@ function initDragAndDrop() {
                 const newIndices = items.map(item => parseInt(item.getAttribute('data-index')));
                 group[`${type}s`] = newIndices.map(idx => group[`${type}s`][idx]);
                 
-                saveData(); // Cập nhật lại giao diện và lưu trữ để tránh lệch chỉ mục (index) khi bấm sửa/xóa
+                saveData(); 
             }
         });
     });
@@ -1447,8 +1460,11 @@ document.addEventListener('touchstart', e => {
         }, targetType, groupId, index);
     }, 500);
 });
+// Tìm đoạn này ở cuối file và sửa lại cho chuẩn:
 document.addEventListener('touchend', () => clearTimeout(pressTimer));
-document.addEventListener('touchmove', () => clearTimeout(pressTimer));
+document.addEventListener('touchmove', () => {
+    clearTimeout(pressTimer); // <--- Khi ngón tay dịch chuyển để cuộn trang, hủy ngay bộ đếm Long Press chuột phải
+});
 </script>
 <button id="backToTop" onclick="scrollToTop()">▲</button>
 <div class="modal-overlay" id="alertModal">
