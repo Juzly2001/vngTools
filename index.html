@@ -925,6 +925,26 @@
         openModal('scheduleModal');
     }
 
+    function copyNoteContent(btnElement) {
+        const content = document.getElementById('contentToCopy').innerText;
+        
+        navigator.clipboard.writeText(content).then(() => {
+            const originalText = btnElement.innerText;
+            btnElement.innerText = "✅ Đã copy!";
+            btnElement.style.borderColor = "var(--schedule-accent)";
+            btnElement.style.color = "var(--schedule-accent)";
+            
+            setTimeout(() => {
+                btnElement.innerText = originalText;
+                btnElement.style.borderColor = "var(--border-color)";
+                btnElement.style.color = "var(--text-main)";
+            }, 2000);
+        }).catch(err => {
+            console.error('Lỗi khi copy: ', err);
+            btnElement.innerText = "❌ Lỗi!";
+        });
+    }
+
     function submitScheduleForm() {
         const group = dashboardData.find(g => g.id === currentActiveGroupId);
         if(!group) return;
@@ -989,11 +1009,24 @@
         const closeBtn = document.getElementById('readModalCloseBtn');
 
         if(type === 'note') {
-            titleEl.style.color = "var(--note-accent)"; closeBtn.className = "btn-warning";
+            titleEl.style.color = "var(--note-accent)"; 
+            closeBtn.className = "btn-warning";
             const noteObj = group.notes[index];
-            titleEl.innerHTML = (noteObj.emoji && noteObj.emoji !== "NONE") ? `${noteObj.emoji} ${noteObj.title}` : `📝 ${noteObj.title}`;
-            bodyEl.innerHTML = `<div class="view-note-content">${linkify(noteObj.content)}</div>`;
-        } 
+            
+            // Tạo cấu trúc tiêu đề linh hoạt: Tên + Nút Copy
+            titleEl.style.display = "flex";
+            titleEl.style.justifyContent = "space-between";
+            titleEl.style.alignItems = "center";
+            
+            const titleText = (noteObj.emoji && noteObj.emoji !== "NONE") ? `${noteObj.emoji} ${noteObj.title}` : `📝 ${noteObj.title}`;
+            
+            titleEl.innerHTML = `
+                <span>${titleText}</span>
+                <button class="btn-secondary" style="font-size:10px; padding:4px 8px;" onclick="copyNoteContent(this)">📋 Copy</button>
+            `;
+                        
+            bodyEl.innerHTML = `<div class="view-note-content" id="contentToCopy">${linkify(noteObj.content)}</div>`;
+        }
         else if(type === 'schedule') {
             titleEl.style.color = "var(--schedule-accent)"; closeBtn.className = "btn-success";
             const schObj = group.schedules[index];
