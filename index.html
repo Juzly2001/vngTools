@@ -1383,11 +1383,11 @@ function triggerExcelImport(groupId) {
                 </thead>
                 <tbody>
                     <tr style="border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
-                        <td style="padding: 6px 8px; color: var(--text-sub);">2026-06-09<br><small>(hoặc 09/06)</small></td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">dd-mm-yyyy<br><small>(hoặc dd/mm/yyyy)</small></td>
                         <td style="padding: 6px 8px; color: var(--text-sub);">17:00</td>
-                        <td style="padding: 6px 8px;">FreshChat</td>
-                        <td style="padding: 6px 8px; color: var(--text-sub);">FALSE</td>
-                        <td style="padding: 6px 8px; color: var(--text-sub);">Ca tối vng</td>
+                        <td style="padding: 6px 8px;">Trực Ca</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">TRUE/FALSE</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">Trực ca tối</td>
                     </tr>
                 </tbody>
             </table>
@@ -1466,8 +1466,8 @@ function downloadExcelTemplate() {
     try {
         // Đổi key thành KHÔNG DẤU để khớp 100% với hàm đọc file Excel hiện tại của bạn
         const sampleData = [
-            { "Ngay": "2026-06-09", "Gio": "17:00", "CongViec": "FreshChat", "QuanTrong": "FALSE", "NoiDung": "Ca tối vng" },
-            { "Ngay": "10/06/2026", "Gio": "07:00", "CongViec": "Ca sáng", "QuanTrong": "TRUE", "NoiDung": "Trực GHTK" }
+            { "Ngay": "2026-06-09", "Gio": "17:00", "CongViec": "Trực Ca", "QuanTrong": "FALSE", "NoiDung": "Trực ca tối" },
+            { "Ngay": "10/06/2026", "Gio": "07:00", "CongViec": "Đi chơi", "QuanTrong": "TRUE", "NoiDung": "Cuộc hẹn quan trọng" }
         ];
 
         const worksheet = XLSX.utils.json_to_sheet(sampleData);
