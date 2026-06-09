@@ -1941,21 +1941,20 @@ function verifyGroupKey(groupId) {
 
     getEl('keyModalSubmitBtn').onclick = function() {
         const key = getEl('groupKeyInput').value.trim();
-        if (group.groupKey === key) {
+        
+        let decodedKey = "";
+        try {
+            decodedKey = atob(group.groupKey);
+        } catch(e) {
+            decodedKey = group.groupKey;
+        }
+
+        if (decodedKey === key) {
             closeModal('keyModal');
-            
-            // Thêm vào biến mảng độc lập
             if (!unlockedGroupsList.includes(groupId)) {
                 unlockedGroupsList.push(groupId);
             }
-            
             renderDashboard();
-            
-            setTimeout(() => {
-                const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
-                if (card) card.scrollIntoView({ behavior: 'smooth' });
-            }, 100);
-
         } else {
             alert("❌ Mật khẩu xác thực không chính xác!");
         }
@@ -1985,21 +1984,30 @@ function triggerLockGroup(groupId) {
     getEl('groupKeyInput').value = "";
     openModal('keyModal');
 
-    getEl('keyModalSubmitBtn').onclick = function() {
+    getEl('keyModalSubmitBtn').onclick = async function() {
         const key = getEl('groupKeyInput').value.trim();
         if (!key) {
             alert("Mật khẩu không được để trống!");
             return;
         }
-        group.isLocked = true;
-        group.groupKey = key; 
         
+        // Tiến hành khóa và mã hóa mã bảo vệ sang Base64 cho an toàn khi lưu file trên Drive
+        group.isLocked = true;
+        group.groupKey = btoa(key); 
+        
+        // Loại bỏ khỏi danh sách mở khóa tạm thời nếu có
         unlockedGroupsList = unlockedGroupsList.filter(id => id !== groupId);
         
-        saveData();
+        saveData(); // Hàm này của bạn sẽ lưu vào LocalStorage
         closeModal('keyModal');
         renderDashboard();
-        alert("🎉 Đã thiết lập khóa nhóm thành công!");
+        
+        // Tự động đồng bộ lên Google Drive ở chế độ ngầm
+        if (typeof syncToGoogleDrive === "function") {
+            await syncToGoogleDrive(true);
+        }
+        
+        alert("🎉 Đã thiết lập khóa nhóm và tự động đồng bộ lên Google Drive!");
     };
 }
 
@@ -2013,9 +2021,18 @@ function triggerUnlockGroup(groupId) {
     getEl('groupKeyInput').value = "";
     openModal('keyModal');
 
-    getEl('keyModalSubmitBtn').onclick = function() {
+    getEl('keyModalSubmitBtn').onclick = async function() {
         const key = getEl('groupKeyInput').value.trim();
-        if (group.groupKey === key) {
+        
+        // Giải mã key cũ từ Base64 ra để so sánh
+        let decodedKey = "";
+        try {
+            decodedKey = atob(group.groupKey);
+        } catch(e) {
+            decodedKey = group.groupKey; // Phòng trường hợp dữ liệu cũ chưa mã hóa
+        }
+
+        if (decodedKey === key) {
             group.isLocked = false;
             group.groupKey = "";
             
@@ -2024,7 +2041,13 @@ function triggerUnlockGroup(groupId) {
             saveData();
             closeModal('keyModal');
             renderDashboard();
-            alert("🔓 Đã hủy bỏ khóa bảo vệ nhóm thành công!");
+            
+            // Tự động đồng bộ lên Google Drive ở chế độ ngầm
+            if (typeof syncToGoogleDrive === "function") {
+                await syncToGoogleDrive(true);
+            }
+            
+            alert("🔓 Đã hủy bỏ khóa bảo vệ và cập nhật lên Google Drive!");
         } else {
             alert("❌ Mật khẩu xác thực không chính xác!");
         }
