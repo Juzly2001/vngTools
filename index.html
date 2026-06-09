@@ -813,13 +813,14 @@ body.light-mode .btn-group button::before {
 
 <script>
 // ==========================================
-// BACKGROUND CANVAS: SAO RƠI & MÂY BAY NÂNG CẤP
+// BACKGROUND CANVAS: KHÔNG GIAN NGHỆ THUẬT NÂNG CẤP
 // ==========================================
 const canvas = document.getElementById('bgCanvas');
 const ctx = canvas.getContext('2d');
 
 let animationFrameId;
-let stars = [];
+let stars = [];        // Dành cho vệt sao băng (Shooting stars)
+let backgroundStars = []; // Dành cho sao nền lấp lánh (Twinkling stars)
 let clouds = [];
 
 // Tự động điều chỉnh kích thước Canvas toàn màn hình
@@ -833,30 +834,43 @@ function resizeCanvas() {
 function initBackgroundObjects() {
     const isLightMode = document.body.classList.contains('light-mode');
     stars = [];
+    backgroundStars = [];
     clouds = [];
 
     if (!isLightMode) {
-        // Tạo 60 ngôi sao ngẫu nhiên cho Dark mode
-        for (let i = 0; i < 60; i++) {
+        // 1. Tạo lớp SAO NỀN LẤP LÁNH (Tạo chiều sâu vũ trụ)
+        for (let i = 0; i < 100; i++) {
+            backgroundStars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                radius: Math.random() * 1.2 + 0.3,
+                opacity: Math.random() * 0.7 + 0.2,
+                factor: Math.random() > 0.5 ? 1 : -1,
+                speed: Math.random() * 0.02 + 0.005 // Tốc độ lấp lánh
+            });
+        }
+
+        // 2. Tạo lớp SAO BĂNG RƠI NGHỆ THUẬT (Tốc độ vừa phải, thanh mảnh)
+        for (let i = 0; i < 15; i++) { // Giảm số lượng để tránh bị rối mắt
             stars.push({
                 x: Math.random() * canvas.width,
                 y: Math.random() * canvas.height,
-                length: Math.random() * 20 + 10,
-                speed: Math.random() * 4 + 2,
-                opacity: Math.random() * 0.6 + 0.2
+                length: Math.random() * 30 + 15,
+                speed: Math.random() * 1.5 + 1.0, // Giảm tốc độ giúp chuyển động mượt màng hơn
+                opacity: Math.random() * 0.5 + 0.2,
+                width: Math.random() * 1 + 0.5
             });
         }
     } else {
         // NÂNG CẤP: Vẽ nhiều mây hơn (8 đám) và phân lớp ngẫu nhiên nhìn tự nhiên hơn
         for (let i = 0; i < 8; i++) {
-            const baseRadius = Math.random() * 25 + 20; // Bán kính vòng tròn cơ sở
+            const baseRadius = Math.random() * 25 + 20; 
             clouds.push({
                 x: Math.random() * (canvas.width + 200) - 100,
-                y: Math.random() * (canvas.height * 0.45) + 30, // Bay rải rác ở nửa trên bầu trời
+                y: Math.random() * (canvas.height * 0.45) + 30, 
                 radius: baseRadius,
-                speed: Math.random() * 0.2 + 0.05, // Tốc độ trôi nhẹ nhàng khác nhau
-                opacity: Math.random() * 0.4 + 0.5, // Độ mờ ngẫu nhiên tạo chiều sâu (xa gần)
-                // Tạo các điểm phồng vệ tinh ngẫu nhiên giúp đám mây có hình thù tự nhiên, không bị rập khuôn
+                speed: Math.random() * 0.2 + 0.05, 
+                opacity: Math.random() * 0.4 + 0.5, 
                 offsets: [
                     { rx: -baseRadius * 0.5, ry: baseRadius * 0.1, r: baseRadius * 0.7 },
                     { rx: baseRadius * 0.5, ry: -baseRadius * 0.2, r: baseRadius * 0.85 },
@@ -868,48 +882,77 @@ function initBackgroundObjects() {
     }
 }
 
-// Hàm vẽ đám mây mềm mại chân thật
+// Hàm vẽ đám mây mềm mại chân thật (Light Mode)
 function drawRealisticCloud(ctx, cloud) {
     ctx.beginPath();
-    // Vẽ khối tròn trung tâm
     ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
-    // Vẽ các khối tròn vệ tinh xung quanh tạo độ xốp bồng bềnh
     cloud.offsets.forEach(offset => {
         ctx.arc(cloud.x + offset.rx, cloud.y + offset.ry, offset.r, 0, Math.PI * 2);
     });
     ctx.fill();
 }
 
-// Hàm vẽ và cập nhật hiệu ứng liên tục
+// Hàm vẽ và cập nhật hiệu ứng liên tục (Đã gộp và sửa đổi tối ưu)
 function drawBackground() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const isLightMode = document.body.classList.contains('light-mode');
 
     if (!isLightMode) {
-        // --- HIỆU ỨNG SAO RƠI (DARK MODE) ---
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
-        ctx.lineWidth = 1.5;
+        // --- NÂNG CẤP NỀN KHÔNG GIAN (DARK MODE) ---
         
-        stars.forEach(star => {
+        // 1. Vẽ các ngôi sao nền lấp lánh (Twinkling Effect)
+        backgroundStars.forEach(bStar => {
+            bStar.opacity += bStar.speed * bStar.factor;
+            if (bStar.opacity > 0.9 || bStar.opacity < 0.1) {
+                bStar.factor *= -1; // Đảo chiều tăng/giảm độ sáng
+            }
             ctx.beginPath();
-            ctx.globalAlpha = star.opacity;
+            ctx.fillStyle = `rgba(255, 255, 255, ${bStar.opacity})`;
+            ctx.arc(bStar.x, bStar.y, bStar.radius, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // 2. Vẽ sao băng chuyển động chéo nghệ thuật (Shooting Stars)
+        stars.forEach(star => {
+            // Tạo hiệu ứng vệt sáng mờ dần (Gradient đuôi sao)
+            let grad = ctx.createLinearGradient(
+                star.x, star.y, 
+                star.x + star.length * 0.6, star.y - star.length * 0.8
+            );
+            grad.addColorStop(0, `rgba(255, 255, 255, ${star.opacity})`);
+            grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
+
+            ctx.beginPath();
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = star.width;
+            ctx.lineCap = 'round';
             ctx.moveTo(star.x, star.y);
-            ctx.lineTo(star.x - star.length * 0.5, star.y + star.length);
+            // Hướng vệt nghiêng tự nhiên từ góc trên bên phải xuống góc dưới bên trái
+            ctx.lineTo(star.x - star.length * 0.6, star.y + star.length * 0.8);
             ctx.stroke();
 
-            star.y += star.speed;
-            star.x -= star.speed * 0.5;
+            // Cập nhật vị trí mượt mà
+            star.y += star.speed * 0.8;
+            star.x -= star.speed * 0.6;
 
-            if (star.y > canvas.height || star.x < 0) {
-                star.y = -20;
-                star.x = Math.random() * canvas.width;
-                star.speed = Math.random() * 4 + 2;
-                star.opacity = Math.random() * 0.6 + 0.2;
+            // Xử lý tái sinh thông minh để CHỐNG DỒN BÊN TRÁI
+            if (star.y > canvas.height || star.x < -star.length) {
+                // Phân bổ 50% xuất hiện ở mép trên, 50% xuất hiện ở mép phải
+                if (Math.random() > 0.5) {
+                    star.y = -40;
+                    star.x = Math.random() * canvas.width;
+                } else {
+                    star.x = canvas.width + 40;
+                    star.y = Math.random() * (canvas.height * 0.6);
+                }
+                star.speed = Math.random() * 1.5 + 1.0;
+                star.length = Math.random() * 30 + 15;
+                star.opacity = Math.random() * 0.5 + 0.2;
             }
         });
+
     } else {
         // --- HIỆU ỨNG MÂY BAY NÂNG CẤP (LIGHT MODE) ---
-        // 1. Vẽ bầu trời nền xanh da trời nhạt mịn màng
         const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
         skyGradient.addColorStop(0, '#b3e1ff'); 
         skyGradient.addColorStop(0.6, '#e6f4ff'); 
@@ -917,25 +960,17 @@ function drawBackground() {
         ctx.fillStyle = skyGradient;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 2. Vẽ các đám mây có chiều sâu bằng Shadow mịn
         ctx.save();
-        
         clouds.forEach(cloud => {
             ctx.globalAlpha = cloud.opacity;
-            
-            // Tạo đổ bóng mịn dưới chân mây nhìn như 3D thực tế
             ctx.shadowColor = "rgba(100, 149, 237, 0.12)";
             ctx.shadowBlur = 12;
             ctx.shadowOffsetY = 6;
             ctx.fillStyle = "rgba(255, 255, 255, 0.95)"; 
             
-            // Vẽ lớp mây chính
             drawRealisticCloud(ctx, cloud);
-
-            // Cập nhật tọa độ di chuyển trôi ngang sang phải
             cloud.x += cloud.speed;
 
-            // Nếu mây trôi hết mép phải thì quay lại từ mép trái ngoài màn hình
             if (cloud.x - cloud.radius * 3 > canvas.width) {
                 cloud.x = -cloud.radius * 3;
                 cloud.y = Math.random() * (canvas.height * 0.45) + 30;
@@ -944,92 +979,14 @@ function drawBackground() {
         ctx.restore();
     }
 
-    ctx.globalAlpha = 1.0; // Reset alpha mặc định
+    ctx.globalAlpha = 1.0; 
     animationFrameId = requestAnimationFrame(drawBackground);
 }
 
-// Gắn bộ lắng nghe sự kiện
+// Gắn bộ lắng nghe sự kiện duy nhất
 window.addEventListener('resize', resizeCanvas);
 
-// Kích hoạt chạy nền sau khi load xong cấu hình
-resizeCanvas();
-drawBackground();
-
-// Hàm vẽ và cập nhật hiệu ứng liên tục
-function drawBackground() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    const isLightMode = document.body.classList.contains('light-mode');
-
-    if (!isLightMode) {
-        // --- HIỆU ỨNG SAO RƠI (DARK MODE) ---
-        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
-        ctx.lineWidth = 1.5;
-        
-        stars.forEach(star => {
-            ctx.beginPath();
-            ctx.globalAlpha = star.opacity;
-            // Vẽ sao băng dạng vệt chéo nghiêng góc
-            ctx.moveTo(star.x, star.y);
-            ctx.lineTo(star.x - star.length * 0.5, star.y + star.length);
-            ctx.stroke();
-
-            // Cập nhật tọa độ di chuyển chéo xuống dưới bên trái
-            star.y += star.speed;
-            star.x -= star.speed * 0.5;
-
-            // Nếu rơi hết màn hình thì reset lại từ đỉnh
-            if (star.y > canvas.height || star.x < 0) {
-                star.y = -20;
-                star.x = Math.random() * canvas.width;
-                star.speed = Math.random() * 4 + 2;
-                star.opacity = Math.random() * 0.6 + 0.2;
-            }
-        });
-    } else {
-        // --- HIỆU ỨNG MÂY BAY (LIGHT MODE) ---
-        // 1. Vẽ bầu trời nền xanh da trời nhạt mịn màng
-        const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        skyGradient.addColorStop(0, '#bae6fd'); // Xanh da trời nhạt phía trên
-        skyGradient.addColorStop(1, '#e0f2fe'); // Sáng dần xuống dưới
-        ctx.fillStyle = skyGradient;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // 3. Vẽ các đám mây rõ nét
-        ctx.save();
-        ctx.fillStyle = "rgba(255, 255, 255, 0.85)"; // Tăng độ đục để mây trắng rõ hơn
-        ctx.shadowColor = "rgba(15, 23, 42, 0.08)"; // Thêm bóng đổ nhẹ dưới chân mây
-        ctx.shadowBlur = 8;
-        ctx.shadowOffsetY = 4;
-        ctx.globalAlpha = 1.0;
-
-        clouds.forEach(cloud => {
-            ctx.beginPath();
-            // Tạo hình dạng đám mây cơ bản từ 3 hình tròn lồng ghép
-            ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
-            ctx.arc(cloud.x + cloud.radius * 0.6, cloud.y - cloud.radius * 0.2, cloud.radius * 0.8, 0, Math.PI * 2);
-            ctx.arc(cloud.x + cloud.radius * 1.2, cloud.y, cloud.radius * 0.6, 0, Math.PI * 2);
-            ctx.fill();
-
-            // Di chuyển đám mây trôi ngang sang phải
-            cloud.x += cloud.speed;
-
-            // Nếu mây trôi hết bên phải thì quay lại từ mép trái
-            if (cloud.x - cloud.radius * 2 > canvas.width) {
-                cloud.x = -cloud.radius * 2;
-                cloud.y = Math.random() * (canvas.height * 0.4);
-            }
-        });
-        ctx.restore();
-    }
-
-    ctx.globalAlpha = 1.0; // Reset alpha mặc định
-    animationFrameId = requestAnimationFrame(drawBackground);
-}
-
-// Gắn bộ lắng nghe sự kiện
-window.addEventListener('resize', resizeCanvas);
-
-// Kích hoạt chạy nền sau khi load xong cấu hình
+// Kích hoạt khởi chạy hệ thống màn hình nền
 resizeCanvas();
 drawBackground();
 
@@ -1502,33 +1459,21 @@ function openContextMenu(e, targetType, groupId, index = null) {
     menu.style.display = 'none'; 
     menuContent.innerHTML = '';
 
-    // Khởi tạo nút tùy chọn Lock/Unlock dựa trên trạng thái group hiện tại
-    const group = getGroup(groupId);
-    let lockActionHTML = '';
-    if (group) {
-        lockActionHTML = group.isLocked 
-            ? `<div class="context-menu-item" onclick="triggerUnlockGroup('${groupId}')">🔓 Hủy khóa bằng Key</div>`
-            : `<div class="context-menu-item" onclick="triggerLockGroup('${groupId}')">🔒 Đặt Key khóa nhóm</div>`;
-    }
-
     const actions = {
         'group-link': `
             <div class="context-menu-item" onclick="openLinkModal('${groupId}')">➕ Thêm nút bấm link</div>
             <div class="context-menu-divider"></div>
-            ${lockActionHTML}
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'link')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'group-note': `
             <div class="context-menu-item" onclick="openNoteModal('${groupId}')">➕ Thêm nút ghi chú</div>
             <div class="context-menu-divider"></div>
-            ${lockActionHTML}
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'note')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'group-schedule': `
             <div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Thêm mốc lịch trình</div>
             <div class="context-menu-item" onclick="triggerExcelImport('${groupId}')">📥 Import từ Excel</div>
             <div class="context-menu-divider"></div>
-            ${lockActionHTML}
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'schedule')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'link': `
@@ -1795,14 +1740,6 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
     reader.readAsArrayBuffer(file);
 });
 
-// ========================================================
-// CHỨC NĂNG KHÓA GROUP BẰNG KEY + NÚT KHÓA NHANH (BIẾN ĐỘC LẬP)
-// ========================================================
-
-// Khai báo mảng lưu danh sách ID các nhóm đang mở khóa tạm thời (Đặt ngay trên hàm render)
-let unlockedGroupsList = []; 
-
-// 1. HÀM RENDER DASHBOARD CHÍNH
 function renderDashboard() {
     const container = getEl('groupsContainer'); 
     if (!container) return;
@@ -1821,51 +1758,24 @@ function renderDashboard() {
         groupCard.setAttribute('data-id', group.id);
         groupCard.oncontextmenu = (e) => openContextMenu(e, `group-${group.type}`, group.id);
 
-        const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
-        const isCollapsed = group.collapsed || false;
-        
-        // --- KIỂM TRA TRẠNG THÁI KHÓA ---
-        const isLockedOriginal = group.isLocked || false;
-        const isCurrentlyUnlocked = unlockedGroupsList.includes(group.id); // Đang mở khóa tạm thời
-        const isCurrentlyLocked = isLockedOriginal && !isCurrentlyUnlocked; // Đang bị khóa hoàn toàn
-        
-        // 💡 ĐÃ SỬA TẠI ĐÂY: Chỉ hiển thị icon 🔒 nếu nhóm đang bị khóa hoàn toàn (chưa mở key)
-        const lockIcon = isCurrentlyLocked ? ' 🔒' : ''; 
         const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
+        const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
         
-        // Tạo nút Khóa nhanh nếu nhóm này vốn dĩ bị khóa nhưng đang được mở tạm thời
-        let quickLockBtnHTML = '';
-        if (isLockedOriginal && isCurrentlyUnlocked) {
-            quickLockBtnHTML = `<button onclick="quickLockGroup(event, '${group.id}')" style="background: #ff4d4d; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 5px; font-weight: bold;">🔒 Khóa lại</button>`;
-        }
-        
+        const isCollapsed = group.collapsed || false;
+
         groupCard.innerHTML = `
             <div class="group-header" onclick="toggleCollapseGroup('${group.id}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                <span class="group-title">${gEmoji}${group.title}${lockIcon}</span>
-                <div style="display: flex; align-items: center; gap: 6px;" onclick="event.stopPropagation();">
-                    ${quickLockBtnHTML}
+                <span class="group-title">${gEmoji}${group.title}</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
                     <span class="group-tag tag-${group.type}">${tags[group.type]}</span>
-                    <span class="arrow-${group.id}" style="font-size: 10px; transition: transform 0.2s; display: inline-block; transform: ${isCollapsed || isCurrentlyLocked ? 'rotate(-90deg)' : 'rotate(0deg)'}; color: var(--text-sub); cursor: pointer;" onclick="toggleCollapseGroup('${group.id}')">▼</span>
+                    <span class="arrow-${group.id}" style="font-size: 10px; transition: transform 0.2s; display: inline-block; transform: ${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'}; color: var(--text-sub);">▼</span>
                 </div>
             </div>
-            <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed || isCurrentlyLocked ? 'display: none;' : ''}"></div>
+            <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed ? 'display: none;' : ''}"></div>
         `;
 
         const contentArea = groupCard.querySelector(`.${group.type}s-area`);
 
-        // NẾU ĐANG BỊ KHÓA: Hiển thị màn hình chặn nhập mã
-        if (isCurrentlyLocked) {
-            contentArea.innerHTML = `
-                <div style="text-align:center; padding: 20px 10px; color: var(--text-sub); font-size:13px; background: rgba(0,0,0,0.15); border-radius: 8px; margin: 5px 0; border: 1px dashed var(--border-color);">
-                    🚫 Nội dung nhóm này đã bị khóa bằng mật mã bảo vệ. <br>
-                    <span style="color: var(--accent-color); cursor:pointer; text-decoration: underline; display: inline-block; margin-top: 8px; font-weight: bold;" onclick="verifyGroupKey('${group.id}')">🔓 Nhập Key để mở khóa xem</span>
-                </div>`;
-            contentArea.style.display = ''; 
-            container.appendChild(groupCard);
-            return; 
-        }
-
-        // RENDER DỮ LIỆU CON BÌNH THƯỜNG
         if (group.type === 'link') {
             if (!group.links?.length) contentArea.innerHTML = `<span class="no-data-text">Chuột phải để thêm liên kết...</span>`;
             else {
@@ -1923,135 +1833,6 @@ function renderDashboard() {
     });
 
     initDragAndDrop();
-}
-
-// 2. HÀM XÁC THỰC NHẬP KEY
-function verifyGroupKey(groupId) {
-    const group = getGroup(groupId);
-    if (!group) return;
-
-    getEl('keyModalTitle').innerText = "🔑 Nhập Key Để Xem";
-    getEl('keyModalDesc').innerText = `Nhập mật khẩu để mở xem dữ liệu nội bộ nhóm "${group.title}":`;
-    getEl('groupKeyInput').value = "";
-    openModal('keyModal');
-
-    getEl('groupKeyInput').onkeydown = function(e) {
-        if (e.key === 'Enter') getEl('keyModalSubmitBtn').click();
-    };
-
-    getEl('keyModalSubmitBtn').onclick = function() {
-        const key = getEl('groupKeyInput').value.trim();
-        
-        let decodedKey = "";
-        try {
-            decodedKey = atob(group.groupKey);
-        } catch(e) {
-            decodedKey = group.groupKey;
-        }
-
-        if (decodedKey === key) {
-            closeModal('keyModal');
-            if (!unlockedGroupsList.includes(groupId)) {
-                unlockedGroupsList.push(groupId);
-            }
-            renderDashboard();
-        } else {
-            alert("❌ Mật khẩu xác thực không chính xác!");
-        }
-    };
-}
-
-// 3. HÀM KHÓA LẠI NHANH
-function quickLockGroup(e, groupId) {
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation(); 
-    }
-    
-    // Lọc bỏ ID ra khỏi mảng độc lập
-    unlockedGroupsList = unlockedGroupsList.filter(id => id !== groupId);
-    
-    renderDashboard();
-}
-
-// 4. HÀM ĐẶT KEY KHÓA NHÓM MỚI
-function triggerLockGroup(groupId) {
-    const group = getGroup(groupId);
-    if (!group) return;
-
-    getEl('keyModalTitle').innerText = "🔒 Đặt Key Khóa Nhóm";
-    getEl('keyModalDesc').innerText = `Thiết lập mật khẩu bảo vệ cho nhóm "${group.title}":`;
-    getEl('groupKeyInput').value = "";
-    openModal('keyModal');
-
-    getEl('keyModalSubmitBtn').onclick = async function() {
-        const key = getEl('groupKeyInput').value.trim();
-        if (!key) {
-            alert("Mật khẩu không được để trống!");
-            return;
-        }
-        
-        // Tiến hành khóa và mã hóa mã bảo vệ sang Base64 cho an toàn khi lưu file trên Drive
-        group.isLocked = true;
-        group.groupKey = btoa(key); 
-        
-        // Loại bỏ khỏi danh sách mở khóa tạm thời nếu có
-        unlockedGroupsList = unlockedGroupsList.filter(id => id !== groupId);
-        
-        saveData(); // Hàm này của bạn sẽ lưu vào LocalStorage
-        closeModal('keyModal');
-        renderDashboard();
-        
-        // Tự động đồng bộ lên Google Drive ở chế độ ngầm
-        if (typeof syncToGoogleDrive === "function") {
-            await syncToGoogleDrive(true);
-        }
-        
-        alert("🎉 Đã thiết lập khóa nhóm và tự động đồng bộ lên Google Drive!");
-    };
-}
-
-// 5. HÀM HỦY BỎ HOÀN TOÀN KHÓA (GỠ KEY GỐC)
-function triggerUnlockGroup(groupId) {
-    const group = getGroup(groupId);
-    if (!group) return;
-
-    getEl('keyModalTitle').innerText = "🔓 Hủy Khóa Bằng Key";
-    getEl('keyModalDesc').innerText = `Nhập mật khẩu hiện tại để gỡ bỏ hoàn toàn khóa bảo vệ cho nhóm "${group.title}":`;
-    getEl('groupKeyInput').value = "";
-    openModal('keyModal');
-
-    getEl('keyModalSubmitBtn').onclick = async function() {
-        const key = getEl('groupKeyInput').value.trim();
-        
-        // Giải mã key cũ từ Base64 ra để so sánh
-        let decodedKey = "";
-        try {
-            decodedKey = atob(group.groupKey);
-        } catch(e) {
-            decodedKey = group.groupKey; // Phòng trường hợp dữ liệu cũ chưa mã hóa
-        }
-
-        if (decodedKey === key) {
-            group.isLocked = false;
-            group.groupKey = "";
-            
-            unlockedGroupsList = unlockedGroupsList.filter(id => id !== groupId);
-            
-            saveData();
-            closeModal('keyModal');
-            renderDashboard();
-            
-            // Tự động đồng bộ lên Google Drive ở chế độ ngầm
-            if (typeof syncToGoogleDrive === "function") {
-                await syncToGoogleDrive(true);
-            }
-            
-            alert("🔓 Đã hủy bỏ khóa bảo vệ và cập nhật lên Google Drive!");
-        } else {
-            alert("❌ Mật khẩu xác thực không chính xác!");
-        }
-    };
 }
 
 function initDragAndDrop() {
@@ -2629,18 +2410,6 @@ function toggleCollapseGroup(groupId) {
         <div class="modal-footer" style="justify-content: center;">
             <button class="btn-success" id="confirmCancelBtn">Giữ Lại</button>
             <button class="btn-real-danger" id="confirmDeleteBtn">Đồng Ý</button>
-        </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="keyModal">
-    <div class="modal-box" style="max-width: 350px; text-align: center;">
-        <h3 id="keyModalTitle" style="color: var(--accent-color)">🔒 Khóa Nhóm Dữ Liệu</h3>
-        <p id="keyModalDesc" style="font-size: 13px; color: var(--text-sub);"></p>
-        <input type="password" id="groupKeyInput" placeholder="Nhập mật khẩu (key)..." style="width: 100%; text-align: center; margin-bottom: 15px;">
-        <div class="modal-footer" style="justify-content: center;">
-            <button class="btn-secondary" onclick="closeModal('keyModal')">Hủy</button>
-            <button class="btn-primary" id="keyModalSubmitBtn">Xác Nhận</button>
         </div>
     </div>
 </div>
