@@ -1829,6 +1829,19 @@ function gisLoaded() {
     checkAuthStates();
 }
 function checkAuthStates() {
+    // 🌟 BỔ SUNG: Tự động khôi phục token từ LocalStorage nếu có
+    if (gapiInited && gisInited && !gapi.client.getToken()) {
+        const savedToken = localStorage.getItem('google_oauth_token');
+        if (savedToken) {
+            try {
+                gapi.client.setToken(JSON.parse(savedToken));
+            } catch (e) {
+                localStorage.removeItem('google_oauth_token');
+            }
+        }
+    }
+
+    // Giữ nguyên đoạn code cũ của bạn bên dưới
     if (gapiInited && gisInited && gapi.client.getToken()) {
         getEl('btn-login-google').innerHTML = "🟢 Đã liên kết Google";
         getEl('btn-sync-google').style.display = "inline-flex";
@@ -1840,6 +1853,13 @@ function handleAuthClick() {
         if (resp.error !== undefined) throw (resp);
         getEl('btn-login-google').innerHTML = "🟢 Đã liên kết Google";
         getEl('btn-sync-google').style.display = "inline-flex";
+        
+        // 🌟 BỔ SUNG: Lưu token vào bộ nhớ trình duyệt
+        const token = gapi.client.getToken();
+        if (token) {
+            localStorage.setItem('google_oauth_token', JSON.stringify(token));
+        }
+        
         await fetchFileFromGoogleDrive();
     };
 
@@ -2040,6 +2060,12 @@ window.onload = () => {
     if (localStorage.getItem(THEME_KEY) === 'light') document.body.classList.add('light-mode');
     renderDashboard();
     updateScheduleUI();
+    
+    // 🌟 BỔ SUNG: Kiểm tra lại trạng thái liên kết sau khi nạp DOM
+    setTimeout(() => {
+        checkAuthStates();
+    }, 500);
+    
     setTimeout(showTodayImportantTasks, 300);
 };
 
