@@ -1888,7 +1888,9 @@ function showTodayImportantTasks() {
     state.dashboardData.forEach(group => {
         if (group.type !== 'schedule' || !group.schedules) return;
         
+        // Lọc các lịch trình của ngày hôm nay
         const todaySchedules = group.schedules
+            .map((item, originalIndex) => ({ ...item, originalIndex })) // Lưu lại index gốc để xóa chính xác
             .filter(item => item.date === today)
             .sort((a, b) => a.time.localeCompare(b.time));
         
@@ -1913,21 +1915,42 @@ function showTodayImportantTasks() {
         html += `<h3 style="color: var(--accent-color); margin-top: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">${gEmoji}${group.title}</h3>`;
         
         itemData.schedules.forEach(item => {
-            const isImportant = item.important ? 'border-left: 4px solid var(--danger-color); background: rgba(239, 68, 68, 0.08);' : 'border-left: 4px solid var(--schedule-accent); background: rgba(16, 185, 129, 0.05);';
+            // Kiểm tra mốc thời gian đã qua chưa
+            const [hours, minutes] = item.time.split(':').map(Number);
+            const scheduleTime = new Date(localNow.getFullYear(), localNow.getMonth(), localNow.getDate(), hours, minutes);
+            const isPassed = (scheduleTime - localNow) < -60000; // Đã qua quá 1 phút
+
+            // Thiết lập Style gạch ngang và mờ nếu đã qua giờ
+            let itemStyle = item.important 
+                ? 'border-left: 4px solid var(--danger-color); background: rgba(239, 68, 68, 0.08);' 
+                : 'border-left: 4px solid var(--schedule-accent); background: rgba(16, 185, 129, 0.05);';
+
+            // Tạo một biến style riêng cho phần text
+            let textStyle = ''; 
+            if (isPassed) {
+                itemStyle += ' opacity: 0.5;'; // Chỉ làm mờ toàn bộ khối khi đã qua giờ
+                textStyle = 'text-decoration: line-through;'; // Chỉ gạch ngang chữ
+            }
+
             const titleColor = item.important ? 'color: #f87171;' : 'color: var(--schedule-accent);';
             const prefix = item.important ? '⚠️ [QUAN TRỌNG] ' : '⏰ ';
             
             html += `
-                <div class="today-important-item" style="${isImportant}; margin-bottom: 10px;">
+            <div class="today-important-item" style="${itemStyle} margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                <div style="flex: 1; ${textStyle}">
                     <h4 style="margin: 0 0 6px 0; ${titleColor}">${prefix}${item.title} (${item.time})</h4>
                     <p style="margin: 0; white-space: pre-wrap; font-size: 13px; color: var(--text-main);">${item.content || 'Không có nội dung chi tiết'}</p>
-                </div>`;
+                </div>
+                <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px; color: var(--danger-color); border-color: rgba(239, 68, 68, 0.2); text-decoration: none;" 
+                    onclick="deleteTaskFromModal('${group.id}', ${item.originalIndex})">
+                    ❌ Xóa
+                </button>
+            </div>`;
         });
     });
 
     const modalTitle = getEl('todayImportantModal')?.querySelector('h3');
     if (modalTitle) {
-        modalTitle.style.color = "var(--accent-color)";
         const ngay = String(localNow.getDate()).padStart(2, '0');
         const thang = String(localNow.getMonth() + 1).padStart(2, '0');
         modalTitle.innerHTML = `📌 ĐẦU LỊCH HÔM NAY (${ngay}/${thang})`;
@@ -1938,6 +1961,41 @@ function showTodayImportantTasks() {
         contentBox.innerHTML = html; 
         openModal('todayImportantModal'); 
     }
+}
+
+// Hàm bổ trợ xử lý xóa trực tiếp từ Modal đầu việc trong ngày
+function deleteTaskFromModal(groupId, originalIndex) {
+    const group = getGroup(groupId);
+    if (!group || !group.schedules[originalIndex]) return;
+
+    const taskTitle = group.schedules[originalIndex].title;
+    
+    customConfirm(`Bạn có chắc chắn muốn xóa mốc lịch trình "${taskTitle}" trực tiếp từ danh sách hôm nay không?`, "⚠️ Xác nhận xóa nhanh").then((confirmed) => {
+        if (confirmed) {
+            // Xóa phần tử khỏi mảng gốc
+            group.schedules.splice(originalIndex, 1);
+            
+            // Lưu và render lại dashboard phía sau
+            saveData(); 
+            
+            // Cập nhật lại chính nội dung modal đầu việc trong ngày hoặc đóng nếu hết việc
+            const localNow = new Date();
+            const today = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
+            
+            let remainingTasks = 0;
+            state.dashboardData.forEach(g => {
+                if (g.type === 'schedule' && g.schedules) {
+                    remainingTasks += g.schedules.filter(s => s.date === today).length;
+                }
+            });
+
+            if (remainingTasks === 0) {
+                closeModal('todayImportantModal');
+            } else {
+                showTodayImportantTasks(); // Render lại nội dung mới trong modal
+            }
+        }
+    });
 }
 
 window.onload = () => {
