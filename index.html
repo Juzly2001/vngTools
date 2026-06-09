@@ -867,6 +867,63 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 <div class="context-menu" id="customContextMenu"><div id="menuItemsContent"></div></div>
 
 <script>
+// 1. Ghi đè hàm alert() mặc định của trình duyệt
+window.alert = function(message, title = "⚠️ Thông báo") {
+    const alertModal = document.getElementById('alertModal');
+    const alertTitle = document.getElementById('alertModalTitle');
+    const alertMsg = document.getElementById('alertMessage');
+    
+    if (alertModal && alertMsg) {
+        alertTitle.innerText = title;
+        alertMsg.innerHTML = message.replace(/\n/g, '<br>'); // Chuyển đổi xuống dòng thành thẻ HTML
+        
+        // Reset lại màu sắc tiêu đề mặc định nếu trước đó bị hàm import Excel đổi màu
+        alertTitle.style.color = "var(--danger-color)";
+        const gốcBtn = alertModal.querySelector('.btn-primary');
+        if (gốcBtn) gốcBtn.style.display = 'block';
+        
+        alertModal.classList.add('active');
+    } else {
+        console.warn("Không tìm thấy cấu trúc alertModal, dùng alert gốc:", message);
+        // Fallback dự phòng nếu DOM chưa load xong
+        const nativeAlert = window.alert.__native__ || window.alert;
+        nativeAlert(message);
+    }
+};
+
+// 2. Tạo hàm Xác nhận bất đồng bộ thay thế confirm()
+function customConfirm(message, title = "❓ Xác nhận thao tác") {
+    return new Promise((resolve) => {
+        const confirmModal = document.getElementById('confirmModal');
+        const confirmTitle = document.getElementById('confirmModalTitle');
+        const confirmMsg = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const cancelBtn = document.getElementById('confirmCancelBtn');
+        
+        if (!confirmModal) {
+            // Dự phòng nếu không có modal
+            resolve(window.confirm(message));
+            return;
+        }
+        
+        confirmTitle.innerText = title;
+        confirmMsg.innerHTML = message.replace(/\n/g, '<br>');
+        confirmModal.classList.add('active');
+        
+        // Xử lý sự kiện khi nhấn Đồng ý
+        confirmBtn.onclick = function() {
+            confirmModal.classList.remove('active');
+            resolve(true);
+        };
+        
+        // Xử lý sự kiện khi nhấn Hủy
+        cancelBtn.onclick = function() {
+            confirmModal.classList.remove('active');
+            resolve(false);
+        };
+    });
+}
+
 // --- CẤU HÌNH HẰNG SỐ GOOGLE API ---
 const CLIENT_ID = '109577502358-ifqvdpaumccs5sv6vtr5rphfnq815up0.apps.googleusercontent.com';
 const API_KEY = 'AIzaSyAc5DuR0oxr7yEdTQnvIIS-PRKGtIfWrro';
@@ -1346,19 +1403,19 @@ function triggerDelete(type) {
     const group = getGroup(state.activeGroupId);
     let msg = "";
     
-    if (type === 'Group') msg = `Xóa nhóm "${group.title}" cùng toàn bộ dữ liệu bên trong?`;
-    else if (type === 'Link') msg = `Xóa nút bấm "${group.links[state.activeIndex].name}"?`;
-    else if (type === 'Note') msg = `Xóa nút ghi chú "${group.notes[state.activeIndex].title}"?`;
-    else if (type === 'Schedule') msg = `Xóa mốc lịch trình "${group.schedules[state.activeIndex].title}"?`;
+    if (type === 'Group') msg = `Bạn có chắc chắn muốn xóa nhóm "${group.title}" cùng toàn bộ dữ liệu bên trong?`;
+    else if (type === 'Link') msg = `Bạn có chắc chắn muốn xóa nút bấm "${group.links[state.activeIndex].name}"?`;
+    else if (type === 'Note') msg = `Bạn có chắc chắn muốn xóa nút ghi chú "${group.notes[state.activeIndex].title}"?`;
+    else if (type === 'Schedule') msg = `Bạn có chắc chắn muốn xóa mốc lịch trình "${group.schedules[state.activeIndex].title}"?`;
 
-    getEl('confirmMessage').innerText = msg;
-    getEl('confirmDeleteBtn').onclick = () => {
-        if (type === 'Group') state.dashboardData = state.dashboardData.filter(g => g.id !== state.activeGroupId);
-        else group[`${type.toLowerCase()}s`].splice(state.activeIndex, 1);
-        saveData(); 
-        closeModal('confirmModal');
-    };
-    openModal('confirmModal');
+    // Gọi hàm customConfirm thay vì chỉnh sửa DOM thủ công
+    customConfirm(msg, "⚠️ Xác nhận xóa dữ liệu").then((confirmed) => {
+        if (confirmed) {
+            if (type === 'Group') state.dashboardData = state.dashboardData.filter(g => g.id !== state.activeGroupId);
+            else group[`${type.toLowerCase()}s`].splice(state.activeIndex, 1);
+            saveData(); 
+        }
+    });
 }
 
 // Hàm kích hoạt mở hộp thoại chọn file Excel
@@ -1801,13 +1858,30 @@ async function fetchFileFromGoogleDrive() {
         if (files && files.length > 0) {
             googleFileId = files[0].id;
             const fileData = await gapi.client.drive.files.get({ fileId: googleFileId, alt: 'media' });
+            
             if (fileData.result && Array.isArray(fileData.result)) {
-                state.dashboardData = fileData.result;
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-                renderDashboard();
-                updateScheduleUI();
-                alert("📥 Đã tải bộ đồng bộ dữ liệu mới nhất từ mây Google Drive của bạn!");
+                
+                // SỬ DỤNG MODAL MỚI TẠI ĐÂY:
+                const chotLuaChon = await customConfirm(
+                    "Mời bạn lựa chọn phương án xử lý dữ liệu:\n\n👉 Bấm [ĐỒNG Ý]: Để tải dữ liệu từ Drive về máy (Đè dữ liệu hiện tại).\n👉 Bấm [HỦY BỎ]: Để giữ lại dữ liệu mới trên máy và đồng bộ đè lên Drive.", 
+                    "⚠️ PHÁT HIỆN XUNG ĐỘT DỮ LIỆU CLOUD"
+                );
+
+                if (chotLuaChon) {
+                    // Người dùng chọn Đồng ý -> Tải từ mạng về máy
+                    state.dashboardData = fileData.result;
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+                    renderDashboard();
+                    updateScheduleUI();
+                    alert("📥 Đã tải bộ đồng bộ dữ liệu mới nhất từ mây Google Drive thành công!");
+                } else {
+                    // Người dùng chọn Hủy bỏ -> Giữ máy, đẩy lên mạng
+                    alert("📤 Hệ thống đang tiến hành cập nhật dữ liệu hiện tại của bạn lên Google Drive...");
+                    syncToGoogleDrive(false);
+                }
             }
+        } else {
+            syncToGoogleDrive(true);
         }
     } catch (err) {
         console.error("Lỗi đồng bộ Drive:", err);
