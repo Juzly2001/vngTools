@@ -855,10 +855,10 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 
 <div class="modal-overlay" id="confirmModal">
     <div class="modal-box" style="text-align: center;">
-        <h3 style="color: var(--danger-color)">⚠️ Xác Nhận Xóa</h3>
+        <h3 id="confirmTitle" style="color: var(--danger-color)">⚠️ Xác Nhận Thao Tác</h3>
         <p id="confirmMessage" style="color: var(--text-sub); font-size:14px;"></p>
         <div class="modal-footer" style="justify-content: center;">
-            <button class="btn-secondary" onclick="closeModal('confirmModal')">Hủy</button>
+            <button class="btn-secondary" id="confirmCancelBtn">Hủy</button>
             <button class="btn-real-danger" id="confirmDeleteBtn">Đồng Ý Xóa</button>
         </div>
     </div>
@@ -892,21 +892,24 @@ window.alert = function(message, title = "⚠️ Thông báo") {
 };
 
 // 2. Tạo hàm Xác nhận bất đồng bộ thay thế confirm()
+// Tạo hàm Xác nhận bất đồng bộ thay thế confirm() ngắn gọn và an toàn hơn
 function customConfirm(message, title = "❓ Xác nhận thao tác") {
     return new Promise((resolve) => {
         const confirmModal = document.getElementById('confirmModal');
-        const confirmTitle = document.getElementById('confirmModalTitle');
+        const confirmTitle = document.getElementById('confirmTitle');
         const confirmMsg = document.getElementById('confirmMessage');
         const confirmBtn = document.getElementById('confirmDeleteBtn');
         const cancelBtn = document.getElementById('confirmCancelBtn');
         
-        if (!confirmModal) {
-            // Dự phòng nếu không có modal
+        // Nếu thiếu một trong các phần tử giao diện cốt lõi, tự động dùng confirm mặc định của trình duyệt
+        if (!confirmModal || !confirmMsg || !confirmBtn || !cancelBtn) {
+            console.warn("Hệ thống thiếu cấu trúc HTML confirmModal, tự động dùng cơ chế gốc.");
             resolve(window.confirm(message));
             return;
         }
         
-        confirmTitle.innerText = title;
+        // Kiểm tra an toàn trước khi gán dữ liệu tránh lỗi gãy mạch code
+        if (confirmTitle) confirmTitle.innerText = title;
         confirmMsg.innerHTML = message.replace(/\n/g, '<br>');
         confirmModal.classList.add('active');
         
