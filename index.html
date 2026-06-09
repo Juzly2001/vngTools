@@ -835,7 +835,7 @@ body.light-mode .btn-group button::before {
         
         <div class="btn-group">
             <button id="btn-login-google" class="btn-secondary" onclick="handleAuthClick()" data-tooltip="Kết nối và xác thực tài khoản Google để sử dụng lưu trữ đám mây">🔑 Kết nối Google</button>
-            <button id="btn-sync-google" class="btn-success" onclick="syncToGoogleDrive()" style="display: none;" data-tooltip="Tải dữ liệu lên hoặc đồng bộ dữ liệu từ Google Drive ẩn của bạn">🔄 Đồng bộ Drive</button>
+            <button id="btn-sync-google" class="btn-success" onclick="syncToGoogleDrive()" style="display: none;" data-tooltip="Tải dữ liệu lên hoặc đồng bộ dữ liệu từ Google Drive ẩn">🔄 Đồng bộ Drive</button>
             <button class="btn-secondary" onclick="exportData()" data-tooltip="Xuất toàn bộ cấu hình, link và ghi chú ra file máy tính (.json)">📥 Export (.json)</button>
             <button class="btn-secondary" onclick="document.getElementById('uploadFile').click()" data-tooltip="Nhập file dữ liệu .json từ máy tính để khôi phục lại giao diện">📤 Import</button>
             
@@ -1837,7 +1837,7 @@ function checkAuthStates() {
         const btnLogin = getEl('btn-login-google');
         if (btnLogin) {
             btnLogin.innerHTML = "🟢 Đã liên kết Google";
-            btnLogin.setAttribute('data-tooltip', 'Tài khoản Google đã liên kết mượt mà và sẵn sàng!');
+            btnLogin.setAttribute('data-tooltip', 'Đã liên kết tài khoản Google / Nhấn lại khi muốn lấy dữ liệu mới');
         }
         getEl('btn-sync-google').style.display = "inline-flex";
     }
@@ -1886,7 +1886,7 @@ async function fetchFileFromGoogleDrive() {
                 
                 // SỬ DỤNG MODAL MỚI TẠI ĐÂY:
                 const chotLuaChon = await customConfirm(
-                    "Mời bạn lựa chọn phương án xử lý dữ liệu:\n\n👉 Bấm [ĐỒNG Ý]: Để tải dữ liệu từ Drive về máy (Đè dữ liệu hiện tại).\n👉 Bấm [HỦY BỎ]: Để giữ lại dữ liệu mới trên máy và đồng bộ đè lên Drive.", 
+                    "Mời bạn lựa chọn phương án xử lý dữ liệu:\n\n👉 Bấm [Tải Drive]: Để tải dữ liệu từ Drive về máy (Đè dữ liệu hiện tại).\n👉 Bấm [Giữ lại]: Để giữ lại dữ liệu mới trên máy và đồng bộ đè lên Drive.", 
                     "⚠️ PHÁT HIỆN XUNG ĐỘT DỮ LIỆU CLOUD"
                 );
 
@@ -1948,7 +1948,7 @@ async function syncToGoogleDrive(isSilent = false) {
             });
             googleFileId = resCreate.result.id;
         }
-        if(!isSilent) alert("📤 Đồng bộ mây Google Drive thành công mỹ mãn!");
+        if(!isSilent) alert("📤 Đồng bộ mây Google Drive thành công!");
     } catch (err) {
         if(!isSilent) alert("Lỗi đồng bộ: " + err.message);
     } finally {
@@ -2297,8 +2297,8 @@ function toggleCollapseGroup(groupId) {
         <h3 id="confirmTitle" style="color: var(--danger-color)">⚠️ Xác Nhận Thao Tác</h3>
         <p id="confirmMessage" style="color: var(--text-sub); font-size:14px;"></p>
         <div class="modal-footer" style="justify-content: center;">
-            <button class="btn-secondary" id="confirmCancelBtn">Hủy</button>
-            <button class="btn-real-danger" id="confirmDeleteBtn">Đồng Ý Xóa</button>
+            <button class="btn-secondary" style="background-color: var(--schedule-accent) !important;" id="confirmCancelBtn">Giữ Lại</button>
+            <button class="btn-real-danger" id="confirmDeleteBtn">Tải Drive</button>
         </div>
     </div>
 </div>
