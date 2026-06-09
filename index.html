@@ -884,12 +884,14 @@ function customConfirm(message, title = "❓ Xác nhận thao tác") {
         const confirmBtn = document.getElementById('confirmDeleteBtn');
         const cancelBtn = document.getElementById('confirmCancelBtn');
         
+        // Nếu thiếu một trong các phần tử giao diện cốt lõi, tự động dùng confirm mặc định của trình duyệt
         if (!confirmModal || !confirmMsg || !confirmBtn || !cancelBtn) {
             console.warn("Hệ thống thiếu cấu trúc HTML confirmModal, tự động dùng cơ chế gốc.");
             resolve(window.confirm(message));
             return;
         }
         
+        // Kiểm tra an toàn trước khi gán dữ liệu tránh lỗi gãy mạch code
         if (confirmTitle) confirmTitle.innerText = title;
         confirmMsg.innerHTML = message.replace(/\n/g, '<br>');
         confirmModal.classList.add('active');
@@ -904,14 +906,6 @@ function customConfirm(message, title = "❓ Xác nhận thao tác") {
         cancelBtn.onclick = function() {
             confirmModal.classList.remove('active');
             resolve(false);
-        };
-
-        // BỔ SUNG: Nếu click ra ngoài overlay của confirmModal thì coi như chọn Cancel (Hủy)
-        confirmModal.onclick = function(e) {
-            if (e.target === confirmModal) {
-                confirmModal.classList.remove('active');
-                resolve(false);
-            }
         };
     });
 }
@@ -2194,24 +2188,6 @@ function toggleCollapseGroup(groupId) {
         }
     }
 }
-
-// --- ĐÓNG MODAL KHI ẤN RA NGOÀI ---
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-    overlay.addEventListener('click', function(e) {
-        // Chỉ đóng nếu click trúng vùng nền (overlay), không đóng nếu click vào trong modal-box
-        if (e.target === this) {
-            const modalId = this.getAttribute('id');
-            
-            // Xử lý riêng cho alertModal để dọn dẹp footer excel nếu có
-            if (modalId === 'alertModal') {
-                document.querySelector('.modal-footer-excel')?.remove();
-            }
-            
-            closeModal(modalId);
-        }
-    });
-});
-
 </script>
 
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
