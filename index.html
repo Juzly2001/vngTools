@@ -1660,6 +1660,7 @@ function initDragAndDrop() {
     if (typeof Sortable === 'undefined') return;
     const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
 
+    // ĐÃ SỬA: Thêm sự kiện onEnd để lưu vị trí mới của các Group lớn
     Sortable.create(getEl('groupsContainer'), {
         animation: 200, 
         ghostClass: 'sortable-ghost-group',
@@ -1667,6 +1668,19 @@ function initDragAndDrop() {
         forceFallback: isMobile, 
         fallbackClass: 'sortable-fallback',
         fallbackTolerance: 5,     
+        onEnd: () => {
+            // Lấy ra danh sách các thẻ group-card theo thứ tự mới trên giao diện
+            const cardElements = document.querySelectorAll('#groupsContainer .group-card');
+            const newOrderIds = Array.from(cardElements).map(card => card.getAttribute('data-id'));
+            
+            // Sắp xếp lại mảng dữ liệu state gốc theo thứ tự Id mới này
+            state.dashboardData.sort((a, b) => {
+                return newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id);
+            });
+            
+            // Lưu dữ liệu vào localStorage và đồng bộ (nếu có)
+            saveData();
+        }
     });
 
     document.querySelectorAll('.links-area, .notes-area, .schedules-area').forEach(area => {
