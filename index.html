@@ -1792,7 +1792,7 @@ async function fetchFileFromGoogleDrive() {
             
             if (fileData.result && Array.isArray(fileData.result)) {
                 const chotLuaChon = await customConfirm(
-                    "Mời bạn lựa chọn phương án xử lý dữ liệu:\n\n👉 Bấm [Tải Drive]: Để tải dữ liệu từ Drive về máy (Đè dữ liệu hiện tại).\n👉 Bấm [Giữ lại]: Để giữ lại dữ liệu mới trên máy và đồng bộ đè lên Drive.", 
+                    "Mời bạn lựa chọn phương án xử lý dữ liệu:\n\n👉 Bấm [Đồng ý]: Để tải dữ liệu từ Drive về máy (Đè dữ liệu hiện tại).\n👉 Bấm [Giữ lại]: Để giữ lại dữ liệu mới trên máy và đồng bộ đè lên Drive.", 
                     "⚠️ PHÁT HIỆN XUNG ĐỘT DỮ LIỆU CLOUD"
                 );
 
@@ -2151,7 +2151,7 @@ function toggleCollapseGroup(groupId) {
         <p id="confirmMessage" style="color: var(--text-sub); font-size:14px;"></p>
         <div class="modal-footer" style="justify-content: center;">
             <button class="btn-success" id="confirmCancelBtn">Giữ Lại</button>
-            <button class="btn-real-danger" id="confirmDeleteBtn">Tải Drive</button>
+            <button class="btn-real-danger" id="confirmDeleteBtn">Đồng Ý</button>
         </div>
     </div>
 </div>
