@@ -780,6 +780,7 @@ body.light-mode .btn-group button::before {
 </style>
 </head>
 <body>
+<canvas id="bgCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
 <button id="themeBtn" class="theme-fab" onclick="toggleTheme()" title="Chuyển giao diện">💡</button>
 <div class="container">
     <header>
@@ -811,6 +812,227 @@ body.light-mode .btn-group button::before {
 <div class="context-menu" id="customContextMenu"><div id="menuItemsContent"></div></div>
 
 <script>
+// ==========================================
+// BACKGROUND CANVAS: SAO RƠI & MÂY BAY NÂNG CẤP
+// ==========================================
+const canvas = document.getElementById('bgCanvas');
+const ctx = canvas.getContext('2d');
+
+let animationFrameId;
+let stars = [];
+let clouds = [];
+
+// Tự động điều chỉnh kích thước Canvas toàn màn hình
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    initBackgroundObjects();
+}
+
+// Khởi tạo các đối tượng dựa theo theme hiện tại
+function initBackgroundObjects() {
+    const isLightMode = document.body.classList.contains('light-mode');
+    stars = [];
+    clouds = [];
+
+    if (!isLightMode) {
+        // Tạo 60 ngôi sao ngẫu nhiên cho Dark mode
+        for (let i = 0; i < 60; i++) {
+            stars.push({
+                x: Math.random() * canvas.width,
+                y: Math.random() * canvas.height,
+                length: Math.random() * 20 + 10,
+                speed: Math.random() * 4 + 2,
+                opacity: Math.random() * 0.6 + 0.2
+            });
+        }
+    } else {
+        // NÂNG CẤP: Vẽ nhiều mây hơn (8 đám) và phân lớp ngẫu nhiên nhìn tự nhiên hơn
+        for (let i = 0; i < 8; i++) {
+            const baseRadius = Math.random() * 25 + 20; // Bán kính vòng tròn cơ sở
+            clouds.push({
+                x: Math.random() * (canvas.width + 200) - 100,
+                y: Math.random() * (canvas.height * 0.45) + 30, // Bay rải rác ở nửa trên bầu trời
+                radius: baseRadius,
+                speed: Math.random() * 0.2 + 0.05, // Tốc độ trôi nhẹ nhàng khác nhau
+                opacity: Math.random() * 0.4 + 0.5, // Độ mờ ngẫu nhiên tạo chiều sâu (xa gần)
+                // Tạo các điểm phồng vệ tinh ngẫu nhiên giúp đám mây có hình thù tự nhiên, không bị rập khuôn
+                offsets: [
+                    { rx: -baseRadius * 0.5, ry: baseRadius * 0.1, r: baseRadius * 0.7 },
+                    { rx: baseRadius * 0.5, ry: -baseRadius * 0.2, r: baseRadius * 0.85 },
+                    { rx: baseRadius * 1.1, ry: baseRadius * 0.1, r: baseRadius * 0.6 },
+                    { rx: baseRadius * -1.0, ry: baseRadius * 0.2, r: baseRadius * 0.5 }
+                ]
+            });
+        }
+    }
+}
+
+// Hàm vẽ đám mây mềm mại chân thật
+function drawRealisticCloud(ctx, cloud) {
+    ctx.beginPath();
+    // Vẽ khối tròn trung tâm
+    ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
+    // Vẽ các khối tròn vệ tinh xung quanh tạo độ xốp bồng bềnh
+    cloud.offsets.forEach(offset => {
+        ctx.arc(cloud.x + offset.rx, cloud.y + offset.ry, offset.r, 0, Math.PI * 2);
+    });
+    ctx.fill();
+}
+
+// Hàm vẽ và cập nhật hiệu ứng liên tục
+function drawBackground() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const isLightMode = document.body.classList.contains('light-mode');
+
+    if (!isLightMode) {
+        // --- HIỆU ỨNG SAO RƠI (DARK MODE) ---
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.lineWidth = 1.5;
+        
+        stars.forEach(star => {
+            ctx.beginPath();
+            ctx.globalAlpha = star.opacity;
+            ctx.moveTo(star.x, star.y);
+            ctx.lineTo(star.x - star.length * 0.5, star.y + star.length);
+            ctx.stroke();
+
+            star.y += star.speed;
+            star.x -= star.speed * 0.5;
+
+            if (star.y > canvas.height || star.x < 0) {
+                star.y = -20;
+                star.x = Math.random() * canvas.width;
+                star.speed = Math.random() * 4 + 2;
+                star.opacity = Math.random() * 0.6 + 0.2;
+            }
+        });
+    } else {
+        // --- HIỆU ỨNG MÂY BAY NÂNG CẤP (LIGHT MODE) ---
+        // 1. Vẽ bầu trời nền xanh da trời nhạt mịn màng
+        const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        skyGradient.addColorStop(0, '#b3e1ff'); 
+        skyGradient.addColorStop(0.6, '#e6f4ff'); 
+        skyGradient.addColorStop(1, '#ffffff'); 
+        ctx.fillStyle = skyGradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 2. Vẽ các đám mây có chiều sâu bằng Shadow mịn
+        ctx.save();
+        
+        clouds.forEach(cloud => {
+            ctx.globalAlpha = cloud.opacity;
+            
+            // Tạo đổ bóng mịn dưới chân mây nhìn như 3D thực tế
+            ctx.shadowColor = "rgba(100, 149, 237, 0.12)";
+            ctx.shadowBlur = 12;
+            ctx.shadowOffsetY = 6;
+            ctx.fillStyle = "rgba(255, 255, 255, 0.95)"; 
+            
+            // Vẽ lớp mây chính
+            drawRealisticCloud(ctx, cloud);
+
+            // Cập nhật tọa độ di chuyển trôi ngang sang phải
+            cloud.x += cloud.speed;
+
+            // Nếu mây trôi hết mép phải thì quay lại từ mép trái ngoài màn hình
+            if (cloud.x - cloud.radius * 3 > canvas.width) {
+                cloud.x = -cloud.radius * 3;
+                cloud.y = Math.random() * (canvas.height * 0.45) + 30;
+            }
+        });
+        ctx.restore();
+    }
+
+    ctx.globalAlpha = 1.0; // Reset alpha mặc định
+    animationFrameId = requestAnimationFrame(drawBackground);
+}
+
+// Gắn bộ lắng nghe sự kiện
+window.addEventListener('resize', resizeCanvas);
+
+// Kích hoạt chạy nền sau khi load xong cấu hình
+resizeCanvas();
+drawBackground();
+
+// Hàm vẽ và cập nhật hiệu ứng liên tục
+function drawBackground() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const isLightMode = document.body.classList.contains('light-mode');
+
+    if (!isLightMode) {
+        // --- HIỆU ỨNG SAO RƠI (DARK MODE) ---
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+        ctx.lineWidth = 1.5;
+        
+        stars.forEach(star => {
+            ctx.beginPath();
+            ctx.globalAlpha = star.opacity;
+            // Vẽ sao băng dạng vệt chéo nghiêng góc
+            ctx.moveTo(star.x, star.y);
+            ctx.lineTo(star.x - star.length * 0.5, star.y + star.length);
+            ctx.stroke();
+
+            // Cập nhật tọa độ di chuyển chéo xuống dưới bên trái
+            star.y += star.speed;
+            star.x -= star.speed * 0.5;
+
+            // Nếu rơi hết màn hình thì reset lại từ đỉnh
+            if (star.y > canvas.height || star.x < 0) {
+                star.y = -20;
+                star.x = Math.random() * canvas.width;
+                star.speed = Math.random() * 4 + 2;
+                star.opacity = Math.random() * 0.6 + 0.2;
+            }
+        });
+    } else {
+        // --- HIỆU ỨNG MÂY BAY (LIGHT MODE) ---
+        // 1. Vẽ bầu trời nền xanh da trời nhạt mịn màng
+        const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+        skyGradient.addColorStop(0, '#bae6fd'); // Xanh da trời nhạt phía trên
+        skyGradient.addColorStop(1, '#e0f2fe'); // Sáng dần xuống dưới
+        ctx.fillStyle = skyGradient;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // 3. Vẽ các đám mây rõ nét
+        ctx.save();
+        ctx.fillStyle = "rgba(255, 255, 255, 0.85)"; // Tăng độ đục để mây trắng rõ hơn
+        ctx.shadowColor = "rgba(15, 23, 42, 0.08)"; // Thêm bóng đổ nhẹ dưới chân mây
+        ctx.shadowBlur = 8;
+        ctx.shadowOffsetY = 4;
+        ctx.globalAlpha = 1.0;
+
+        clouds.forEach(cloud => {
+            ctx.beginPath();
+            // Tạo hình dạng đám mây cơ bản từ 3 hình tròn lồng ghép
+            ctx.arc(cloud.x, cloud.y, cloud.radius, 0, Math.PI * 2);
+            ctx.arc(cloud.x + cloud.radius * 0.6, cloud.y - cloud.radius * 0.2, cloud.radius * 0.8, 0, Math.PI * 2);
+            ctx.arc(cloud.x + cloud.radius * 1.2, cloud.y, cloud.radius * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Di chuyển đám mây trôi ngang sang phải
+            cloud.x += cloud.speed;
+
+            // Nếu mây trôi hết bên phải thì quay lại từ mép trái
+            if (cloud.x - cloud.radius * 2 > canvas.width) {
+                cloud.x = -cloud.radius * 2;
+                cloud.y = Math.random() * (canvas.height * 0.4);
+            }
+        });
+        ctx.restore();
+    }
+
+    ctx.globalAlpha = 1.0; // Reset alpha mặc định
+    animationFrameId = requestAnimationFrame(drawBackground);
+}
+
+// Gắn bộ lắng nghe sự kiện
+window.addEventListener('resize', resizeCanvas);
+
+// Kích hoạt chạy nền sau khi load xong cấu hình
+resizeCanvas();
+drawBackground();
+
 // ĐÃ SỬA: Sao lưu alert gốc của trình duyệt để tránh lặp vô hạn (Call Stack Exceeded)
 window.alert.__native__ = window.alert;
 
@@ -1886,6 +2108,9 @@ function toggleTheme() {
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
     const btn = getEl('themeBtn');
     if (btn) btn.innerHTML = isLight ? '🌙' : '💡';
+    
+    // BỔ SUNG: Khởi tạo lại vật thể nền ngay khi đổi giao diện
+    initBackgroundObjects();
 }
 
 function showTodayImportantTasks() {
@@ -2014,6 +2239,10 @@ function deleteTaskFromModal(groupId, originalIndex) {
 
 window.onload = () => {
     if (localStorage.getItem(THEME_KEY) === 'light') document.body.classList.add('light-mode');
+    
+    // BỔ SUNG DÒNG NÀY ĐỂ FIX LỖI MẤT MÂY KHI F5:
+    initBackgroundObjects(); 
+    
     renderDashboard();
     updateScheduleUI();
     
