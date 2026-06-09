@@ -1502,21 +1502,33 @@ function openContextMenu(e, targetType, groupId, index = null) {
     menu.style.display = 'none'; 
     menuContent.innerHTML = '';
 
+    // Khởi tạo nút tùy chọn Lock/Unlock dựa trên trạng thái group hiện tại
+    const group = getGroup(groupId);
+    let lockActionHTML = '';
+    if (group) {
+        lockActionHTML = group.isLocked 
+            ? `<div class="context-menu-item" onclick="triggerUnlockGroup('${groupId}')">🔓 Hủy khóa bằng Key</div>`
+            : `<div class="context-menu-item" onclick="triggerLockGroup('${groupId}')">🔒 Đặt Key khóa nhóm</div>`;
+    }
+
     const actions = {
         'group-link': `
             <div class="context-menu-item" onclick="openLinkModal('${groupId}')">➕ Thêm nút bấm link</div>
             <div class="context-menu-divider"></div>
+            ${lockActionHTML}
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'link')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'group-note': `
             <div class="context-menu-item" onclick="openNoteModal('${groupId}')">➕ Thêm nút ghi chú</div>
             <div class="context-menu-divider"></div>
+            ${lockActionHTML}
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'note')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'group-schedule': `
             <div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Thêm mốc lịch trình</div>
             <div class="context-menu-item" onclick="triggerExcelImport('${groupId}')">📥 Import từ Excel</div>
             <div class="context-menu-divider"></div>
+            ${lockActionHTML}
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'schedule')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'link': `
@@ -1783,6 +1795,14 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
     reader.readAsArrayBuffer(file);
 });
 
+// ========================================================
+// CHỨC NĂNG KHÓA GROUP BẰNG KEY + NÚT KHÓA NHANH (BIẾN ĐỘC LẬP)
+// ========================================================
+
+// Khai báo mảng lưu danh sách ID các nhóm đang mở khóa tạm thời (Đặt ngay trên hàm render)
+let unlockedGroupsList = []; 
+
+// 1. HÀM RENDER DASHBOARD CHÍNH
 function renderDashboard() {
     const container = getEl('groupsContainer'); 
     if (!container) return;
@@ -1801,24 +1821,51 @@ function renderDashboard() {
         groupCard.setAttribute('data-id', group.id);
         groupCard.oncontextmenu = (e) => openContextMenu(e, `group-${group.type}`, group.id);
 
-        const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
         const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
-        
         const isCollapsed = group.collapsed || false;
-
+        
+        // --- KIỂM TRA TRẠNG THÁI KHÓA ---
+        const isLockedOriginal = group.isLocked || false;
+        const isCurrentlyUnlocked = unlockedGroupsList.includes(group.id); // Đang mở khóa tạm thời
+        const isCurrentlyLocked = isLockedOriginal && !isCurrentlyUnlocked; // Đang bị khóa hoàn toàn
+        
+        // 💡 ĐÃ SỬA TẠI ĐÂY: Chỉ hiển thị icon 🔒 nếu nhóm đang bị khóa hoàn toàn (chưa mở key)
+        const lockIcon = isCurrentlyLocked ? ' 🔒' : ''; 
+        const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
+        
+        // Tạo nút Khóa nhanh nếu nhóm này vốn dĩ bị khóa nhưng đang được mở tạm thời
+        let quickLockBtnHTML = '';
+        if (isLockedOriginal && isCurrentlyUnlocked) {
+            quickLockBtnHTML = `<button onclick="quickLockGroup(event, '${group.id}')" style="background: #ff4d4d; color: white; border: none; padding: 2px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; margin-right: 5px; font-weight: bold;">🔒 Khóa lại</button>`;
+        }
+        
         groupCard.innerHTML = `
             <div class="group-header" onclick="toggleCollapseGroup('${group.id}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
-                <span class="group-title">${gEmoji}${group.title}</span>
-                <div style="display: flex; align-items: center; gap: 6px;">
+                <span class="group-title">${gEmoji}${group.title}${lockIcon}</span>
+                <div style="display: flex; align-items: center; gap: 6px;" onclick="event.stopPropagation();">
+                    ${quickLockBtnHTML}
                     <span class="group-tag tag-${group.type}">${tags[group.type]}</span>
-                    <span class="arrow-${group.id}" style="font-size: 10px; transition: transform 0.2s; display: inline-block; transform: ${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'}; color: var(--text-sub);">▼</span>
+                    <span class="arrow-${group.id}" style="font-size: 10px; transition: transform 0.2s; display: inline-block; transform: ${isCollapsed || isCurrentlyLocked ? 'rotate(-90deg)' : 'rotate(0deg)'}; color: var(--text-sub); cursor: pointer;" onclick="toggleCollapseGroup('${group.id}')">▼</span>
                 </div>
             </div>
-            <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed ? 'display: none;' : ''}"></div>
+            <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed || isCurrentlyLocked ? 'display: none;' : ''}"></div>
         `;
 
         const contentArea = groupCard.querySelector(`.${group.type}s-area`);
 
+        // NẾU ĐANG BỊ KHÓA: Hiển thị màn hình chặn nhập mã
+        if (isCurrentlyLocked) {
+            contentArea.innerHTML = `
+                <div style="text-align:center; padding: 20px 10px; color: var(--text-sub); font-size:13px; background: rgba(0,0,0,0.15); border-radius: 8px; margin: 5px 0; border: 1px dashed var(--border-color);">
+                    🚫 Nội dung nhóm này đã bị khóa bằng mật mã bảo vệ. <br>
+                    <span style="color: var(--accent-color); cursor:pointer; text-decoration: underline; display: inline-block; margin-top: 8px; font-weight: bold;" onclick="verifyGroupKey('${group.id}')">🔓 Nhập Key để mở khóa xem</span>
+                </div>`;
+            contentArea.style.display = ''; 
+            container.appendChild(groupCard);
+            return; 
+        }
+
+        // RENDER DỮ LIỆU CON BÌNH THƯỜNG
         if (group.type === 'link') {
             if (!group.links?.length) contentArea.innerHTML = `<span class="no-data-text">Chuột phải để thêm liên kết...</span>`;
             else {
@@ -1876,6 +1923,112 @@ function renderDashboard() {
     });
 
     initDragAndDrop();
+}
+
+// 2. HÀM XÁC THỰC NHẬP KEY
+function verifyGroupKey(groupId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+
+    getEl('keyModalTitle').innerText = "🔑 Nhập Key Để Xem";
+    getEl('keyModalDesc').innerText = `Nhập mật khẩu để mở xem dữ liệu nội bộ nhóm "${group.title}":`;
+    getEl('groupKeyInput').value = "";
+    openModal('keyModal');
+
+    getEl('groupKeyInput').onkeydown = function(e) {
+        if (e.key === 'Enter') getEl('keyModalSubmitBtn').click();
+    };
+
+    getEl('keyModalSubmitBtn').onclick = function() {
+        const key = getEl('groupKeyInput').value.trim();
+        if (group.groupKey === key) {
+            closeModal('keyModal');
+            
+            // Thêm vào biến mảng độc lập
+            if (!unlockedGroupsList.includes(groupId)) {
+                unlockedGroupsList.push(groupId);
+            }
+            
+            renderDashboard();
+            
+            setTimeout(() => {
+                const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
+                if (card) card.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+
+        } else {
+            alert("❌ Mật khẩu xác thực không chính xác!");
+        }
+    };
+}
+
+// 3. HÀM KHÓA LẠI NHANH
+function quickLockGroup(e, groupId) {
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation(); 
+    }
+    
+    // Lọc bỏ ID ra khỏi mảng độc lập
+    unlockedGroupsList = unlockedGroupsList.filter(id => id !== groupId);
+    
+    renderDashboard();
+}
+
+// 4. HÀM ĐẶT KEY KHÓA NHÓM MỚI
+function triggerLockGroup(groupId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+
+    getEl('keyModalTitle').innerText = "🔒 Đặt Key Khóa Nhóm";
+    getEl('keyModalDesc').innerText = `Thiết lập mật khẩu bảo vệ cho nhóm "${group.title}":`;
+    getEl('groupKeyInput').value = "";
+    openModal('keyModal');
+
+    getEl('keyModalSubmitBtn').onclick = function() {
+        const key = getEl('groupKeyInput').value.trim();
+        if (!key) {
+            alert("Mật khẩu không được để trống!");
+            return;
+        }
+        group.isLocked = true;
+        group.groupKey = key; 
+        
+        unlockedGroupsList = unlockedGroupsList.filter(id => id !== groupId);
+        
+        saveData();
+        closeModal('keyModal');
+        renderDashboard();
+        alert("🎉 Đã thiết lập khóa nhóm thành công!");
+    };
+}
+
+// 5. HÀM HỦY BỎ HOÀN TOÀN KHÓA (GỠ KEY GỐC)
+function triggerUnlockGroup(groupId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+
+    getEl('keyModalTitle').innerText = "🔓 Hủy Khóa Bằng Key";
+    getEl('keyModalDesc').innerText = `Nhập mật khẩu hiện tại để gỡ bỏ hoàn toàn khóa bảo vệ cho nhóm "${group.title}":`;
+    getEl('groupKeyInput').value = "";
+    openModal('keyModal');
+
+    getEl('keyModalSubmitBtn').onclick = function() {
+        const key = getEl('groupKeyInput').value.trim();
+        if (group.groupKey === key) {
+            group.isLocked = false;
+            group.groupKey = "";
+            
+            unlockedGroupsList = unlockedGroupsList.filter(id => id !== groupId);
+            
+            saveData();
+            closeModal('keyModal');
+            renderDashboard();
+            alert("🔓 Đã hủy bỏ khóa bảo vệ nhóm thành công!");
+        } else {
+            alert("❌ Mật khẩu xác thực không chính xác!");
+        }
+    };
 }
 
 function initDragAndDrop() {
@@ -2453,6 +2606,18 @@ function toggleCollapseGroup(groupId) {
         <div class="modal-footer" style="justify-content: center;">
             <button class="btn-success" id="confirmCancelBtn">Giữ Lại</button>
             <button class="btn-real-danger" id="confirmDeleteBtn">Đồng Ý</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="keyModal">
+    <div class="modal-box" style="max-width: 350px; text-align: center;">
+        <h3 id="keyModalTitle" style="color: var(--accent-color)">🔒 Khóa Nhóm Dữ Liệu</h3>
+        <p id="keyModalDesc" style="font-size: 13px; color: var(--text-sub);"></p>
+        <input type="password" id="groupKeyInput" placeholder="Nhập mật khẩu (key)..." style="width: 100%; text-align: center; margin-bottom: 15px;">
+        <div class="modal-footer" style="justify-content: center;">
+            <button class="btn-secondary" onclick="closeModal('keyModal')">Hủy</button>
+            <button class="btn-primary" id="keyModalSubmitBtn">Xác Nhận</button>
         </div>
     </div>
 </div>
