@@ -736,7 +736,7 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 999; /* Đảm bảo nổi hẳn lên trên lớp mờ */
+    z-index: 50;
     background: var(--panel-bg);
     border: 1px solid var(--border-color);
     box-shadow: var(--shadow-main);

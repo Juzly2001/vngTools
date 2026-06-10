@@ -348,9 +348,7 @@ function renderDashboard() {
                     <span class="arrow-${group.id}" style="font-size: 10px; transition: transform 0.2s; display: inline-block; transform: ${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'}; color: var(--text-sub);">▼</span>
                 </div>
             </div>
-            
-            ${lockOverlayHTML}
-
+             ${lockOverlayHTML}
             <div class="group-content-wrapper">
                 <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed ? 'display: none;' : ''}"></div>
             </div>
