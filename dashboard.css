@@ -716,6 +716,47 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 }
 #backToTop:hover { transform: scale(1.1); background: var(--accent-hover); }
 
+/* --- Giao diện Thẻ Nhóm bị khóa --- */
+.group-card.is-locked-status .group-content-wrapper {
+    filter: blur(8px);
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.4;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.group-card.is-locked-status {
+    position: relative;
+    border: 1px dashed var(--danger-color) !important;
+}
+
+/* Nút bấm để mở khóa phủ trên card */
+.lock-overlay-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 999; /* Đảm bảo nổi hẳn lên trên lớp mờ */
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-main);
+    backdrop-filter: blur(5px);
+    padding: 12px 20px;
+    border-radius: 30px;
+    color: var(--text-main);
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+.lock-overlay-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
 @keyframes smoothBlink {
     0% { opacity: 1; }
     50% { opacity: 0.5; }

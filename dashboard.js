@@ -321,7 +321,17 @@ function renderDashboard() {
         if (!group.type) group.type = group.notes ? 'note' : (group.schedules ? 'schedule' : 'link');
         
         const groupCard = document.createElement('div');
-        groupCard.className = `group-card type-${group.type}`;
+        
+        // --- TÍCH HỢP LOGIC KIỂM TRA KHÓA CHO LỚP CARD ---
+        let cardClassName = `group-card type-${group.type}`;
+        let lockOverlayHTML = '';
+        
+        if (group.pinKey && group.pinKey !== "" && group.isLocked) {
+            cardClassName += ' is-locked-status';
+            lockOverlayHTML = `<button class="lock-overlay-btn" onclick="triggerUnlockGroup('${group.id}')">🔒 Nhấn để mở khóa</button>`;
+        }
+        
+        groupCard.className = cardClassName;
         groupCard.setAttribute('data-id', group.id);
         groupCard.oncontextmenu = (e) => openContextMenu(e, `group-${group.type}`, group.id);
 
@@ -329,6 +339,7 @@ function renderDashboard() {
         const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
         const isCollapsed = group.collapsed || false;
 
+        // --- BỔ SUNG LỚP BỌC .group-content-wrapper VÀ NÚT PHỦ LOCKOVERLAY ---
         groupCard.innerHTML = `
             <div class="group-header" onclick="toggleCollapseGroup('${group.id}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <span class="group-title">${gEmoji}${group.title}</span>
@@ -337,12 +348,17 @@ function renderDashboard() {
                     <span class="arrow-${group.id}" style="font-size: 10px; transition: transform 0.2s; display: inline-block; transform: ${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'}; color: var(--text-sub);">▼</span>
                 </div>
             </div>
-            <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed ? 'display: none;' : ''}"></div>
+            
+            ${lockOverlayHTML}
+
+            <div class="group-content-wrapper">
+                <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed ? 'display: none;' : ''}"></div>
+            </div>
         `;
 
         const contentArea = groupCard.querySelector(`.${group.type}s-area`);
 
-        // Render phân loại Item
+        // Render phân loại Item (Giữ nguyên logic xử lý dữ liệu gốc của bạn)
         if (group.type === 'link') {
             if (!group.links?.length) contentArea.innerHTML = `<span class="no-data-text">Chuột phải để thêm liên kết...</span>`;
             else {
@@ -1139,15 +1155,30 @@ async function fetchFileFromGoogleDrive() {
             googleFileId = files[0].id;
             const fileData = await gapi.client.drive.files.get({ fileId: googleFileId, alt: 'media' });
             
-            if (fileData.result && Array.isArray(fileData.result)) {
+            // Lấy dữ liệu trả về từ fileData.result
+            const cloudData = fileData.result;
+
+            if (cloudData && Array.isArray(cloudData)) {
                 const chotLuaChon = await customConfirm(
                     "Mời bạn lựa chọn phương án xử lý dữ liệu:\n\n👉 Bấm [Đồng ý]: Để tải dữ liệu từ Drive về máy.\n👉 Bấm [Giữ lại]: Để giữ lại dữ liệu máy và lưu đè lên Cloud.", 
                     "⚠️ PHÁT HIỆN XUNG ĐỘT DỮ LIỆU"
                 );
                 if (chotLuaChon) {
-                    state.dashboardData = fileData.result;
+                    state.dashboardData = cloudData;
+
+                    // 👉 TỰ ĐỘNG KHÓA LẠI CÁC CARD CÓ ĐẶT PIN KEY KHI ĐỒNG BỘ TỪ DRIVE VỀ MÁY
+                    if (Array.isArray(state.dashboardData)) {
+                        state.dashboardData.forEach(group => {
+                            if (group.pinKey && group.pinKey !== "") {
+                                group.isLocked = true; // Chuyển về trạng thái ẩn nội dung bảo mật ngay lập tức
+                            }
+                        });
+                    }
+
+                    // Ghi dữ liệu đã qua xử lý khóa vào LocalStorage
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-                    renderDashboard();
+                    
+                    renderDashboard(); // Vẽ lại giao diện với các card bị mờ bảo mật
                     updateScheduleUI();
                     alert("📥 Tải dữ liệu đám mây thành công!");
                 } else {
@@ -1226,23 +1257,36 @@ function openContextMenu(e, targetType, groupId, index = null) {
     menu.style.display = 'none'; 
     menuContent.innerHTML = '';
 
+    // Lấy thông tin group để kiểm tra trạng thái khóa
+    const currentGroup = state.dashboardData.find(g => g.id === groupId);
+    const isLocked = currentGroup && currentGroup.pinKey && currentGroup.pinKey !== "";
+    const lockMenuHTML = `
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" onclick="handleLockMenuAction('${groupId}')">
+            ${isLocked ? '🔓 Gỡ bỏ Mã Khóa' : '🔒 Thiết lập Mã Khóa'}
+        </div>
+    `;
+
     const actions = {
         'group-link': `
             <div class="context-menu-item" onclick="openLinkModal('${groupId}')">➕ Thêm nút bấm link</div>
             <div class="context-menu-divider"></div>
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'link')">📝 Sửa tên nhóm</div>
-            <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
+            <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>
+            ${lockMenuHTML}`,
         'group-note': `
             <div class="context-menu-item" onclick="openNoteModal('${groupId}')">➕ Thêm nút ghi chú</div>
             <div class="context-menu-divider"></div>
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'note')">📝 Sửa tên nhóm</div>
-            <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
+            <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>
+            ${lockMenuHTML}`,
         'group-schedule': `
             <div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Thêm mốc lịch trình</div>
             <div class="context-menu-item" onclick="triggerExcelImport('${groupId}')">📥 Import từ Excel</div>
             <div class="context-menu-divider"></div>
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'schedule')">📝 Sửa tên nhóm</div>
-            <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
+            <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>
+            ${lockMenuHTML}`,
         'link': `
             <div class="context-menu-item" onclick="duplicateItem('link', '${groupId}', ${index})">✨ Nhân bản nút</div>
             ${buildMoveSubMenuHTML('link', groupId, index)}
@@ -1350,6 +1394,15 @@ document.addEventListener('touchmove', () => clearTimeout(pressTimer));
 
 // Life-cycle chính kích hoạt khi tải trang hoàn tất
 window.addEventListener('load', () => {
+    // TỰ ĐỘNG KHÓA LẠI TẤT CẢ CÁC CARD CÓ ĐẶT PIN KEY KHI KHỞI ĐỘNG TRANG ĐỂ BẢO MẬT
+    if (state && Array.isArray(state.dashboardData)) {
+        state.dashboardData.forEach(group => {
+            if (group.pinKey && group.pinKey !== "") {
+                group.isLocked = true;
+            }
+        });
+    }
+
     if (localStorage.getItem(THEME_KEY) === 'light') document.body.classList.add('light-mode');
     
     // Kích hoạt canvas nền
@@ -1372,3 +1425,133 @@ window.addEventListener('load', () => {
     setTimeout(() => { checkAuthStates(); }, 500);
     setTimeout(showTodayImportantTasks, 300);
 });
+// ==========================================================================
+// LOGIC BẢO MẬT KHÓA GROUP BẰNG KEY VÀ ĐỒNG BỘ ĐÁM MÂY
+// ==========================================================================
+
+let keyModalContext = {
+    action: 'unlock', // 'setup_lock', 'remove_lock', 'unlock'
+    targetGroupId: null
+};
+
+// Hàm ẩn / hiện ký tự khi nhập mã khóa trên Modal
+function toggleKeyVisibility() {
+    const input = document.getElementById('groupKeyInput');
+    const btn = document.getElementById('toggleKeyVisibility');
+    if (input.type === 'password') {
+        input.type = 'text';
+        btn.textContent = '🙈';
+    } else {
+        input.type = 'password';
+        btn.textContent = '👁️';
+    }
+}
+
+// Hàm mở modal viết riêng theo chuẩn đóng mở modal của bạn
+function openKeySystemModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.add('active');
+}
+function closeKeySystemModal(modalId) {
+    const modal = document.getElementById(modalId);
+    if (modal) modal.classList.remove('active');
+}
+
+// Xử lý khi bấm chức năng Khóa/Mở từ Context Menu chuột phải
+function handleLockMenuAction(groupId) {
+    // Ẩn context menu chuột phải theo đúng cách code hiện tại của bạn đang dùng
+    document.getElementById('customContextMenu').style.display = 'none';
+    
+    const group = state.dashboardData.find(g => g.id === groupId);
+    if (!group) return;
+
+    const input = document.getElementById('groupKeyInput');
+    input.value = "";
+
+    // ngay sau đoạn định nghĩa input.value = "";
+    document.getElementById('groupKeyInput').onkeydown = function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            submitKeyForm();
+        }
+    };
+    input.type = 'password';
+    document.getElementById('toggleKeyVisibility').textContent = '👁️';
+    
+    keyModalContext.targetGroupId = groupId;
+
+    if (group.pinKey && group.pinKey !== "") {
+        keyModalContext.action = 'remove_lock';
+        document.getElementById('keyModalTitle').textContent = '🔓 Hủy bỏ khóa nhóm';
+        document.getElementById('keyModalDesc').textContent = 'Vui lòng nhập mã khóa hiện tại để gỡ bỏ tính năng bảo mật.';
+        openKeySystemModal('keyModal');
+    } else {
+        keyModalContext.action = 'setup_lock';
+        document.getElementById('keyModalTitle').textContent = '🔒 Thiết lập Mã Khóa Mới';
+        document.getElementById('keyModalDesc').textContent = 'Tạo mã bảo vệ cho nhóm này. Cấu hình sẽ được tự động đồng bộ.';
+        openKeySystemModal('keyModal');
+    }
+}
+
+// Kích hoạt khi click vào nút "Nhấn để mở khóa" phủ trên card bị mờ
+function triggerUnlockGroup(groupId) {
+    keyModalContext.targetGroupId = groupId;
+    keyModalContext.action = 'unlock';
+    
+    const input = document.getElementById('groupKeyInput');
+    input.value = "";
+    document.getElementById('groupKeyInput').onkeydown = function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            submitKeyForm();
+        }
+    };
+    input.type = 'password';
+    document.getElementById('toggleKeyVisibility').textContent = '👁️';
+    
+    document.getElementById('keyModalTitle').textContent = '🔒 Nhập Mã Khóa';
+    document.getElementById('keyModalDesc').textContent = 'Nhóm này đang được khóa. Vui lòng xác thực mã để truy cập.';
+    openKeySystemModal('keyModal');
+}
+
+// Xử lý khi nhấn nút "Xác nhận" trên Modal Key
+function submitKeyForm() {
+    const keyInput = document.getElementById('groupKeyInput').value.trim();
+    if (!keyInput) {
+        alert("Vui lòng không để trống mã khóa!");
+        return;
+    }
+    
+    // Mã hóa Base64 đơn giản nhằm tránh lưu text thô trực quan dưới client máy tính
+    const hashedKey = btoa(unescape(encodeURIComponent(keyInput)));
+    const group = state.dashboardData.find(g => g.id === keyModalContext.targetGroupId);
+    
+    if (!group) return;
+
+    if (keyModalContext.action === 'setup_lock') {
+        group.pinKey = hashedKey;
+        group.isLocked = true; // Thiết lập xong đưa về trạng thái khóa ngay
+        alert("Đã thiết lập mã khóa nhóm thành công!");
+    } 
+    else if (keyModalContext.action === 'remove_lock') {
+        if (group.pinKey === hashedKey) {
+            group.pinKey = "";
+            group.isLocked = false;
+            alert("Đã gỡ bỏ mã bảo vệ nhóm!");
+        } else {
+            alert("Mã khóa không chính xác! Không thể gỡ bỏ.");
+            return;
+        }
+    } 
+    else if (keyModalContext.action === 'unlock') {
+        if (group.pinKey === hashedKey) {
+            group.isLocked = false; // Giải phóng khóa tạm thời trên session làm việc hiện tại
+        } else {
+            alert("Mã khóa sai! Vui lòng thử lại.");
+            return;
+        }
+    }
+
+    closeKeySystemModal('keyModal');
+    saveData(); // Hàm gốc của bạn: Tự động ghi vào localStorage, đồng bộ Drive và renderDashboard()
+}

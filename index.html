@@ -143,6 +143,28 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="keyModal">
+        <div class="modal-box" style="max-width: 400px; width: 95%;">
+            <span class="close-modal-x" onclick="closeModal('keyModal')">&times;</span>
+            <h3 id="keyModalTitle" style="margin-top: 0; display: flex; align-items: center; gap: 8px;">🔑 Xác thực Nhóm</h3>
+            
+            <p id="keyModalDesc" style="font-size: 13px; color: var(--text-sub); margin-bottom: 15px;">Vui lòng nhập mã khóa để truy cập nhóm này.</p>
+            
+            <label for="groupKeyInput">Mã Khóa (Key)</label>
+            <div style="position: relative; display: flex; align-items: center;">
+                <input type="password" id="groupKeyInput" placeholder="Nhập mã khóa tại đây..." style="margin-bottom: 0; padding-right: 45px;">
+                <button type="button" id="toggleKeyVisibility" onclick="toggleKeyVisibility()" style="position: absolute; right: 5px; background: none; border: none; color: var(--text-sub); padding: 8px; cursor: pointer; font-size: 16px;">
+                    👁️
+                </button>
+            </div>
+
+            <div class="modal-footer" style="margin-top: 20px;">
+                <button class="btn-secondary" onclick="closeModal('keyModal')">Hủy</button>
+                <button class="btn-primary" id="submitKeyBtn" onclick="submitKeyForm()">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
     <script src="dashboard.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
