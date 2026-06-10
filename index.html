@@ -8,7 +8,6 @@
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
     <style>
        :root {
     /* --- DARK MODE (Mặc định) --- */
@@ -1079,101 +1078,9 @@ let gapiInited = false;
 let gisInited = false;
 let tokenClient;
 let googleFileId = null;
-const unlockedGroups = {};
 
 const getEl = id => document.getElementById(id);
 const getGroup = id => state.dashboardData.find(g => g.id === id);
-
-async function lockGroup(groupId) {
-    const group = getGroup(groupId);
-    if (!group) return;
-
-    let password;
-
-    if(unlockedGroups[groupId]){
-
-        password = unlockedGroups[groupId];
-
-    }else{
-
-        password =
-            await showPasswordModal(
-                "🔒 Tạo key khóa nhóm"
-            );
-
-        if(!password) return;
-    }
-
-    const rawData = {
-        links: group.links || [],
-        notes: group.notes || [],
-        schedules: group.schedules || []
-    };
-
-    group.encryptedData =
-        CryptoJS.AES.encrypt(
-            JSON.stringify(rawData),
-            password
-        ).toString();
-
-    group.locked = true;
-
-    unlockedGroups[groupId] = password;
-    delete group.links;
-    delete group.notes;
-    delete group.schedules;
-
-    saveData();
-
-    alert("🔒 Đã khóa nhóm!");
-}
-
-async function unlockGroup(groupId) {
-
-    const group = getGroup(groupId);
-
-    if (!group || !group.locked) return;
-
-    const password =
-    await showPasswordModal(
-        "🔑 Nhập key mở khóa"
-    );
-
-    if (!password) return;
-
-    try {
-
-        const bytes =
-            CryptoJS.AES.decrypt(
-                group.encryptedData,
-                password
-            );
-
-        const data =
-            JSON.parse(
-                bytes.toString(CryptoJS.enc.Utf8)
-            );
-
-        group.links = data.links || [];
-        group.notes = data.notes || [];
-        group.schedules = data.schedules || [];
-
-        delete group.encryptedData;
-
-        group.locked = false;
-
-        unlockedGroups[groupId] = password;
-
-        saveData();
-
-        alert("🔓 Mở khóa thành công!");
-
-    } catch {
-
-        alert("❌ Sai key!");
-
-    }
-}
 
 function saveData() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
@@ -1253,7 +1160,6 @@ function submitGroupForm() {
         if (group) { group.title = name; group.emoji = state.selectedEmoji; }
     } else {
         const newGroup = { 
-            locked:false,
             id: 'g_' + Date.now(), 
             title: name, 
             emoji: state.selectedEmoji, 
@@ -1557,20 +1463,17 @@ function openContextMenu(e, targetType, groupId, index = null) {
         'group-link': `
             <div class="context-menu-item" onclick="openLinkModal('${groupId}')">➕ Thêm nút bấm link</div>
             <div class="context-menu-divider"></div>
-            <div class="context-menu-item"onclick="lockGroup('${groupId}')">🔒 Khóa nhóm </div>
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'link')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'group-note': `
             <div class="context-menu-item" onclick="openNoteModal('${groupId}')">➕ Thêm nút ghi chú</div>
             <div class="context-menu-divider"></div>
-            <div class="context-menu-item"onclick="lockGroup('${groupId}')">🔒 Khóa nhóm </div>
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'note')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'group-schedule': `
             <div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Thêm mốc lịch trình</div>
             <div class="context-menu-item" onclick="triggerExcelImport('${groupId}')">📥 Import từ Excel</div>
             <div class="context-menu-divider"></div>
-            <div class="context-menu-item"onclick="lockGroup('${groupId}')">🔒 Khóa nhóm </div>
             <div class="context-menu-item" onclick="openGroupModal('${groupId}', 'schedule')">📝 Sửa tên nhóm</div>
             <div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>`,
         'link': `
@@ -1848,26 +1751,6 @@ function renderDashboard() {
     }
     
     state.dashboardData.forEach(group => {
-        if(group.locked){
-
-            container.innerHTML += `
-            <div class="group-card">
-                <div class="group-header">
-                    <div class="group-title">
-                        🔒 ${group.title}
-                    </div>
-                </div>
-
-                <button
-                    class="btn-warning"
-                    onclick="unlockGroup('${group.id}')">
-                    🔑 Mở khóa
-                </button>
-            </div>
-            `;
-
-            return;
-        }
         if (!group.type) group.type = group.notes ? 'note' : (group.schedules ? 'schedule' : 'link');
         
         const groupCard = document.createElement('div');
@@ -2429,54 +2312,6 @@ function toggleCollapseGroup(groupId) {
         }
     }
 }
-
-function togglePasswordVisibility() {
-
-    const input = getEl('passwordInput');
-    const eye = getEl('passwordEye');
-
-    if(input.type === 'password'){
-        input.type = 'text';
-        eye.innerText = '🙈';
-    }else{
-        input.type = 'password';
-        eye.innerText = '👁️';
-    }
-}
-
-function showPasswordModal(title) {
-
-    return new Promise(resolve => {
-
-        getEl('passwordModalTitle').innerText = title;
-
-        const input = getEl('passwordInput');
-
-        input.value = '';
-        input.type = 'password';
-
-        openModal('passwordModal');
-
-        getEl('passwordConfirmBtn').onclick = () => {
-
-            const value = input.value.trim();
-
-            closeModal('passwordModal');
-
-            resolve(value);
-        };
-
-        input.focus();
-
-        input.onkeydown = e => {
-
-            if(e.key === 'Enter'){
-
-                getEl('passwordConfirmBtn').click();
-            }
-        };
-    });
-}
 </script>
 
 <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
@@ -2576,54 +2411,6 @@ function showPasswordModal(title) {
             <button class="btn-success" id="confirmCancelBtn">Giữ Lại</button>
             <button class="btn-real-danger" id="confirmDeleteBtn">Đồng Ý</button>
         </div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="passwordModal">
-    <div class="modal-box" style="max-width:420px;">
-
-        <span class="close-modal-x"
-              onclick="closeModal('passwordModal')">✖</span>
-
-        <h3 id="passwordModalTitle">🔒 Nhập Key</h3>
-
-        <div style="position:relative">
-
-            <input
-                id="passwordInput"
-                type="password"
-                placeholder="Nhập key..."
-                style="padding-right:45px">
-
-            <span
-                onclick="togglePasswordVisibility()"
-                style="
-                    position:absolute;
-                    right:12px;
-                    top:12px;
-                    cursor:pointer;
-                    font-size:18px;
-                "
-                id="passwordEye">
-                <span id="passwordEye">👁️</span>
-            </span>
-
-        </div>
-
-        <div class="modal-footer">
-            <button
-                class="btn-secondary"
-                onclick="closeModal('passwordModal')">
-                Hủy
-            </button>
-
-            <button
-                class="btn-primary"
-                id="passwordConfirmBtn">
-                Xác nhận
-            </button>
-        </div>
-
     </div>
 </div>
 </body>
