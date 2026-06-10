@@ -1,4 +1,8 @@
-    :root {
+/* ==========================================================================
+   1. VARIABLES & THEMES (Hệ thống màu sắc & Giao diện)
+   ========================================================================== */
+
+:root {
     /* --- DARK MODE (Mặc định) --- */
     --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
     --panel-bg: rgba(30, 41, 59, 0.6);
@@ -51,25 +55,13 @@ body.light-mode {
     --shadow-main: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
-/* --- GLOBAL STYLES --- */
+
+/* ==========================================================================
+   2. GLOBAL & BASE STYLES (Định dạng nền tảng)
+   ========================================================================== */
+
 * {
     box-sizing: border-box;
-}
-
-/* Tùy chỉnh thanh cuộn tinh tế hơn */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.3);
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.5);
 }
 
 body {
@@ -88,7 +80,27 @@ body {
     width: 95%;
 }
 
-/* --- HEADERS & TEXT --- */
+/* --- Tùy chỉnh thanh cuộn --- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.5);
+}
+
+
+/* ==========================================================================
+   3. TYPOGRAPHY & HEADERS (Tiêu đề & Chữ nghĩa)
+   ========================================================================== */
+
 header {
     text-align: center;
     margin-bottom: 40px;
@@ -116,7 +128,11 @@ body.light-mode h1 {
     padding: 8px;
 }
 
-/* --- TOOLBAR & BUTTONS --- */
+
+/* ==========================================================================
+   4. LAYOUT COMPONENTS (Khung Toolbar & Layout chính)
+   ========================================================================== */
+
 .toolbar {
     display: flex;
     justify-content: space-between;
@@ -131,52 +147,6 @@ body.light-mode h1 {
     box-shadow: var(--shadow-main);
 }
 
-.btn-group { 
-    display: flex; 
-    gap: 10px; 
-}
-
-button {
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-}
-
-.btn-primary { background-color: var(--accent-color); color: white; }
-.btn-primary:hover { background-color: var(--accent-hover); }
-
-.btn-warning { background-color: var(--note-accent); color: #0f172a; }
-.btn-warning:hover { background-color: var(--note-accent-hover); }
-
-.btn-success { background-color: var(--schedule-accent); color: white; }
-.btn-success:hover { background-color: var(--schedule-accent-hover); }
-
-.btn-secondary { 
-    background-color: rgba(255,255,255,0.05); 
-    color: var(--text-main); 
-    border: 1px solid var(--border-color); 
-}
-
-.btn-secondary:hover { background-color: rgba(255,255,255,0.15); }
-
-body.light-mode .btn-secondary {
-    background-color: #ffffff;
-    border-color: #dbe2ea;
-}
-
-.btn-real-danger { background-color: var(--danger-color); color: white; }
-.btn-real-danger:hover { background-color: var(--danger-hover); }
-
-input[type="file"] { display: none; }
-
-/* --- GRID LAYOUT & CARDS --- */
 .groups-grid {
     column-count: 3;
     column-gap: 15px;
@@ -212,11 +182,6 @@ body.light-mode .group-card:hover {
 .group-card.type-schedule { border-left: 4px solid var(--schedule-accent); }
 .group-card.type-link { border-left: 4px solid var(--accent-color); }
 
-/* --- DRAG & DROP GHOST --- */
-.sortable-ghost-group { opacity: 0.3; border: 2px dashed var(--accent-color); }
-.sortable-ghost-link { opacity: 0.4; transform: scale(0.95); }
-
-/* --- CARD COMPONENTS --- */
 .group-header {
     display: flex;
     align-items: center;
@@ -236,7 +201,6 @@ body.light-mode .group-card:hover {
     cursor: grab;
     user-select: none;
 }
-
 .group-title::before {
     content: "⋮⋮";
     color: var(--text-sub);
@@ -254,15 +218,68 @@ body.light-mode .group-card:hover {
 .tag-link { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
 .tag-note { background: var(--note-bg-opacity); color: var(--note-accent); }
 .tag-schedule { background: var(--schedule-bg-opacity); color: var(--schedule-accent); }
-
 body.light-mode .tag-link { background: #dbeafe; color: #2563eb; }
 
-/* --- ITEM BUTTONS --- */
+
+/* ==========================================================================
+   5. INTERACTIVE ELEMENTS (Nút bấm, Hovers & Tooltips)
+   ========================================================================== */
+
+.btn-group { 
+    display: flex; 
+    gap: 10px; 
+}
+
+.btn-group button {
+    position: relative;
+}
+
+button {
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+input[type="file"] { display: none; }
+
+/* --- Button States --- */
+.btn-primary { background-color: var(--accent-color); color: white; }
+.btn-primary:hover { background-color: var(--accent-hover); }
+
+.btn-warning { background-color: var(--note-accent); color: #0f172a; }
+.btn-warning:hover { background-color: var(--note-accent-hover); }
+
+.btn-success { background-color: var(--schedule-accent); color: white; }
+.btn-success:hover { background-color: var(--schedule-accent-hover); }
+
+.btn-real-danger { background-color: var(--danger-color); color: white; }
+.btn-real-danger:hover { background-color: var(--danger-hover); }
+
+.btn-secondary { 
+    background-color: rgba(255,255,255,0.05); 
+    color: var(--text-main); 
+    border: 1px solid var(--border-color); 
+}
+.btn-secondary:hover { background-color: rgba(255,255,255,0.15); }
+body.light-mode .btn-secondary { background-color: #ffffff; border-color: #dbe2ea; }
+
+/* --- Item Wrappers --- */
 .item-wrapper {
     display: inline-flex;
     align-items: center;
     cursor: grab;
     margin: 6px;
+}
+
+.links-area, .notes-area, .schedules-area, #groupsContainer {
+    touch-action: pan-y;
 }
 
 .link-button, .note-button, .schedule-button {
@@ -280,7 +297,6 @@ body.light-mode .tag-link { background: #dbeafe; color: #2563eb; }
     transition: all 0.2s ease;
     cursor: pointer;
 }
-
 body.light-mode .link-button,
 body.light-mode .note-button,
 body.light-mode .schedule-button {
@@ -288,7 +304,7 @@ body.light-mode .schedule-button {
     border-color: #dbe2ea;
 }
 
-/* Hovers */
+/* --- Item Hovers --- */
 .link-button:hover {
     background: linear-gradient(90deg, #6366f1, #a855f7);
     color: white;
@@ -296,10 +312,7 @@ body.light-mode .schedule-button {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
 }
-
-body.light-mode .link-button:hover {
-    color: #0f172a;
-}
+body.light-mode .link-button:hover { color: #0f172a; }
 
 .note-button:hover {
     background: linear-gradient(90deg, #eab308, #f59e0b);
@@ -308,6 +321,7 @@ body.light-mode .link-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
 }
+
 .schedule-button:hover {
     background: linear-gradient(90deg, #10b981, #059669);
     color: white;
@@ -328,7 +342,71 @@ body.light-mode .schedule-button.important-highlight {
     color: #b91c1c !important;
 }
 
-/* --- SCHEDULE TABLE --- */
+/* --- Drag & Drop Ghost Elements --- */
+.sortable-ghost-group { opacity: 0.3; border: 2px dashed var(--accent-color); }
+.sortable-ghost-link { opacity: 0.4; transform: scale(0.95); }
+.sortable-chosen {
+    transform: translateZ(0);
+    will-change: transform, opacity;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* --- Tooltips --- */
+.btn-group button::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    background: rgba(15, 23, 42, 0.95);
+    color: #f8fafc;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9999;
+}
+.btn-group button::before {
+    content: "";
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%) scale(0.8);
+    border-width: 6px 6px 0 6px;
+    border-style: solid;
+    border-color: rgba(15, 23, 42, 0.95) transparent transparent transparent;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 9999;
+}
+.btn-group button:hover::after,
+.btn-group button:hover::before {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+}
+body.light-mode .btn-group button::after {
+    background: #ffffff;
+    color: #0f172a;
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+body.light-mode .btn-group button::before {
+    border-color: #ffffff transparent transparent transparent;
+}
+.crash .btn-group button::after { display: none; }
+
+
+/* ==========================================================================
+   6. FEATURE SPECIFICS (Bảng Lịch Trình & Chi tiết Nội dung)
+   ========================================================================== */
+
 .schedule-table-wrapper {
     max-height: 280px;
     overflow-y: auto;
@@ -347,10 +425,8 @@ body.light-mode .schedule-button.important-highlight {
 
 .schedule-table th:nth-child(1), 
 .schedule-table td:nth-child(1) { width: 22%; text-align: center; }
-
 .schedule-table th:nth-child(2), 
 .schedule-table td:nth-child(2) { width: 18%; text-align: center; }
-
 .schedule-table th:nth-child(3) { width: 60%; text-align: center; }
 .schedule-table td:nth-child(3) { width: 60%; text-align: left; }
 
@@ -375,66 +451,31 @@ body.light-mode .schedule-button.important-highlight {
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
 }
-
-.schedule-table tr:last-child td {
-    border-bottom: none;
-}
+.schedule-table tr:last-child td { border-bottom: none; }
 
 .schedule-row {
     cursor: pointer;
     transition: background-color 0.2s ease, transform 0.1s ease;
 }
+.schedule-row:hover { background: rgba(255, 255, 255, 0.05) !important; }
+body.light-mode .schedule-row:hover { background: rgba(0, 0, 0, 0.03) !important; }
 
-.schedule-row:hover { 
-    background: rgba(255, 255, 255, 0.05) !important; 
-}
-body.light-mode .schedule-row:hover { 
-    background: rgba(0, 0, 0, 0.03) !important; 
-}
+.schedule-date { white-space: nowrap; color: var(--text-sub); font-weight: 500; }
+.schedule-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 5px; }
 
-.schedule-date { 
-    white-space: nowrap; 
-    color: var(--text-sub); 
-    font-weight: 500;
-}
-.schedule-name { 
-    white-space: nowrap; 
-    overflow: hidden; 
-    text-overflow: ellipsis; 
-    padding-right: 5px;
-}
-
-.schedule-row.important td:first-child { 
-    border-left: 2px solid var(--danger-color); 
-}
-.schedule-row.important {
-    background: rgba(239, 68, 68, 0.04) !important;
-}
+.schedule-row.important td:first-child { border-left: 2px solid var(--danger-color); }
+.schedule-row.important { background: rgba(239, 68, 68, 0.04) !important; }
 
 .highlight-warning {
     background-color: rgba(239, 68, 68, 0.25) !important;
+    color: #f87171 !important;
+    font-weight: bold;
 }
-.highlight-warning td {
-    color: #fecaca !important;
-    font-weight: 600;
-}
-body.light-mode .highlight-warning {
-    background-color: #fee2e2 !important;
-}
-body.light-mode .highlight-warning td {
-    color: #991b1b !important;
-}
+.highlight-warning td { color: #fecaca !important; font-weight: 600; }
+body.light-mode .highlight-warning { background-color: #fee2e2 !important; }
+body.light-mode .highlight-warning td { color: #991b1b !important; }
 
-@keyframes smoothBlink {
-    0% { opacity: 1; }
-    50% { opacity: 0.65; }
-    100% { opacity: 1; }
-}
-.blink-effect {
-    animation: smoothBlink 1.6s ease-in-out infinite;
-}
-
-/* --- INTERIOR PANELS & LISTS --- */
+/* --- Interior Info Panels --- */
 .today-important-item {
     padding: 12px;
     margin-bottom: 10px;
@@ -478,7 +519,12 @@ body.light-mode .today-important-item h4 { color: #dc2626; }
 }
 body.light-mode .schedule-tasks-list { background: rgba(0,0,0,0.02); }
 
-/* --- CONTEXT MENU --- */
+
+/* ==========================================================================
+   7. POPUPS & OVERLAYS (Context Menu & Modals nâng cao)
+   ========================================================================== */
+
+/* --- Context Menu --- */
 .context-menu {
     position: absolute;
     background: var(--context-bg);
@@ -511,7 +557,7 @@ body.light-mode .context-menu-item.delete { color: var(--danger-color); }
 
 .context-menu-divider { height: 1px; background: var(--border-color); margin: 4px 0; }
 
-/* --- MODAL STYLES --- */
+/* --- Modal Overlays & Box --- */
 .modal-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
@@ -540,6 +586,19 @@ body.light-mode .context-menu-item.delete { color: var(--danger-color); }
 }
 .modal-overlay.active .modal-box { transform: translateY(0); }
 
+.close-modal-x {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 20px;
+    font-weight: bold;
+    color: var(--text-sub);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.close-modal-x:hover { color: var(--danger-color); }
+
+/* --- Modal Form Inputs --- */
 .modal-box label { font-size: 12px; color: var(--text-sub); display: block; margin-bottom: 5px; }
 .modal-box input, .modal-box textarea, .modal-box select {
     width: 100%; padding: 12px; background: rgba(255,255,255,0.04);
@@ -556,7 +615,15 @@ body.light-mode .modal-box select {
 .modal-box input:focus, .modal-box textarea:focus, .modal-box select:focus { border-color: var(--accent-color); }
 
 .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
 
+/* --- Modal Schedule Specifics --- */
+#todayImportantContent {
+    max-height: 450px;
+    overflow-y: auto;
+    padding-right: 8px;
+    margin-bottom: 10px;
+}
 .schedules-blocks-container {
     max-height: 340px;
     overflow-y: auto;
@@ -601,9 +668,7 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 }
 .btn-remove-block:hover { color: var(--danger-color); border-color: var(--danger-color); }
 
-.modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-
-/* --- EMOJI PICKER --- */
+/* --- Emoji Picker --- */
 .emoji-picker-container { margin-bottom: 15px; }
 .emoji-grid {
     display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
@@ -618,7 +683,11 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 .emoji-item:hover { background: rgba(99, 102, 241, 0.2); transform: scale(1.1); }
 .emoji-item.selected { background: var(--accent-color); border-color: rgba(255,255,255,0.3); color: white;}
 
-/* --- UTILITY FLOATING BUTTONS --- */
+
+/* ==========================================================================
+   8. UTILITIES & ANIMATIONS (Tiện ích Phụ & Hoạt ảnh)
+   ========================================================================== */
+
 .theme-fab {
     position: fixed;
     top: 10px;
@@ -628,6 +697,7 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
     z-index: 5000;
     background: none;
 }
+
 #backToTop {
     position: fixed;
     bottom: 30px;
@@ -646,7 +716,20 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 }
 #backToTop:hover { transform: scale(1.1); background: var(--accent-hover); }
 
-/* --- RESPONSIVE / MEDIA QUERIES --- */
+@keyframes smoothBlink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+.blink-effect {
+    animation: smoothBlink 1.2s linear infinite;
+}
+
+
+/* ==========================================================================
+   9. RESPONSIVE / MEDIA QUERIES (Tương thích thiết bị)
+   ========================================================================== */
+
 @media screen and (max-width: 1024px) {
     .groups-grid { column-count: 2; }
 }
@@ -661,108 +744,4 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 
 @media screen and (max-width: 600px) {
     .groups-grid { column-count: 1; }
-}
-
-.highlight-warning {
-    background-color: rgba(239, 68, 68, 0.2) !important;
-    color: #f87171 !important;
-    font-weight: bold;
-}
-
-@keyframes blink {
-    50% { opacity: 0.5; }
-}
-.blink-effect {
-    animation: blink 1s linear infinite;
-}
-
-.sortable-chosen {
-    transform: translateZ(0);
-    will-change: transform, opacity;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
-}
-
-.links-area, .notes-area, .schedules-area, #groupsContainer {
-    touch-action: pan-y;
-}
-
-.close-modal-x {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--text-sub);
-    cursor: pointer;
-    transition: color 0.2s;
-}
-.close-modal-x:hover {
-    color: var(--danger-color);
-}
-
-#todayImportantContent {
-    max-height: 450px;
-    overflow-y: auto;
-    padding-right: 8px;
-    margin-bottom: 10px;
-}
-
-.btn-group button {
-    position: relative;
-}
-
-.btn-group button::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) scale(0.8);
-    background: rgba(15, 23, 42, 0.95);
-    color: #f8fafc;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 9999;
-}
-
-.btn-group button::before {
-    content: "";
-    position: absolute;
-    bottom: calc(100% + 4px);
-    left: 50%;
-    transform: translateX(-50%) scale(0.8);
-    border-width: 6px 6px 0 6px;
-    border-style: solid;
-    border-color: rgba(15, 23, 42, 0.95) transparent transparent transparent;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 9999;
-}
-
-.btn-group button:hover::after,
-.btn-group button:hover::before {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-}
-
-body.light-mode .btn-group button::after {
-    background: #ffffff;
-    color: #0f172a;
-    border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-body.light-mode .btn-group button::before {
-    border-color: #ffffff transparent transparent transparent;
-}
-
-.crash .btn-group button::after {
-    display: none;
 }
