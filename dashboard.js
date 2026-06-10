@@ -1165,20 +1165,18 @@ async function fetchFileFromGoogleDrive() {
                 );
                 if (chotLuaChon) {
                     state.dashboardData = cloudData;
-
-                    // 👉 TỰ ĐỘNG KHÓA LẠI CÁC CARD CÓ ĐẶT PIN KEY KHI ĐỒNG BỘ TỪ DRIVE VỀ MÁY
+                    
+                    // 👉 ĐOẠN SỬA ĐỔI: Duyệt qua tất cả nhóm, nhóm nào CÓ pinKey thì BẮT BUỘC đặt trạng thái khóa lại ngay lập tức
                     if (Array.isArray(state.dashboardData)) {
                         state.dashboardData.forEach(group => {
                             if (group.pinKey && group.pinKey !== "") {
-                                group.isLocked = true; // Chuyển về trạng thái ẩn nội dung bảo mật ngay lập tức
+                                group.isLocked = true; // Luôn luôn khóa khi đồng bộ sang thiết bị mới
                             }
                         });
                     }
 
-                    // Ghi dữ liệu đã qua xử lý khóa vào LocalStorage
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-                    
-                    renderDashboard(); // Vẽ lại giao diện với các card bị mờ bảo mật
+                    renderDashboard();
                     updateScheduleUI();
                     alert("📥 Tải dữ liệu đám mây thành công!");
                 } else {
@@ -1257,15 +1255,24 @@ function openContextMenu(e, targetType, groupId, index = null) {
     menu.style.display = 'none'; 
     menuContent.innerHTML = '';
 
-    // Lấy thông tin group để kiểm tra trạng thái khóa
+    // Lấy thông tin group để kiểm tra trạng thái khóa linh hoạt
     const currentGroup = state.dashboardData.find(g => g.id === groupId);
-    const isLocked = currentGroup && currentGroup.pinKey && currentGroup.pinKey !== "";
-    const lockMenuHTML = `
-        <div class="context-menu-divider"></div>
-        <div class="context-menu-item" onclick="handleLockMenuAction('${groupId}')">
-            ${isLocked ? '🔓 Gỡ bỏ Mã Khóa' : '🔒 Thiết lập Mã Khóa'}
-        </div>
-    `;
+    const hasPinKey = currentGroup && currentGroup.pinKey && currentGroup.pinKey !== "";
+    const isLocked = currentGroup && currentGroup.isLocked;
+
+    let lockMenuHTML = '';
+    if (hasPinKey) {
+        lockMenuHTML = `
+            <div class="context-menu-divider"></div>
+            ${!isLocked ? `<div class="context-menu-item" onclick="quickLockGroup('${groupId}')">🔒 Khóa lại nhóm</div>` : ''}
+            <div class="context-menu-item" onclick="handleLockMenuAction('${groupId}')">🔓 Gỡ bỏ Mã Khóa</div>
+        `;
+    } else {
+        lockMenuHTML = `
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item" onclick="handleLockMenuAction('${groupId}')">🔒 Thiết lập Mã Khóa</div>
+        `;
+    }
 
     const actions = {
         'group-link': `
@@ -1467,7 +1474,7 @@ function handleLockMenuAction(groupId) {
 
     const input = document.getElementById('groupKeyInput');
     input.value = "";
-
+    clearKeyError();
     // ngay sau đoạn định nghĩa input.value = "";
     document.getElementById('groupKeyInput').onkeydown = function(e) {
         if (e.key === 'Enter') {
@@ -1500,6 +1507,7 @@ function triggerUnlockGroup(groupId) {
     
     const input = document.getElementById('groupKeyInput');
     input.value = "";
+    clearKeyError();
     document.getElementById('groupKeyInput').onkeydown = function(e) {
         if (e.key === 'Enter') {
             e.preventDefault();
@@ -1516,9 +1524,10 @@ function triggerUnlockGroup(groupId) {
 
 // Xử lý khi nhấn nút "Xác nhận" trên Modal Key
 function submitKeyForm() {
+    clearKeyError();
     const keyInput = document.getElementById('groupKeyInput').value.trim();
     if (!keyInput) {
-        alert("Vui lòng không để trống mã khóa!");
+        showKeyError("Vui lòng nhập mã khóa.");
         return;
     }
     
@@ -1539,7 +1548,7 @@ function submitKeyForm() {
             group.isLocked = false;
             alert("Đã gỡ bỏ mã bảo vệ nhóm!");
         } else {
-            alert("Mã khóa không chính xác! Không thể gỡ bỏ.");
+            showKeyError("Mã khóa không chính xác.");
             return;
         }
     } 
@@ -1547,11 +1556,37 @@ function submitKeyForm() {
         if (group.pinKey === hashedKey) {
             group.isLocked = false; // Giải phóng khóa tạm thời trên session làm việc hiện tại
         } else {
-            alert("Mã khóa sai! Vui lòng thử lại.");
+            showKeyError("Mã khóa sai. Vui lòng thử lại.");
             return;
         }
     }
-
+    clearKeyError();
     closeKeySystemModal('keyModal');
-    saveData(); // Hàm gốc của bạn: Tự động ghi vào localStorage, đồng bộ Drive và renderDashboard()
+    // Thực hiện lưu trữ đồng bộ chính xác theo cấu trúc gốc của bạn
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+    syncToGoogleDrive(true); // Đồng bộ đám mây
+    renderDashboard();       // Render cập nhật trạng thái hiển thị
+}
+
+// Hàm khóa lại nhóm ngay lập tức mà không cần F5 trang
+function quickLockGroup(groupId) {
+    const group = state.dashboardData.find(g => g.id === groupId);
+    if (group && group.pinKey) {
+        group.isLocked = true; // Chuyển trạng thái về khóa
+        saveData(); // Lưu lại trạng thái và renderDashboard() tự động làm mờ nội dung
+        if (typeof closeContextMenu === 'function') closeContextMenu();
+        else document.getElementById('customContextMenu').style.display = 'none';
+    }
+}
+
+function showKeyError(message) {
+    const err = document.getElementById("keyErrorMessage");
+    err.textContent = message;
+    err.style.display = "block";
+}
+
+function clearKeyError() {
+    const err = document.getElementById("keyErrorMessage");
+    err.textContent = "";
+    err.style.display = "none";
 }
