@@ -456,7 +456,7 @@ function openGroupModal(editGroupId = false, defaultType = 'link') {
         buildEmojiPicker('groupEmojiGrid', group.emoji || "NONE");
     } else {
         const typeTexts = { link: "Nhóm Link", note: "Nhóm Ghi Chú", schedule: "Nhóm Lịch Trình" };
-        if (titleEl) titleEl.innerText = `📂 Tạo ${typeTexts[defaultType] || 'Nhóm'} Mới`;
+        if (titleEl) titleEl.innerText = `📌 Tạo ${typeTexts[defaultType] || 'Nhóm'} Mới`;
         if (nameInput) nameInput.value = '';
         buildEmojiPicker('groupEmojiGrid', "NONE");
     }
