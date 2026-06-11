@@ -566,7 +566,7 @@ body.light-mode .context-menu-item.delete { color: var(--danger-color); }
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
+    z-index: 9999;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -787,32 +787,78 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
     .groups-grid { column-count: 1; }
 }
 
-/* Chặn tuyệt đối hiện tượng bôi đen (select) chữ khi nhấn giữ trên di động */
+/* ==========================================================================
+   CẤU HÌNH KÉO THẢ & CHẶN SELECT CHỮ TRÊN MOBILE (KHÔNG ẢNH HƯỞNG MODAL)
+   ========================================================================== */
+
+/* 1. Chỉ chặn bôi đen chữ trên các thành phần danh sách công việc */
 .group-card, 
 .group-title, 
 .link-item, 
-.note-item {
-    -webkit-touch-callout: none !important; /* Chặn menu sao chép/ngữ cảnh trên iOS */
-    -webkit-user-select: none !important;   /* Safari */
-     -khtml-user-select: none !important;   /* Konqueror HTML */
-       -moz-user-select: none !important;   /* Firefox */
-        -ms-user-select: none !important;   /* Internet Explorer/Edge */
-            user-select: none !important;   /* Chrome, Opera, và các trình duyệt hiện đại */
+.note-item,
+.schedule-item {
+    -webkit-touch-callout: none !important; /* Chặn menu sao chép của iOS */
+    -webkit-user-select: none !important;   /* Chặn bôi đen chữ khi nhấn giữ */
+       -moz-user-select: none !important;
+        -ms-user-select: none !important;
+            user-select: none !important;
 }
 
-/* Cấu hình Touch-action hợp lý để scroll mượt */
-.group-card {
-    touch-action: auto !important; /* Thân nhóm vẫn cho phép cuộn trang tự nhiên */
+/* 2. Cấu hình touch-action: Thân nhóm và danh sách con vẫn cho cuộn mượt */
+.group-card,
+.links-area, 
+.notes-area {
+    touch-action: auto !important; 
 }
-
 .group-title {
-    touch-action: none !important; /* Tiêu đề nhóm là handle kéo nên chặn cuộn tại đây */
+    touch-action: none !important; /* Chỉ chặn cuộn tại tiêu đề để phục vụ việc kéo nhóm */
 }
 
-.links-area, .notes-area {
-    touch-action: auto !important; /* Vùng chứa link/note cho phép cuộn thoải mái */
+/* 3. CẤU HÌNH ĐỘ NỔI VÀ KHÔI PHỤC TƯƠNG TÁC CHO MODAL TRÊN MOBILE */
+.modal {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.8) !important; /* Nền tối mờ phía sau */
+    z-index: 99999 !important; /* QUAN TRỌNG: Phải cực cao để không bị SortableJS đè lên trên mobile */
+    display: none; /* Mặc định ẩn */
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
 }
 
-.link-item, .note-item {
-    touch-action: auto !important; /* Từng item con cho phép cuộn, SortableJS sẽ tự xử lý khi nhấn giữ */
+/* Khi có class .active từ hàm openModal(id) gọi đến */
+.modal.active {
+    display: flex !important; /* Hiện modal dạng flex để căn giữa */
+    opacity: 1 !important;
+}
+
+/* 4. LOẠI TRỪ TUYỆT ĐỐI: Khôi phục quyền chọn text/gõ chữ cho Form trong Modal */
+.modal-content,
+.modal input, 
+.modal select, 
+.modal textarea,
+.modal button {
+    -webkit-touch-callout: default !important; /* Trả lại menu ngữ cảnh gốc */
+    -webkit-user-select: text !important;      /* Cho phép bôi đen, copy văn bản */
+       -moz-user-select: text !important;
+        -ms-user-select: text !important;
+            user-select: text !important;
+    touch-action: auto !important;             /* Cho phép nhấn chọn, cuộn tự do */
+}
+
+/* Đảm bảo nội dung modal co giãn đẹp trên màn hình điện thoại */
+.modal-content {
+    background: #1e293b; 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    padding: 20px;
+    margin: auto;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
 }
