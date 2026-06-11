@@ -1317,38 +1317,75 @@ function openContextMenu(e, targetType, groupId, index = null) {
 
 function initDragAndDrop() {
     if (typeof Sortable === 'undefined') return;
-    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window);
+    
+    // Kiểm tra chính xác thiết bị di động/cảm ứng
+    const isMobile = window.innerWidth <= 768 || ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
 
-    // Kéo thả Group
-    Sortable.create(getEl('groupsContainer'), {
-        animation: 200, ghostClass: 'sortable-ghost-group', handle: '.group-title', forceFallback: isMobile, fallbackClass: 'sortable-fallback', fallbackTolerance: 5,     
-        onEnd: () => {
-            const cardElements = document.querySelectorAll('#groupsContainer .group-card');
-            const newOrderIds = Array.from(cardElements).map(card => card.getAttribute('data-id'));
-            state.dashboardData.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
-            saveData();
+    // 1. KÉO THẢ GROUP (Thao tác trên khối nhóm lớn)
+    const groupsContainer = getEl('groupsContainer');
+    if (groupsContainer) {
+        // Hủy Sortable cũ nếu có để tránh trùng lặp sự kiện khi render lại
+        if (Sortable.get(groupsContainer)) {
+            Sortable.get(groupsContainer).destroy();
         }
-    });
 
-    // Kéo thả phần tử con (Link, Note)
+        Sortable.create(groupsContainer, {
+            animation: 200, 
+            ghostClass: 'sortable-ghost-group', 
+            handle: '.group-title', // Chỉ cho kéo khi giữ vào tiêu đề nhóm
+            forceFallback: isMobile, 
+            fallbackClass: 'sortable-fallback', 
+            fallbackTolerance: isMobile ? 10 : 5, // Tăng độ trễ di chuyển ngón tay trên mobile để phân biệt với cuộn trang
+            onEnd: () => {
+                const cardElements = document.querySelectorAll('#groupsContainer .group-card');
+                const newOrderIds = Array.from(cardElements).map(card => card.getAttribute('data-id'));
+                state.dashboardData.sort((a, b) => newOrderIds.indexOf(a.id) - newOrderIds.indexOf(b.id));
+                saveData(); // Lưu lại và render giao diện mới
+            }
+        });
+    }
+
+    // 2. KÉO THẢ PHẦN TỬ CON (Các đường Link, Ghi chú bên trong Group)
     document.querySelectorAll('.links-area, .notes-area, .schedules-area').forEach(area => {
         const groupId = area.getAttribute('data-group-id');
         const type = area.classList.contains('links-area') ? 'link' : (area.classList.contains('notes-area') ? 'note' : 'schedule');
-        if (type === 'schedule') return; 
+        
+        if (type === 'schedule') return; // Bỏ qua lịch trình nếu bạn không cấu hình kéo thả
+
+        // Hủy Sortable cũ trên vùng area này nếu có
+        if (Sortable.get(area)) {
+            Sortable.get(area).destroy();
+        }
 
         Sortable.create(area, {
-            animation: 150, ghostClass: 'sortable-ghost-link', delay: 100, delayOnTouchOnly: true, forceFallback: isMobile, fallbackTolerance: 3, 
+            animation: 150, 
+            ghostClass: 'sortable-ghost-link', 
+            delay: isMobile ? 300 : 0, // QUAN TRỌNG TRÊN MOBILE: Nhấn giữ 300ms mới cho kéo để người dùng vẫn cuộn trang được
+            delayOnTouchOnly: true, 
+            forceFallback: isMobile, 
+            fallbackTolerance: 4, 
             onEnd: () => {
-                const group = getGroup(groupId); if (!group) return;
-                const items = Array.from(area.children).filter(item => item.hasAttribute('data-index'));
-                const newIndices = items.map(item => parseInt(item.getAttribute('data-index')));
-                group[`${type}s`] = newIndices.map(idx => group[`${type}s`][idx]);
-                saveData(); 
+                const group = getGroup(groupId); 
+                if (!group) return;
+
+                // Cách lấy dữ liệu mới an toàn tuyệt đối, không phụ thuộc vào giá trị cũ của 'data-index'
+                const items = Array.from(area.children);
+                const keyProperty = `${type}s`; // Tạo chuỗi 'links' hoặc 'notes'
+                
+                // Tạo một mảng tạm thời mới sắp xếp theo thứ tự hiển thị thực tế của HTML
+                const newItemsOrdered = items.map(item => {
+                    const originalIndex = parseInt(item.getAttribute('data-index'));
+                    return group[keyProperty][originalIndex];
+                }).filter(Boolean); // Loại bỏ các phần tử lỗi hoặc null nếu có
+
+                // Cập nhật lại mảng gốc của Group
+                group[keyProperty] = newItemsOrdered;
+                
+                saveData(); // Lưu cấu trúc mới, hàm này tự động gọi renderDashboard() để làm mới data-index
             }
         });
     });
 }
-
 function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
 
 // ==========================================
@@ -1588,3 +1625,4 @@ function clearKeyError() {
     err.textContent = "";
     err.style.display = "none";
 }
+

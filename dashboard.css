@@ -786,3 +786,14 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 @media screen and (max-width: 600px) {
     .groups-grid { column-count: 1; }
 }
+
+/* Chặn menu ngữ cảnh và highlight mặc định khi nhấn giữ trên mobile */
+.group-card, .group-item, [draggable="true"] {
+    -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none;   /* Safari */
+     -khtml-user-select: none;   /* Konqueror HTML */
+       -moz-user-select: none;   /* Firefox */
+        -ms-user-select: none;   /* Internet Explorer/Edge */
+            user-select: none;   /* Non-prefixed version, currently supported by Chrome and Opera */
+    touch-action: none;          /* Ngăn chặn cuộn trang mặc định khi đang kéo */
+}
