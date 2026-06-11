@@ -698,6 +698,16 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
     background: none;
 }
 
+.theme-canvas {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 5000;
+    background: none;
+}
+
 #backToTop {
     position: fixed;
     bottom: 30px;

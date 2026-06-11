@@ -189,7 +189,10 @@ function drawBackground() {
         ctx.restore();
     }
     ctx.globalAlpha = 1.0; 
-    animationFrameId = requestAnimationFrame(drawBackground);
+
+    if (isCanvasEnabled) {
+        animationFrameId = requestAnimationFrame(drawBackground);
+    }
 }
 
 // ==========================================
@@ -200,8 +203,59 @@ function toggleTheme() {
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
     const btn = getEl('themeBtn');
     if (btn) btn.innerHTML = isLight ? '🌙' : '💡';
-    initBackgroundObjects();
+    
+    // CHỈ KHỞI TẠO LẠI NẾU CANVAS ĐANG BẬT
+    if (isCanvasEnabled) {
+        initBackgroundObjects();
+    }
 }
+
+
+// ==========================================
+// . ON/OF GIAO DIỆN (THEME SYSTEM)
+// ==========================================
+// Biến kiểm tra trạng thái bật/tắt của Canvas (mặc định là true - bật)
+let isCanvasEnabled = localStorage.getItem('canvas-enabled') !== 'false';
+
+function toggleThemeCanvas() {
+    isCanvasEnabled = !isCanvasEnabled;
+    // Lưu trạng thái vào localStorage
+    localStorage.setItem('canvas-enabled', isCanvasEnabled);
+    
+    applyCanvasState();
+}
+
+function applyCanvasState() {
+    const btn = document.getElementById('themeBtnCanvas');
+    
+    if (isCanvasEnabled) {
+        // 1. Hiển thị lại canvas
+        canvas.style.display = 'block';
+        // 2. Cập nhật lại kích thước và khởi tạo vật thể
+        resizeCanvas();
+        // 3. Chạy lại hiệu ứng vẽ (nếu chưa chạy)
+        if (!animationFrameId) {
+            animationFrameId = requestAnimationFrame(drawBackground);
+        }
+        // 4. Thay đổi icon nút bấm nếu thích (Ví dụ: 🌟 khi bật)
+        if (btn) btn.innerHTML = '🌟';
+    } else {
+        // 1. Ẩn canvas đi
+        canvas.style.display = 'none';
+        // 2. Hủy vòng lặp vẽ để tiết kiệm RAM/CPU
+        if (animationFrameId) {
+            cancelAnimationFrame(animationFrameId);
+            animationFrameId = null; // Reset ID
+        }
+        // 3. Xóa sạch canvas hiện tại
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // 4. Thay đổi icon nút bấm khi tắt (Ví dụ: ⭐ hoặc nút xám)
+        if (btn) btn.innerHTML = '✨';
+    }
+}
+
+// Gọi hàm này ngay khi tải trang để áp dụng cấu hình cũ của người dùng
+applyCanvasState();
 
 // ==========================================
 // 4. HỆ THỐNG DIALOGS & POPUPS TỰ CHẾ (MODALS & CUSTOM ALERTS)
