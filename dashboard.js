@@ -215,7 +215,7 @@ function toggleTheme() {
 // . ON/OF GIAO DIỆN (THEME SYSTEM)
 // ==========================================
 // Biến kiểm tra trạng thái bật/tắt của Canvas (mặc định là true - bật)
-let isCanvasEnabled = localStorage.getItem('canvas-enabled') !== 'false';
+let isCanvasEnabled = localStorage.getItem('canvas-enabled') === 'true';
 
 function toggleThemeCanvas() {
     isCanvasEnabled = !isCanvasEnabled;
