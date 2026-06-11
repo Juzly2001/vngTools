@@ -787,13 +787,32 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
     .groups-grid { column-count: 1; }
 }
 
-/* Chặn menu ngữ cảnh và highlight mặc định khi nhấn giữ trên mobile */
-.group-card, .group-item, [draggable="true"] {
-    -webkit-touch-callout: none; /* iOS Safari */
-    -webkit-user-select: none;   /* Safari */
-     -khtml-user-select: none;   /* Konqueror HTML */
-       -moz-user-select: none;   /* Firefox */
-        -ms-user-select: none;   /* Internet Explorer/Edge */
-            user-select: none;   /* Non-prefixed version, currently supported by Chrome and Opera */
-    touch-action: none;          /* Ngăn chặn cuộn trang mặc định khi đang kéo */
+/* Chặn tuyệt đối hiện tượng bôi đen (select) chữ khi nhấn giữ trên di động */
+.group-card, 
+.group-title, 
+.link-item, 
+.note-item {
+    -webkit-touch-callout: none !important; /* Chặn menu sao chép/ngữ cảnh trên iOS */
+    -webkit-user-select: none !important;   /* Safari */
+     -khtml-user-select: none !important;   /* Konqueror HTML */
+       -moz-user-select: none !important;   /* Firefox */
+        -ms-user-select: none !important;   /* Internet Explorer/Edge */
+            user-select: none !important;   /* Chrome, Opera, và các trình duyệt hiện đại */
+}
+
+/* Cấu hình Touch-action hợp lý để scroll mượt */
+.group-card {
+    touch-action: auto !important; /* Thân nhóm vẫn cho phép cuộn trang tự nhiên */
+}
+
+.group-title {
+    touch-action: none !important; /* Tiêu đề nhóm là handle kéo nên chặn cuộn tại đây */
+}
+
+.links-area, .notes-area {
+    touch-action: auto !important; /* Vùng chứa link/note cho phép cuộn thoải mái */
+}
+
+.link-item, .note-item {
+    touch-action: auto !important; /* Từng item con cho phép cuộn, SortableJS sẽ tự xử lý khi nhấn giữ */
 }
