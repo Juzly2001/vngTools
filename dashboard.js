@@ -237,8 +237,8 @@ function applyCanvasState() {
         if (!animationFrameId) {
             animationFrameId = requestAnimationFrame(drawBackground);
         }
-        // 4. Thay đổi icon nút bấm nếu thích (Ví dụ: 🌟 khi bật)
-        if (btn) btn.innerHTML = '🌟';
+        // 4. Thay đổi icon nút bấm nếu thích (Ví dụ: ⭐ khi bật)
+        if (btn) btn.innerHTML = '⭐';
     } else {
         // 1. Ẩn canvas đi
         canvas.style.display = 'none';
@@ -249,8 +249,8 @@ function applyCanvasState() {
         }
         // 3. Xóa sạch canvas hiện tại
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // 4. Thay đổi icon nút bấm khi tắt (Ví dụ: ⭐ hoặc nút xám)
-        if (btn) btn.innerHTML = '✨';
+        // 4. Thay đổi icon nút bấm khi tắt (Ví dụ: 🌟 hoặc nút xám)
+        if (btn) btn.innerHTML = '🌟';
     }
 }
 
