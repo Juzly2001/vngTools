@@ -872,3 +872,7 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
     position: relative;
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
 }
+
+.zindex-modal {
+    z-index: 99999;
+}
