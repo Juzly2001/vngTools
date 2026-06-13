@@ -463,25 +463,38 @@ function renderDashboard() {
                 const tbody = table.querySelector('tbody');
 
                 group.schedules.forEach((sch, idx) => {
-                    const row = document.createElement('tr');
-                    row.className = `schedule-row ${sch.important ? 'important' : ''}`;
-                    row.onclick = () => showContentDetail(group.id, idx, 'schedule');
-                    row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
-                    
-                    // Định dạng hiển thị Ngày thành DD/MM
-                    let displayDate = "";
-                    if (sch.date) {
-                        displayDate = sch.date.split('-').reverse().slice(0,2).join('/');
-                    }
+                const row = document.createElement('tr');
+                
+                // ========================================================
+                // 🔥 LOGIC KIỂM TRA LỊCH QUÁ HẠN ĐỂ GẮN CLASS "past"
+                // ========================================================
+                const now = new Date();
+                const scheduleTime = new Date(`${sch.date} ${sch.time || "00:00"}`);
+                const isPast = scheduleTime < now; // Nếu thời gian mốc lịch nhỏ hơn hiện tại => Quá hạn
 
-                    row.innerHTML = `
-                        <td class="schedule-date">${displayDate}</td>
-                        <td class="schedule-date schedule-time" style="color: #38bdf8; font-weight: 600;">${sch.dayOfWeek || "---"}</td>
-                        <td class="schedule-date">${sch.time || "00:00"}</td>
-                        <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${sch.title || ""}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
+                // Gắn các class tương ứng (important, past) vào hàng tr
+                row.className = `schedule-row ${sch.important ? 'important' : ''} ${isPast ? 'past' : ''}`;
+                
+                row.onclick = () => showContentDetail(group.id, idx, 'schedule');
+                row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
+                
+                // Định dạng hiển thị Ngày thành DD/MM
+                let displayDate = "";
+                if (sch.date) {
+                    displayDate = sch.date.split('-').reverse().slice(0,2).join('/');
+                }
+
+                // Lấy thông tin Thứ (nếu trống sẽ tự tính động)
+                const dayOfWeek = sch.dayOfWeek || (sch.date ? ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"][new Date(sch.date.replace(/-/g, '/')).getDay()] : "---");
+
+                row.innerHTML = `
+                    <td class="schedule-date">${displayDate}</td>
+                    <td class="schedule-date schedule-time " style="color: #38bdf8; font-weight: 600;">${dayOfWeek}</td>
+                    <td class="schedule-date" style="width: 55px; text-align: center;">${sch.time || "00:00"}</td>
+                    <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${sch.title || ""}</td>
+                `;
+                tbody.appendChild(row);
+            });
                 wrapper.appendChild(table);
                 contentArea.appendChild(wrapper);
             }

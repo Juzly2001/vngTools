@@ -877,3 +877,19 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 .zindex-modal {
     z-index: 99999;
 }
+
+/* ========================================================
+   🔥 FIX TRONG SUỐT ĐỒNG BỘ - GIỮ MÀU CHUẨN CHO CỘT GIỜ
+   ======================================================== */
+
+.schedule-row.past .schedule-date,
+.schedule-row.past .schedule-name,
+.schedule-row.past .schedule-time {
+    text-decoration: line-through !important;
+    color: rgba(154, 160, 166, 0.4) !important; /* Dùng màu chữ trong suốt để tạo hiệu ứng mờ */
+}
+
+/* 3. Đảm bảo toàn bộ hàng td đều có đường gạch ngang đồng bộ */
+.schedule-row.past td {
+    text-decoration: line-through !important;
+}
