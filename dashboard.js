@@ -393,7 +393,6 @@ function renderDashboard() {
         const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
         const isCollapsed = group.collapsed || false;
 
-        // --- BỔ SUNG LỚP BỌC .group-content-wrapper VÀ NÚT PHỦ LOCKOVERLAY ---
         groupCard.innerHTML = `
             <div class="group-header" onclick="toggleCollapseGroup('${group.id}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
                 <span class="group-title">${gEmoji}${group.title}</span>
@@ -410,7 +409,6 @@ function renderDashboard() {
 
         const contentArea = groupCard.querySelector(`.${group.type}s-area`);
 
-        // Render phân loại Item (Giữ nguyên logic xử lý dữ liệu gốc của bạn)
         if (group.type === 'link') {
             if (!group.links?.length) contentArea.innerHTML = `<span class="no-data-text">Chuột phải để thêm liên kết...</span>`;
             else {
@@ -439,6 +437,9 @@ function renderDashboard() {
                 });
             }
         } 
+        // ========================================================
+        // 📅 KHU VỰC SỬA LỖI HIỂN THỊ CỘT THỨ (SCHEDULE)
+        // ========================================================
         else if (group.type === 'schedule') {
             if (!group.schedules?.length) contentArea.innerHTML = `<span class="no-data-text">Chuột phải để thêm lịch trình...</span>`;
             else {
@@ -446,7 +447,19 @@ function renderDashboard() {
                 wrapper.className = 'schedule-table-wrapper';
                 const table = document.createElement('table');
                 table.className = 'schedule-table';
-                table.innerHTML = `<thead><tr><th>Ngày</th><th>Giờ</th><th>Công việc</th></tr></thead><tbody></tbody>`;
+                
+                // Thiết lập lại tỷ lệ hiển thị 4 cột: Ngày (22%), Thứ (18%), Giờ (15%), Công việc (45%)
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="width: 18%;">Ngày</th>
+                            <th style="width: 18%;">Thứ</th>
+                            <th style="width: 18%;">Giờ</th>
+                            <th style="width: 46%;">Công việc</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>`;
+                
                 const tbody = table.querySelector('tbody');
 
                 group.schedules.forEach((sch, idx) => {
@@ -454,10 +467,19 @@ function renderDashboard() {
                     row.className = `schedule-row ${sch.important ? 'important' : ''}`;
                     row.onclick = () => showContentDetail(group.id, idx, 'schedule');
                     row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
+                    
+                    // Định dạng hiển thị Ngày thành DD/MM
+                    let displayDate = "";
+                    if (sch.date) {
+                        displayDate = sch.date.split('-').reverse().slice(0,2).join('/');
+                    }
+
                     row.innerHTML = `
-                        <td class="schedule-date">${sch.date.split('-').reverse().slice(0,2).join('/')}</td>
-                        <td class="schedule-date" style="width: 50px;">${sch.time}</td>
-                        <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${sch.title}</td>`;
+                        <td class="schedule-date">${displayDate}</td>
+                        <td class="schedule-date schedule-time" style="color: #38bdf8; font-weight: 600;">${sch.dayOfWeek || "---"}</td>
+                        <td class="schedule-date">${sch.time || "00:00"}</td>
+                        <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${sch.title || ""}</td>
+                    `;
                     tbody.appendChild(row);
                 });
                 wrapper.appendChild(table);
@@ -467,7 +489,7 @@ function renderDashboard() {
         container.appendChild(groupCard);
     });
 
-    initDragAndDrop();
+    if (typeof initDragAndDrop === 'function') initDragAndDrop();
 }
 
 function toggleCollapseGroup(groupId) {
@@ -774,6 +796,9 @@ function submitScheduleForm() {
     const blockElements = document.querySelectorAll('#scheduleBlocksWrapper .schedule-block-item');
     let hasError = false;
 
+    // Mảng nhãn Thứ tiếng Việt chuẩn
+    const dayLabels = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+
     const blocksData = Array.from(blockElements).map(block => {
         const title = block.querySelector('.sch-title-input').value.trim();
         const date = block.querySelector('.sch-date-input').value;
@@ -783,7 +808,27 @@ function submitScheduleForm() {
         const hiddenEmoji = block.querySelector('.sch-emoji-hidden').value;
 
         if (!title || !date || !time) hasError = true;
-        return { title, date, time, content, important, emoji: state.isEditMode ? hiddenEmoji : (important ? "⚠️" : "📅") };
+
+        // ==========================================
+        // 🔥 TỰ ĐỘNG TÍNH THỨ TỪ Ô INPUT NGÀY ĐƯỢC CHỌN
+        // ==========================================
+        let dayOfWeek = "---";
+        if (date) {
+            const parsedDate = new Date(date.replace(/-/g, '/'));
+            if (!isNaN(parsedDate.getTime())) {
+                dayOfWeek = dayLabels[parsedDate.getDay()];
+            }
+        }
+
+        return { 
+            title, 
+            date, 
+            dayOfWeek, // Lưu thuộc tính Thứ vào đây
+            time, 
+            content, 
+            important, 
+            emoji: state.isEditMode ? hiddenEmoji : (important ? "⚠️" : "📅") 
+        };
     });
 
     if (hasError) {
@@ -797,9 +842,14 @@ function submitScheduleForm() {
         group.schedules.push(...blocksData);
     }
 
-    group.schedules.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+    // 🔥 SỬA LỖI MÚI GIỜ: Thay dấu 'T' thành khoảng trắng ' ' để ép trình duyệt chạy theo giờ hệ thống Local
+    group.schedules.sort((a, b) => new Date(`${a.date} ${a.time}`) - new Date(`${b.date} ${b.time}`));
+    
     saveData();
     closeModal('scheduleModal');
+    
+    // Gọi hàm render để cập nhật ngay giao diện mà không cần reload trang
+    if (typeof renderDashboard === 'function') renderDashboard();
 }
 
 function updateScheduleUI() {
@@ -1075,44 +1125,110 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
     reader.onload = function(e) {
         try {
             const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: 'array', cellDates: true });
+            const workbook = XLSX.read(data, { type: 'array', cellDates: false });
             const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rawData = XLSX.utils.sheet_to_json(firstSheet);
             
+            const rawData = XLSX.utils.sheet_to_json(firstSheet);
             if (!rawData || rawData.length === 0) return alert("❌ File Excel trống!");
             
             const newSchedules = rawData.map(row => {
                 const title = String(row["CongViec"] || row["Congviec"] || row["Công Việc"] || row["Công việc"] || "").trim();
                 let rawDate = row["Ngay"] || row["Ngày"];
-                const time = String(row["Gio"] || row["Giờ"] || "").trim();
+                let rawTime = String(row["Gio"] || row["Giờ"] || "").trim();
                 const content = String(row["NoiDung"] || row["Nội Dung"] || "").trim();
                 const rawImportant = row["QuanTrong"] || row["Quan Trọng"];
                 const important = rawImportant === true || String(rawImportant).toLowerCase() === 'true';
 
-                let date = "";
-                if (rawDate instanceof Date && !isNaN(rawDate)) {
-                    const utcDate = new Date(rawDate.getTime() + rawDate.getTimezoneOffset() * 60000);
-                    date = `${utcDate.getFullYear()}-${String(utcDate.getMonth() + 1).padStart(2, '0')}-${String(utcDate.getDate()).padStart(2, '0')}`;
-                } else {
-                    date = String(rawDate || "").trim();
-                    if (date.includes('/')) {
-                        const parts = date.split('/');
-                        if (parts.length === 3) date = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+                // 1. CHUẨN HÓA GIỜ
+                let time = "07:00"; 
+                if (rawTime && rawTime !== "undefined") {
+                    let cleanedTime = rawTime.toLowerCase().trim();
+                    if (!isNaN(cleanedTime) && parseFloat(cleanedTime) > 0 && parseFloat(cleanedTime) < 1) {
+                        const totalSeconds = Math.round(parseFloat(cleanedTime) * 24 * 3600);
+                        let hours = Math.floor(totalSeconds / 3600);
+                        let minutes = Math.floor((totalSeconds % 3600) / 60);
+                        time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                    } else {
+                        const isPM = cleanedTime.includes('pm');
+                        const isAM = cleanedTime.includes('am');
+                        cleanedTime = cleanedTime.replace(/(am|pm)/g, '').trim();
+                        const timeParts = cleanedTime.split(':');
+                        if (timeParts.length >= 2) {
+                            let hours = parseInt(timeParts[0], 10);
+                            let minutes = parseInt(timeParts[1], 10);
+                            if (isPM && hours < 12) hours += 12;
+                            if (isAM && hours === 12) hours = 0;
+                            time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                        }
                     }
                 }
-                return { title, date, time, content: content === "undefined" ? "" : content, important, emoji: important ? "⚠️" : "📅" };
-            }).filter(item => item.title && item.date && item.date !== "undefined" && item.time);
+
+                // 2. CHUẨN HÓA NGÀY
+                let date = "";
+                if (rawDate && String(rawDate).trim() !== "undefined") {
+                    let dateStr = String(rawDate).trim().split(' ')[0]; 
+                    if (dateStr.includes('/') || dateStr.includes('-')) {
+                        const separator = dateStr.includes('/') ? '/' : '-';
+                        const parts = dateStr.split(separator);
+                        if (parts.length === 3) {
+                            if (parts[0].length === 4) {
+                                date = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+                            } else {
+                                let p0 = parseInt(parts[0], 10);
+                                let p1 = parseInt(parts[1], 10);
+                                let year = parts[2].length === 2 ? '20' + parts[2] : parts[2]; 
+                                if (p0 > 12) {
+                                    date = `${year}-${String(p1).padStart(2, '0')}-${String(p0).padStart(2, '0')}`;
+                                } else if (p1 > 12) {
+                                    date = `${year}-${String(p0).padStart(2, '0')}-${String(p1).padStart(2, '0')}`;
+                                } else {
+                                    date = `${year}-${String(p1).padStart(2, '0')}-${String(p0).padStart(2, '0')}`;
+                                }
+                            }
+                        }
+                    } else if (!isNaN(dateStr) && Number(dateStr) > 0) {
+                        const excelDate = XLSX.SSF.parse_date_code(Number(dateStr));
+                        date = `${excelDate.y}-${String(excelDate.m).padStart(2, '0')}-${String(excelDate.d).padStart(2, '0')}`;
+                    }
+                }
+                if (!date) {
+                    const d = new Date();
+                    date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+                }
+
+                // ==========================================
+                // 🔥 LOGIC TỰ ĐỘNG TÍNH THỨ (BẮT BUỘC PHẢI CÓ TẠI ĐÂY)
+                // ==========================================
+                const dayLabels = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+                // Thay dấu gạch ngang bằng gạch chéo để đối tượng Date trên trình duyệt chạy chuẩn Local Time
+                const parsedDate = new Date(date.replace(/-/g, '/')); 
+                const dayOfWeek = dayLabels[parsedDate.getDay()] || "---";
+
+                return { 
+                    title, 
+                    date, 
+                    dayOfWeek, // Lưu giá trị "Thứ X" trực tiếp vào object dữ liệu
+                    time, 
+                    content: content === "undefined" ? "" : content, 
+                    important, 
+                    emoji: important ? "⚠️" : "📅" 
+                };
+            }).filter(item => item.title && item.date);
 
             if (newSchedules.length === 0) return alert("❌ Không lọc được mốc lịch hợp lệ!");
 
             if (!group.schedules) group.schedules = [];
             group.schedules.push(...newSchedules);
-            group.schedules.sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`));
+            
+            group.schedules.sort((a, b) => {
+                return new Date(`${a.date} ${a.time}`) - new Date(`${b.date} ${b.time}`);
+            });
 
             saveData();
             if (typeof renderDashboard === 'function') renderDashboard(); else location.reload();
             alert(`📥 Thành công! Đã thêm ${newSchedules.length} lịch.`);
         } catch (err) {
+            console.error(err);
             alert("Lỗi hệ thống khi phân tích file Excel!");
         } finally {
             event.target.value = ''; 

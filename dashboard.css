@@ -460,7 +460,8 @@ body.light-mode .btn-group button::before {
 .schedule-row:hover { background: rgba(255, 255, 255, 0.05) !important; }
 body.light-mode .schedule-row:hover { background: rgba(0, 0, 0, 0.03) !important; }
 
-.schedule-date { white-space: nowrap; color: var(--text-sub); font-weight: 500; }
+.schedule-date { white-space: nowrap; color: var(--text-sub); font-weight: 500; text-align: center !important; vertical-align: middle;}
+.schedule-time { color: var(--accent-color) !important; } 
 .schedule-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 5px; }
 
 .schedule-row.important td:first-child { border-left: 2px solid var(--danger-color); }
