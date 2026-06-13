@@ -486,7 +486,7 @@ function renderDashboard() {
                 }
 
                 // Lấy thông tin Thứ (nếu trống sẽ tự tính động)
-                const dayOfWeek = sch.dayOfWeek || (sch.date ? ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"][new Date(sch.date.replace(/-/g, '/')).getDay()] : "---");
+                const dayOfWeek = sch.dayOfWeek || (sch.date ? ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"][new Date(sch.date.replace(/-/g, '/')).getDay()] : "---");
 
                 row.innerHTML = `
                     <td class="schedule-date">${displayDate}</td>
@@ -705,7 +705,7 @@ function showContentDetail(groupId, index, type) {
         const schObj = group.schedules[index];
         const displayDate = schObj.date.split('-').reverse().join('/');
 
-        titleEl.innerHTML = schObj.important ? `⚠️ [QUAN TRỌNG] ${schObj.title}` : `📅 Lịch Trình: ${schObj.title}`;
+        titleEl.innerHTML = schObj.important ? `⚠️ ${schObj.title}` : `📅 Lịch Trình: ${schObj.title}`;
         bodyEl.innerHTML = `
             <div class="single-schedule-detail">
                 <h4>${schObj.title}</h4>
@@ -811,7 +811,7 @@ function submitScheduleForm() {
     let hasError = false;
 
     // Mảng nhãn Thứ tiếng Việt chuẩn
-    const dayLabels = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    const dayLabels = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
     const blocksData = Array.from(blockElements).map(block => {
         const title = block.querySelector('.sch-title-input').value.trim();
@@ -972,12 +972,20 @@ function showTodayImportantTasks() {
             }
 
             const titleColor = item.important ? 'color: #f87171;' : 'color: var(--schedule-accent);';
-            const prefix = item.important ? '⚠️ [QUAN TRỌNG] ' : '⏰ ';
+            const prefix = item.important ? '⚠️' : '⏰ ';
             
+            // --- ĐOẠN XỬ LÝ BIẾN ĐỔI CHỮ CN THÀNH CHỦ NHẬT ---
+            let displayDay = item.dayOfWeek || "---";
+            if (displayDay === "CN") {
+                displayDay = "Chủ Nhật";
+            }
+            // -----------------------------------------------
+
             html += `
             <div class="today-important-item" style="${itemStyle} margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
-                <div style="flex: 1; ${textStyle}">
-                    <h4 style="margin: 0 0 6px 0; ${titleColor}">${prefix}${item.title} (${item.time})</h4>
+                <div style="flex: 1;">
+                    <h4 style="${textStyle} margin: 0 0 6px 0; ${titleColor}">${prefix} ${displayDay} - ${item.title} - (${item.time})</h4>
+                    
                     <p style="margin: 0; white-space: pre-wrap; font-size: 13px; color: var(--text-main);">${item.content || 'Không có nội dung chi tiết'}</p>
                 </div>
                 <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px; color: var(--danger-color); border-color: rgba(239, 68, 68, 0.2); text-decoration: none;" 
@@ -1213,7 +1221,7 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
                 // ==========================================
                 // 🔥 LOGIC TỰ ĐỘNG TÍNH THỨ (BẮT BUỘC PHẢI CÓ TẠI ĐÂY)
                 // ==========================================
-                const dayLabels = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+                const dayLabels = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
                 // Thay dấu gạch ngang bằng gạch chéo để đối tượng Date trên trình duyệt chạy chuẩn Local Time
                 const parsedDate = new Date(date.replace(/-/g, '/')); 
                 const dayOfWeek = dayLabels[parsedDate.getDay()] || "---";
