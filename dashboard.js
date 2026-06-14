@@ -1598,31 +1598,43 @@ window.addEventListener('click', () => {
 window.addEventListener('resize', resizeCanvas);
 
 // Thiết lập Long Press (Nhấn giữ) trên thiết bị di động
+// Thiết lập Long Press (Nhấn giữ) trên thiết bị di động
 document.addEventListener('touchstart', e => {
-    const target = e.target.closest('.link-button, .note-button, .schedule-button, .group-card');
+    // SỬA LỖI: Thêm '.schedule-row' vào danh sách kiểm tra phần tử được bấm
+    const target = e.target.closest('.link-button, .note-button, .schedule-button, .schedule-row, .group-card');
     if (!target) return;
 
     pressTimer = setTimeout(() => {
         let groupId = null, index = null, targetType = null;
         const card = target.closest('.group-card');
+        if (!card) return;
         groupId = card.dataset.id;
 
         if (target.classList.contains('link-button')) {
-            index = parseInt(target.parentElement.dataset.index); targetType = 'link';
+            index = parseInt(target.parentElement.dataset.index); 
+            targetType = 'link';
         } else if (target.classList.contains('note-button')) {
-            index = parseInt(target.parentElement.dataset.index); targetType = 'note';
+            index = parseInt(target.parentElement.dataset.index); 
+            targetType = 'note';
         } else if (target.classList.contains('schedule-button')) {
-            index = parseInt(target.parentElement.dataset.index); targetType = 'schedule';
+            index = parseInt(target.parentElement.dataset.index); 
+            targetType = 'schedule';
+        } else if (target.classList.contains('schedule-row')) {
+            // SỬA LỖI: Trích xuất chính xác thuộc tính index của hàng lịch trình
+            const rows = Array.from(target.parentElement.children);
+            index = rows.indexOf(target);
+            targetType = 'schedule';
         } else {
             targetType = `group-${getGroup(groupId).type}`;
         }
 
+        // Kích hoạt Menu ngữ cảnh tại vị trí ngón tay chạm
         openContextMenu({
             preventDefault(){}, stopPropagation(){},
             pageX: e.touches[0].pageX, pageY: e.touches[0].pageY
         }, targetType, groupId, index);
     }, 500);
-});
+}, { passive: true }); // Tối ưu hiệu năng cuộn trên mobile
 document.addEventListener('touchend', () => clearTimeout(pressTimer));
 document.addEventListener('touchmove', () => clearTimeout(pressTimer));
 
