@@ -963,7 +963,7 @@ function updateScheduleUI() {
 
         if (diffToEndMs < 0) {
             // TRƯỜNG HỢP 1: ĐÃ QUÁ HẠN HOÀN TOÀN
-            countdownText = "❌ Hết hạn";
+            countdownText = "Hết hạn";
             badgeColor = "#ef4444";
             row.style.textDecoration = "line-through";
             row.style.borderLeft = ""; // Khôi phục viền mặc định
@@ -975,7 +975,7 @@ function updateScheduleUI() {
         } 
         else if (diffToStartMs <= 0 && diffToEndMs >= 0) {
             // TRƯỜNG HỢP 2: ĐANG TRONG THỜI GIAN DIỄN RA CÔNG VIỆC
-            countdownText = "🔥 Đang chạy";
+            countdownText = "Đang chạy";
             badgeColor = "#a855f7"; // Màu tím cá tính cho sự kiện đang diễn ra
             
             // 👉 THÊM MỚI: Ép cứng viền trái màu tím cho hàng đang chạy ngoài Dashboard
@@ -1006,10 +1006,10 @@ function updateScheduleUI() {
             const diffDay = Math.floor(diffHour / 24);
 
             if (diffDay > 0) {
-                countdownText = `⏳ Còn ${diffDay} ngày`;
+                countdownText = `Còn ${diffDay} ngày`;
                 badgeColor = "#10b981"; // Màu xanh lá an toàn
             } else if (diffHour > 0) {
-                countdownText = `⏳ ${diffHour}g : ${diffMin % 60}ph`;
+                countdownText = `${diffHour}g : ${diffMin % 60}ph`;
                 badgeColor = "#f59e0b"; // Màu cam chuẩn bị
             } else {
                 countdownText = `🚨 Còn ${diffMin} phút`;
@@ -1136,7 +1136,7 @@ function showTodayImportantTasks() {
             let titleColor = item.important ? 'color: #f87171;' : 'color: var(--schedule-accent);';
             if (isRunning) titleColor = 'color: #c084fc;';
 
-            const prefix = shouldPulse ? '🚨' : (isRunning ? '🔥 ' : (item.important ? '⚠️' : '⏰ '));
+            const prefix = shouldPulse ? '🚨' :  (isRunning ? '🔥 ' : (item.important ? '⚠️' : '⏰ '));
             
             let displayDay = dayLabels[localNow.getDay()];
             const displayStartDate = item.date.split('-').reverse().join('/');
