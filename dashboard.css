@@ -893,3 +893,25 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 .schedule-row.past td {
     text-decoration: line-through !important;
 }
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+.blink-red {
+  color: #ff4d4f; /* Màu đỏ */
+  animation: blink 1s infinite; /* Nháy vô hạn */
+}
+
+/* Viền trái màu tím cho dòng "Đang chạy" trong Bảng Lịch Ngoài Dashboard */
+.schedule-table tbody tr.running-row td:first-child {
+    border-left: 4px solid #a855f7 !important;
+}
+
+/* Viền trái màu tím cho khối công việc "Đang chạy" trong Modal Đầu Lịch Hôm Nay */
+.today-important-item.running-modal-item {
+    border-left: 4px solid #a855f7 !important;
+    background: rgba(168, 85, 247, 0.08) !important; /* Tạo nền tím nhạt nhẹ cho đồng bộ */
+}

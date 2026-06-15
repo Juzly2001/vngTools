@@ -441,6 +441,9 @@ function renderDashboard() {
         // ========================================================
         // 📅 KHU VỰC SỬA LỖI HIỂN THỊ CỘT THỨ (SCHEDULE)
         // ========================================================
+        // ========================================================
+        // 📅 KHU VỰC SỬA ĐỔI: ĐỔI CỘT GIỜ THÀNH ĐẾM NGƯỢC (SCHEDULE)
+        // ========================================================
         else if (group.type === 'schedule') {
             if (!group.schedules?.length) contentArea.innerHTML = `<span class="no-data-text">Chuột phải để thêm lịch trình...</span>`;
             else {
@@ -449,53 +452,66 @@ function renderDashboard() {
                 const table = document.createElement('table');
                 table.className = 'schedule-table';
                 
-                // Thiết lập lại tỷ lệ hiển thị 4 cột: Ngày (22%), Thứ (18%), Giờ (15%), Công việc (45%)
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th style="width: 18%;">Ngày</th>
-                            <th style="width: 18%;">Thứ</th>
-                            <th style="width: 18%;">Giờ</th>
-                            <th style="width: 46%;">Công việc</th>
+                            <th style="width: 15%;">Ngày</th>
+                            <th style="width: 15%;">Thứ</th>
+                            <th style="width: 35%; text-align: center;">Thời hạn</th>
+                            <th style="width: 35%;">Công việc</th>
                         </tr>
                     </thead>
                     <tbody></tbody>`;
                 
                 const tbody = table.querySelector('tbody');
+                const dayLabels = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
                 group.schedules.forEach((sch, idx) => {
-                const row = document.createElement('tr');
-                
-                // ========================================================
-                // 🔥 LOGIC KIỂM TRA LỊCH QUÁ HẠN ĐỂ GẮN CLASS "past"
-                // ========================================================
-                const now = new Date();
-                const scheduleTime = new Date(`${sch.date} ${sch.time || "00:00"}`);
-                const isPast = scheduleTime < now; // Nếu thời gian mốc lịch nhỏ hơn hiện tại => Quá hạn
+                    const row = document.createElement('tr');
+                    
+                    const now = new Date();
+                    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                    const todayTime = new Date(todayStr + ' 00:00:00');
+                    
+                    const startDateObj = new Date(sch.date + ' 00:00:00');
+                    const endDateObj = new Date((sch.endDate || sch.date) + ' 00:00:00');
+                    
+                    let activeDateStr = sch.date;
+                    if (todayTime > startDateObj && todayTime <= endDateObj) {
+                        activeDateStr = todayStr;
+                    } else if (todayTime > endDateObj) {
+                        activeDateStr = sch.endDate || sch.date;
+                    }
 
-                // Gắn các class tương ứng (important, past) vào hàng tr
-                row.className = `schedule-row ${sch.important ? 'important' : ''} ${isPast ? 'past' : ''}`;
-                
-                row.onclick = () => showContentDetail(group.id, idx, 'schedule');
-                row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
-                
-                // Định dạng hiển thị Ngày thành DD/MM
-                let displayDate = "";
-                if (sch.date) {
-                    displayDate = sch.date.split('-').reverse().slice(0,2).join('/');
-                }
+                    const finalScheduleTime = new Date(`${sch.endDate || sch.date} ${sch.endTime || sch.time || "00:00"}`);
+                    const isPast = finalScheduleTime < now;
 
-                // Lấy thông tin Thứ (nếu trống sẽ tự tính động)
-                const dayOfWeek = sch.dayOfWeek || (sch.date ? ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"][new Date(sch.date.replace(/-/g, '/')).getDay()] : "---");
+                    row.className = `schedule-row ${sch.important ? 'important' : ''} ${isPast ? 'past' : ''}`;
+                    row.onclick = () => showContentDetail(group.id, idx, 'schedule');
+                    row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
+                    
+                    let displayDate = activeDateStr.split('-').reverse().slice(0,2).join('/');
 
-                row.innerHTML = `
-                    <td class="schedule-date">${displayDate}</td>
-                    <td class="schedule-date schedule-time " style="color: #38bdf8; font-weight: 600;">${dayOfWeek}</td>
-                    <td class="schedule-date" style="width: 55px; text-align: center;">${sch.time || "00:00"}</td>
-                    <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${sch.title || ""}</td>
-                `;
-                tbody.appendChild(row);
-            });
+                    let dayOfWeek = "---";
+                    const parsedActiveDate = new Date(activeDateStr.replace(/-/g, '/'));
+                    if (!isNaN(parsedActiveDate.getTime())) {
+                        dayOfWeek = dayLabels[parsedActiveDate.getDay()];
+                    }
+
+                    // Lưu các mốc thời gian gốc vào thuộc tính data của hàng (Để hàm cập nhật đếm ngược đọc trực tiếp)
+                    const fullStartStr = `${sch.date}T${sch.time || '00:00'}`;
+                    const fullEndStr = `${sch.endDate || sch.date}T${sch.endTime || sch.time || '00:00'}`;
+                    row.setAttribute('data-start', fullStartStr);
+                    row.setAttribute('data-end', fullEndStr);
+
+                    row.innerHTML = `
+                        <td class="schedule-date">${displayDate}</td>
+                        <td class="schedule-date schedule-time" style="color: #38bdf8; font-weight: 600;">${dayOfWeek}</td>
+                        <td class="schedule-countdown-cell" style="text-align: center; font-size: 11px; font-weight: bold; font-family: monospace;">⏳ Tính...</td>
+                        <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${sch.title || ""}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
                 wrapper.appendChild(table);
                 contentArea.appendChild(wrapper);
             }
@@ -703,13 +719,20 @@ function showContentDetail(groupId, index, type) {
         titleEl.style.color = "var(--schedule-accent)"; 
         closeBtn.className = "btn-success";
         const schObj = group.schedules[index];
-        const displayDate = schObj.date.split('-').reverse().join('/');
+        
+        const displayStartDate = schObj.date.split('-').reverse().join('/');
+        const displayEndDate = (schObj.endDate || schObj.date).split('-').reverse().join('/');
 
         titleEl.innerHTML = schObj.important ? `⚠️ ${schObj.title}` : `📅 Lịch Trình: ${schObj.title}`;
         bodyEl.innerHTML = `
             <div class="single-schedule-detail">
                 <h4>${schObj.title}</h4>
-                <div class="schedule-info-line">⏰ Thời gian: <b>${displayDate} vào lúc ${schObj.time}</b></div>
+                <div class="schedule-info-line" style="margin-bottom: 5px;">
+                    🟢 Bắt đầu: <b>${displayStartDate} lúc ${schObj.time || '00:00'}</b>
+                </div>
+                <div class="schedule-info-line" style="margin-bottom: 12px;">
+                    🏁 Kết thúc: <b>${displayEndDate} lúc ${schObj.endTime || schObj.time || '00:00'}</b>
+                </div>
                 <label style="display:block; margin-bottom:6px; color:var(--text-sub); font-size:12px;">📋 Nội dung đầu việc:</label>
                 <div class="schedule-tasks-list">${linkify(schObj.content)}</div>
             </div>`;
@@ -736,41 +759,82 @@ function copyNoteContent(btnElement) {
 function addScheduleBlock(data = null) {
     const wrapper = getEl('scheduleBlocksWrapper');
     if (!wrapper) return;
-    const blockId = `block_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`;
 
-    const localNow = new Date();
-    const defaultDate = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
-    const defaultTime = `${String(localNow.getHours()).padStart(2, '0')}:${String(localNow.getMinutes()).padStart(2, '0')}`;
+    const blockId = 'sch_block_' + Date.now() + Math.floor(Math.random() * 1000);
+    const block = document.createElement('div');
+    block.className = 'schedule-block-item';
+    block.id = blockId;
 
-    const blockDiv = document.createElement('div');
-    blockDiv.className = 'schedule-block-item';
-    blockDiv.id = blockId;
+    const now = new Date();
+    const defaultDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const defaultTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-    blockDiv.innerHTML = `
-        <div class="schedule-block-header">
-            <label class="important-checkbox-label">
-                <input type="checkbox" class="sch-important-cb" ${data?.important ? 'checked' : ''}> ⚠️ Mốc lịch này Quan Trọng
+    const title = data ? data.title : '';
+    const date = data ? data.date : defaultDate;
+    const time = data ? data.time : defaultTime;
+    const endDate = data ? (data.endDate || data.date) : defaultDate;
+    const endTime = data ? (data.endTime || data.time) : defaultTime;
+    const content = data ? data.content : '';
+    const important = data ? data.important : false;
+    const emoji = data ? data.emoji : '📅';
+
+    block.innerHTML = `
+        <div class="schedule-block-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <label class="important-checkbox-label" style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; font-weight: 600;">
+                <input type="checkbox" class="sch-important-cb" ${important ? 'checked' : ''}> ⚠️ Mốc lịch này Quan Trọng
             </label>
-            <button type="button" class="btn-remove-block" onclick="removeScheduleBlock('${blockId}')">Xóa mốc này</button>
+            ${!state.isEditMode ? `<button type="button" class="btn-remove-block" style="color: var(--danger-color); background: none; border: 1px solid rgba(239, 68, 68, 0.3); padding: 4px 8px; font-size: 11px; border-radius: 4px; cursor: pointer;" onclick="removeScheduleBlock('${blockId}')">Xóa mốc này</button>` : ''}
         </div>
-        <label>Tên nút mốc thời gian:</label>
-        <input type="text" class="sch-title-input" placeholder="Ví dụ: Họp phòng ban..." value="${data?.title || ''}">
-        <div class="datetime-row">
-            <div>
-                <label>Chọn Ngày Áp Dụng:</label>
-                <input type="date" class="sch-date-input" value="${data?.date || defaultDate}">
+        
+        <div class="form-group" style="margin-bottom: 12px;">
+            <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-sub);">Tên nút mốc thời gian:</label>
+            <input type="text" class="form-input sch-title-input" placeholder="Ví dụ: Họp phòng ban, Ca trực..." value="${title}" required style="width: 100%;">
+        </div>
+        
+        <div class="datetime-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <div class="form-group" style="margin: 0;">
+                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-sub);">Chọn Ngày Áp Dụng:</label>
+                <input type="date" class="form-input sch-date-input" value="${date}" required style="width: 100%;">
             </div>
-            <div>
-                <label>Chọn Giờ Bắt Đầu:</label>
-                <input type="time" class="sch-time-input" value="${data?.time || defaultTime}">
+            <div class="form-group" style="margin: 0;">
+                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-sub);">Chọn Giờ Bắt Đầu:</label>
+                <input type="time" class="form-input sch-time-input" value="${time}" required style="width: 100%;">
             </div>
         </div>
-        <label>📋 Danh sách các đầu việc cần làm:</label>
-        <textarea class="sch-content-input" placeholder="Nhập các chi tiết...">${data?.content || ''}</textarea>
-        <input type="hidden" class="sch-emoji-hidden" value="${data?.emoji || '📅'}">
+        
+        <div class="datetime-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <div class="form-group" style="margin: 0;">
+                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-sub);">Chọn Ngày Kết Thúc:</label>
+                <input type="date" class="form-input sch-end-date-input" value="${endDate}" required style="width: 100%;">
+            </div>
+            <div class="form-group" style="margin: 0;">
+                <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-sub);">Chọn Giờ Kết Thúc:</label>
+                <input type="time" class="form-input sch-end-time-input" value="${endTime}" required style="width: 100%;">
+            </div>
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 8px;">
+            <label style="display: block; margin-bottom: 4px; font-size: 12px; color: var(--text-sub);">📋 Danh sách các đầu việc cần làm:</label>
+            <textarea class="form-input sch-content-input" placeholder="Nhập các chi tiết đầu việc tại đây..." rows="3" style="width: 100%; resize: vertical;">${content}</textarea>
+        </div>
+        
+        <input type="hidden" class="sch-emoji-hidden" value="${emoji}">
     `;
-    wrapper.appendChild(blockDiv);
-    wrapper.scrollTop = wrapper.scrollHeight;
+
+    // LẮNG NGHE ĐỂ TỰ ĐỘNG CẬP NHẬT (Áp dụng cho cả THÊM MỚI và SỬA)
+    const dateInp = block.querySelector('.sch-date-input');
+    const timeInp = block.querySelector('.sch-time-input');
+    const endDateInp = block.querySelector('.sch-end-date-input');
+    const endTimeInp = block.querySelector('.sch-end-time-input');
+    
+    dateInp.addEventListener('change', () => {
+        // Nếu ngày kết thúc chưa có hoặc nhỏ hơn ngày bắt đầu vừa chọn -> Cập nhật bằng ngày bắt đầu
+        if (!endDateInp.value || new Date(endDateInp.value) < new Date(dateInp.value)) {
+            endDateInp.value = dateInp.value;
+        }
+    });
+
+    wrapper.appendChild(block);
 }
 
 function removeScheduleBlock(id) {
@@ -809,36 +873,35 @@ function submitScheduleForm() {
 
     const blockElements = document.querySelectorAll('#scheduleBlocksWrapper .schedule-block-item');
     let hasError = false;
-
-    // Mảng nhãn Thứ tiếng Việt chuẩn
-    const dayLabels = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+    let hasTimeError = false; // Biến kiểm tra lỗi logic thời gian
 
     const blocksData = Array.from(blockElements).map(block => {
         const title = block.querySelector('.sch-title-input').value.trim();
         const date = block.querySelector('.sch-date-input').value;
         const time = block.querySelector('.sch-time-input').value;
+        const endDate = block.querySelector('.sch-end-date-input').value;
+        const endTime = block.querySelector('.sch-end-time-input').value;
         const content = block.querySelector('.sch-content-input').value;
         const important = block.querySelector('.sch-important-cb').checked;
         const hiddenEmoji = block.querySelector('.sch-emoji-hidden').value;
 
-        if (!title || !date || !time) hasError = true;
+        if (!title || !date || !time || !endDate || !endTime) {
+            hasError = true;
+        }
 
-        // ==========================================
-        // 🔥 TỰ ĐỘNG TÍNH THỨ TỪ Ô INPUT NGÀY ĐƯỢC CHỌN
-        // ==========================================
-        let dayOfWeek = "---";
-        if (date) {
-            const parsedDate = new Date(date.replace(/-/g, '/'));
-            if (!isNaN(parsedDate.getTime())) {
-                dayOfWeek = dayLabels[parsedDate.getDay()];
-            }
+        // KIỂM TRA LOGIC: Ngày giờ kết thúc phải >= Ngày giờ bắt đầu
+        const startDateTime = new Date(`${date}T${time}`);
+        const endDateTime = new Date(`${endDate}T${endTime}`);
+        if (endDateTime < startDateTime) {
+            hasTimeError = true;
         }
 
         return { 
             title, 
-            date, 
-            dayOfWeek, // Lưu thuộc tính Thứ vào đây
-            time, 
+            date,        
+            time,        
+            endDate,     
+            endTime,     
             content, 
             important, 
             emoji: state.isEditMode ? hiddenEmoji : (important ? "⚠️" : "📅") 
@@ -846,7 +909,12 @@ function submitScheduleForm() {
     });
 
     if (hasError) {
-        alert("Vui lòng điền đầy đủ: Tiêu đề, Ngày và Giờ!");
+        alert("Vui lòng điền đầy đủ thông tin thời gian bắt đầu và kết thúc!");
+        return;
+    }
+
+    if (hasTimeError) {
+        alert("❌ Lỗi: Thời gian KẾT THÚC không được nhỏ hơn thời gian BẮT ĐẦU!");
         return;
     }
 
@@ -856,73 +924,131 @@ function submitScheduleForm() {
         group.schedules.push(...blocksData);
     }
 
-    // 🔥 SỬA LỖI MÚI GIỜ: Thay dấu 'T' thành khoảng trắng ' ' để ép trình duyệt chạy theo giờ hệ thống Local
     group.schedules.sort((a, b) => new Date(`${a.date} ${a.time}`) - new Date(`${b.date} ${b.time}`));
     
     saveData();
     closeModal('scheduleModal');
-    
-    // Gọi hàm render để cập nhật ngay giao diện mà không cần reload trang
-    if (typeof renderDashboard === 'function') renderDashboard();
 }
 
 function updateScheduleUI() {
     const now = new Date();
-    const currentYear = now.getFullYear(); 
     const rows = document.querySelectorAll('.schedule-table tbody tr');
 
     rows.forEach(row => {
-        const dateCell = row.cells[0]?.innerText.trim(); 
-        const timeCell = row.cells[1]?.innerText.trim(); 
-        const jobCell = row.querySelector('.job-title-text')?.innerText.trim() || row.cells[2]?.innerText.trim();  
+        // Đọc mốc thời gian từ data attributes
+        const startStr = row.getAttribute('data-start');
+        const endStr = row.getAttribute('data-end');
+        const countdownCell = row.querySelector('.schedule-countdown-cell');
+        const jobCell = row.querySelector('.schedule-name')?.innerText.trim();
 
-        if (!dateCell || !timeCell) return;
+        if (!startStr || !endStr || !countdownCell) return;
 
-        const [day, month] = dateCell.split('/').map(Number);
-        const [hours, minutes] = timeCell.split(':').map(Number);
+        const startTime = new Date(startStr);
+        const endTime = new Date(endStr);
         
-        const scheduleTime = new Date(currentYear, month - 1, day, hours, minutes);
-        const diffMs = scheduleTime - now; 
-        const diffMinutes = Math.floor(diffMs / 60000);
+        const diffToStartMs = startTime - now;
+        const diffToEndMs = endTime - now;
+        
+        let countdownText = "";
+        let badgeColor = "";
 
+        // Tháo gỡ các trạng thái style cũ để tính toán lại toàn diện
         row.style.display = ""; 
         row.style.textDecoration = "none";
         row.classList.remove('highlight-warning', 'blink-effect');
-        row.querySelector('.countdown-badge')?.remove();
+        row.removeAttribute('data-pulse');
+        
+        // Mảng chứa các ô để chỉnh độ mờ/màu sắc
+        const cells = Array.from(row.cells);
 
-        if (diffMs < -60000) {
+        if (diffToEndMs < 0) {
+            // TRƯỜNG HỢP 1: ĐÃ QUÁ HẠN HOÀN TOÀN
+            countdownText = "❌ Hết hạn";
+            badgeColor = "#ef4444";
             row.style.textDecoration = "line-through";
-            Array.from(row.cells).forEach(cell => {
+            row.style.borderLeft = ""; // Khôi phục viền mặc định
+            cells.forEach(cell => {
                 cell.style.opacity = "0.45"; 
                 cell.style.color = "var(--text-sub)";
+                cell.style.backgroundColor = "transparent";
             });
-        }
-        else if (diffMinutes >= -1 && diffMinutes <= 30) {
-            row.classList.add('highlight-warning', 'blink-effect'); 
-            Array.from(row.cells).forEach(cell => {
-                cell.style.opacity = "1";
-                cell.style.color = ""; 
-            });
+        } 
+        else if (diffToStartMs <= 0 && diffToEndMs >= 0) {
+            // TRƯỜNG HỢP 2: ĐANG TRONG THỜI GIAN DIỄN RA CÔNG VIỆC
+            countdownText = "🔥 Đang chạy";
+            badgeColor = "#a855f7"; // Màu tím cá tính cho sự kiện đang diễn ra
             
-            if (diffMinutes <= 30 && Notification.permission === "granted" && !row.dataset.notified) {
-                new Notification("🚨 SẮP ĐẾN MỐC HẸN!", {
-                    body: `Lịch: ${jobCell} lúc ${timeCell} hôm nay (${dateCell}).`,
-                });
-                row.dataset.notified = "true";
+            // 👉 THÊM MỚI: Ép cứng viền trái màu tím cho hàng đang chạy ngoài Dashboard
+            row.style.borderLeft = "4px solid #a855f7";
+
+            cells.forEach(cell => {
+                cell.style.opacity = "1";
+                cell.style.color = "";
+            });
+
+            // Nếu sắp hết hạn (còn dưới 30 phút), cho nhấp nháy báo động
+            const minutesLeft = Math.floor(diffToEndMs / 60000);
+            if (minutesLeft <= 30) {
+                row.setAttribute('data-pulse', 'true');
             }
         } 
         else {
-            Array.from(row.cells).forEach(cell => {
+            // TRƯỜNG HỢP 3: CHƯA ĐẾN GIỜ (ĐANG ĐẾM NGƯỢC TỚI HẠN BẮT ĐẦU)
+            row.style.borderLeft = ""; // Khôi phục viền mặc định
+            cells.forEach(cell => {
                 cell.style.opacity = "1";
                 cell.style.color = ""; 
+                cell.style.backgroundColor = "transparent";
             });
+
+            const diffMin = Math.floor(diffToStartMs / 60000);
+            const diffHour = Math.floor(diffMin / 60);
+            const diffDay = Math.floor(diffHour / 24);
+
+            if (diffDay > 0) {
+                countdownText = `⏳ Còn ${diffDay} ngày`;
+                badgeColor = "#10b981"; // Màu xanh lá an toàn
+            } else if (diffHour > 0) {
+                countdownText = `⏳ ${diffHour}g : ${diffMin % 60}ph`;
+                badgeColor = "#f59e0b"; // Màu cam chuẩn bị
+            } else {
+                countdownText = `🚨 Còn ${diffMin} phút`;
+                badgeColor = "#ef4444"; // Màu đỏ khẩn cấp
+                
+                // Kích hoạt nhấp nháy đồng bộ và thông báo đẩy khi còn dưới 30 phút
+                if (diffMin <= 30) {
+                    row.setAttribute('data-pulse', 'true');
+                    
+                    if (Notification.permission === "granted" && !row.dataset.notified) {
+                        new Notification("🚨 SẮP ĐẾN MỐC HẸN!", {
+                            body: `Sắp tới giờ làm việc: ${jobCell} (còn ${diffMin} phút).`,
+                        });
+                        row.dataset.notified = "true";
+                    }
+                }
+            }
         }
+
+        // Đổ chữ đếm ngược kèm màu sắc nổi bật vào ô
+        countdownCell.innerHTML = `<span style="color: ${badgeColor};">${countdownText}</span>`;
     });
+
+    // Gọi vòng lặp chớp nháy đồng bộ hệ thống của bạn
+    initGlobalPulseSystem();
 }
 
+// ==========================================================================
+// 1. HÀM HIỂN THỊ DANH SÁCH LỊCH TRÌNH TRONG NGÀY
+// ==========================================================================
 function showTodayImportantTasks() {
     const localNow = new Date();
-    const today = `${localNow.getFullYear()}-${String(localNow.getMonth() + 1).padStart(2, '0')}-${String(localNow.getDate()).padStart(2, '0')}`;
+    
+    const currentYear = localNow.getFullYear();
+    const currentMonth = localNow.getMonth();
+    const currentDate = localNow.getDate();
+    
+    // Tạo mốc thời gian 00:00:00 của ngày hôm nay để so sánh khoảng ngày chuẩn xác
+    const todayTime = new Date(currentYear, currentMonth, currentDate).getTime();
 
     let count = 0;
     let groupsWithImportant = []; 
@@ -933,7 +1059,15 @@ function showTodayImportantTasks() {
         
         const todaySchedules = group.schedules
             .map((item, originalIndex) => ({ ...item, originalIndex })) 
-            .filter(item => item.date === today)
+            .filter(item => {
+                const [sY, sM, sD] = item.date.split('-').map(Number);
+                const startDate = new Date(sY, sM - 1, sD).getTime();
+                
+                const [eY, eM, eD] = (item.endDate || item.date).split('-').map(Number);
+                const endDate = new Date(eY, eM - 1, eD).getTime();
+                
+                return todayTime >= startDate && todayTime <= endDate;
+            })
             .sort((a, b) => a.time.localeCompare(b.time));
         
         if (todaySchedules.length > 0) {
@@ -950,6 +1084,8 @@ function showTodayImportantTasks() {
     const sortedGroups = [...groupsWithImportant, ...groupsNormalOnly];
 
     let html = '';
+    const dayLabels = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
+
     sortedGroups.forEach(itemData => {
         const group = itemData.groupObj;
         const gEmoji = (group.emoji && group.emoji !== "NONE") ? `${group.emoji} ` : '📅 ';
@@ -957,38 +1093,69 @@ function showTodayImportantTasks() {
         html += `<h3 style="color: var(--accent-color); margin-top: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">${gEmoji}${group.title}</h3>`;
         
         itemData.schedules.forEach(item => {
-            const [hours, minutes] = item.time.split(':').map(Number);
-            const scheduleTime = new Date(localNow.getFullYear(), localNow.getMonth(), localNow.getDate(), hours, minutes);
-            const isPassed = (scheduleTime - localNow) < -60000;
+            const targetTimeStr = item.endTime || item.time || '00:00';
 
-            let itemStyle = item.important 
-                ? 'border-left: 4px solid var(--danger-color); background: rgba(239, 68, 68, 0.08);' 
-                : 'border-left: 4px solid var(--schedule-accent); background: rgba(16, 185, 129, 0.05);';
+            const exactStartDT = new Date(`${item.date}T${item.time}:00`);
+            const exactEndDT = new Date(`${item.endDate || item.date}T${targetTimeStr}:00`);
 
+            const isPassed = localNow > exactEndDT; 
+            // 👉 THÊM MỚI: Định nghĩa trạng thái đang chạy thực tế
+            const isRunning = localNow >= exactStartDT && localNow <= exactEndDT;
+            
+            // Kiểm tra mốc 30 phút sát nút
+            const isIncomingHot = (exactStartDT - localNow) > 0 && (exactStartDT - localNow) <= 30 * 60 * 1000; 
+            const isEndingHot = (exactEndDT - localNow) > 0 && (exactEndDT - localNow) <= 30 * 60 * 1000;
+
+            const shouldPulse = (isIncomingHot || isEndingHot) && !isPassed;
+
+            // Đặt data-pulse rõ ràng kèm type (Đổi thành 'running' nếu lịch đang chạy)
+            let currentType = 'normal';
+            if (item.important) currentType = 'important';
+            if (isRunning) currentType = 'running';
+
+            let pulseAttribute = shouldPulse ? `data-pulse="true" data-type="${currentType}"` : `data-type="${currentType}"`;
+
+            let defaultBorderColor = item.important ? '#ef4444' : 'var(--schedule-accent, #10b981)';
+            let defaultBg = item.important ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.05)';
+
+            // 👉 THÊM MỚI: Nếu đang chạy, ghi đè màu viền tím và nền tím nhạt mặc định
+            if (isRunning) {
+                defaultBorderColor = '#a855f7';
+                defaultBg = 'rgba(168, 85, 247, 0.08)';
+            }
+
+            let itemStyle = `border-left: 4px solid ${defaultBorderColor}; background: ${defaultBg}; transition: all 0.2s ease;`;
             let textStyle = ''; 
+
             if (isPassed) {
                 itemStyle += ' opacity: 0.5;'; 
                 textStyle = 'text-decoration: line-through;'; 
             }
 
-            const titleColor = item.important ? 'color: #f87171;' : 'color: var(--schedule-accent);';
-            const prefix = item.important ? '⚠️' : '⏰ ';
+            // 👉 THÊM MỚI: Màu tiêu đề chữ của mốc đang chạy
+            let titleColor = item.important ? 'color: #f87171;' : 'color: var(--schedule-accent);';
+            if (isRunning) titleColor = 'color: #c084fc;';
+
+            const prefix = shouldPulse ? '🚨' : (isRunning ? '🔥 ' : (item.important ? '⚠️' : '⏰ '));
             
-            // --- ĐOẠN XỬ LÝ BIẾN ĐỔI CHỮ CN THÀNH CHỦ NHẬT ---
-            let displayDay = item.dayOfWeek || "---";
-            if (displayDay === "CN") {
-                displayDay = "Chủ Nhật";
-            }
-            // -----------------------------------------------
+            let displayDay = dayLabels[localNow.getDay()];
+            const displayStartDate = item.date.split('-').reverse().join('/');
+            const displayEndDate = (item.endDate || item.date).split('-').reverse().join('/');
+            const displayEndTime = item.endTime || item.time || '00:00';
 
             html += `
-            <div class="today-important-item" style="${itemStyle} margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+            <div class="today-important-item" ${pulseAttribute} style="${itemStyle} margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; padding: 10px; border-radius: 6px;">
                 <div style="flex: 1;">
-                    <h4 style="${textStyle} margin: 0 0 6px 0; ${titleColor}">${prefix} ${displayDay} - ${item.title} - (${item.time})</h4>
-                    
+                    <h4 class="pulse-title" style="${textStyle} margin: 0 0 6px 0; ${titleColor} font-size: 14px; transition: color 0.3s ease;">
+                        ${prefix} ${displayDay} - ${item.title} 
+                    </h4>
+                    <div style="display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; font-size: 12px; color: var(--text-sub, #aaa); ${textStyle}">
+                        <div>🟢 Bắt đầu: <b>${displayStartDate}</b> lúc <b>${item.time}</b></div>
+                        <div>🏁 Kết thúc: <b>${displayEndDate}</b> lúc <b>${displayEndTime}</b></div>
+                    </div>
                     <p style="margin: 0; white-space: pre-wrap; font-size: 13px; color: var(--text-main);">${item.content || 'Không có nội dung chi tiết'}</p>
                 </div>
-                <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px; color: var(--danger-color); border-color: rgba(239, 68, 68, 0.2); text-decoration: none;" 
+                <button class="btn-secondary" style="padding: 4px 8px; font-size: 11px; color: var(--danger-color); border-color: rgba(239, 68, 68, 0.2); text-decoration: none; cursor: pointer;" 
                     onclick="deleteTaskFromModal('${group.id}', ${item.originalIndex})">
                     ❌ Xóa
                 </button>
@@ -998,13 +1165,117 @@ function showTodayImportantTasks() {
 
     const modalTitle = getEl('todayImportantModal')?.querySelector('h3');
     if (modalTitle) {
-        modalTitle.innerHTML = `📌 ĐẦU LỊCH HÔM NAY (${String(localNow.getDate()).padStart(2, '0')}/${String(localNow.getMonth() + 1).padStart(2, '0')})`;
+        const d = String(localNow.getDate()).padStart(2, '0');
+        const m = String(localNow.getMonth() + 1).padStart(2, '0');
+        modalTitle.innerHTML = `📌 ĐẦU LỊCH HÔM NAY (${d}/${m})`;
     }
 
     const contentBox = getEl('todayImportantContent');
     if (contentBox) { 
         contentBox.innerHTML = html; 
         openModal('todayImportantModal'); 
+        initGlobalPulseSystem();
+    }
+}
+
+// ==========================================================================
+// 2. VÒNG LẶP LIÊN TỤC XỬ LÝ CHỚP NHÁY ĐỒNG BỘ TOÀN CỤC (FIX LỖI BẢNG LỊCH CHÍNH)
+// ==========================================================================
+function initGlobalPulseSystem() {
+    if (!window.globalPulseInterval) {
+        let stateToggle = false;
+        
+        window.globalPulseInterval = setInterval(() => {
+            // Quét tất cả phần tử đang trong diện được kích hoạt nhấp nháy (cả TR và DIV)
+            const pulsingElements = document.querySelectorAll('[data-pulse="true"]');
+            
+            // 1. KHÔI PHỤC TRẠNG THÁI CHO PHẦN TỬ HẾT HOẶC KHÔNG CÓ DIỆN NHÁY
+            const allPossibleItems = document.querySelectorAll('.today-important-item, tbody tr');
+            allPossibleItems.forEach(el => {
+                if (el.getAttribute('data-pulse') !== 'true') {
+                    // Nếu là dòng trong bảng lịch chính (TR)
+                    if (el.tagName === 'TR') {
+                        // Nếu dòng đó không nháy và không phải dòng đang chạy, xóa màu nền phụ
+                        if (!el.querySelector('.schedule-countdown-cell')?.innerHTML.includes('Đang chạy')) {
+                            Array.from(el.cells).forEach(cell => {
+                                cell.style.backgroundColor = ""; 
+                            });
+                        }
+                    } else {
+                        // Nếu là khối div trong Modal
+                        el.style.boxShadow = "none";
+                        const dataType = el.getAttribute('data-type');
+                        
+                        // 👉 SỬA ĐỔI LOGIC REVERT MÀU: Phân tách rõ 3 trạng thái của viền và nền
+                        if (dataType === 'running') {
+                            el.style.backgroundColor = 'rgba(168, 85, 247, 0.08)';
+                            el.style.borderLeftColor = '#a855f7';
+                            const titleH4 = el.querySelector('.pulse-title');
+                            if (titleH4) titleH4.style.color = '#c084fc';
+                        } else {
+                            const isImp = dataType === 'important' || el.innerHTML.includes('⚠️');
+                            el.style.backgroundColor = isImp ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.05)';
+                            el.style.borderLeftColor = isImp ? '#ef4444' : 'var(--schedule-accent, #10b981)';
+                            const titleH4 = el.querySelector('.pulse-title');
+                            if (titleH4) titleH4.style.color = isImp ? '#f87171' : 'var(--schedule-accent)';
+                        }
+                    }
+                }
+            });
+
+            // 2. XỬ LÝ HIỆU ỨNG NHÁY ĐỒNG BỘ CHO CÁC DÒNG ĐỦ ĐIỀU KIỆN
+            pulsingElements.forEach(el => {
+                if (el.style.opacity === "0.5") {
+                    if (el.tagName === 'TR') {
+                        Array.from(el.cells).forEach(cell => cell.style.backgroundColor = "");
+                    } else {
+                        el.style.boxShadow = "none";
+                    }
+                    return; 
+                }
+
+                const titleH4 = el.querySelector('.pulse-title');
+                const dataType = el.getAttribute('data-type');
+                const isImportantType = dataType === 'important' || el.innerHTML.includes('⚠️') || el.classList.contains('important');
+                const isRunningType = dataType === 'running' || el.querySelector('.schedule-countdown-cell')?.innerHTML.includes('Đang chạy');
+
+                if (stateToggle) {
+                    // --- TRẠNG THÁI BẬT NHÁY ---
+                    if (el.tagName === 'TR') {
+                        Array.from(el.cells).forEach(cell => {
+                            cell.style.backgroundColor = "rgba(239, 68, 68, 0.25)";
+                        });
+                    } else {
+                        el.style.backgroundColor = "rgba(239, 68, 68, 0.3)";
+                        el.style.boxShadow = "0 0 10px rgba(239, 68, 68, 0.35)";
+                        if (titleH4) titleH4.style.color = "#ff4d4d";
+                        el.style.borderLeftColor = isRunningType ? '#a855f7' : (isImportantType ? '#ef4444' : 'var(--schedule-accent, #10b981)');
+                    }
+                } else {
+                    // --- TRẠNG THÁI TẮT NHÁY (TRẢ VỀ MÀU NỀN GỐC) ---
+                    if (el.tagName === 'TR') {
+                        Array.from(el.cells).forEach(cell => {
+                            cell.style.backgroundColor = "rgba(239, 68, 68, 0.05)";
+                        });
+                    } else {
+                        // 👉 SỬA ĐỔI: Giữ đúng viền trái màu tím khi tắt chu kỳ nháy đối với mốc đang chạy
+                        if (isRunningType) {
+                            el.style.backgroundColor = 'rgba(168, 85, 247, 0.08)';
+                            el.style.boxShadow = "none";
+                            if (titleH4) titleH4.style.color = '#c084fc';
+                            el.style.borderLeftColor = '#a855f7';
+                        } else {
+                            el.style.backgroundColor = isImportantType ? 'rgba(239, 68, 68, 0.08)' : 'rgba(16, 185, 129, 0.05)';
+                            el.style.boxShadow = "none";
+                            if (titleH4) titleH4.style.color = isImportantType ? '#f87171' : 'var(--schedule-accent)';
+                            el.style.borderLeftColor = isImportantType ? '#ef4444' : 'var(--schedule-accent, #10b981)';
+                        }
+                    }
+                }
+            });
+            
+            stateToggle = !stateToggle;
+        }, 600);
     }
 }
 
@@ -1033,6 +1304,9 @@ function deleteTaskFromModal(groupId, originalIndex) {
 // ==========================================
 // 8. ĐỌC / XUẤT FILE EXCEL TIÊU CHUẨN
 // ==========================================
+// ==========================================
+// 8. ĐỌC / XUẤT FILE EXCEL TIÊU CHUẨN (CẬP NHẬT ĐỒNG BỘ BỘ ĐẾM GIỜ)
+// ==========================================
 function triggerExcelImport(groupId) {
     const fileInput = getEl('excelScheduleInput');
     if (fileInput) fileInput.setAttribute('data-target-group-id', groupId);
@@ -1040,14 +1314,16 @@ function triggerExcelImport(groupId) {
     
     const huongDanHTML = `
         <p style="color: var(--text-sub); font-size: 13px; text-align: left; margin-bottom: 15px;">
-            Vui lòng chuẩn bị file Excel (.xlsx, .xls, .csv) có các COLUMNS hàng đầu tiên như bảng sau:
+            Vui lòng chuẩn bị file Excel (.xlsx, .xls, .csv) có cấu trúc các tiêu đề cột (hàng đầu tiên) chính xác như sau để bộ đếm giờ hoạt động:
         </p>
         <div style="overflow-x: auto; margin-bottom: 15px; border: 1px solid var(--border-color); border-radius: 8px;">
-            <table style="width: 100%; border-collapse: collapse; font-size: 12px; text-align: left;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; text-align: left;">
                 <thead>
                     <tr style="background: var(--schedule-accent); color: white;">
                         <th style="padding: 6px 8px;">Ngay</th>
                         <th style="padding: 6px 8px;">Gio</th>
+                        <th style="padding: 6px 8px;">NgayKetThuc</th>
+                        <th style="padding: 6px 8px;">GioKetThuc</th>
                         <th style="padding: 6px 8px;">CongViec</th>
                         <th style="padding: 6px 8px;">QuanTrong</th>
                         <th style="padding: 6px 8px;">NoiDung</th>
@@ -1055,11 +1331,13 @@ function triggerExcelImport(groupId) {
                 </thead>
                 <tbody>
                     <tr style="border-bottom: 1px solid var(--border-color); background: rgba(255,255,255,0.02);">
-                        <td style="padding: 6px 8px; color: var(--text-sub);">dd-mm-yyyy</td>
-                        <td style="padding: 6px 8px; color: var(--text-sub);">17:00</td>
-                        <td style="padding: 6px 8px;">Trực Ca</td>
-                        <td style="padding: 6px 8px; color: var(--text-sub);">TRUE/FALSE</td>
-                        <td style="padding: 6px 8px; color: var(--text-sub);">Trực ca tối</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">2026-06-16</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">08:00</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">2026-06-16</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">12:00</td>
+                        <td style="padding: 6px 8px;">Họp Core</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">TRUE</td>
+                        <td style="padding: 6px 8px; color: var(--text-sub);">Nội dung...</td>
                     </tr>
                 </tbody>
             </table>
@@ -1068,10 +1346,10 @@ function triggerExcelImport(groupId) {
 
     const alertBox = getEl('alertModal')?.querySelector('.modal-box');
     if (alertBox) {
-        alertBox.style.maxWidth = "550px";
+        alertBox.style.maxWidth = "600px"; // Tăng nhẹ độ rộng hiển thị đủ các cột mới
         const titleH3 = alertBox.querySelector('h3');
         if (titleH3) {
-            titleH3.innerHTML = "📊 Cấu trúc File Excel Chuẩn";
+            titleH3.innerHTML = "📊 Cấu trúc File Excel Đếm Giờ Chuẩn";
             titleH3.style.color = "var(--text-main)";
         }
         
@@ -1104,7 +1382,7 @@ function triggerExcelImport(groupId) {
         if (gốcBtn) gốcBtn.style.display = 'none';
 
         footer.innerHTML = `
-            <button class="btn-secondary" style="background-color: var(--accent-color); color: #fff !important; padding: 10px 16px;" onclick="downloadExcelTemplate()">📥 Tải File Mẫu</button>
+            <button class="btn-secondary" style="background-color: var(--accent-color); color: #fff !important; padding: 10px 16px;" onclick="downloadExcelTemplate()">📥 Tải File Mẫu Mới</button>
             <button class="btn-success" style="padding: 10px 16px;" id="btnConfirmExcelSelect">🎯 Đã hiểu & Chọn File Excel</button>
         `;
 
@@ -1119,14 +1397,23 @@ function triggerExcelImport(groupId) {
 
 function downloadExcelTemplate() {
     try {
+        // Biểu mẫu cập nhật chuẩn hóa thêm cột thời gian kết thúc phục vụ tính đếm ngược cụ thể
         const sampleData = [
-            { "Ngay": "2026-06-09", "Gio": "17:00", "CongViec": "Trực Ca", "QuanTrong": "FALSE", "NoiDung": "Trực ca tối" },
-            { "Ngay": "10/06/2026", "Gio": "07:00", "CongViec": "Đi chơi", "QuanTrong": "TRUE", "NoiDung": "Cuộc hẹn quan trọng" }
+            { 
+                "Ngay": "2026-06-16", "Gio": "18:00", 
+                "NgayKetThuc": "2026-06-16", "GioKetThuc": "22:00", 
+                "CongViec": "Ca Tối GHTK", "QuanTrong": "FALSE", "NoiDung": "Trực vận hành ca tối" 
+            },
+            { 
+                "Ngay": "2026-06-17", "Gio": "08:30", 
+                "NgayKetThuc": "2026-06-17", "GioKetThuc": "11:30", 
+                "CongViec": "Họp Giao Ban Core", "QuanTrong": "TRUE", "NoiDung": "Báo cáo tiến độ phân loại địa chỉ" 
+            }
         ];
         const worksheet = XLSX.utils.json_to_sheet(sampleData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, "LichTrinhMau");
-        XLSX.writeFile(workbook, "mau_import_lich_trinh.xlsx");
+        XLSX.writeFile(workbook, "mau_import_lich_trinh_countdown.xlsx");
     } catch (error) {
         console.error(error);
         alert("Có lỗi xảy ra khi tạo file mẫu!");
@@ -1153,27 +1440,20 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
             const rawData = XLSX.utils.sheet_to_json(firstSheet);
             if (!rawData || rawData.length === 0) return alert("❌ File Excel trống!");
             
-            const newSchedules = rawData.map(row => {
-                const title = String(row["CongViec"] || row["Congviec"] || row["Công Việc"] || row["Công việc"] || "").trim();
-                let rawDate = row["Ngay"] || row["Ngày"];
-                let rawTime = String(row["Gio"] || row["Giờ"] || "").trim();
-                const content = String(row["NoiDung"] || row["Nội Dung"] || "").trim();
-                const rawImportant = row["QuanTrong"] || row["Quan Trọng"];
-                const important = rawImportant === true || String(rawImportant).toLowerCase() === 'true';
-
-                // 1. CHUẨN HÓA GIỜ
-                let time = "07:00"; 
-                if (rawTime && rawTime !== "undefined") {
-                    let cleanedTime = rawTime.toLowerCase().trim();
+            // Hàm helper đồng bộ chuẩn hóa logic parse Giờ trong excel (tránh lặp code)
+            const parseExcelTime = (rawTime) => {
+                let time = "00:00";
+                if (rawTime && String(rawTime).trim() !== "undefined") {
+                    let cleanedTime = String(rawTime).toLowerCase().trim();
                     if (!isNaN(cleanedTime) && parseFloat(cleanedTime) > 0 && parseFloat(cleanedTime) < 1) {
                         const totalSeconds = Math.round(parseFloat(cleanedTime) * 24 * 3600);
                         let hours = Math.floor(totalSeconds / 3600);
                         let minutes = Math.floor((totalSeconds % 3600) / 60);
                         time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
                     } else {
-                        const isPM = cleanedTime.includes('pm');
-                        const isAM = cleanedTime.includes('am');
-                        cleanedTime = cleanedTime.replace(/(am|pm)/g, '').trim();
+                        const isPM = cleanedTime.includes('pm') || cleanedTime.includes('ch') || cleanedTime.includes('chiều');
+                        const isAM = cleanedTime.includes('am') || cleanedTime.includes('sa') || cleanedTime.includes('sáng');
+                        cleanedTime = cleanedTime.replace(/(am|pm|sa|ch|chiều|sáng)/g, '').trim();
                         const timeParts = cleanedTime.split(':');
                         if (timeParts.length >= 2) {
                             let hours = parseInt(timeParts[0], 10);
@@ -1184,8 +1464,11 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
                         }
                     }
                 }
+                return time;
+            };
 
-                // 2. CHUẨN HÓA NGÀY
+            // Hàm helper đồng bộ chuẩn hóa logic parse Ngày trong excel
+            const parseExcelDate = (rawDate) => {
                 let date = "";
                 if (rawDate && String(rawDate).trim() !== "undefined") {
                     let dateStr = String(rawDate).trim().split(' ')[0]; 
@@ -1199,11 +1482,11 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
                                 let p0 = parseInt(parts[0], 10);
                                 let p1 = parseInt(parts[1], 10);
                                 let year = parts[2].length === 2 ? '20' + parts[2] : parts[2]; 
-                                if (p0 > 12) {
+                                if (p0 > 12) { 
                                     date = `${year}-${String(p1).padStart(2, '0')}-${String(p0).padStart(2, '0')}`;
-                                } else if (p1 > 12) {
+                                } else if (p1 > 12) { 
                                     date = `${year}-${String(p0).padStart(2, '0')}-${String(p1).padStart(2, '0')}`;
-                                } else {
+                                } else { 
                                     date = `${year}-${String(p1).padStart(2, '0')}-${String(p0).padStart(2, '0')}`;
                                 }
                             }
@@ -1213,24 +1496,51 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
                         date = `${excelDate.y}-${String(excelDate.m).padStart(2, '0')}-${String(excelDate.d).padStart(2, '0')}`;
                     }
                 }
+                return date;
+            };
+
+            const newSchedules = rawData.map(row => {
+                const title = String(row["CongViec"] || row["Congviec"] || row["Công Việc"] || row["Công việc"] || "").trim();
+                const content = String(row["NoiDung"] || row["Nội Dung"] || "").trim();
+                const rawImportant = row["QuanTrong"] || row["Quan Trọng"];
+                const important = rawImportant === true || String(rawImportant).toLowerCase() === 'true';
+
+                // Tiến hành phân tách Đầy đủ Ngày/Giờ Bắt đầu và Ngày/Giờ Kết thúc từ file Excel mới
+                let date = parseExcelDate(row["Ngay"] || row["Ngày"]);
+                let time = parseExcelTime(row["Gio"] || row["Giờ"]);
+                
+                let endDate = parseExcelDate(row["NgayKetThuc"] || row["Ngày Kết Thúc"] || row["Ngayketthuc"]);
+                let endTime = parseExcelTime(row["GioKetThuc"] || row["Giờ Kết Thúc"] || row["Gioketthuc"]);
+
+                // Fallback nếu người dùng bỏ trống cột ngày bắt đầu
                 if (!date) {
                     const d = new Date();
                     date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
                 }
+                // Nếu cột kết thúc bị bỏ trống trong Excel, tự động kế thừa từ mốc bắt đầu
+                if (!endDate) endDate = date;
+                if (!row["GioKetThuc"] && !row["Giờ Kết Thúc"] && !row["Gioketthuc"]) endTime = time;
 
-                // ==========================================
-                // 🔥 LOGIC TỰ ĐỘNG TÍNH THỨ (BẮT BUỘC PHẢI CÓ TẠI ĐÂY)
-                // ==========================================
+                // 👉 SỬA ĐỔI: Tự động chuẩn hóa nếu ngày/giờ kết thúc nhỏ hơn ngày/giờ bắt đầu từ file Excel
+                const checkStart = new Date(`${date}T${time}`);
+                const checkEnd = new Date(`${endDate}T${endTime}`);
+                if (checkEnd < checkStart) {
+                    endDate = date;
+                    endTime = time;
+                }
+
                 const dayLabels = ["CN", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
-                // Thay dấu gạch ngang bằng gạch chéo để đối tượng Date trên trình duyệt chạy chuẩn Local Time
-                const parsedDate = new Date(date.replace(/-/g, '/')); 
+                const [y, m, d_part] = date.split('-').map(Number);
+                const parsedDate = new Date(y, m - 1, d_part);
                 const dayOfWeek = dayLabels[parsedDate.getDay()] || "---";
 
                 return { 
                     title, 
                     date, 
-                    dayOfWeek, // Lưu giá trị "Thứ X" trực tiếp vào object dữ liệu
                     time, 
+                    endDate, 
+                    endTime, 
+                    dayOfWeek,
                     content: content === "undefined" ? "" : content, 
                     important, 
                     emoji: important ? "⚠️" : "📅" 
@@ -1243,12 +1553,12 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
             group.schedules.push(...newSchedules);
             
             group.schedules.sort((a, b) => {
-                return new Date(`${a.date} ${a.time}`) - new Date(`${b.date} ${b.time}`);
+                return new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`);
             });
 
             saveData();
             if (typeof renderDashboard === 'function') renderDashboard(); else location.reload();
-            alert(`📥 Thành công! Đã thêm ${newSchedules.length} lịch.`);
+            alert(`📥 Thành công! Đã đồng bộ thêm ${newSchedules.length} lịch có bộ đếm giờ vào hệ thống.`);
         } catch (err) {
             console.error(err);
             alert("Lỗi hệ thống khi phân tích file Excel!");
