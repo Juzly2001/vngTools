@@ -1136,7 +1136,8 @@ function showTodayImportantTasks() {
             let titleColor = item.important ? 'color: #f87171;' : 'color: var(--schedule-accent);';
             if (isRunning) titleColor = 'color: #c084fc;';
 
-            const prefix = shouldPulse ? '🚨' :  (isRunning ? '🔥 ' : (item.important ? '⚠️' : '⏰ '));
+            // const prefix = "shouldPulse ? '🚨' :  (isRunning ? '🔥 ' : (item.important ? '⚠️' : '⏰ '))";
+            const prefix = '';
             
             let displayDay = dayLabels[localNow.getDay()];
             const displayStartDate = item.date.split('-').reverse().join('/');
