@@ -455,10 +455,10 @@ function renderDashboard() {
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th style="width: 15%;">Ngày</th>
-                            <th style="width: 15%;">Thứ</th>
-                            <th style="width: 35%; text-align: center;">Thời hạn</th>
-                            <th style="width: 35%;">Công việc</th>
+                            <th style="width: 20%;">Ngày</th>
+                            <th style="width: 20%;">Thứ</th>
+                            <th style="width: 30%; text-align: center;">Thời hạn</th>
+                            <th style="width: 30%;">Công việc</th>
                         </tr>
                     </thead>
                     <tbody></tbody>`;
