@@ -951,42 +951,51 @@ function showTodayImportantTasks() {
             .sort((a, b) => a.time.localeCompare(b.time));
         
         if (todaySchedules.length > 0) {
-            // Khởi tạo các cờ đánh dấu trạng thái của Nhóm
-            let hasUpcomingClose = false; // Sắp diễn ra (trong vòng 30 phút)
-            let hasImportant = false;      // Có lịch quan trọng
-            let hasRunning = false;        // Có lịch đang chạy
+            // Khởi tạo các cờ đánh dấu trạng thái cụ thể của từng Lịch trình trong nhóm
+            let hasUpcomingImportant = false; // Sắp diễn ra (<30p) VÀ Quan trọng
+            let hasUpcomingNormal = false;    // Sắp diễn ra (<30p) VÀ Lịch thường
+            let hasImportant = false;         // Có lịch quan trọng (nhưng chưa/không sắp diễn ra)
+            let hasRunning = false;           // Có lịch đang diễn ra
 
             todaySchedules.forEach(item => {
                 const exactStartDT = new Date(`${item.date}T${item.time}:00`);
                 const exactEndDT = new Date(`${item.endDate || item.date}T${item.endTime || item.time}:00`);
                 
                 const diffToStartMs = exactStartDT - localNow;
+                const isUpcoming = diffToStartMs > 0 && diffToStartMs <= 30 * 60 * 1000;
 
-                // 1. Kiểm tra nếu lịch SẮP DIỄN RA (Chưa bắt đầu & còn dưới hoặc bằng 30 phút)
-                if (diffToStartMs > 0 && diffToStartMs <= 30 * 60 * 1000) {
-                    hasUpcomingClose = true;
+                // 1 & 2. Kiểm tra trạng thái SẮP DIỄN RA dưới 30 phút
+                if (isUpcoming) {
+                    if (item.important) {
+                        hasUpcomingImportant = true;
+                    } else {
+                        hasUpcomingNormal = true;
+                    }
                 }
                 
-                // 2. Kiểm tra lịch QUAN TRỌNG
+                // 3. Kiểm tra lịch QUAN TRỌNG nói chung
                 if (item.important) {
                     hasImportant = true;
                 }
 
-                // 3. Kiểm tra lịch ĐANG DIỄN RA
+                // 4. Kiểm tra lịch ĐANG DIỄN RA
                 if (localNow >= exactStartDT && localNow <= exactEndDT) {
                     hasRunning = true;
                 }
             });
 
-            // Thiết lập thứ tự ưu tiên cho cả Nhóm (Số càng nhỏ càng xếp lên đầu bảng)
-            // Mức 1: Nhóm có lịch SẮP DIỄN RA (dưới 30p) -> Ưu tiên cao nhất
-            // Mức 2: Nhóm có lịch QUAN TRỌNG
-            // Mức 3: Nhóm có lịch ĐANG DIỄN RA
-            // Mức 4: Nhóm chỉ có lịch bình thường khác
-            let groupWeight = 4;
-            if (hasUpcomingClose) groupWeight = 1;
-            else if (hasImportant) groupWeight = 2;
-            else if (hasRunning) groupWeight = 3;
+            // 🔥 THIẾT LẬP TRỌNG SỐ ƯU TIÊN CHO NHÓM (Số càng nhỏ càng xếp lên đầu)
+            let groupWeight = 5; // Mức 5: Nhóm chỉ có lịch bình thường khác
+            
+            if (hasUpcomingImportant) {
+                groupWeight = 1; // Mức 1: Nhóm có lịch SẮP DIỄN RA (<30p) + QUAN TRỌNG
+            } else if (hasUpcomingNormal) {
+                groupWeight = 2; // Mức 2: Nhóm có lịch SẮP DIỄN RA (<30p) + LỊCH THƯỜNG
+            } else if (hasImportant) {
+                groupWeight = 3; // Mức 3: Nhóm có lịch QUAN TRỌNG
+            } else if (hasRunning) {
+                groupWeight = 4; // Mức 4: Nhóm có lịch ĐANG DIỄN RA
+            }
 
             processedGroups.push({
                 groupObj: group,
@@ -998,13 +1007,13 @@ function showTodayImportantTasks() {
 
     if (processedGroups.length === 0) return;
 
-    // Sắp xếp các cụm nhóm theo trọng số weight vừa tính
+    // Sắp xếp các cụm nhóm dựa trên trọng số weight (1 lên đầu, 5 về cuối)
     processedGroups.sort((a, b) => a.weight - b.weight);
 
     let html = '';
     const dayLabels = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
-    // Dựng giao diện HTML theo thứ tự nhóm đã sort
+    // Dựng giao diện HTML dựa trên mảng đã được xếp hạng ưu tiên
     processedGroups.forEach(groupData => {
         const group = groupData.groupObj;
         html += `<h3 style="color:var(--accent-color);margin-top:15px;border-bottom:1px solid var(--border-color);padding-bottom:5px">${group.emoji && group.emoji !== "NONE" ? group.emoji : '📅'} ${group.title}</h3>`;
@@ -1018,16 +1027,13 @@ function showTodayImportantTasks() {
             const diffToStartMs = exactStartDT - localNow;
             const diffMin = Math.floor(diffToStartMs / 60000);
 
-            // Giữ nguyên logic nhấp nháy đỏ khi sắp đến mốc hẹn hoặc kết thúc trong vòng 30 phút
             const shouldPulse = (diffToStartMs > 0 && diffToStartMs <= 1800000) || ((exactEndDT - localNow) > 0 && (exactEndDT - localNow) <= 1800000);
             let currentType = isRunning ? 'running' : (item.important ? 'important' : 'normal');
 
             let borderCol = isRunning ? '#a855f7' : (item.important ? '#ef4444' : 'var(--schedule-accent, #10b981)');
             let bgCol = isRunning ? 'rgba(168,85,247,0.08)' : (item.important ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.05)');
             
-            // Nếu là lịch sắp chạy trong 30p, đổi style nổi bật hơn
             if (diffToStartMs > 0 && diffMin <= 30) {
-               // borderCol = '#ef4444'; // Đỏ cảnh báo khẩn cấp
                 bgCol = 'rgba(239,68,68,0.12)';
             }
 
