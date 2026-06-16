@@ -935,12 +935,12 @@ function showTodayImportantTasks() {
     const localNow = new Date();
     const todayTime = new Date(localNow.getFullYear(), localNow.getMonth(), localNow.getDate()).getTime();
 
-    let groupsWithImportant = []; 
-    let groupsNormalOnly = [];     
+    let processedGroups = [];     
 
     state.dashboardData.forEach(group => {
         if (group.type !== 'schedule' || !group.schedules) return;
         
+        // Lọc ra các lịch trình diễn ra trong ngày hôm nay của nhóm này
         const todaySchedules = group.schedules
             .map((item, originalIndex) => ({ ...item, originalIndex })) 
             .filter(item => {
@@ -951,38 +951,93 @@ function showTodayImportantTasks() {
             .sort((a, b) => a.time.localeCompare(b.time));
         
         if (todaySchedules.length > 0) {
-            const groupData = { groupObj: group, schedules: todaySchedules };
-            if (todaySchedules.some(item => item.important)) groupsWithImportant.push(groupData);
-            else groupsNormalOnly.push(groupData);
+            // Khởi tạo các cờ đánh dấu trạng thái của Nhóm
+            let hasUpcomingClose = false; // Sắp diễn ra (trong vòng 30 phút)
+            let hasImportant = false;      // Có lịch quan trọng
+            let hasRunning = false;        // Có lịch đang chạy
+
+            todaySchedules.forEach(item => {
+                const exactStartDT = new Date(`${item.date}T${item.time}:00`);
+                const exactEndDT = new Date(`${item.endDate || item.date}T${item.endTime || item.time}:00`);
+                
+                const diffToStartMs = exactStartDT - localNow;
+
+                // 1. Kiểm tra nếu lịch SẮP DIỄN RA (Chưa bắt đầu & còn dưới hoặc bằng 30 phút)
+                if (diffToStartMs > 0 && diffToStartMs <= 30 * 60 * 1000) {
+                    hasUpcomingClose = true;
+                }
+                
+                // 2. Kiểm tra lịch QUAN TRỌNG
+                if (item.important) {
+                    hasImportant = true;
+                }
+
+                // 3. Kiểm tra lịch ĐANG DIỄN RA
+                if (localNow >= exactStartDT && localNow <= exactEndDT) {
+                    hasRunning = true;
+                }
+            });
+
+            // Thiết lập thứ tự ưu tiên cho cả Nhóm (Số càng nhỏ càng xếp lên đầu bảng)
+            // Mức 1: Nhóm có lịch SẮP DIỄN RA (dưới 30p) -> Ưu tiên cao nhất
+            // Mức 2: Nhóm có lịch QUAN TRỌNG
+            // Mức 3: Nhóm có lịch ĐANG DIỄN RA
+            // Mức 4: Nhóm chỉ có lịch bình thường khác
+            let groupWeight = 4;
+            if (hasUpcomingClose) groupWeight = 1;
+            else if (hasImportant) groupWeight = 2;
+            else if (hasRunning) groupWeight = 3;
+
+            processedGroups.push({
+                groupObj: group,
+                schedules: todaySchedules,
+                weight: groupWeight
+            });
         }
     });
 
-    if (groupsWithImportant.length === 0 && groupsNormalOnly.length === 0) return;
+    if (processedGroups.length === 0) return;
+
+    // Sắp xếp các cụm nhóm theo trọng số weight vừa tính
+    processedGroups.sort((a, b) => a.weight - b.weight);
+
     let html = '';
     const dayLabels = ["Chủ Nhật", "Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7"];
 
-    [...groupsWithImportant, ...groupsNormalOnly].forEach(itemData => {
-        const group = itemData.groupObj;
+    // Dựng giao diện HTML theo thứ tự nhóm đã sort
+    processedGroups.forEach(groupData => {
+        const group = groupData.groupObj;
         html += `<h3 style="color:var(--accent-color);margin-top:15px;border-bottom:1px solid var(--border-color);padding-bottom:5px">${group.emoji && group.emoji !== "NONE" ? group.emoji : '📅'} ${group.title}</h3>`;
         
-        itemData.schedules.forEach(item => {
+        groupData.schedules.forEach(item => {
             const exactStartDT = new Date(`${item.date}T${item.time}:00`);
             const exactEndDT = new Date(`${item.endDate || item.date}T${item.endTime || item.time}:00`);
             const isPassed = localNow > exactEndDT; 
             const isRunning = localNow >= exactStartDT && localNow <= exactEndDT;
             
-            const shouldPulse = ((exactStartDT - localNow) > 0 && (exactStartDT - localNow) <= 1800000) || ((exactEndDT - localNow) > 0 && (exactEndDT - localNow) <= 1800000);
+            const diffToStartMs = exactStartDT - localNow;
+            const diffMin = Math.floor(diffToStartMs / 60000);
+
+            // Giữ nguyên logic nhấp nháy đỏ khi sắp đến mốc hẹn hoặc kết thúc trong vòng 30 phút
+            const shouldPulse = (diffToStartMs > 0 && diffToStartMs <= 1800000) || ((exactEndDT - localNow) > 0 && (exactEndDT - localNow) <= 1800000);
             let currentType = isRunning ? 'running' : (item.important ? 'important' : 'normal');
 
             let borderCol = isRunning ? '#a855f7' : (item.important ? '#ef4444' : 'var(--schedule-accent, #10b981)');
             let bgCol = isRunning ? 'rgba(168,85,247,0.08)' : (item.important ? 'rgba(239,68,68,0.08)' : 'rgba(16,185,129,0.05)');
+            
+            // Nếu là lịch sắp chạy trong 30p, đổi style nổi bật hơn
+            if (diffToStartMs > 0 && diffMin <= 30) {
+               // borderCol = '#ef4444'; // Đỏ cảnh báo khẩn cấp
+                bgCol = 'rgba(239,68,68,0.12)';
+            }
+
             let itemStyle = `border-left:4px solid ${borderCol};background:${bgCol};transition:all .2s ease;`;
 
             html += `
             <div class="today-important-item" ${shouldPulse && !isPassed ? 'data-pulse="true"' : ''} data-type="${currentType}" style="${itemStyle}${isPassed ? 'opacity:0.5;' : ''}margin-bottom:10px;display:flex;justify-content:space-between;align-items:flex-start;gap:10px;padding:10px;border-radius:6px">
                 <div style="flex:1">
                     <h4 class="pulse-title" style="${isPassed ? 'text-decoration:line-through;' : ''}margin:0 0 6px 0;color:${isRunning ? '#c084fc' : (item.important ? '#f87171' : 'var(--schedule-accent)')};font-size:14px">
-                        ${dayLabels[localNow.getDay()]} - ${item.title} 
+                        ${dayLabels[localNow.getDay()]} - ${item.title} ${diffToStartMs > 0 && diffMin <= 30 ? `(Còn ${diffMin} ph)` : ''}
                     </h4>
                     <div style="display:flex;flex-direction:column;gap:2px;margin-bottom:8px;font-size:12px;color:var(--text-sub);${isPassed ? 'text-decoration:line-through;' : ''}">
                         <div>🟢 Bắt đầu: <b>${item.date.split('-').reverse().join('/')}</b> lúc <b>${item.time}</b></div>

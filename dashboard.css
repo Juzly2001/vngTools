@@ -1,7 +1,6 @@
 /* ==========================================================================
    1. VARIABLES & THEMES (Hệ thống màu sắc & Giao diện)
    ========================================================================== */
-
 :root {
     /* --- DARK MODE (Mặc định) --- */
     --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
@@ -30,8 +29,8 @@
     --shadow-main: 0 15px 35px rgba(0,0,0,0.6);
 }
 
-/* --- LIGHT MODE --- */
 body.light-mode {
+    /* --- LIGHT MODE --- */
     --bg-gradient: linear-gradient(135deg, #edf2f7 0%, #dbeafe 100%);
     --panel-bg: rgba(255, 255, 255, 0.75);
     --border-color: rgba(0, 0, 0, 0.12);
@@ -55,11 +54,9 @@ body.light-mode {
     --shadow-main: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
-
 /* ==========================================================================
    2. GLOBAL & BASE STYLES (Định dạng nền tảng)
    ========================================================================== */
-
 * {
     box-sizing: border-box;
 }
@@ -79,27 +76,6 @@ body {
     margin: 0 auto;
     width: 95%;
 }
-
-/* --- Tùy chỉnh thanh cuộn --- */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-::-webkit-scrollbar-track {
-    background: transparent;
-}
-::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.3);
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.5);
-}
-
-
-/* ==========================================================================
-   3. TYPOGRAPHY & HEADERS (Tiêu đề & Chữ nghĩa)
-   ========================================================================== */
 
 header {
     text-align: center;
@@ -128,11 +104,15 @@ body.light-mode h1 {
     padding: 8px;
 }
 
+/* --- Tùy chỉnh thanh cuộn --- */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148, 163, 184, 0.5); }
 
 /* ==========================================================================
-   4. LAYOUT COMPONENTS (Khung Toolbar & Layout chính)
+   3. LAYOUT & TOOLBAR COMPONENTS
    ========================================================================== */
-
 .toolbar {
     display: flex;
     justify-content: space-between;
@@ -145,6 +125,9 @@ body.light-mode h1 {
     border: 1px solid var(--border-color);
     margin-bottom: 30px;
     box-shadow: var(--shadow-main);
+    overflow: visible !important;
+    position: relative;
+    z-index: 1000 !important;
 }
 
 .groups-grid {
@@ -153,8 +136,112 @@ body.light-mode h1 {
     padding: 15px;
     max-width: 1400px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1 !important;
 }
 
+/* --- DROPDOWN GỘP CAO CẤP --- */
+.dropdown-gộp {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-toggle-btn {
+    white-space: nowrap;
+    background: var(--accent-color);
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dropdown-toggle-btn span {
+    font-size: 9px;
+    transition: transform 0.25s ease;
+}
+
+.dropdown-gộp:hover .dropdown-toggle-btn {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.dropdown-gộp:hover .dropdown-toggle-btn span {
+    transform: rotate(180deg);
+}
+
+.dropdown-gộp-content {
+    display: block;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    min-width: 210px;
+    background-color: rgba(30, 41, 59, 0.85);
+    backdrop-filter: blur(16px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 8px;
+    margin-top: 8px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+    pointer-events: none;
+    transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+    z-index: 9999999 !important; 
+}
+
+.dropdown-gộp-content::before {
+    content: "";
+    position: absolute;
+    top: -12px;
+    left: 0;
+    width: 100%;
+    height: 12px;
+    background: transparent;
+}
+
+.dropdown-gộp:hover .dropdown-gộp-content {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.dropdown-gộp-content a {
+    color: #e2e8f0;
+    padding: 10px 14px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    font-size: 13.5px;
+    font-weight: 500;
+    border-radius: 8px;
+    gap: 10px;
+    transition: all 0.2s ease;
+}
+
+.dropdown-gộp-content a:hover {
+    background: rgba(255, 255, 255, 0.06) !important;
+    color: #ffffff !important;
+    transform: translateX(4px);
+}
+
+body.light-mode .dropdown-gộp-content {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-color: rgba(0, 0, 0, 0.08);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+body.light-mode .dropdown-gộp-content a { color: #334155; }
+body.light-mode .dropdown-gộp-content a:hover { background: rgba(0, 0, 0, 0.04) !important; color: var(--accent-color) !important; }
+
+/* ==========================================================================
+   4. GROUP CARDS SYSTEMS
+   ========================================================================== */
 .group-card {
     display: flex;
     flex-direction: column;
@@ -171,12 +258,8 @@ body.light-mode h1 {
     transition: border-color 0.2s, transform 0.2s;
 }
 
-.group-card:hover { 
-    border-color: rgba(255, 255, 255, 0.15); 
-}
-body.light-mode .group-card:hover {
-    border-color: rgba(0, 0, 0, 0.2);
-}
+.group-card:hover { border-color: rgba(255, 255, 255, 0.15); }
+body.light-mode .group-card:hover { border-color: rgba(0, 0, 0, 0.2); }
 
 .group-card.type-note { border-left: 4px solid var(--note-accent); }
 .group-card.type-schedule { border-left: 4px solid var(--schedule-accent); }
@@ -201,717 +284,214 @@ body.light-mode .group-card:hover {
     cursor: grab;
     user-select: none;
 }
-.group-title::before {
-    content: "⋮⋮";
-    color: var(--text-sub);
-    font-size: 14px;
-    margin-right: 4px;
-}
+.group-title::before { content: "⋮⋮"; color: var(--text-sub); font-size: 14px; margin-right: 4px; }
 
-.group-tag {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-weight: bold;
-    text-transform: uppercase;
-}
+.group-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: bold; text-transform: uppercase; }
 .tag-link { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
 .tag-note { background: var(--note-bg-opacity); color: var(--note-accent); }
 .tag-schedule { background: var(--schedule-bg-opacity); color: var(--schedule-accent); }
 body.light-mode .tag-link { background: #dbeafe; color: #2563eb; }
 
-
 /* ==========================================================================
-   5. INTERACTIVE ELEMENTS (Nút bấm, Hovers & Tooltips)
+   5. INTERACTIVE BUTTONS & TOOLTIPS
    ========================================================================== */
-
-.btn-group { 
-    display: flex; 
-    gap: 10px; 
-}
-
-.btn-group button {
-    position: relative;
-}
+.btn-group { display: flex; gap: 10px; }
+.btn-group button { position: relative; }
 
 button {
-    padding: 10px 18px;
-    border-radius: 8px;
-    border: none;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
+    padding: 10px 18px; border-radius: 8px; border: none; font-weight: 600;
+    cursor: pointer; transition: all 0.2s ease; display: inline-flex;
+    align-items: center; gap: 8px; font-size: 14px;
 }
 
-input[type="file"] { display: none; }
-
-/* --- Button States --- */
 .btn-primary { background-color: var(--accent-color); color: white; }
 .btn-primary:hover { background-color: var(--accent-hover); }
-
 .btn-warning { background-color: var(--note-accent); color: #0f172a; }
 .btn-warning:hover { background-color: var(--note-accent-hover); }
-
 .btn-success { background-color: var(--schedule-accent); color: white; }
 .btn-success:hover { background-color: var(--schedule-accent-hover); }
-
 .btn-real-danger { background-color: var(--danger-color); color: white; }
 .btn-real-danger:hover { background-color: var(--danger-hover); }
 
-.btn-secondary { 
-    background-color: rgba(255,255,255,0.05); 
-    color: var(--text-main); 
-    border: 1px solid var(--border-color); 
-}
+.btn-secondary { background-color: rgba(255,255,255,0.05); color: var(--text-main); border: 1px solid var(--border-color); }
 .btn-secondary:hover { background-color: rgba(255,255,255,0.15); }
 body.light-mode .btn-secondary { background-color: #ffffff; border-color: #dbe2ea; }
 
-/* --- Item Wrappers --- */
-.item-wrapper {
-    display: inline-flex;
-    align-items: center;
-    cursor: grab;
-    margin: 6px;
-}
-
-.links-area, .notes-area, .schedules-area, #groupsContainer {
-    touch-action: pan-y;
-}
+.item-wrapper { display: inline-flex; align-items: center; cursor: grab; margin: 6px; }
+.links-area, .notes-area, .schedules-area, #groupsContainer { touch-action: pan-y; }
 
 .link-button, .note-button, .schedule-button {
-    color: var(--text-main);
-    text-decoration: none;
-    font-size: 14px;
-    padding: 10px 18px;
-    background: rgba(255, 255, 255, 0.04);
-    border: 1px solid var(--border-color);
-    border-radius: 30px;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    user-select: none;
-    transition: all 0.2s ease;
-    cursor: pointer;
+    color: var(--text-main); text-decoration: none; font-size: 14px; padding: 10px 18px;
+    background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-color);
+    border-radius: 30px; display: inline-flex; align-items: center; gap: 6px;
+    user-select: none; transition: all 0.2s ease; cursor: pointer;
 }
-body.light-mode .link-button,
-body.light-mode .note-button,
-body.light-mode .schedule-button {
-    background: #ffffff;
-    border-color: #dbe2ea;
-}
+body.light-mode .link-button, body.light-mode .note-button, body.light-mode .schedule-button { background: #ffffff; border-color: #dbe2ea; }
 
-/* --- Item Hovers --- */
-.link-button:hover {
-    background: linear-gradient(90deg, #6366f1, #a855f7);
-    color: white;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
-}
+.link-button:hover { background: linear-gradient(90deg, #6366f1, #a855f7); color: white; border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25); }
 body.light-mode .link-button:hover { color: #0f172a; }
+.note-button:hover { background: linear-gradient(90deg, #eab308, #f59e0b); color: #0f172a; border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3); }
+.schedule-button:hover { background: linear-gradient(90deg, #10b981, #059669); color: white; border-color: transparent; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
 
-.note-button:hover {
-    background: linear-gradient(90deg, #eab308, #f59e0b);
-    color: #0f172a;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.3);
-}
+.schedule-button.important-highlight { background: rgba(239, 68, 68, 0.15) !important; border: 1px solid rgba(239, 68, 68, 0.4) !important; color: #fca5a5 !important; font-weight: 600; }
+body.light-mode .schedule-button.important-highlight { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #b91c1c !important; }
 
-.schedule-button:hover {
-    background: linear-gradient(90deg, #10b981, #059669);
-    color: white;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-}
-
-.schedule-button.important-highlight {
-    background: rgba(239, 68, 68, 0.15) !important;
-    border: 1px solid rgba(239, 68, 68, 0.4) !important;
-    color: #fca5a5 !important;
-    font-weight: 600;
-}
-body.light-mode .schedule-button.important-highlight {
-    background: #fee2e2 !important;
-    border-color: #fca5a5 !important;
-    color: #b91c1c !important;
-}
-
-/* --- Drag & Drop Ghost Elements --- */
-.sortable-ghost-group { opacity: 0.3; border: 2px dashed var(--accent-color); }
-.sortable-ghost-link { opacity: 0.4; transform: scale(0.95); }
-.sortable-chosen {
-    transform: translateZ(0);
-    will-change: transform, opacity;
-    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4) !important;
-}
-
-/* --- Tooltips --- */
+/* --- Tooltips Engine --- */
 .btn-group button::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: calc(100% + 10px);
-    left: 50%;
-    transform: translateX(-50%) scale(0.8);
-    background: rgba(15, 23, 42, 0.95);
-    color: #f8fafc;
-    padding: 8px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
-    white-space: nowrap;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 9999;
+    content: attr(data-tooltip); position: absolute; bottom: calc(100% + 10px); left: 50%;
+    transform: translateX(-50%) scale(0.8); background: rgba(15, 23, 42, 0.95); color: #f8fafc;
+    padding: 8px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; white-space: nowrap;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.1);
+    opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;
 }
 .btn-group button::before {
-    content: "";
-    position: absolute;
-    bottom: calc(100% + 4px);
-    left: 50%;
-    transform: translateX(-50%) scale(0.8);
-    border-width: 6px 6px 0 6px;
-    border-style: solid;
-    border-color: rgba(15, 23, 42, 0.95) transparent transparent transparent;
-    opacity: 0;
-    pointer-events: none;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 9999;
+    content: ""; position: absolute; bottom: calc(100% + 4px); left: 50%; transform: translateX(-50%) scale(0.8);
+    border-width: 6px 6px 0 6px; border-style: solid; border-color: rgba(15, 23, 42, 0.95) transparent transparent transparent;
+    opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;
 }
-.btn-group button:hover::after,
-.btn-group button:hover::before {
-    opacity: 1;
-    transform: translateX(-50%) scale(1);
-}
-body.light-mode .btn-group button::after {
-    background: #ffffff;
-    color: #0f172a;
-    border-color: rgba(0, 0, 0, 0.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-body.light-mode .btn-group button::before {
-    border-color: #ffffff transparent transparent transparent;
-}
-.crash .btn-group button::after { display: none; }
-
+.btn-group button:hover::after, .btn-group button:hover::before { opacity: 1; transform: translateX(-50%) scale(1); }
+body.light-mode .btn-group button::after { background: #ffffff; color: #0f172a; border-color: rgba(0, 0, 0, 0.1); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+body.light-mode .btn-group button::before { border-color: #ffffff transparent transparent transparent; }
 
 /* ==========================================================================
-   6. FEATURE SPECIFICS (Bảng Lịch Trình & Chi tiết Nội dung)
+   6. SCHEDULE TABLES & PANELS
    ========================================================================== */
-
-.schedule-table-wrapper {
-    max-height: 280px;
-    overflow-y: auto;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    margin-top: 12px;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.schedule-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    table-layout: fixed;
-}
-
-.schedule-table th:nth-child(1), 
-.schedule-table td:nth-child(1) { width: 22%; text-align: center; }
-.schedule-table th:nth-child(2), 
-.schedule-table td:nth-child(2) { width: 18%; text-align: center; }
+.schedule-table-wrapper { max-height: 280px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 12px; margin-top: 12px; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15); }
+.schedule-table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
+.schedule-table th:nth-child(1), .schedule-table td:nth-child(1) { width: 22%; text-align: center; }
+.schedule-table th:nth-child(2), .schedule-table td:nth-child(2) { width: 18%; text-align: center; }
 .schedule-table th:nth-child(3) { width: 60%; text-align: center; }
 .schedule-table td:nth-child(3) { width: 60%; text-align: left; }
 
-.schedule-table th {
-    position: sticky;
-    top: 0;
-    background: var(--schedule-accent);
-    padding: 10px 8px;
-    font-size: 12px;
-    font-weight: 700;
-    color: white;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    z-index: 10;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.schedule-table td {
-    padding: 12px 10px;
-    font-size: 13.5px;
-    color: var(--text-main);
-    border-bottom: 1px solid var(--border-color);
-    vertical-align: middle;
-}
+.schedule-table th { position: sticky; top: 0; background: var(--schedule-accent); padding: 10px 8px; font-size: 12px; font-weight: 700; color: white; text-transform: uppercase; z-index: 10; border-bottom: 1px solid var(--border-color); }
+.schedule-table td { padding: 12px 10px; font-size: 13.5px; color: var(--text-main); border-bottom: 1px solid var(--border-color); vertical-align: middle; }
 .schedule-table tr:last-child td { border-bottom: none; }
-
-.schedule-row {
-    cursor: pointer;
-    transition: background-color 0.2s ease, transform 0.1s ease;
-}
+.schedule-row { cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease; }
 .schedule-row:hover { background: rgba(255, 255, 255, 0.05) !important; }
 body.light-mode .schedule-row:hover { background: rgba(0, 0, 0, 0.03) !important; }
 
-.schedule-date { white-space: nowrap; color: var(--text-sub); font-weight: 500; text-align: center !important; vertical-align: middle;}
+.schedule-date { white-space: nowrap; color: var(--text-sub); font-weight: 500; text-align: center !important; }
 .schedule-time { color: var(--accent-color) !important; } 
 .schedule-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-right: 5px; }
-
 .schedule-row.important td:first-child { border-left: 2px solid var(--danger-color); }
 .schedule-row.important { background: rgba(239, 68, 68, 0.04) !important; }
 
-.highlight-warning {
-    background-color: rgba(239, 68, 68, 0.25) !important;
-    color: #f87171 !important;
-    font-weight: bold;
-}
+.highlight-warning { background-color: rgba(239, 68, 68, 0.25) !important; color: #f87171 !important; font-weight: bold; }
 .highlight-warning td { color: #fecaca !important; font-weight: 600; }
 body.light-mode .highlight-warning { background-color: #fee2e2 !important; }
 body.light-mode .highlight-warning td { color: #991b1b !important; }
 
-/* --- Interior Info Panels --- */
-.today-important-item {
-    padding: 12px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    border-left: 4px solid var(--danger-color);
-    background: rgba(239, 68, 68, 0.08);
-}
+.today-important-item { padding: 12px; margin-bottom: 10px; border-radius: 10px; border-left: 4px solid var(--danger-color); background: rgba(239, 68, 68, 0.08); }
 .today-important-item h4 { margin: 0 0 6px 0; color: #f87171; }
 body.light-mode .today-important-item h4 { color: #dc2626; }
 .today-important-item p { margin: 0; white-space: pre-wrap; }
 
-.view-note-content, .single-schedule-detail {
-    background: var(--inner-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 20px;
-}
-.view-note-content {
-    font-size: 15px;
-    line-height: 1.6;
-    color: var(--text-main);
-    white-space: pre-wrap;
-    word-break: break-word;
-    max-height: 350px;
-    overflow-y: auto;
-    text-align: left;
-}
-
+.view-note-content, .single-schedule-detail { background: var(--inner-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; }
+.view-note-content { font-size: 15px; line-height: 1.6; color: var(--text-main); white-space: pre-wrap; word-break: break-word; max-height: 350px; overflow-y: auto; text-align: left; }
 .single-schedule-detail h4 { margin-top: 0; font-size: 17px; color: var(--text-main); }
 .schedule-info-line { font-size: 14px; color: var(--text-sub); margin-bottom: 15px; }
-.schedule-tasks-list {
-    background: rgba(0,0,0,0.15); 
-    border-radius: 8px; 
-    padding: 15px; 
-    border: 1px solid var(--border-color);
-    white-space: pre-wrap; 
-    word-break: break-word; 
-    font-size: 14px; 
-    line-height: 1.5; 
-    color: var(--text-main);
-}
+
+.schedule-tasks-list { background: rgba(0,0,0,0.15); border-radius: 8px; padding: 15px; border: 1px solid var(--border-color); white-space: pre-wrap; word-break: break-word; font-size: 14px; line-height: 1.5; color: var(--text-main); }
 body.light-mode .schedule-tasks-list { background: rgba(0,0,0,0.02); }
 
-
 /* ==========================================================================
-   7. POPUPS & OVERLAYS (Context Menu & Modals nâng cao)
+   7. POPUPS, MODALS & CONTEXT MENU
    ========================================================================== */
-
-/* --- Context Menu --- */
-.context-menu {
-    position: absolute;
-    background: var(--context-bg);
-    backdrop-filter: blur(12px);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 6px 0;
-    width: 200px;
-    box-shadow: var(--shadow-main);
-    display: none;
-    z-index: 2000;
-}
-.context-menu-item {
-    padding: 10px 16px;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--text-main);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.15s;
-}
+.context-menu { position: absolute; background: var(--context-bg); backdrop-filter: blur(12px); border: 1px solid var(--border-color); border-radius: 12px; padding: 6px 0; width: 200px; box-shadow: var(--shadow-main); display: none; z-index: 2000; }
+.context-menu-item { padding: 10px 16px; font-size: 13px; font-weight: 600; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background 0.15s; }
 .context-menu-item:hover { background: rgba(255, 255, 255, 0.08); }
 body.light-mode .context-menu-item:hover { background: rgba(0, 0, 0, 0.05); }
-
 .context-menu-item.delete { color: #fca5a5; }
 body.light-mode .context-menu-item.delete { color: var(--danger-color); }
 .context-menu-item.delete:hover { background: rgba(239, 68, 68, 0.2); color: var(--danger-color); }
-
 .context-menu-divider { height: 1px; background: var(--border-color); margin: 4px 0; }
 
-/* --- Modal Overlays & Box --- */
-.modal-overlay {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(8px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.3s ease;
-}
+.modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(8px); display: flex; justify-content: center; align-items: center; z-index: 9999; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
 .modal-overlay.active { opacity: 1; pointer-events: auto; }
-
-.modal-box {
-    background: var(--modal-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 30px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: var(--shadow-main);
-    transform: translateY(-20px);
-    transition: transform 0.3s ease;
-}
+.modal-box { background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 30px; width: 90%; max-width: 500px; box-shadow: var(--shadow-main); transform: translateY(-20px); transition: transform 0.3s ease; position: relative; }
 .modal-overlay.active .modal-box { transform: translateY(0); }
-
-.close-modal-x {
-    position: absolute;
-    top: 15px;
-    right: 20px;
-    font-size: 20px;
-    font-weight: bold;
-    color: var(--text-sub);
-    cursor: pointer;
-    transition: color 0.2s;
-}
+.close-modal-x { position: absolute; top: 15px; right: 20px; font-size: 20px; font-weight: bold; color: var(--text-sub); cursor: pointer; transition: color 0.2s; }
 .close-modal-x:hover { color: var(--danger-color); }
 
-/* --- Modal Form Inputs --- */
 .modal-box label { font-size: 12px; color: var(--text-sub); display: block; margin-bottom: 5px; }
-.modal-box input, .modal-box textarea, .modal-box select {
-    width: 100%; padding: 12px; background: rgba(255,255,255,0.04);
-    border: 1px solid var(--border-color); border-radius: 8px;
-    color: var(--text-main); font-size: 15px; box-sizing: border-box;
-    margin-bottom: 12px; outline: none; font-family: inherit;
-}
-body.light-mode .modal-box input, 
-body.light-mode .modal-box textarea, 
-body.light-mode .modal-box select {
-    background: rgba(0,0,0,0.02);
-}
+.modal-box input, .modal-box textarea, .modal-box select { width: 100%; padding: 12px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-main); font-size: 15px; box-sizing: border-box; margin-bottom: 12px; outline: none; font-family: inherit; }
+body.light-mode .modal-box input, body.light-mode .modal-box textarea, body.light-mode .modal-box select { background: rgba(0,0,0,0.02); }
 .modal-box textarea { resize: vertical; height: 60px; line-height: 1.4; }
 .modal-box input:focus, .modal-box textarea:focus, .modal-box select:focus { border-color: var(--accent-color); }
 
 .datetime-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .modal-footer { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-
-/* --- Modal Schedule Specifics --- */
-#todayImportantContent {
-    max-height: 450px;
-    overflow-y: auto;
-    padding-right: 8px;
-    margin-bottom: 10px;
-}
-.schedules-blocks-container {
-    max-height: 340px;
-    overflow-y: auto;
-    padding: 12px;
-    border-radius: 10px;
-    border: 1px solid var(--border-color);
-    margin-bottom: 15px;
-}
-.schedule-block-item {
-    background: rgba(255,255,255,0.02);
-    border: 1px solid var(--border-color);
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    position: relative;
-}
-.schedule-block-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(255,255,255,0.04);
-    padding: 6px 10px;
-    margin-bottom: 10px;
-    border-radius: 6px;
-}
+#todayImportantContent { max-height: 450px; overflow-y: auto; padding-right: 8px; margin-bottom: 10px; }
+.schedules-blocks-container { max-height: 340px; overflow-y: auto; padding: 12px; border-radius: 10px; border: 1px solid var(--border-color); margin-bottom: 15px; }
+.schedule-block-item { background: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 15px; border-radius: 10px; margin-bottom: 15px; position: relative; }
+.schedule-block-header { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.04); padding: 6px 10px; margin-bottom: 10px; border-radius: 6px; }
 body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 
-.important-checkbox-label {
-    display: inline-flex !important;
-    align-items: center;
-    gap: 6px;
-    font-size: 13px !important;
-    color: var(--danger-color) !important;
-    font-weight: bold;
-    cursor: pointer;
-    margin-bottom: 0 !important;
-}
+.important-checkbox-label { display: inline-flex !important; align-items: center; gap: 6px; font-size: 13px !important; color: var(--danger-color) !important; font-weight: bold; cursor: pointer; margin-bottom: 0 !important; }
 .important-checkbox-label input { width: auto !important; margin: 0 !important; cursor: pointer; }
-
-.btn-remove-block {
-    background: none; color: var(--text-sub); padding: 2px 8px; font-size: 11px; border: 1px solid var(--border-color);
-}
+.btn-remove-block { background: none; color: var(--text-sub); padding: 2px 8px; font-size: 11px; border: 1px solid var(--border-color); }
 .btn-remove-block:hover { color: var(--danger-color); border-color: var(--danger-color); }
 
-/* --- Emoji Picker --- */
 .emoji-picker-container { margin-bottom: 15px; }
-.emoji-grid {
-    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
-    max-height: 100px; overflow-y: auto;
-    padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
-}
-.emoji-item {
-    background: rgba(255,255,255,0.02); border: 1px solid transparent; font-size: 20px;
-    text-align: center; padding: 6px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s, background-color 0.2s;
-}
+.emoji-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; max-height: 100px; overflow-y: auto; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); }
+.emoji-item { background: rgba(255,255,255,0.02); border: 1px solid transparent; font-size: 20px; text-align: center; padding: 6px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.2s, background-color 0.2s; }
 .emoji-item:hover { background: rgba(99, 102, 241, 0.2); transform: scale(1.1); }
 .emoji-item.selected { background: var(--accent-color); border-color: rgba(255,255,255,0.3); color: white;}
 
-
 /* ==========================================================================
-   8. UTILITIES & ANIMATIONS (Tiện ích Phụ & Hoạt ảnh)
+   8. UTILITIES, ANIMATIONS & SYSTEM STATUS
    ========================================================================== */
+.theme-fab, .theme-canvas { position: fixed; top: 10px; font-size: 24px; cursor: pointer; z-index: 5000; background: none; }
+.theme-fab { right: 10px; }
+.theme-canvas { left: 10px; }
 
-.theme-fab {
-    position: fixed;
-    top: 10px;
-    right: 10px;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 5000;
-    background: none;
-}
-
-.theme-canvas {
-    position: fixed;
-    top: 10px;
-    left: 10px;
-    font-size: 24px;
-    cursor: pointer;
-    z-index: 5000;
-    background: none;
-}
-
-#backToTop {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    display: none;
-    padding: 12px 16px;
-    border-radius: 50%;
-    border: none;
-    background: var(--accent-color);
-    color: white;
-    cursor: pointer;
-    font-size: 20px;
-    box-shadow: var(--shadow-main);
-    transition: 0.3s;
-    z-index: 10000;
-}
+#backToTop { position: fixed; bottom: 30px; right: 30px; display: none; padding: 12px 16px; border-radius: 50%; border: none; background: var(--accent-color); color: white; cursor: pointer; font-size: 20px; box-shadow: var(--shadow-main); transition: 0.3s; z-index: 10000; }
 #backToTop:hover { transform: scale(1.1); background: var(--accent-hover); }
 
-/* --- Giao diện Thẻ Nhóm bị khóa --- */
-.group-card.is-locked-status .group-content-wrapper {
-    filter: blur(8px);
-    pointer-events: none;
-    user-select: none;
-    opacity: 0.4;
-    transition: filter 0.3s ease, opacity 0.3s ease;
-}
+.group-card.is-locked-status .group-content-wrapper { filter: blur(8px); pointer-events: none; user-select: none; opacity: 0.4; transition: filter 0.3s ease, opacity 0.3s ease; }
+.group-card.is-locked-status { position: relative; border: 1px dashed var(--danger-color) !important; }
+.lock-overlay-btn { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 50; background: var(--panel-bg); border: 1px solid var(--border-color); box-shadow: var(--shadow-main); backdrop-filter: blur(5px); padding: 12px 20px; border-radius: 30px; color: var(--text-main); cursor: pointer; font-weight: bold; display: flex; align-items: center; gap: 8px; transition: all 0.2s ease; }
+.lock-overlay-btn:hover { background: var(--accent-color); color: white; transform: translate(-50%, -50%) scale(1.05); }
 
-.group-card.is-locked-status {
-    position: relative;
-    border: 1px dashed var(--danger-color) !important;
-}
+@keyframes smoothBlink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+.blink-effect { animation: smoothBlink 1.2s linear infinite; }
+@keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+.blink-red { color: #ff4d4f; animation: blink 1s infinite; }
 
-/* Nút bấm để mở khóa phủ trên card */
-.lock-overlay-btn {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 50;
-    background: var(--panel-bg);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-main);
-    backdrop-filter: blur(5px);
-    padding: 12px 20px;
-    border-radius: 30px;
-    color: var(--text-main);
-    cursor: pointer;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.2s ease;
-}
-.lock-overlay-btn:hover {
-    background: var(--accent-color);
-    color: white;
-    transform: translate(-50%, -50%) scale(1.05);
-}
-
-@keyframes smoothBlink {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-}
-.blink-effect {
-    animation: smoothBlink 1.2s linear infinite;
-}
-
+.schedule-row.past .schedule-date, .schedule-row.past .schedule-name, .schedule-row.past .schedule-time, .schedule-row.past td { text-decoration: line-through !important; color: rgba(154, 160, 166, 0.4) !important; }
+.schedule-table tbody tr.running-row td:first-child { border-left: 4px solid #a855f7 !important; }
+.today-important-item.running-modal-item { border-left: 4px solid #a855f7 !important; background: rgba(168, 85, 247, 0.08) !important; }
 
 /* ==========================================================================
-   9. RESPONSIVE / MEDIA QUERIES (Tương thích thiết bị)
+   9. MOBILE & RESPONSIVE PLATFORM (768px - 600px)
    ========================================================================== */
-
-@media screen and (max-width: 1024px) {
-    .groups-grid { column-count: 2; }
-}
+@media screen and (max-width: 1024px) { .groups-grid { column-count: 2; } }
+@media screen and (max-width: 600px) { .groups-grid { column-count: 1; } }
 
 @media screen and (max-width: 768px) {
-    .toolbar { display: grid !important; grid-template-columns: 1fr !important; gap: 12px !important; }
-    .btn-group { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; width: 100%; }
-    .toolbar .btn-group:last-child { grid-template-columns: 1fr 1fr !important; }
-    .btn-group button { width: 100%; min-height: 50px; padding: 6px 8px; justify-content: center; white-space: normal; text-align: center; font-size: 12px; }
+    .toolbar { display: flex !important; flex-direction: column !important; gap: 12px !important; padding: 12px !important; border-radius: 14px !important; margin-bottom: 20px; }
+    .btn-group { display: flex !important; flex-wrap: wrap !important; gap: 8px !important; width: 100% !important; }
+    .btn-group:first-child, .dropdown-gộp { width: 100% !important; }
+    
+    .dropdown-toggle-btn { width: 100% !important; justify-content: center !important; min-height: 44px !important; font-size: 14px !important; padding: 10px !important; box-sizing: border-box !important; }
+    .dropdown-gộp-content { width: 100% !important; box-sizing: border-box !important; margin-top: 4px !important; background-color: rgba(30, 41, 59, 0.95) !important; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5) !important; }
+    
+    .toolbar .btn-group:last-child { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 8px !important; width: 100% !important; }
+    .toolbar .btn-group:last-child button { width: 100% !important; min-height: 40px !important; padding: 6px 10px !important; font-size: 12px !important; justify-content: center !important; text-align: center !important; white-space: nowrap !important; text-overflow: ellipsis !important; overflow: hidden !important; }
+    
+    #btn-login-google, #btn-sync-google { grid-column: span 2 !important; }
     .datetime-row { grid-template-columns: 1fr; gap: 0; }
 }
 
-@media screen and (max-width: 600px) {
-    .groups-grid { column-count: 1; }
-}
+/* --- KÉO THẢ & CHẶN SELECT CHỮ TRÊN MOBILE --- */
+.group-card, .group-title, .link-item, .note-item, .schedule-item { -webkit-touch-callout: none !important; -webkit-user-select: none !important; -moz-user-select: none !important; -ms-user-select: none !important; user-select: none !important; }
+.group-card, .links-area, .notes-area { touch-action: auto !important; }
+.group-title { touch-action: none !important; }
 
-/* ==========================================================================
-   CẤU HÌNH KÉO THẢ & CHẶN SELECT CHỮ TRÊN MOBILE (KHÔNG ẢNH HƯỞNG MODAL)
-   ========================================================================== */
+/* --- KHÔI PHỤC TƯƠNG TÁC CHO MODAL TRÊN MOBILE --- */
+.modal { position: fixed !important; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(15, 23, 42, 0.8) !important; z-index: 99999 !important; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s ease; }
+.modal.active { display: flex !important; opacity: 1 !important; }
+.zindex-modal { z-index: 99999; }
 
-/* 1. Chỉ chặn bôi đen chữ trên các thành phần danh sách công việc */
-.group-card, 
-.group-title, 
-.link-item, 
-.note-item,
-.schedule-item {
-    -webkit-touch-callout: none !important; /* Chặn menu sao chép của iOS */
-    -webkit-user-select: none !important;   /* Chặn bôi đen chữ khi nhấn giữ */
-       -moz-user-select: none !important;
-        -ms-user-select: none !important;
-            user-select: none !important;
-}
-
-/* 2. Cấu hình touch-action: Thân nhóm và danh sách con vẫn cho cuộn mượt */
-.group-card,
-.links-area, 
-.notes-area {
-    touch-action: auto !important; 
-}
-.group-title {
-    touch-action: none !important; /* Chỉ chặn cuộn tại tiêu đề để phục vụ việc kéo nhóm */
-}
-
-/* 3. CẤU HÌNH ĐỘ NỔI VÀ KHÔI PHỤC TƯƠNG TÁC CHO MODAL TRÊN MOBILE */
-.modal {
-    position: fixed !important;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(15, 23, 42, 0.8) !important; /* Nền tối mờ phía sau */
-    z-index: 99999 !important; /* QUAN TRỌNG: Phải cực cao để không bị SortableJS đè lên trên mobile */
-    display: none; /* Mặc định ẩn */
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-/* Khi có class .active từ hàm openModal(id) gọi đến */
-.modal.active {
-    display: flex !important; /* Hiện modal dạng flex để căn giữa */
-    opacity: 1 !important;
-}
-
-/* 4. LOẠI TRỪ TUYỆT ĐỐI: Khôi phục quyền chọn text/gõ chữ cho Form trong Modal */
-.modal-content,
-.modal input, 
-.modal select, 
-.modal textarea,
-.modal button {
-    -webkit-touch-callout: default !important; /* Trả lại menu ngữ cảnh gốc */
-    -webkit-user-select: text !important;      /* Cho phép bôi đen, copy văn bản */
-       -moz-user-select: text !important;
-        -ms-user-select: text !important;
-            user-select: text !important;
-    touch-action: auto !important;             /* Cho phép nhấn chọn, cuộn tự do */
-}
-
-/* Đảm bảo nội dung modal co giãn đẹp trên màn hình điện thoại */
-.modal-content {
-    background: #1e293b; 
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    padding: 20px;
-    margin: auto;
-    position: relative;
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
-}
-
-.zindex-modal {
-    z-index: 99999;
-}
-
-/* ========================================================
-   🔥 FIX TRONG SUỐT ĐỒNG BỘ - GIỮ MÀU CHUẨN CHO CỘT GIỜ
-   ======================================================== */
-
-.schedule-row.past .schedule-date,
-.schedule-row.past .schedule-name,
-.schedule-row.past .schedule-time {
-    text-decoration: line-through !important;
-    color: rgba(154, 160, 166, 0.4) !important; /* Dùng màu chữ trong suốt để tạo hiệu ứng mờ */
-}
-
-/* 3. Đảm bảo toàn bộ hàng td đều có đường gạch ngang đồng bộ */
-.schedule-row.past td {
-    text-decoration: line-through !important;
-}
-
-@keyframes blink {
-  0% { opacity: 1; }
-  50% { opacity: 0.4; }
-  100% { opacity: 1; }
-}
-
-.blink-red {
-  color: #ff4d4f; /* Màu đỏ */
-  animation: blink 1s infinite; /* Nháy vô hạn */
-}
-
-/* Viền trái màu tím cho dòng "Đang chạy" trong Bảng Lịch Ngoài Dashboard */
-.schedule-table tbody tr.running-row td:first-child {
-    border-left: 4px solid #a855f7 !important;
-}
-
-/* Viền trái màu tím cho khối công việc "Đang chạy" trong Modal Đầu Lịch Hôm Nay */
-.today-important-item.running-modal-item {
-    border-left: 4px solid #a855f7 !important;
-    background: rgba(168, 85, 247, 0.08) !important; /* Tạo nền tím nhạt nhẹ cho đồng bộ */
-}
+.modal-content, .modal input, .modal select, .modal textarea, .modal button { -webkit-touch-callout: default !important; -webkit-user-select: text !important; -moz-user-select: text !important; -ms-user-select: text !important; user-select: text !important; touch-action: auto !important; }
+.modal-content { background: #1e293b; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; width: 90%; max-width: 500px; padding: 20px; margin: auto; position: relative; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
