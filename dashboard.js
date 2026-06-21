@@ -844,11 +844,12 @@ function updateScheduleUI() {
 
         if (!startStr || !endStr || !countdownCell) return;
 
-        startStr = startStr.replace('T', ' ').replace(/-/g, '/');
-        endStr = endStr.replace('T', ' ').replace(/-/g, '/');
+        // SỬA LỖI TẠI ĐÂY:
+        // Định dạng data-start thường là YYYY-MM-DDTHH:mm
+        // Thêm ":00" vào cuối để trình duyệt trên Mobile (Safari/Chrome) hiểu đây là định dạng ISO hợp lệ
+        const startTime = new Date(startStr + ":00");
+        const endTime = new Date(endStr + ":00");
 
-        const startTime = new Date(startStr);
-        const endTime = new Date(endStr);
         if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) return;
 
         const diffToStartMs = startTime - now;
@@ -1493,27 +1494,57 @@ function triggerUnlockGroup(groupId) {
     openModal('keyModal');
 }
 
-function submitKeyForm() {
+async function submitKeyForm() {
     clearKeyError();
     const keyInput = getEl('groupKeyInput')?.value.trim();
     if (!keyInput) return showKeyError("Vui lòng nhập mã khóa.");
     
     const hashedKey = btoa(unescape(encodeURIComponent(keyInput)));
     const group = getGroup(keyModalContext.targetGroupId);
-    if (!group) return;
-
-    if (keyModalContext.action === 'setup_lock') {
-        group.pinKey = hashedKey; group.isLocked = true; alert("Thiết lập mã khóa thành công!");
-    } else if (keyModalContext.action === 'remove_lock') {
-        if (group.pinKey === hashedKey) { group.pinKey = ""; group.isLocked = false; alert("Đã gỡ bỏ mã bảo vệ!"); }
-        else return showKeyError("Mã khóa không chính xác.");
-    } else if (keyModalContext.action === 'unlock') {
-        if (group.pinKey === hashedKey) group.isLocked = false;
-        else return showKeyError("Mã khóa sai. Vui lòng thử lại.");
+    
+    if (!group) {
+        showKeyError("Không tìm thấy dữ liệu nhóm.");
+        return;
     }
+
+    // Xử lý logic nghiệp vụ khóa/mở
+    if (keyModalContext.action === 'setup_lock') {
+        group.pinKey = hashedKey; 
+        group.isLocked = true; 
+        alert("Thiết lập mã khóa thành công!");
+    } else if (keyModalContext.action === 'remove_lock') {
+        if (group.pinKey === hashedKey) { 
+            group.pinKey = ""; 
+            group.isLocked = false; 
+            alert("Đã gỡ bỏ mã bảo vệ!"); 
+        } else {
+            return showKeyError("Mã khóa không chính xác.");
+        }
+    } else if (keyModalContext.action === 'unlock') {
+        if (group.pinKey === hashedKey) {
+            group.isLocked = false;
+        } else {
+            return showKeyError("Mã khóa sai. Vui lòng thử lại.");
+        }
+    }
+
+    // 1. Đóng modal trước để giải phóng giao diện
     closeModal('keyModal');
+    
+    // 2. Lưu dữ liệu vào LocalStorage
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-    syncToGoogleDrive(true); renderDashboard();
+    
+    // 3. Render lại Dashboard (Cập nhật DOM)
+    renderDashboard();
+    
+    // 4. SỬA LỖI MOBILE: Đợi trình duyệt vẽ xong DOM (50ms - 100ms)
+    // Sau đó mới kích hoạt tính toán lại bộ đếm thời gian
+    setTimeout(() => {
+        updateScheduleUI();
+        
+        // 5. Đồng bộ sau cùng để không gây lag giao diện
+        syncToGoogleDrive(true);
+    }, 100);
 }
 
 function quickLockGroup(groupId) {
