@@ -1546,7 +1546,6 @@ async function submitKeyForm() {
         syncToGoogleDrive(true);
     }, 100);
 }
-
 function quickLockGroup(groupId) {
     const group = getGroup(groupId);
     if (group?.pinKey) {
