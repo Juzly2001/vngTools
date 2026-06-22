@@ -18,6 +18,16 @@
         .btn-audio { background-color: #0d6efd; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; margin-right: 5px; }
         .btn-speak { background-color: #ffc107; color: black; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
         #quizSection { display: none; margin-top: 20px; padding: 20px; border: 2px solid #0d6efd; border-radius: 10px; }
+        /* Hiệu ứng di chuột vào dòng */
+#wordTable tbody tr:hover {
+    background-color: #e8f4ff !important; /* Màu xanh nhạt khi di chuột vào */
+    transition: background-color 0.2s ease;
+}
+
+/* Đảm bảo các ô bên trong cũng đổi màu theo */
+#wordTable tbody tr:hover td {
+    background-color: transparent !important; /* Để màu nền của tr hiển thị rõ */
+}
     </style>
 </head>
 <body>
@@ -39,15 +49,16 @@
         
         <div class="mt-3 p-3 bg-light border">
             <label class="fw-bold">Chế độ kiểm tra:</label>
-            <select id="quizMode" class="form-select w-auto d-inline-block mx-2">
-                <option value="en-vi">Anh - Việt</option>
-                <option value="vi-en">Việt - Anh</option>
-            </select>
+                <select id="quizMode" class="form-select w-auto d-inline-block mx-2">
+                    <option value="en-vi">Anh - Việt</option>
+                    <option value="vi-en">Việt - Anh</option>
+                    <option value="mixed">Trộn Việt - Anh</option>
+                </select>
             <button class="btn btn-warning" onclick="startQuiz()">Tạo bài kiểm tra</button>
         </div>
     </div>
 
-    <table class="table table-bordered mt-4" id="wordTable">
+    <table class="table table-bordered table-hover mt-4" id="wordTable">
         <thead class="table-dark">
             <tr><th>Từ vựng</th><th>Phiên âm</th><th>Phát âm</th><th>Nghĩa</th></tr>
         </thead>
@@ -197,7 +208,9 @@ async function addWordToTable(inputWord) {
         let activeQuestions = [...quizData].sort(() => Math.random() - 0.5);
         
         document.getElementById("quizForm").innerHTML = activeQuestions.map((item, index) => {
-            let isEnVi = mode === 'en-vi';
+            // Nếu là 'mixed', tung đồng xu (Math.random()) để quyết định chiều dịch
+            let isEnVi = mode === 'en-vi' || (mode === 'mixed' && Math.random() > 0.5);
+            
             return `<div class="card mb-3 p-3">
                     <strong>${index + 1}. ${isEnVi ? item.word : item.meaning}</strong>
                     <input type="text" class="form-control mt-2" id="ans_${index}" data-correct="${isEnVi ? item.meaning : item.word}">
