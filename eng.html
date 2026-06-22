@@ -52,6 +52,10 @@
             font-size: 13px;
             min-width: 60px;
         }
+
+        .correct-input { border: 2px solid green !important; background-color: #d4edda !important; }
+        .wrong-input { border: 2px solid red !important; background-color: #f8d7da !important; }
+        .show-answer { color: red; font-size: 0.9em; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -274,7 +278,28 @@ async function addWordToTable(inputWord) {
         let score = 0;
         window.activeQuestions.forEach((item, index) => {
             let input = document.getElementById(`ans_${index}`);
-            if (input.value.trim().toLowerCase() === input.dataset.correct.toLowerCase()) score++;
+            let correctAnswer = input.dataset.correct.toLowerCase();
+            let userAnswer = input.value.trim().toLowerCase();
+            
+            // Tạo một div để hiển thị đáp án đúng nếu sai
+            let parent = input.parentElement;
+            let feedback = parent.querySelector('.show-answer');
+            if (!feedback) {
+                feedback = document.createElement('div');
+                feedback.className = 'show-answer';
+                parent.appendChild(feedback);
+            }
+
+            if (userAnswer === correctAnswer) {
+                input.classList.add('correct-input');
+                input.classList.remove('wrong-input');
+                feedback.innerText = "";
+                score++;
+            } else {
+                input.classList.add('wrong-input');
+                input.classList.remove('correct-input');
+                feedback.innerText = `Sai rồi! Đáp án đúng là: ${input.dataset.correct}`;
+            }
         });
         document.getElementById("quizResult").innerHTML = `<b>Kết quả: ${score}/${window.activeQuestions.length} đúng.</b>`;
     }
