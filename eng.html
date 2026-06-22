@@ -74,30 +74,36 @@
         window.speechSynthesis.speak(utterance);
     }
 
-   function renderRow(obj) {
+function renderRow(obj) {
     let tbody = document.querySelector("#wordTable tbody");
     let row = tbody.insertRow();
-    row.insertCell(0).textContent = obj.word;
-    row.insertCell(1).textContent = obj.phonetic || "N/A";
     
+    // Cột Từ vựng
+    row.insertCell(0).textContent = obj.word;
+    
+    // Cột Phiên âm (Chuyển thành ô input)
+    let phoneticCell = row.insertCell(1);
+    phoneticCell.innerHTML = `<input type="text" class="form-control" value="${obj.phonetic || ""}" 
+                             onchange="updateField('${obj.word}', 'phonetic', this.value)">`;
+    
+    // Cột Phát âm
     let audioHtml = obj.audio ? `<button class="btn-audio" onclick="new Audio('${obj.audio}').play()">Nghe Gốc 🔊</button>` : "";
     audioHtml += `<button class="btn-speak" onclick="speakWord('${obj.word}')">Đọc Máy 🤖</button>`;
-    
     row.insertCell(2).innerHTML = audioHtml;
 
-    // Thay đổi cột Nghĩa thành thẻ input
+    // Cột Nghĩa (Chuyển thành ô input)
     let meaningCell = row.insertCell(3);
     meaningCell.innerHTML = `<input type="text" class="form-control" value="${obj.meaning}" 
-                             onchange="updateMeaning('${obj.word}', this.value)">`;
-    }
+                             onchange="updateField('${obj.word}', 'meaning', this.value)">`;
+}
 
     // Thêm hàm này để lưu lại mỗi khi bạn sửa
-function updateMeaning(word, newMeaning) {
+function updateField(word, field, newValue) {
     let item = quizData.find(i => i.word === word);
     if (item) {
-        item.meaning = newMeaning;
+        item[field] = newValue; // Cập nhật linh hoạt theo trường (phonetic hoặc meaning)
         localStorage.setItem('myVocab', JSON.stringify(quizData));
-        console.log("Đã cập nhật nghĩa cho từ:", word);
+        console.log(`Đã cập nhật ${field} cho từ: ${word}`);
     }
 }
 
@@ -206,7 +212,24 @@ async function addWordToTable(inputWord) {
 
     function goBack() { location.reload(); }
     function clearAll() { localStorage.removeItem('myVocab'); location.reload(); }
-    function exportToExcel() { XLSX.writeFile(XLSX.utils.table_to_book(document.getElementById("wordTable")), "TuVung.xlsx"); }
+    function exportToExcel() {
+    // 1. Chỉ lấy các trường dữ liệu cần thiết
+    const dataToExport = quizData.map(item => ({
+        "Từ vựng": item.word,
+        "Phiên âm": item.phonetic,
+        "Nghĩa": item.meaning
+    }));
+
+    // 2. Tạo worksheet từ dữ liệu đã chọn
+    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
+    
+    // 3. Tạo workbook và thêm worksheet vào
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "TuVung");
+
+    // 4. Xuất file
+    XLSX.writeFile(workbook, "TuVung.xlsx");
+}
 </script>
 </body>
 </html>
