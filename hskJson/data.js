@@ -1404,6 +1404,7 @@ const fullLibrary = {
   {"word": "自行车", "pinyin": "zìxíngchē", "meaning": "xe đạp", "example": "这是我新买的自行车。", "fromType": "n.", "trans": "Đây là chiếc xe đạp tôi mới mua."},
   {"word": "走", "pinyin": "zǒu", "meaning": "đi", "example": "我走了,再见!", "fromType": "v.", "trans": "Tôi đi đây, tạm biệt!"},
   {"word": "最", "pinyin": "zuì", "meaning": "nhất", "example": "她是我最好的朋友。", "fromType": "adv.", "trans": "Cô ấy là bạn thân nhất của tôi."},
+  {"word": "最好的朋友", "pinyin": "Zuì hǎo de péngyǒu", "meaning": "bạn thân", "example": "我们是最好的朋友。", "fromType": "n.", "trans": "Chúng tôi là bạn thân nhất của nhau."},
   {"word": "左边", "pinyin": "zuǒbian", "meaning": "bên trái", "example": "左边的那个杯子是你的。", "fromType": "n.", "trans": "Cái cốc ở bên trái là của bạn."},
   {"word": "阿姨", "pinyin": "āyí", "meaning": "dì, cô", "example": "阿姨,附近有地铁站吗?", "fromType": "n.", "trans": "Cô ơi, gần đây có ga tàu điện ngầm không ạ?"},
   {"word": "啊", "pinyin": "a", "meaning": "à, ha (trợ từ)", "example": "这儿的环境多么好啊!", "fromType": "int.", "trans": "Môi trường ở đây tốt biết bao!"},
