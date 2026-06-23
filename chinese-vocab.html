@@ -96,6 +96,12 @@
 <script src="./hskJson/data.js"></script>
 <script>
 
+    function showModal(message) {
+        document.getElementById('modalMessage').textContent = message;
+        let myModal = new bootstrap.Modal(document.getElementById('messageModal'));
+        myModal.show();
+    }
+
     let vocabData = JSON.parse(localStorage.getItem('myChineseVocab')) || [];
     window.onload = () => vocabData.forEach(item => renderRow(item));
 
@@ -120,7 +126,13 @@
             if (added >= count) break;
             if (addFromLibrary(item)) added++;
         }
-        localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
+        
+        if (added > 0) {
+            localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
+            showModal(`Đã thêm thành công ${added} từ ngẫu nhiên!`);
+        } else {
+            showModal("Không thể thêm từ (có thể danh sách đã đầy hoặc đã có đủ từ).");
+        }
     }
 
     async function addByTopic() {
@@ -128,7 +140,7 @@
         let count = parseInt(document.getElementById("topicCount").value);
         
         // Kiểm tra xem chủ đề có tồn tại không
-        if (!fullLibrary[topic]) return alert("Không tìm thấy chủ đề này! Hãy nhập: hsk1 hoặc hsk2");
+        if (!fullLibrary[topic]) return showModal("Không tìm thấy chủ đề này! Hãy nhập: hsk1 hoặc hsk2");
         
         // Lấy danh sách gốc của chủ đề đó
         let topicWords = [...fullLibrary[topic]]; 
@@ -146,9 +158,12 @@
             }
         }
         
+
+
         if (added === 0) {
-            alert("Các từ trong chủ đề này đã được thêm hết rồi!");
+            showModal("Các từ trong chủ đề này đã được thêm hết rồi!");
         } else {
+            showModal(`Đã thêm ${added} từ ngẫu nhiên từ chủ đề ${topic}`);
             localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
             console.log(`Đã thêm ${added} từ ngẫu nhiên từ chủ đề ${topic}`);
         }
@@ -200,7 +215,7 @@
 
 // Hàm khởi tạo bài kiểm tra
 function startQuiz() {
-    if (vocabData.length === 0) return alert("Vui lòng thêm từ trước!");
+    if (vocabData.length === 0) return showModal("Vui lòng thêm từ trước!");
     
     const mode = document.getElementById("quizMode").value;
     const quizForm = document.getElementById("quizForm");
@@ -276,7 +291,7 @@ function checkQuiz() {
 
     function processAllWords() {
         const input = document.getElementById("wordInput").value;
-        if (!input.trim()) return alert("Vui lòng nhập từ!");
+        if (!input.trim()) return showModal("Vui lòng nhập từ!");
 
         // Giả định nhập từ Hán đơn giản hoặc cần tra cứu từ fullLibrary
         const words = input.split(/[,，]/);
@@ -289,7 +304,7 @@ function checkQuiz() {
             if (found) {
                 if (addFromLibrary(found)) addedCount++;
             } else {
-                alert("Không tìm thấy từ: " + trimWord);
+                showModal("Không tìm thấy từ: " + trimWord);
             }
         });
 
@@ -307,5 +322,21 @@ function checkQuiz() {
         XLSX.writeFile(wb, "TuVungTrung.xlsx");
     }
 </script>
+
+<!-- Modal thông báo -->
+<div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Thông báo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="modalMessage"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button>
+      </div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
