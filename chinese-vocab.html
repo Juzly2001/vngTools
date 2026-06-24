@@ -108,7 +108,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="./hskJson/data.js"></script>
+    <script type="module" src="./hskJson/data.js"></script>
     <script>
         let lastQuery = "";
         
@@ -134,8 +134,7 @@
         async function addRandomWords() {
             let count = parseInt(document.getElementById("randomCount").value);
             // Gộp tất cả từ trong thư viện thành 1 danh sách phẳng
-            let allWords = Object.values(fullLibrary).flat();
-            let shuffled = allWords.sort(() => 0.5 - Math.random());
+            let shuffled = [...window.allVocabulary].sort(() => 0.5 - Math.random());
             
             let added = 0;
             for (let item of shuffled) {
@@ -331,7 +330,7 @@
     
         lastQuery = query.toLowerCase(); // Lưu lại để highlight
         const searchTerms = query.split(/[,，]/);
-        let allWords = Object.values(fullLibrary).flat();
+        let allWords = window.allVocabulary;
         let addedCount = 0;
     
         searchTerms.forEach(term => {

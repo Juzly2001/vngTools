@@ -418,7 +418,7 @@
         // AUTO PASTE ALL
         async function autoPasteAll() {
 
-            const goodText = "Cảm ơn bạn đã yêu mến và dành lời khen cho Zalopay. Chúng mình sẽ tiếp tục hoàn thiện và nâng cao chất lượng dịch vụ ngày một tốt hơn!";
+            const goodText = "Cảm ơn bạn rất nhiều vì đã tin dùng và yêu thích Zalopay. Phản hồi của bạn là động lực để đội ngũ Zalopay tiếp tục hoàn thiện và nâng cao chất lượng sản phẩm. Chúc bạn nhiều giao dịch thuận lợi và đừng ngần ngại cho biết nếu có điều gì Zalopay có thể làm tốt hơn nhé.";
             const badText = "Chúng mình rất tiếc vì trải nghiệm không tốt của bạn. Bạn vui lòng vào ứng dụng Zalopay >> chọn 'Tài khoản' >> 'Trung tâm hỗ trợ' và cung cấp thông tin liên quan để có thể được hỗ trợ nhanh nhất nhé!";
 
             const reviews = [...document.querySelectorAll("review")].filter(rev => rev.offsetParent !== null);

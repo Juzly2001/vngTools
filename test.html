@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sổ tay Tiếng Trung</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' style='background-color:%230b74de;border-radius:20%25;'%3E%3Cpath d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3C/svg%3E">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pinyin-pro@3.20.0/dist/index.js"></script>
+    <style>
+        :root { --main: #0b74de; --soft: #eef6ff; }
+        body { background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%); min-height: 100vh; padding: 20px 10px; }
+        .container { max-width: 1100px; background: white; padding: 20px; border-radius: 14px; box-shadow: 0 4px 18px rgba(0,0,0,0.12); }
+        .btn-audio { background-color: #dc3545; color: white; border: none; padding: 5px 8px; border-radius: 6px; font-size: 14px; margin: 2px; }
+        .correct-input { border: 2px solid green !important; background-color: #d4edda !important; }
+        .wrong-input { border: 2px solid red !important; background-color: #f8d7da !important; }
+        .show-answer { color: red; font-size: 0.9em; font-weight: bold; margin-top: 5px; }
+        .highlight-match { text-decoration: underline wavy red; text-underline-offset: 2px; }
+        .word-example { margin-top: 6px; padding: 7px; background: #f8f9fa; border-radius: 8px; display: flex; align-items: flex-start; gap: 8px; }
+        .word-example ruby { ruby-position: over; line-height: 2.1; }
+        .word-example rt { font-size: 0.72em; color: #dc3545; }
+        .sticky-tools { position: sticky; top: 0; z-index: 5; background: white; padding-bottom: 10px; }
+        .small-help { font-size: .88rem; color: #666; }
+        .badge-topic { cursor: pointer; user-select: none; }
+        @media (max-width: 768px) {
+            .container { padding: 14px; }
+            #wordTable { font-size: 14px; }
+            th:nth-child(3), td:nth-child(3), th:nth-child(4), td:nth-child(4) { min-width: 72px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="sticky-tools">
+        <h2 class="mb-1">Sổ tay Tiếng Trung</h2>
+        <div id="libraryStatus" class="small-help mb-3">Đang nạp thư viện...</div>
+    </div>
+
+    <div id="inputArea">
+        <div class="p-3 border rounded mb-3" style="background:var(--soft)">
+            <label class="fw-bold">Nạp thư viện HSK / CEDICT / JSON</label>
+            <input type="file" id="libraryFile" class="form-control mt-2" accept=".json,.txt,.csv,.xlsx,.xls" onchange="importLibraryFile(event)">
+            <div class="small-help mt-2">
+                Hỗ trợ TXT dạng: 我,你,他... hoặc JSON dạng fullLibrary/hskData. File nạp vào sẽ lưu trong trình duyệt.
+            </div>
+            <div class="d-flex flex-wrap gap-2 mt-2">
+                <button class="btn btn-outline-primary btn-sm" onclick="downloadLibraryTemplate()">Tải mẫu JSON</button>
+                <button class="btn btn-outline-danger btn-sm" onclick="clearLibraryOnly()">Xóa thư viện đã nạp</button>
+            </div>
+        </div>
+
+        <textarea id="wordInput" class="form-control" rows="3" placeholder="Nhập chữ Hán, pinyin hoặc nghĩa tiếng Việt. Có thể nhập nhiều từ, cách nhau bằng dấu phẩy."></textarea>
+        <button class="btn btn-primary mt-2 w-100" onclick="processAllWords()">Tra & Thêm từ</button>
+
+        <div class="row g-3 mt-1">
+            <div class="col-md-6">
+                <div class="p-3 bg-secondary bg-opacity-10 border rounded h-100">
+                    <label class="fw-bold">Thêm từ ngẫu nhiên:</label>
+                    <div class="input-group mt-2">
+                        <input type="number" id="randomCount" class="form-control" value="5" min="1">
+                        <button class="btn btn-info" onclick="addRandomWords()">Thêm ngay</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="p-3 bg-primary bg-opacity-10 border rounded h-100">
+                    <label class="fw-bold">Thêm từ theo chủ đề:</label>
+                    <div class="row g-2 mt-2">
+                        <div class="col-8"><input type="text" id="topicInput" class="form-control" placeholder="VD: hsk1, hsk2, common"></div>
+                        <div class="col-4"><input type="number" id="topicCount" class="form-control" value="5" min="1"></div>
+                    </div>
+                    <button class="btn btn-primary w-100 mt-2" onclick="addByTopic()">Thêm theo chủ đề</button>
+                    <div id="topicList" class="small-help mt-2"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-3 p-3 bg-light border rounded">
+            <label class="fw-bold">Chế độ kiểm tra:</label>
+            <div class="input-group mt-2">
+                <select id="quizMode" class="form-select">
+                    <option value="zh-vi">Trung → Việt</option>
+                    <option value="vi-zh">Việt → Trung / Pinyin</option>
+                </select>
+                <button class="btn btn-warning" onclick="startQuiz()">Bắt đầu</button>
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <label>Tốc độ đọc:</label>
+            <select id="speechRate" class="form-select" style="width: 250px; max-width:100%;">
+                <option value="0.2">Ơ sao chậm thế? (0.2x)</option>
+                <option value="0.5">Rất chậm (0.5x)</option>
+                <option value="0.75">Chậm (0.75x)</option>
+                <option value="1" selected>Bình thường (1x)</option>
+                <option value="1.5">Nhanh (1.5x)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button class="btn btn-success flex-grow-1" onclick="exportToExcel()">Xuất Excel</button>
+        <button class="btn btn-outline-secondary flex-grow-1" onclick="exportVocabJson()">Xuất JSON</button>
+        <button class="btn btn-danger flex-grow-1" onclick="clearAll()">Xóa sổ tay</button>
+    </div>
+
+    <div class="table-responsive mt-4">
+        <table class="table table-bordered table-hover align-middle" id="wordTable">
+            <thead class="table-dark">
+            <tr>
+                <th>Chữ Hán</th>
+                <th>Pinyin</th>
+                <th>Phát âm</th>
+                <th>Loại từ</th>
+                <th>Nghĩa / Ví dụ</th>
+            </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="quizSection" style="display:none;">
+        <h4>Bài kiểm tra từ vựng</h4>
+        <div id="quizForm" class="mt-3"></div>
+        <button class="btn btn-primary mt-3" onclick="checkQuiz()">Kiểm tra</button>
+        <button class="btn btn-secondary mt-3" onclick="exitQuiz()">Quay lại</button>
+        <div id="quizResult" class="mt-3 h4"></div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="./hskJson/data.js" onerror="console.warn('Không tìm thấy ./hskJson/data.js, dùng thư viện trong localStorage hoặc thư viện mẫu.')"></script>
+<script>
+let lastQuery = "";
+let wordToDelete = null;
+let vocabData = safeJsonParse(localStorage.getItem('myChineseVocab'), []);
+let appLibrary = readExternalLibrary() || safeJsonParse(localStorage.getItem('myChineseLibrary'), null) || getDemoLibrary();
+
+window.addEventListener('load', () => {
+    normalizeFullLibrary();
+    renderTable();
+    updateLibraryStatus();
+});
+
+function safeJsonParse(text, fallback) {
+    try { return text ? JSON.parse(text) : fallback; } catch { return fallback; }
+}
+
+function readExternalLibrary() {
+    try { if (typeof fullLibrary !== 'undefined') return fullLibrary; } catch {}
+    try { if (typeof hskData !== 'undefined') return hskData; } catch {}
+    return window.fullLibrary || window.hskData || null;
+}
+
+function showModal(message) {
+    document.getElementById('modalMessage').textContent = message;
+    new bootstrap.Modal(document.getElementById('messageModal')).show();
+}
+
+function escapeHtml(value = "") {
+    return String(value).replace(/[&<>'"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[s]));
+}
+
+function escapeRegExp(value = "") {
+    return String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function highlight(text) {
+    const raw = String(text ?? "");
+    if (!lastQuery) return escapeHtml(raw);
+    const q = escapeRegExp(lastQuery.trim());
+    if (!q) return escapeHtml(raw);
+    return escapeHtml(raw).replace(new RegExp(`(${q})`, 'gi'), '<span class="highlight-match">$1</span>');
+}
+
+function getAllWords() {
+    return Object.values(appLibrary || {}).flat().filter(Boolean);
+}
+
+function normalizeEntry(item, topic = "common") {
+    if (typeof item === 'string') item = { word: item };
+    const word = String(item.word || item.词 || item.hanzi || item.chinese || item.zh || '').trim();
+    if (!word) return null;
+    const pinyin = String(item.pinyin || item.py || '').trim() || getPinyin(word);
+    return {
+        word,
+        pinyin,
+        meaning: String(item.meaning || item.vn || item.vietnamese || item.definition || item.mean || '').trim() || 'Chưa có nghĩa',
+        fromType: String(item.fromType || item.pos || item.type || item.loaiTu || '').trim() || '-',
+        example: String(item.example || item.sentence || '').trim(),
+        examplePinyin: String(item.examplePinyin || '').trim(),
+        trans: String(item.trans || item.translation || '').trim(),
+        topic: String(item.topic || topic).toLowerCase()
+    };
+}
+
+function normalizeFullLibrary() {
+    const fixed = {};
+    Object.entries(appLibrary || {}).forEach(([topic, list]) => {
+        if (!Array.isArray(list)) return;
+        fixed[topic.toLowerCase()] = [];
+        const seen = new Set();
+        list.forEach(item => {
+            const obj = normalizeEntry(item, topic);
+            if (!obj || seen.has(obj.word)) return;
+            seen.add(obj.word);
+            fixed[topic.toLowerCase()].push(obj);
+        });
+    });
+    appLibrary = fixed;
+}
+
+function saveLibrary() {
+    localStorage.setItem('myChineseLibrary', JSON.stringify(appLibrary));
+    updateLibraryStatus();
+}
+
+function updateLibraryStatus() {
+    const topics = Object.keys(appLibrary || {});
+    const total = getAllWords().length;
+    document.getElementById('libraryStatus').textContent = `Thư viện hiện có ${total} từ / ${topics.length} chủ đề. Sổ tay của bạn có ${vocabData.length} từ.`;
+    document.getElementById('topicList').innerHTML = topics.length
+        ? `Chủ đề: ${topics.map(t => `<span class="badge text-bg-light border badge-topic me-1" onclick="document.getElementById('topicInput').value='${escapeHtml(t)}'">${escapeHtml(t)}</span>`).join('')}`
+        : 'Chưa có chủ đề nào.';
+}
+
+function addFromLibrary(item) {
+    const obj = normalizeEntry(item, item.topic || 'common');
+    if (!obj) return false;
+    if (vocabData.find(i => i.word === obj.word)) return false;
+    vocabData.push(obj);
+    renderRow(obj);
+    return true;
+}
+
+function addRandomWords() {
+    const count = Math.max(1, parseInt(document.getElementById("randomCount").value) || 1);
+    const allWords = getAllWords();
+    if (!allWords.length) return showModal('Chưa có thư viện từ. Hãy nạp file HSK/JSON trước.');
+    const shuffled = [...allWords].sort(() => 0.5 - Math.random());
+    let added = 0;
+    for (const item of shuffled) {
+        if (added >= count) break;
+        if (addFromLibrary(item)) added++;
+    }
+    localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
+    updateLibraryStatus();
+    showModal(added ? `Đã thêm ${added} từ ngẫu nhiên.` : 'Không thêm được từ mới vì các từ đã có trong sổ tay.');
+}
+
+function addByTopic() {
+    const topic = document.getElementById("topicInput").value.trim().toLowerCase();
+    const count = Math.max(1, parseInt(document.getElementById("topicCount").value) || 1);
+    if (!topic) return showModal('Vui lòng nhập chủ đề, ví dụ: hsk1.');
+    if (!appLibrary[topic]) return showModal(`Không tìm thấy chủ đề "${topic}".`);
+    const shuffled = [...appLibrary[topic]].sort(() => 0.5 - Math.random());
+    let added = 0;
+    for (const item of shuffled) {
+        if (added >= count) break;
+        if (addFromLibrary(item)) added++;
+    }
+    localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
+    updateLibraryStatus();
+    showModal(added ? `Đã thêm ${added} từ từ chủ đề ${topic}.` : 'Các từ trong chủ đề này đã được thêm hết rồi.');
+}
+
+function renderRow(obj) {
+    const tbody = document.querySelector("#wordTable tbody");
+    const row = tbody.insertRow();
+    row.style.cursor = "context-menu";
+    row.oncontextmenu = (e) => {
+        e.preventDefault();
+        wordToDelete = obj.word;
+        document.getElementById('deleteModalMessage').textContent = `Bạn có chắc muốn xóa từ "${obj.word}" không?`;
+        new bootstrap.Modal(document.getElementById('messageModal2')).show();
+    };
+
+    row.insertCell(0).innerHTML = highlight(obj.word);
+    row.insertCell(1).innerHTML = highlight(obj.pinyin || getPinyin(obj.word));
+    row.insertCell(2).innerHTML = `<button class="btn btn-audio" onclick="speakChinese('${escapeHtml(obj.word)}')">🔊</button>`;
+    row.insertCell(3).textContent = obj.fromType || "-";
+
+    const exampleText = obj.example || "";
+    const examplePinyin = obj.examplePinyin || (exampleText ? getPinyin(exampleText) : "");
+    const safeWordRegex = new RegExp(escapeRegExp(obj.word), 'g');
+    const highlightedExample = escapeHtml(exampleText).replace(safeWordRegex, `<span style="color:red;font-weight:bold;">${escapeHtml(obj.word)}</span>`);
+
+    row.insertCell(4).innerHTML = `
+        <div>${highlight(obj.meaning)}</div>
+        ${exampleText ? `
+            <div class="word-example">
+                <button class="btn btn-audio" style="font-size:10px;padding:2px 5px;" onclick="speakChinese('${escapeHtml(exampleText)}')">🔊</button>
+                <span><ruby>${highlightedExample}<rt>${escapeHtml(examplePinyin)}</rt></ruby></span>
+            </div>` : ""}
+        ${obj.trans ? `<div style="font-size:0.85em;color:#777;margin-top:4px;">${highlight(obj.trans)}</div>` : ""}
+    `;
+}
+
+function renderTable() {
+    document.querySelector("#wordTable tbody").innerHTML = "";
+    vocabData.forEach(item => renderRow(item));
+    updateLibraryStatus();
+}
+
+function speakChinese(text) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'zh-CN';
+    u.rate = parseFloat(document.getElementById("speechRate").value || 1);
+    window.speechSynthesis.speak(u);
+}
+
+function processAllWords() {
+    const input = document.getElementById("wordInput");
+    const query = input.value.trim();
+    if (!query) return showModal("Vui lòng nhập từ!");
+    const allWords = getAllWords();
+    if (!allWords.length) return showModal('Chưa có thư viện từ. Hãy nạp file HSK/JSON trước.');
+
+    lastQuery = query.split(/[,，\n]/)[0].trim().toLowerCase();
+    const searchTerms = query.split(/[,，\n]/).map(x => x.trim().toLowerCase()).filter(Boolean);
+    let addedCount = 0;
+    let foundCount = 0;
+
+    searchTerms.forEach(q => {
+        const matches = allWords.filter(item => {
+            const data = [item.word, item.pinyin, item.meaning, item.fromType, item.example, item.trans].join(' ').toLowerCase();
+            return data.includes(q);
+        });
+        foundCount += matches.length;
+        matches.forEach(item => {
+            if (!vocabData.find(i => i.word === item.word)) {
+                vocabData.push(item);
+                addedCount++;
+            }
+        });
+    });
+
+    localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
+    renderTable();
+    showModal(`Tìm thấy ${foundCount} kết quả. Đã thêm ${addedCount} từ mới.`);
+    input.value = "";
+}
+
+function startQuiz() {
+    if (vocabData.length === 0) return showModal("Vui lòng thêm từ trước!");
+    const mode = document.getElementById("quizMode").value;
+    const quizForm = document.getElementById("quizForm");
+    quizForm.innerHTML = "";
+    document.getElementById("inputArea").style.display = "none";
+    document.getElementById("wordTable").parentElement.style.display = "none";
+    document.getElementById("quizSection").style.display = "block";
+
+    vocabData.forEach((item, index) => {
+        const question = mode === "zh-vi" ? item.word : item.meaning;
+        const div = document.createElement("div");
+        div.className = "mb-3";
+        div.innerHTML = `
+            <label class="form-label"><b>${index + 1}. ${escapeHtml(question)}</b></label>
+            <input type="text" class="form-control quiz-ans"
+                data-correct-word="${escapeHtml((item.word || '').toLowerCase())}"
+                data-correct-pinyin="${escapeHtml((item.pinyin || '').toLowerCase())}"
+                data-correct-meaning="${escapeHtml((item.meaning || '').toLowerCase())}"
+                placeholder="Nhập đáp án...">`;
+        quizForm.appendChild(div);
+    });
+}
+
+function checkQuiz() {
+    let score = 0;
+    const mode = document.getElementById("quizMode").value;
+    document.querySelectorAll('.quiz-ans').forEach(input => {
+        const userAnswer = input.value.trim().toLowerCase();
+        const parent = input.parentElement;
+        parent.querySelector('.show-answer')?.remove();
+        const isCorrect = mode === "vi-zh"
+            ? userAnswer === input.dataset.correctWord || userAnswer === input.dataset.correctPinyin
+            : userAnswer === input.dataset.correctMeaning;
+        input.className = `form-control quiz-ans ${isCorrect ? 'correct-input' : 'wrong-input'}`;
+        if (isCorrect) score++;
+        else {
+            const msg = document.createElement("div");
+            msg.className = "show-answer";
+            msg.textContent = mode === "vi-zh"
+                ? `Đáp án: ${input.dataset.correctWord} (${input.dataset.correctPinyin})`
+                : `Đáp án: ${input.dataset.correctMeaning}`;
+            parent.appendChild(msg);
+        }
+    });
+    document.getElementById("quizResult").innerHTML = `<b>Kết quả: ${score}/${vocabData.length} đúng.</b>`;
+}
+
+function exitQuiz() {
+    document.getElementById("inputArea").style.display = "block";
+    document.getElementById("wordTable").parentElement.style.display = "block";
+    document.getElementById("quizSection").style.display = "none";
+}
+
+function confirmDelete() {
+    if (!wordToDelete) return;
+    vocabData = vocabData.filter(item => item.word !== wordToDelete);
+    localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
+    wordToDelete = null;
+    bootstrap.Modal.getInstance(document.getElementById('messageModal2'))?.hide();
+    renderTable();
+}
+
+function clearAll() {
+    if (!confirm('Xóa toàn bộ sổ tay từ vựng?')) return;
+    vocabData = [];
+    localStorage.removeItem('myChineseVocab');
+    renderTable();
+}
+
+function clearLibraryOnly() {
+    if (!confirm('Xóa thư viện HSK/JSON đã nạp trong trình duyệt?')) return;
+    localStorage.removeItem('myChineseLibrary');
+    appLibrary = getDemoLibrary();
+    normalizeFullLibrary();
+    updateLibraryStatus();
+}
+
+function exportToExcel() {
+    const ws = XLSX.utils.json_to_sheet(vocabData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "TuVungTrung");
+    XLSX.writeFile(wb, "TuVungTrung.xlsx");
+}
+
+function exportVocabJson() {
+    downloadText('TuVungTrung.json', JSON.stringify(vocabData, null, 2));
+}
+
+function downloadText(filename, content) {
+    const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function getPinyin(text) {
+    try { return pinyinPro.pinyin(text, { toneType: 'symbol' }); }
+    catch { return ''; }
+}
+
+async function importLibraryFile(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    try {
+        let data;
+        if (['xlsx','xls'].includes(ext)) {
+            const buf = await file.arrayBuffer();
+            const wb = XLSX.read(buf, { type: 'array' });
+            const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+            data = { import: rows };
+        } else {
+            const text = await file.text();
+            data = parseLibraryText(text, ext);
+        }
+        appLibrary = data;
+        normalizeFullLibrary();
+        saveLibrary();
+        showModal(`Đã nạp thư viện: ${getAllWords().length} từ.`);
+    } catch (err) {
+        console.error(err);
+        showModal('Không đọc được file. Hãy kiểm tra định dạng JSON/TXT/CSV/XLSX.');
+    } finally {
+        event.target.value = '';
+    }
+}
+
+function parseLibraryText(text, ext) {
+    const trimmed = text.trim();
+    if (!trimmed) return {};
+    if (ext === 'json' || trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        const obj = JSON.parse(trimmed);
+        if (Array.isArray(obj)) return { import: obj };
+        return obj.fullLibrary || obj.hskData || obj;
+    }
+    if (ext === 'csv') {
+        const wb = XLSX.read(trimmed, { type: 'string' });
+        const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+        return { import: rows };
+    }
+    const words = trimmed.split(/[,，\n\r\t ]+/).map(x => x.trim()).filter(Boolean);
+    return { import: words.map(word => ({ word, pinyin: getPinyin(word), meaning: 'Chưa có nghĩa', fromType: '-' })) };
+}
+
+function downloadLibraryTemplate() {
+    const template = {
+        hsk1: [
+            { word: '我', pinyin: 'wǒ', meaning: 'tôi', fromType: 'Đại từ', example: '我是学生。', examplePinyin: 'Wǒ shì xuésheng.', trans: 'Tôi là học sinh.' },
+            { word: '你', pinyin: 'nǐ', meaning: 'bạn', fromType: 'Đại từ', example: '你好吗？', examplePinyin: 'Nǐ hǎo ma?', trans: 'Bạn khỏe không?' }
+        ],
+        hsk2: []
+    };
+    downloadText('mau-thu-vien-hsk.json', JSON.stringify(template, null, 2));
+}
+
+function getDemoLibrary() {
+    return {
+        hsk1: [
+            { word: '我', pinyin: 'wǒ', meaning: 'tôi', fromType: 'Đại từ', example: '我是学生。', trans: 'Tôi là học sinh.' },
+            { word: '你', pinyin: 'nǐ', meaning: 'bạn', fromType: 'Đại từ', example: '你好吗？', trans: 'Bạn khỏe không?' },
+            { word: '他', pinyin: 'tā', meaning: 'anh ấy', fromType: 'Đại từ', example: '他是老师。', trans: 'Anh ấy là giáo viên.' },
+            { word: '超市', pinyin: 'chāoshì', meaning: 'siêu thị', fromType: 'Danh từ', example: '去超市买东西。', trans: 'Đi siêu thị mua đồ.' },
+            { word: '介绍', pinyin: 'jièshào', meaning: 'giới thiệu', fromType: 'Động từ/Danh từ', example: '我来介绍一下我的朋友。', trans: 'Để tôi giới thiệu bạn của tôi.' }
+        ]
+    };
+}
+
+Object.assign(window, {
+    addRandomWords, addByTopic, processAllWords, startQuiz, checkQuiz, exitQuiz,
+    confirmDelete, clearAll, clearLibraryOnly, exportToExcel, exportVocabJson,
+    importLibraryFile, downloadLibraryTemplate, speakChinese
+});
+
+</script>
+
+<div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Thông báo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body" id="modalMessage"></div>
+        <div class="modal-footer"><button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button></div>
+    </div></div>
+</div>
+
+<div class="modal fade" id="messageModal2" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Xác nhận xóa</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body" id="deleteModalMessage">Bạn chắc chắn muốn xóa dòng này?</div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+            <button type="button" class="btn btn-danger" onclick="confirmDelete()">Xóa</button>
+        </div>
+    </div></div>
+</div>
+</body>
+</html>
