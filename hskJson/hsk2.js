@@ -1763,4 +1763,4 @@ export const hsk2 = [
       "fromType": "Danh từ",
       "trans": "Đá bóng."
     }
-  ];
+];

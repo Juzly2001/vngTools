@@ -2699,4 +2699,4 @@ export const hsk1 = [
       "fromType": "Danh từ",
       "trans": "Hôm qua rất lạnh."
     }
-  ];
+];
