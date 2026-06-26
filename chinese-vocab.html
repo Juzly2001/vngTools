@@ -1030,7 +1030,7 @@
             .mobile-flip-card {
                 display: block;
                 width: 100%;
-                height: 238px;
+                height: 260px;
                 cursor: pointer;
                 perspective: 1200px;
                 -webkit-tap-highlight-color: transparent;
@@ -1096,6 +1096,24 @@
                 color: var(--primary);
                 font-size: 1.08rem;
                 font-weight: 750;
+            }
+
+            .mobile-type-badge {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: fit-content;
+                max-width: 100%;
+                margin-bottom: 14px;
+                padding: 5px 11px;
+                border-radius: 999px;
+                background: var(--primary-soft);
+                color: var(--primary);
+                border: 1px solid color-mix(in srgb, var(--primary) 24%, transparent);
+                font-size: .78rem;
+                font-weight: 850;
+                line-height: 1.2;
+                white-space: nowrap;
             }
 
             .mobile-meaning {
@@ -1768,6 +1786,7 @@
                     <div>
                         <div class="mobile-card-topline">
                             <div>
+                                <div class="mobile-type-badge">${obj.fromType || "-"}</div>
                                 <div class="mobile-word-main">${highlight(obj.word)}</div>
                                 <div class="mobile-pinyin">${highlight(obj.pinyin)}</div>
                             </div>
