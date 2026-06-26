@@ -450,10 +450,111 @@
             font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
         }
 
+
+
+        .quiz-listen-btn {
+            width: auto !important;
+            min-width: 170px;
+            height: 46px !important;
+            border-radius: 999px !important;
+            padding: 0 18px !important;
+            gap: 8px;
+            font-size: 1rem !important;
+            font-weight: 800;
+            white-space: nowrap;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        .quiz-listen-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .quiz-ans { margin-bottom: 0; }
         .correct-input { border: 2px solid #16a34a !important; background-color: rgba(22, 163, 74, .12) !important; }
         .wrong-input { border: 2px solid #dc2626 !important; background-color: rgba(220, 38, 38, .12) !important; }
         .show-answer { color: var(--danger); font-weight: 800; font-size: .95em; margin-top: 8px; }
+
+        .quiz-feedback-card {
+            margin-top: 18px;
+            padding: 18px 20px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            background: var(--table-row);
+            box-shadow: var(--shadow-card);
+            text-align: center;
+            animation: quizPop .28s ease;
+        }
+
+        .quiz-feedback-card.perfect {
+            border-color: rgba(22, 163, 74, .35);
+            background: linear-gradient(135deg, rgba(22, 163, 74, .14), var(--table-row));
+        }
+
+        .quiz-feedback-card.good {
+            border-color: rgba(37, 99, 235, .35);
+            background: linear-gradient(135deg, rgba(37, 99, 235, .12), var(--table-row));
+        }
+
+        .quiz-feedback-card.warning {
+            border-color: rgba(220, 38, 38, .35);
+            background: linear-gradient(135deg, rgba(220, 38, 38, .12), var(--table-row));
+        }
+
+        .quiz-feedback-icon {
+            font-size: 2.2rem;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .quiz-feedback-title {
+            font-size: 1.35rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .quiz-feedback-message {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.55;
+        }
+
+        .confetti-layer {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .confetti-piece {
+            position: absolute;
+            top: -20px;
+            width: 10px;
+            height: 16px;
+            border-radius: 3px;
+            opacity: .95;
+            animation-name: confettiFall;
+            animation-timing-function: linear;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes confettiFall {
+            0% { transform: translate3d(0, -10px, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate3d(var(--drift), 105vh, 0) rotate(720deg); opacity: 0; }
+        }
+
+        @keyframes quizPop {
+            from { opacity: 0; transform: translateY(10px) scale(.98); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
         #character-target-div { max-width: 100%; }
 
         body.dark-mode .modal-content {
@@ -761,6 +862,21 @@
             .quiz-hanzi {
                 font-size: 2.35rem;
             }
+
+            .quiz-listen-btn {
+                width: 100% !important;
+                min-width: 0;
+                height: 52px !important;
+                justify-content: center;
+                font-size: 1rem !important;
+            }
+
+            .quiz-listen-row {
+                width: 100%;
+                display: flex;
+                align-items: stretch;
+            }
+
 
             #character-target-div {
                 width: 280px !important;
@@ -1743,7 +1859,7 @@
             displayContent = `<b style="font-size:1.1rem;">${item.meaning}</b>`;
         } else if (mode === "listen") {
             // Chế độ nghe: Chỉ hiện nút phát âm
-            displayContent = `<button class="btn btn-audio" onclick="speakChinese('${item.word}')">🔊 Nghe phát âm</button>`;
+            displayContent = `<span class="quiz-listen-row"><button type="button" class="btn-audio quiz-listen-btn" onclick="speakChinese('${item.word}')">🔊 <span>Nghe phát âm</span></button></span>`;
         }
         
         let div = document.createElement("div");
@@ -1822,7 +1938,65 @@ function checkQuiz() {
         }
     });
     
-    document.getElementById("quizResult").innerHTML = `<b>Kết quả: ${score}/${total} đúng.</b>`;
+    showQuizFeedback(score, total);
+}
+
+function showQuizFeedback(score, total) {
+    const result = document.getElementById("quizResult");
+    if (!result) return;
+
+    const percent = total > 0 ? Math.round((score / total) * 100) : 0;
+    let type = "warning";
+    let icon = "⚠️";
+    let title = "Cần ôn lại nhé";
+    let message = `Bạn đúng ${score}/${total} câu (${percent}%). Đừng vội nản, hãy nghe lại và làm lại các từ sai một lần nữa.`;
+
+    if (score === total && total > 0) {
+        type = "perfect";
+        icon = "🎉";
+        title = "Xuất sắc! Đúng toàn bộ";
+        message = `Bạn đạt ${score}/${total} câu (${percent}%). Quá tuyệt vời, tiếp tục giữ phong độ này nhé!`;
+        launchConfetti();
+    } else if (percent > 50) {
+        type = "good";
+        icon = "💪";
+        title = "Làm tốt lắm!";
+        message = `Bạn đúng ${score}/${total} câu (${percent}%). Bạn đã vượt qua hơn một nửa rồi, chỉ cần ôn thêm một chút nữa là rất ổn.`;
+    }
+
+    result.innerHTML = `
+        <div class="quiz-feedback-card ${type}">
+            <div class="quiz-feedback-icon">${icon}</div>
+            <div class="quiz-feedback-title">${title}</div>
+            <div class="quiz-feedback-message">${message}</div>
+        </div>
+    `;
+}
+
+function launchConfetti() {
+    const oldLayer = document.querySelector(".confetti-layer");
+    if (oldLayer) oldLayer.remove();
+
+    const layer = document.createElement("div");
+    layer.className = "confetti-layer";
+    document.body.appendChild(layer);
+
+    const colors = ["#ef4444", "#f59e0b", "#22c55e", "#3b82f6", "#a855f7", "#ec4899"];
+    const count = window.innerWidth < 768 ? 70 : 120;
+
+    for (let i = 0; i < count; i++) {
+        const piece = document.createElement("span");
+        piece.className = "confetti-piece";
+        piece.style.left = Math.random() * 100 + "vw";
+        piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+        piece.style.animationDuration = (2.2 + Math.random() * 1.6) + "s";
+        piece.style.animationDelay = (Math.random() * .45) + "s";
+        piece.style.setProperty("--drift", (Math.random() * 240 - 120) + "px");
+        piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+        layer.appendChild(piece);
+    }
+
+    setTimeout(() => layer.remove(), 4300);
 }
 
         // Hàm tìm kiếm & thêm từ
