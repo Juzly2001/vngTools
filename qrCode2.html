@@ -431,9 +431,10 @@ button:active{
     </button>
 </div>
 
-<div class="input-check-container" style="margin-bottom:14px;">
+<div class="input-check-container" style="margin-bottom:14px; position:relative;">
     <input type="text" id="checkListInput" placeholder="Nhập mã cần đối chiếu (cách nhau bởi ,)" 
-           style="width:100%; padding:12px; border-radius:14px; border:1px solid #ccc;">
+           style="width:100%; padding:12px 40px 12px 14px; border-radius:14px; border:1px solid #ccc; box-sizing:border-box;">
+    <button id="clearCheckListBtn" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); border:none; background:transparent; font-size:18px; cursor:pointer; color:#999;">✕</button>
 </div>
 
 <div id="status">
@@ -480,17 +481,11 @@ function updateStatus() {
     status.innerText = scannedCodes.length ? `✅ Đã quét ${scannedCodes.length} mã` : "Chưa có mã nào";
 }
 
-// Logic Highlight Real-time
 checkListInput.addEventListener("input", function() {
-    const listCodes = this.value.split(',').map(c => c.trim()).filter(c => c !== "");
-    const items = document.querySelectorAll(".barcode-item");
-    items.forEach(item => {
-        const codeText = item.querySelector(".barcode-text").innerText.trim();
-        if (listCodes.includes(codeText)) {
-            item.classList.add("highlight");
-        } else {
-            item.classList.remove("highlight");
-        }
+    const list = this.value.split(',').map(c => c.trim()).filter(c => c !== "");
+    document.querySelectorAll(".barcode-item").forEach(item => {
+        const code = item.querySelector(".barcode-text").innerText.trim();
+        item.classList.toggle("highlight", list.includes(code));
     });
 });
 
@@ -503,82 +498,15 @@ function onScanSuccess(decodedText) {
 
     if (scannedCodes.find(x => x.code === decodedText)) return;
 
-    scannedCodes.push({ code: decodedText, tags: [] });
+    const newObj = { code: decodedText, tags: [] };
+    scannedCodes.push(newObj);
+    
     playBeep();
     vibratePhone();
-
-    const item = document.createElement("div");
-    item.className = "barcode-item";
     
-    // Kiểm tra ngay khi vừa quét
-    const currentList = checkListInput.value.split(',').map(c => c.trim());
-    if (currentList.includes(decodedText)) {
-        item.classList.add("highlight");
-    }
-
-    item.innerHTML = `
-        <div class="barcode-text">${decodedText}</div>
-        <div class="dropdown">
-            <button class="drop-btn">Chọn ID ▼</button>
-            <div class="dropdown-menu"><div class="groups-container"></div></div>
-        </div>
-        <div style="display:flex;gap:6px;flex:none;">
-            <button class="copy-line-btn">📋</button>
-            <button class="delete-btn">🗑</button>
-        </div>
-    `;
-
-    // Khởi tạo các thành phần dropdown
-    const dropdown = item.querySelector(".dropdown");
-    const dropBtn = item.querySelector(".drop-btn");
-    const menu = item.querySelector(".dropdown-menu");
-    const groupsContainer = item.querySelector(".groups-container");
-    const obj = scannedCodes.find(x => x.code === decodedText);
-
-    dropBtn.onclick = (e) => { e.stopPropagation(); menu.classList.toggle("show"); };
-    ["click", "touchstart", "touchmove"].forEach(ev => menu.addEventListener(ev, e => e.stopPropagation(), { passive: true }));
-
-    function createGroup(title, options = dropdownOptions) {
-        const panel = document.createElement("div");
-        panel.className = "action-panel";
-        panel.innerHTML = `<button class="action-toggle">${title}</button><div class="action-content">${options.map(x => `<label class="drop-item"><input type="checkbox" value="${x}"> ${x}</label>`).join("")}</div>`;
-        groupsContainer.append(panel);
-        const toggle = panel.querySelector(".action-toggle");
-        const content = panel.querySelector(".action-content");
-        toggle.onclick = (e) => { e.stopPropagation(); content.classList.toggle("show"); toggle.innerText = content.classList.contains("show") ? "− " + title.replace("+ ", "") : title; refreshChecks(); };
-    }
-
-    function refreshChecks() {
-        const checks = menu.querySelectorAll('input[type="checkbox"]');
-        checks.forEach(check => {
-            check.onchange = () => {
-                obj.tags = [...checks].filter(x => x.checked).map(x => x.value);
-                dropBtn.innerText = obj.tags.length ? "Đã chọn ▼" : "Chọn ID ▼";
-            };
-        });
-    }
-
-    createGroup("+ COD", dropdownOptions);
-    createGroup("+ Thao tác", actionOptions);
-
-    document.addEventListener("click", (e) => { if (!dropdown.contains(e.target)) menu.classList.remove("show"); });
-
-    item.querySelector(".copy-line-btn").onclick = async () => {
-        const text = obj.code + obj.tags.map(x => ` (${x})`).join("");
-        await navigator.clipboard.writeText(text);
-        const btn = item.querySelector(".copy-line-btn");
-        btn.innerText = "✓";
-        setTimeout(() => { btn.innerText = "📋"; }, 800);
-    };
-
-    item.querySelector(".delete-btn").onclick = () => {
-        scannedCodes = scannedCodes.filter(x => x.code !== decodedText);
-        item.remove();
-        updateStatus();
-    };
-
-    resultContainer.prepend(item);
+    renderItem(newObj);
     updateStatus();
+    saveData(); // Lưu khi quét mới
 }
 
 // Các sự kiện nút nhấn chính
@@ -620,6 +548,133 @@ document.getElementById("addManualBtn").onclick = () => {
         // Gọi hàm xử lý như khi quét thành công
         onScanSuccess(manualCode.trim());
     }
+};
+
+function renderItem(obj) {
+    const item = document.createElement("div");
+    item.className = "barcode-item";
+    
+    // Kiểm tra highlight dựa trên danh sách đối chiếu hiện tại
+    const currentList = checkListInput.value.split(',').map(c => c.trim());
+    if (currentList.includes(obj.code)) {
+        item.classList.add("highlight");
+    }
+
+    item.innerHTML = `
+        <div class="barcode-text">${obj.code}</div>
+        <div class="dropdown">
+            <button class="drop-btn">${obj.tags.length ? "Đã chọn ▼" : "Chọn ID ▼"}</button>
+            <div class="dropdown-menu"><div class="groups-container"></div></div>
+        </div>
+        <div style="display:flex;gap:6px;flex:none;">
+            <button class="copy-line-btn">📋</button>
+            <button class="delete-btn">🗑</button>
+        </div>
+    `;
+
+    const dropdown = item.querySelector(".dropdown");
+    const dropBtn = item.querySelector(".drop-btn");
+    const menu = item.querySelector(".dropdown-menu");
+    const groupsContainer = item.querySelector(".groups-container");
+
+    // Khởi tạo logic Dropdown
+    dropBtn.onclick = (e) => { e.stopPropagation(); menu.classList.toggle("show"); };
+    
+    function createGroup(title, options) {
+        const panel = document.createElement("div");
+        panel.className = "action-panel";
+        panel.innerHTML = `<button class="action-toggle">${title}</button><div class="action-content">${options.map(x => `<label class="drop-item"><input type="checkbox" value="${x}" ${obj.tags.includes(x) ? 'checked' : ''}> ${x}</label>`).join("")}</div>`;
+        groupsContainer.append(panel);
+        
+        const toggle = panel.querySelector(".action-toggle");
+        const content = panel.querySelector(".action-content");
+        toggle.onclick = (e) => { e.stopPropagation(); content.classList.toggle("show"); };
+    }
+
+    createGroup("+ COD", dropdownOptions);
+    createGroup("+ Thao tác", actionOptions);
+
+    // Xử lý sự kiện thay đổi checkbox
+    menu.addEventListener("change", (e) => {
+        if (e.target.type === "checkbox") {
+            const allChecks = menu.querySelectorAll('input[type="checkbox"]');
+            obj.tags = [...allChecks].filter(x => x.checked).map(x => x.value);
+            dropBtn.innerText = obj.tags.length ? "Đã chọn ▼" : "Chọn ID ▼";
+            saveData(); // Lưu khi thay đổi tag
+        }
+    });
+
+    item.querySelector(".copy-line-btn").onclick = async () => {
+        const text = obj.code + obj.tags.map(x => ` (${x})`).join("");
+        await navigator.clipboard.writeText(text);
+        const btn = item.querySelector(".copy-line-btn");
+        btn.innerText = "✓";
+        setTimeout(() => { btn.innerText = "📋"; }, 800);
+    };
+
+    item.querySelector(".delete-btn").onclick = () => {
+        scannedCodes = scannedCodes.filter(x => x.code !== obj.code);
+        item.remove();
+        updateStatus();
+        saveData(); // Lưu khi xóa
+    };
+
+    resultContainer.prepend(item);
+}
+
+// Hàm lưu
+function saveData() {
+    localStorage.setItem("hbp_scannedCodes", JSON.stringify(scannedCodes));
+}
+
+// Hàm tải khi load trang
+function loadData() {
+    const saved = localStorage.getItem("hbp_scannedCodes");
+    if (saved) {
+        const parsed = JSON.parse(saved);
+        scannedCodes = []; // Reset mảng tạm
+        parsed.reverse().forEach(itemData => { // Đảo ngược để giữ thứ tự cũ
+            scannedCodes.push(itemData);
+            renderItem(itemData);
+        });
+        updateStatus();
+    }
+}
+
+// Gọi hàm tải ngay khi khởi động
+loadData();
+
+// Đừng quên cập nhật hàm clearBtn
+clearBtn.onclick = () => { 
+    scannedCodes = []; 
+    localStorage.removeItem("hbp_scannedCodes");
+    resultContainer.innerHTML = ""; 
+    updateStatus(); 
+};
+
+// --- XỬ LÝ LƯU TRẠNG THÁI MÃ ĐỐI CHIẾU ---
+
+// 1. Tải dữ liệu mã đối chiếu khi mở lại trang
+const savedCheckList = localStorage.getItem("hbp_checkList");
+if (savedCheckList) {
+    checkListInput.value = savedCheckList;
+    // Kích hoạt sự kiện input để highlight lại các mã đã quét (nếu có)
+    checkListInput.dispatchEvent(new Event('input'));
+}
+
+// 2. Lưu dữ liệu mỗi khi người dùng gõ vào ô nhập
+checkListInput.addEventListener("input", function() {
+    localStorage.setItem("hbp_checkList", this.value);
+});
+
+const clearCheckListBtn = document.getElementById("clearCheckListBtn");
+
+// Sự kiện xóa nội dung
+clearCheckListBtn.onclick = () => {
+    checkListInput.value = "";
+    localStorage.removeItem("hbp_checkList"); // Xóa trong storage
+    checkListInput.dispatchEvent(new Event('input')); // Cập nhật lại giao diện highlight
+    checkListInput.focus();
 };
 </script>
 
