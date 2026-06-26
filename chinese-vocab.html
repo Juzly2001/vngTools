@@ -22,7 +22,25 @@
             text-decoration: underline red; /* Gạch chân lượn sóng màu đỏ */
             text-underline-offset: 2px; /* Khoảng cách giữa chữ và gạch chân */
         }
-        
+        /* Nút xóa sẽ ẩn đi, chỉ hiện khi di chuột vào dòng */
+        .delete-btn {
+            display: none;
+            cursor: pointer;
+            background: #ff4d4d;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            text-align: center;
+            line-height: 18px;
+            font-size: 14px;
+            position: absolute;
+            right: 5px;
+            top: 5px;
+        }
+        tr:hover .delete-btn {
+            display: block;
+        }
     </style>
 </head>
 
@@ -193,14 +211,6 @@
    function renderRow(obj) {
     let tbody = document.querySelector("#wordTable tbody");
     let row = tbody.insertRow();
-    
-    row.style.cursor = "context-menu";
-    row.oncontextmenu = function(e) {
-        e.preventDefault();
-        wordToDelete = obj.word;
-        document.getElementById('modalMessage').textContent = `Bạn có chắc muốn xóa từ "${obj.word}" không?`;
-        new bootstrap.Modal(document.getElementById('messageModal2')).show();
-    };
 
     const highlight = (text) => {
         if (!lastQuery || !text) return text;
@@ -221,20 +231,22 @@
     let examplePinyin = exampleText ? pinyinPro.pinyin(exampleText, { toneType: 'symbol' }) : "";
     
     let meaningCell = row.insertCell(4);
-   meaningCell.innerHTML = `
-    <div>${highlight(obj.meaning)}</div>
-    ${exampleText ? `
-        <div style="margin-top:5px; padding:5px; background:#f9f9f9; border-radius:5px; display: flex; align-items: center; gap: 8px;">
-            <button class="btn btn-audio" style="font-size:10px; padding:2px 5px;" onclick="speakChinese('${exampleText}')">🔊</button>
-            <span style="font-size:0.9em; color:#333;">
-                <ruby>
-                    ${highlightedExample}
-                    <rt style="font-size:0.8em; color:#dc3545;">${examplePinyin}</rt>
-                </ruby>
-            </span>
-        </div>` : ""}
-    ${obj.trans ? `<div style="font-size:0.8em; color:#888; margin-top:2px;">${highlight(obj.trans)}</div>` : ""}
-`;
+    meaningCell.style.position = "relative"; // Quan trọng để nút xóa bám theo ô này
+    meaningCell.innerHTML = `
+        <div style="padding-right: 25px;">
+            <div>${highlight(obj.meaning)}</div>
+            ${exampleText ? `
+                <div style="margin-top:5px; padding:5px; background:#f9f9f9; border-radius:5px; display: flex; align-items: center; gap: 8px;">
+                    <button class="btn btn-audio" style="font-size:10px; padding:2px 5px;" onclick="speakChinese('${exampleText}')">🔊</button>
+                    <span style="font-size:0.9em; color:#333;">
+                        <ruby>${highlightedExample}<rt style="font-size:0.8em; color:#dc3545;">${examplePinyin}</rt></ruby>
+                    </span>
+                </div>` : ""}
+            ${obj.trans ? `<div style="font-size:0.8em; color:#888; margin-top:2px;">${highlight(obj.trans)}</div>` : ""}
+        </div>
+        <!-- Nút xóa nằm ở góc phải ô nghĩa -->
+        <span class="delete-btn" onclick="deleteWord('${obj.word}')">×</span>
+    `;
 }
         function speakChinese(text) {
             const u = new SpeechSynthesisUtterance(text);
@@ -336,13 +348,15 @@
     
         searchTerms.forEach(term => {
             let q = term.trim().toLowerCase();
-            let matches = allWords.filter(item => 
-                item.word.toLowerCase().includes(q) || 
-                item.pinyin.toLowerCase().includes(q) || 
+            let qNoTone = removeTone(q);
+            let matches = allWords.filter(item => {
+                let pinyinNoTone = removeTone(item.pinyin); // Chuẩn hóa Pinyin của từ
+                return item.word.toLowerCase().includes(q) || 
+                pinyinNoTone.includes(qNoTone) || // So sánh không dấu
                 item.meaning.toLowerCase().includes(q) ||
                 (item.example && item.example.toLowerCase().includes(q)) ||
-                (item.trans && item.trans.toLowerCase().includes(q))
-            );
+                (item.trans && item.trans.toLowerCase().includes(q));
+            });
     
             matches.forEach(item => {
                 if (!vocabData.find(i => i.word === item.word)) {
@@ -375,14 +389,37 @@
         vocabData.forEach(item => renderRow(item));
     }
     
-        function confirmDelete() {
-        if (wordToDelete) {
+    // Biến tạm để lưu từ cần xóa
+    let wordPendingDelete = null;
+
+    // Sửa lại hàm này
+    function deleteWord(word) {
+        wordPendingDelete = word; // Lưu từ vào biến tạm
+
+        document.querySelector('#messageModal2 .modal-body p').textContent = `Bạn muốn xóa dòng "${word}" này?`;
+
+        let myModal = new bootstrap.Modal(document.getElementById('messageModal2'));
+        myModal.show();
+    }
+
+    // Hàm này được gọi khi nhấn nút "Xóa" trong Modal
+    function confirmDelete() {
+        if (wordPendingDelete) {
             // Xóa khỏi mảng dữ liệu
-            vocabData = vocabData.filter(item => item.word !== wordToDelete);
+            vocabData = vocabData.filter(item => item.word !== wordPendingDelete);
+            // Lưu lại vào LocalStorage
             localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
             
-            // Tải lại trang để cập nhật bảng (hoặc viết code xóa dòng cụ thể)
-            location.reload(); 
+            // Vẽ lại bảng
+            renderTable(); 
+            
+            // Đóng Modal
+            let modalEl = document.getElementById('messageModal2');
+            let modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            // Reset biến tạm
+            wordPendingDelete = null;
         }
     }
 
@@ -392,6 +429,17 @@
         return pinyinPro.pinyin(text, { toneType: 'symbol' });
     }
     
+
+    function removeTone(str) {
+        if (!str) return "";
+        return str.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "") // Loại bỏ các dấu thanh
+            .replace(/[āáǎàēéěèīíǐìōóǒòūúǔùǖǘǚǜ]/g, (match) => {
+                const map = { 'ā':'a','á':'a','ǎ':'a','à':'a', 'ē':'e','é':'e','ě':'e','è':'e', 'ī':'i','í':'i','ǐ':'i','ì':'i', 'ō':'o','ó':'o','ǒ':'o','ò':'o', 'ū':'u','ú':'u','ǔ':'u','ù':'u', 'ǖ':'u','ǘ':'u','ǚ':'u','ǜ':'u' };
+                return map[match] || match;
+            });
+    }
     </script>
 
     <!-- Modal thông báo -->
