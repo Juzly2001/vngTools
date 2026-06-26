@@ -11,6 +11,7 @@ import { logistics } from './logistics.js';
 import { eCommerce } from './eCommerce .js';
 import { technology } from './technology.js';
 import { animal } from './animal.js';
+import { items } from './items.js';
 const fullLibrary = {
   hsk1,
   hsk2,
@@ -25,6 +26,8 @@ const fullLibrary = {
   eCommerce,
   technology,
   animal,
+  items,
+  
   "cong_nghe_lap_trinh": [
     {
       "word": "电脑",
