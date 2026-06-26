@@ -1176,9 +1176,22 @@
                 position: sticky;
                 top: 76px;
                 z-index: 18;
-                overflow: hidden;
-                max-height: 760px;
+                max-height: calc(100dvh - 92px);
+                overflow-y: auto;
+                overflow-x: hidden;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
+                padding-bottom: 12px;
                 transition: max-height .35s ease, padding .28s ease, border-radius .28s ease, box-shadow .28s ease;
+            }
+
+            #inputArea::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            #inputArea::-webkit-scrollbar-thumb {
+                background: color-mix(in srgb, var(--text-muted) 36%, transparent);
+                border-radius: 999px;
             }
 
             #inputArea::before { content: none !important; display: none !important; }
@@ -1186,13 +1199,13 @@
             #inputArea .card {
                 transform: translateY(0);
                 opacity: 1;
-                max-height: 220px;
-                overflow: hidden;
+                overflow: visible;
                 transition: transform .28s ease, opacity .22s ease, max-height .32s ease, margin .24s ease, padding .24s ease, border .24s ease;
             }
 
             body.mobile-controls-collapsed #inputArea {
                 max-height: 64px;
+                overflow: hidden;
                 padding: 8px 10px !important;
                 border-radius: 999px;
                 box-shadow: 0 10px 26px rgba(15,23,42,.12);
@@ -1449,6 +1462,11 @@
             const btn = document.getElementById("mobilePanelToggle");
             if (btn) btn.textContent = isCollapsed ? "Mở ra ↓" : "Thu lên ↑";
             localStorage.setItem("chineseVocabMobileControlsCollapsed", isCollapsed ? "1" : "0");
+
+            if (!isCollapsed && window.matchMedia("(max-width: 768px)").matches) {
+                const panel = document.getElementById("inputArea");
+                if (panel) panel.scrollTop = 0;
+            }
         }
 
         function toggleMobileControls() {
