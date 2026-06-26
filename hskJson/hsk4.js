@@ -3171,10 +3171,10 @@ export const hsk4 = [
       "word": "速度",
       "pinyin": "sùdù",
       "meaning": "tốc độ",
-      "example": "他跑步的~真快!",
-      "examplePinyin": "",
+      "example": "我喜欢骑摩托车，因为速度很快。",
+      "examplePinyin": "Wǒ xǐhuān qí mótuōchē, yīnwèi sùdù hěn kuài.",
       "fromType": "n.",
-      "trans": "Tốc độ chạy bộ của anh ấy thật nhanh!"
+      "trans": "Tôi thích đi xe máy vì tốc độ rất nhanh."
     },
     {
       "word": "塑料袋",
@@ -3495,10 +3495,10 @@ export const hsk4 = [
       "word": "温度",
       "pinyin": "wēndù",
       "meaning": "nhiệt độ",
-      "example": "进入冬季,~越来越低。",
+      "example": "今天的温度很高，非常适合去海边游泳。",
       "examplePinyin": "",
       "fromType": "n.",
-      "trans": "Bước vào mùa đông, nhiệt độ càng ngày càng thấp."
+      "trans": "Nhiệt độ hôm nay rất cao, rất thích hợp để đi bơi ở biển."
     },
     {
       "word": "文章",
@@ -4161,10 +4161,10 @@ export const hsk4 = [
       "word": "有趣",
       "pinyin": "yǒuqù",
       "meaning": "thú vị",
-      "example": "你讲的这个故事真~!",
-      "examplePinyin": "",
+      "example": "他是一个非常有趣的人。",
+      "examplePinyin": "Tā shì yīgè fēicháng yǒuqù de rén.",
       "fromType": "adj.",
-      "trans": "Câu chuyện này bạn kể thật thú vị!"
+      "trans": "Anh ấy là một người rất thú vị."
     },
     {
       "word": "于是",
