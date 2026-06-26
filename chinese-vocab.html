@@ -713,6 +713,10 @@
             .app-title { font-size: 1.3rem; }
             .app-subtitle { display: none; }
 
+            .block-excel {
+                display: none !important;
+            }
+
             .workspace {
                 gap: 8px;
             }
@@ -1446,7 +1450,7 @@
 
             <div class="card p-3">
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success flex-fill" onclick="exportToExcel()">Xuất Excel</button>
+                    <button class="btn btn-success flex-fill block-excel" onclick="exportToExcel()">Xuất Excel</button>
                     <button class="btn btn-danger flex-fill" onclick="clearAll()">Xóa hết</button>
                 </div>
             </div>
