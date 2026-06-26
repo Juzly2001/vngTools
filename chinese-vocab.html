@@ -450,6 +450,31 @@
             font-family: "Noto Sans SC", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
         }
 
+
+
+        .quiz-listen-btn {
+            width: auto !important;
+            min-width: 170px;
+            height: 46px !important;
+            border-radius: 999px !important;
+            padding: 0 18px !important;
+            gap: 8px;
+            font-size: 1rem !important;
+            font-weight: 800;
+            white-space: nowrap;
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+            line-height: 1;
+        }
+
+        .quiz-listen-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+        }
+
         .quiz-ans { margin-bottom: 0; }
         .correct-input { border: 2px solid #16a34a !important; background-color: rgba(22, 163, 74, .12) !important; }
         .wrong-input { border: 2px solid #dc2626 !important; background-color: rgba(220, 38, 38, .12) !important; }
@@ -621,6 +646,10 @@
                 flex-basis: min(330px, calc(100vw - 62px));
             }
 
+            .block-excel {
+                display: none !important;
+            }
+
             .workspace.sidebar-collapsed #inputArea {
                 margin-right: calc(-1 * min(330px, calc(100vw - 62px)));
             }
@@ -761,6 +790,21 @@
             .quiz-hanzi {
                 font-size: 2.35rem;
             }
+
+            .quiz-listen-btn {
+                width: 100% !important;
+                min-width: 0;
+                height: 52px !important;
+                justify-content: center;
+                font-size: 1rem !important;
+            }
+
+            .quiz-listen-row {
+                width: 100%;
+                display: flex;
+                align-items: stretch;
+            }
+
 
             #character-target-div {
                 width: 280px !important;
@@ -1330,7 +1374,7 @@
 
             <div class="card p-3">
                 <div class="d-flex gap-2">
-                    <button class="btn btn-success flex-fill" onclick="exportToExcel()">Xuất Excel</button>
+                    <button class="btn btn-success flex-fill block-excel" onclick="exportToExcel()">Xuất Excel</button>
                     <button class="btn btn-danger flex-fill" onclick="clearAll()">Xóa hết</button>
                 </div>
             </div>
@@ -1743,7 +1787,7 @@
             displayContent = `<b style="font-size:1.1rem;">${item.meaning}</b>`;
         } else if (mode === "listen") {
             // Chế độ nghe: Chỉ hiện nút phát âm
-            displayContent = `<button class="btn btn-audio" onclick="speakChinese('${item.word}')">🔊 Nghe phát âm</button>`;
+            displayContent = `<span class="quiz-listen-row"><button type="button" class="btn-audio quiz-listen-btn" onclick="speakChinese('${item.word}')">🔊 <span>Nghe phát âm</span></button></span>`;
         }
         
         let div = document.createElement("div");
