@@ -1240,7 +1240,7 @@ body.light-mode .smart-item { background:#fff; }
     color: var(--text-main);
     background: transparent;
     border: 1px solid transparent;
-    font-size: 18px;
+    font-size: 12px;
 }
 .app-sidebar button span,
 .mobile-bottom-nav button span {
