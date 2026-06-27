@@ -1857,7 +1857,7 @@ function renderCommandPalette() {
     const quickActions = [
         { icon:'⌘', title:'Mở Command Palette', subtitle:'Thao tác nhanh', action:() => openCommandPalette() },
         { icon:'⚠️', title:'Xem việc quan trọng hôm nay', subtitle:'Dashboard', action:() => { closeModal('commandPaletteModal'); showTodayImportantTasks(); } },
-        { icon:'🗑', title:'Mở thùng rác', subtitle:'Khôi phục mục đã xóa', action:() => { closeModal('commandPaletteModal'); openTrashModal(); } },
+        { icon:'🗑️', title:'Mở thùng rác', subtitle:'Khôi phục mục đã xóa', action:() => { closeModal('commandPaletteModal'); openTrashModal(); } },
         { icon:'📆', title:'Mở Calendar View', subtitle:'Xem lịch theo tháng', action:() => { closeModal('commandPaletteModal'); openCalendarModal(); } },
         { icon:'💾', title:'Mở Backup phiên bản', subtitle:'Khôi phục bản lưu cũ', action:() => { closeModal('commandPaletteModal'); openBackupModal(); } }
     ];
@@ -1927,7 +1927,7 @@ triggerDelete = function(type) {
     if (!group) return;
     const typeMap = { Group:'nhóm', Link:'link', Note:'ghi chú', Schedule:'lịch trình' };
     const label = type === 'Group' ? group.title : (group[`${type.toLowerCase()}s`]?.[state.activeIndex]?.title || group[`${type.toLowerCase()}s`]?.[state.activeIndex]?.name || 'mục này');
-    customConfirm(`Bạn có chắc chắn muốn xóa ${typeMap[type] || 'mục'} "${label}"?\nDữ liệu sẽ được chuyển vào thùng rác và có thể khôi phục.`, '🗑 Xác nhận xóa').then(ok => {
+    customConfirm(`Bạn có chắc chắn muốn xóa ${typeMap[type] || 'mục'} "${label}"?\nDữ liệu sẽ được chuyển vào thùng rác và có thể khôi phục.`, '🗑️ Xác nhận xóa').then(ok => {
         if (!ok) return;
         const trash = readJSONStore(TRASH_KEY, []);
         let payload = null;
@@ -2020,7 +2020,7 @@ function removeTrashItemAt(index) {
 }
 
 function clearTrashItems() {
-    customConfirm('Bạn có chắc muốn xóa sạch toàn bộ thùng rác? Thao tác này không thể khôi phục.', '🗑 Xóa sạch thùng rác').then(ok => {
+    customConfirm('Bạn có chắc muốn xóa sạch toàn bộ thùng rác? Thao tác này không thể khôi phục.', '🗑️ Xóa sạch thùng rác').then(ok => {
         if (!ok) return;
         writeJSONStore(TRASH_KEY, []);
         lastTrashSnapshot = null;
@@ -2140,31 +2140,110 @@ function changeCalendarMonth(offset) {
     renderCalendarView();
 }
 
+
+function getCalendarItemsForDay(year, month, day) {
+    const targetStart = new Date(year, month, day, 0, 0, 0);
+    const targetEnd = new Date(year, month, day, 23, 59, 59);
+    const items = [];
+
+    getVisibleSchedules().forEach(x => {
+        const start = new Date(`${x.sch.date || ''}T${x.sch.time || '00:00'}`);
+        const end = new Date(`${x.sch.endDate || x.sch.date || ''}T${x.sch.endTime || x.sch.time || '23:59'}`);
+        if (isNaN(start) || isNaN(end)) return;
+
+        if (start <= targetEnd && end >= targetStart) {
+            const activeDate = new Date(year, month, day, 0, 0, 0);
+            items.push({ ...x, activeDate, start, end });
+        }
+    });
+
+    return items.sort((a, b) => {
+        const ta = a.sch.time || '00:00';
+        const tb = b.sch.time || '00:00';
+        return ta.localeCompare(tb) || String(a.sch.title || '').localeCompare(String(b.sch.title || ''));
+    });
+}
+
+function openCalendarDayModal(year, month, day) {
+    const title = getEl('calendarDayTitle');
+    const body = getEl('calendarDayBody');
+    if (!title || !body) return;
+
+    const items = getCalendarItemsForDay(year, month, day);
+    const dateLabel = `${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year}`;
+    title.textContent = `📅 Ngày ${dateLabel}`;
+
+    if (!items.length) {
+        body.innerHTML = `<div class="calendar-day-empty">Không có lịch trong ngày này.</div>`;
+    } else {
+        body.innerHTML = `
+            <div class="calendar-day-count">${items.length} mốc lịch trong ngày</div>
+            <div class="calendar-day-timeline">
+                ${items.map(x => `
+                    <button class="calendar-day-timeline-item ${x.sch.important ? 'important' : ''}" onclick="openCalendarScheduleDetail('${x.group.id}', ${x.index})">
+                        <span class="calendar-day-time">${escapeHTML(x.sch.time || '--:--')}</span>
+                        <span class="calendar-day-dot"></span>
+                        <span class="calendar-day-info">
+                            <strong>${x.sch.important ? '⚠️ ' : ''}${escapeHTML(x.sch.title || 'Không tên')}</strong>
+                            <small>${escapeHTML(x.group.title || '')}${x.sch.content ? ' · ' + escapeHTML(String(x.sch.content).slice(0, 80)) : ''}</small>
+                        </span>
+                    </button>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    openModal('calendarDayModal');
+    const dayModal = getEl('calendarDayModal');
+    if (dayModal) dayModal.classList.add('modal-on-top');
+}
+
 function renderCalendarView() {
     const label = getEl('calendarMonthLabel');
     const grid = getEl('calendarGrid');
     if (!label || !grid) return;
+
     const y = currentCalendarDate.getFullYear();
     const m = currentCalendarDate.getMonth();
+    const today = new Date();
+
     label.textContent = `Tháng ${m + 1}/${y}`;
+
     const first = new Date(y, m, 1);
     const last = new Date(y, m + 1, 0);
     const startDay = first.getDay();
-    const schedules = getVisibleSchedules();
-    const byDay = {};
-    schedules.forEach(x => {
-        const sd = new Date((x.sch.endDate || x.sch.date) + 'T' + (x.sch.endTime || x.sch.time || '00:00'));
-        if (sd.getFullYear() === y && sd.getMonth() === m) {
-            const key = sd.getDate();
-            (byDay[key] ||= []).push(x);
-        }
-    });
-    let html = ['CN','T2','T3','T4','T5','T6','T7'].map(d => `<div class="calendar-weekday">${d}</div>`).join('');
-    for (let i = 0; i < startDay; i++) html += `<div class="calendar-cell muted"></div>`;
-    for (let day = 1; day <= last.getDate(); day++) {
-        const items = (byDay[day] || []).sort((a,b) => a.d - b.d).slice(0, 3);
-        html += `<div class="calendar-cell"><div class="calendar-day-number">${day}</div>${items.map(x => `<button class="calendar-event ${x.sch.important ? 'important' : ''}" onclick="openCalendarScheduleDetail('${x.group.id}', ${x.index})">${x.sch.important ? '⚠️' : '•'} ${escapeHTML(x.sch.title)}</button>`).join('')}${(byDay[day] || []).length > 3 ? `<small>+${byDay[day].length - 3} lịch</small>` : ''}</div>`;
+
+    let html = ['CN','T2','T3','T4','T5','T6','T7']
+        .map(d => `<div class="calendar-weekday">${d}</div>`)
+        .join('');
+
+    for (let i = 0; i < startDay; i++) {
+        html += `<div class="calendar-cell muted"></div>`;
     }
+
+    for (let day = 1; day <= last.getDate(); day++) {
+        const items = getCalendarItemsForDay(y, m, day);
+        const hasEvents = items.length > 0;
+        const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === day;
+
+        html += `
+            <div class="calendar-cell ${hasEvents ? 'has-events' : ''} ${isToday ? 'is-today' : ''}"
+                 onclick="openCalendarDayModal(${y}, ${m}, ${day})"
+                 title="${hasEvents ? `${items.length} lịch` : 'Không có lịch'}">
+                <div class="calendar-day-number">${day}</div>
+                ${hasEvents ? `<span class="calendar-mobile-count">${items.length}</span>` : ''}
+                <div class="calendar-events-wrap">
+                    ${items.map(x => `
+                        <button class="calendar-event ${x.sch.important ? 'important' : ''}"
+                            onclick="event.stopPropagation(); openCalendarScheduleDetail('${x.group.id}', ${x.index})">
+                            ${x.sch.important ? '⚠️' : '•'} ${escapeHTML(x.sch.title || 'Không tên')}
+                        </button>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    }
+
     grid.innerHTML = html;
 }
 

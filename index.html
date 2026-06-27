@@ -23,13 +23,13 @@
         <button onclick="scrollToSection('top'); toggleMobileSidebar(false)">🏠<span>Home</span></button>
         <button onclick="openSidebarPanel('favorites')">⭐<span>Favorites</span></button>
         <button onclick="openSidebarPanel('recent')">🕘<span>Recent</span></button>
-        <button onclick="openSidebarPanel('upcoming')">📅<span>Sắp tới</span></button>
-        <button onclick="openCommandPalette(); toggleMobileSidebar(false)">⚡<span>Tìm</span></button>
+        <button onclick="openSidebarPanel('upcoming')">📅<span>Upcoming</span></button>
+        <button onclick="openCommandPalette(); toggleMobileSidebar(false)">⚡<span>Find</span></button>
         <button onclick="openCalendarModal(); toggleMobileSidebar(false)">📆<span>Calendar</span></button>
         <button onclick="openBackupModal(); toggleMobileSidebar(false)">💾<span>Backup</span></button>
-        <button onclick="openTrashModal(); toggleMobileSidebar(false)">🗑<span>Trash</span></button>
-        <button id="themeBtn" onclick="toggleTheme()">💡<span>Sáng/Tối</span></button>
-        <button id="themeBtnCanvas" onclick="toggleThemeCanvas()">🌟<span>Hiệu ứng nền</span></button>
+        <button onclick="openTrashModal(); toggleMobileSidebar(false)">🗑️<span>Trash</span></button>
+        <button id="themeBtn" onclick="toggleTheme()">💡<span>Theme Toggle</span></button>
+        <button id="themeBtnCanvas" onclick="toggleThemeCanvas()">🌟<span>Toggle Visuals</span></button>
     </aside>
 
     <div class="container" id="top">
@@ -278,7 +278,7 @@
         <div class="modal-box trash-box">
             <div class="command-head redesigned-head trash-head">
                 <div>
-                    <span>🗑 Thùng rác</span>
+                    <span>🗑️ Thùng rác</span>
                     <small>Khôi phục từng nhóm, link, ghi chú hoặc lịch đã xóa</small>
                 </div>
                 <button class="modal-close-soft" onclick="closeModal('trashModal')">✕</button>
@@ -304,6 +304,20 @@
                 <button class="btn-secondary" onclick="changeCalendarMonth(1)">Tháng sau ›</button>
             </div>
             <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="calendarDayModal">
+        <div class="modal-box calendar-day-box">
+            <div class="command-head">
+                <div>
+                    <span id="calendarDayTitle">📅 Ngày</span>
+                    <small>Danh sách mốc lịch trong ngày</small>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('calendarDayModal')">✕</button>
+            </div>
+            <div id="calendarDayBody" class="calendar-day-body"></div>
         </div>
     </div>
 
