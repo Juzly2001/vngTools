@@ -202,7 +202,7 @@ function toggleTheme() {
     const isLight = document.body.classList.toggle('light-mode');
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
     const btn = getEl('themeBtn');
-    if (btn) btn.innerHTML = (isLight ? '🌙' : '💡') + '<span>Sáng/Tối</span>';
+    if (btn) btn.innerHTML = isLight ? '🌙' : '💡';
     if (isCanvasEnabled) initBackgroundObjects();
 }
 
@@ -220,7 +220,7 @@ function applyCanvasState() {
         canvas.style.display = 'block';
         resizeCanvas();
         if (!animationFrameId) animationFrameId = requestAnimationFrame(drawBackground);
-        if (btn) btn.innerHTML = '⭐<span>Hiệu ứng nền</span>';
+        if (btn) btn.innerHTML = '⭐';
     } else {
         canvas.style.display = 'none';
         if (animationFrameId) {
@@ -228,7 +228,7 @@ function applyCanvasState() {
             animationFrameId = null;
         }
         ctx?.clearRect(0, 0, canvas.width, canvas.height);
-        if (btn) btn.innerHTML = '🌟<span>Hiệu ứng nền</span>';
+        if (btn) btn.innerHTML = '🌟';
     }
 }
 
@@ -290,7 +290,6 @@ function closeModal(id) {
     const modal = getEl(id);
     if (modal) {
         modal.classList.remove('active');
-        modal.classList.remove('modal-on-top');
         if (id === 'alertModal') {
             document.querySelector('.modal-footer-excel')?.remove();
         }
@@ -330,117 +329,17 @@ function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
     });
 }
 
-
-function getScheduleEndDateTime(sch) {
-    return new Date(`${sch.endDate || sch.date || ''}T${sch.endTime || sch.time || '00:00'}`);
-}
-
-function isScheduleTodayImportant(sch) {
-    if (!sch || !sch.important) return false;
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const start = new Date(`${sch.date || ''}T00:00:00`);
-    const end = new Date(`${sch.endDate || sch.date || ''}T23:59:59`);
-    return !isNaN(start) && !isNaN(end) && today >= start && today <= end;
-}
-
-function getDashboardStats() {
-    return state.dashboardData.reduce((acc, group) => {
-        acc.groups += 1;
-        acc.links += group.links?.length || 0;
-        acc.notes += group.notes?.length || 0;
-        acc.schedules += group.schedules?.length || 0;
-        acc.todayImportant += (group.schedules || []).filter(isScheduleTodayImportant).length;
-        return acc;
-    }, { groups: 0, links: 0, notes: 0, schedules: 0, todayImportant: 0 });
-}
-
-function updateDashboardStats() {
-    const stats = getDashboardStats();
-    const setText = (id, value) => { const el = getEl(id); if (el) el.textContent = value; };
-    setText('statGroups', stats.groups);
-    setText('statLinks', stats.links);
-    setText('statNotes', stats.notes);
-    setText('statTodayImportant', stats.todayImportant);
-}
-
-function getDashboardKeyword() {
-    return (getEl('globalSearch')?.value || '').trim().toLowerCase();
-}
-
-function groupMatchesKeyword(group, keyword) {
-    if (!keyword) return true;
-    const chunks = [group.title, group.emoji, group.type, ...(group.tags || [])];
-    (group.links || []).forEach(item => chunks.push(item.name, item.url, item.emoji, ...(item.tags || [])));
-    (group.notes || []).forEach(item => chunks.push(item.title, item.content, item.emoji, ...(item.tags || [])));
-    (group.schedules || []).forEach(item => chunks.push(item.title, item.content, item.date, item.endDate, item.time, item.endTime, item.emoji, ...(item.tags || [])));
-    return chunks.filter(Boolean).join(' ').toLowerCase().includes(keyword);
-}
-
-function clearDashboardSearch() {
-    const input = getEl('globalSearch');
-    if (input) input.value = '';
-    renderDashboard();
-}
-
-function toggleAllGroups(shouldOpen = true) {
-    state.dashboardData.forEach(group => group.collapsed = !shouldOpen);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-    renderDashboard();
-}
-
-function toggleFavoriteGroup(groupId, event) {
-    event?.stopPropagation?.();
-    const group = getGroup(groupId);
-    if (!group) return;
-    group.favorite = !group.favorite;
-    saveData();
-}
-
-function getGroupCreatedValue(group) {
-    const idNumber = String(group?.id || '').match(/\d+/)?.[0];
-    return Number(idNumber || 0);
-}
-
-function sortGroupsForRender(groups) {
-    return [...groups].sort((a, b) => Number(Boolean(b.favorite)) - Number(Boolean(a.favorite)));
-}
-
-function applyAutoSortUI() {
-    const grid = getEl('groupsContainer');
-    grid?.classList.remove('auto-sort-layout');
-}
-function toggleAutoSortMode() {
-    isAutoSortMode = false;
-    localStorage.removeItem(AUTO_SORT_KEY);
-    renderDashboard();
-}
-
-function escapeHTML(value = '') {
-    return String(value).replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
-}
-
 function renderDashboard() {
     const container = getEl('groupsContainer'); 
     if (!container) return;
-    updateDashboardStats();
     container.innerHTML = '';
-    const keyword = getDashboardKeyword();
-    const groupsToRender = sortGroupsForRender(
-        [...state.dashboardData].filter(group => groupMatchesKeyword(group, keyword) && groupMatchesActiveTag(group))
-    );
-    applyAutoSortUI();
     
     if (state.dashboardData.length === 0) {
         container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-sub)">Chưa có nhóm nào cả.</p>`; 
         return;
     }
-    if (groupsToRender.length === 0) {
-        container.innerHTML = `<div class="empty-search-state">🔎 Không tìm thấy dữ liệu phù hợp.<br><button class="btn-secondary" onclick="clearDashboardSearch()">Xóa tìm kiếm</button></div>`;
-        return;
-    }
     
-    groupsToRender.forEach(group => {
+    state.dashboardData.forEach(group => {
         if (group.type === 'schedule' && group.schedules) {
             sortSchedulesSmart(group.schedules);
         }
@@ -463,13 +362,11 @@ function renderDashboard() {
         const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
         const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
         const isCollapsed = group.collapsed || false;
-        const safeTitle = escapeHTML(group.title || 'Không tên');
 
         groupCard.innerHTML = `
-            <div class="group-header" onclick="toggleCollapseGroup('${group.id}')">
-                <span class="group-title">${gEmoji}${safeTitle}</span>
-                <div class="group-header-actions">
-                    <button class="favorite-btn ${group.favorite ? 'active' : ''}" onclick="toggleFavoriteGroup('${group.id}', event)" title="Ghim nhóm yêu thích">${group.favorite ? '⭐' : '☆'}</button>
+            <div class="group-header" onclick="toggleCollapseGroup('${group.id}')" style="cursor: pointer; display: flex; justify-content: space-between; align-items: center;">
+                <span class="group-title">${gEmoji}${group.title}</span>
+                <div style="display: flex; align-items: center; gap: 6px;">
                     <span class="group-tag tag-${group.type}">${tags[group.type]}</span>
                     <span class="arrow-${group.id}" style="font-size: 10px; transition: transform 0.2s; display: inline-block; transform: ${isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)'}; color: var(--text-sub);">▼</span>
                 </div>
@@ -494,8 +391,8 @@ function renderDashboard() {
                     const lEmoji = (link.emoji && link.emoji !== "NONE") ? `<span>${link.emoji}</span> ` : '';
                     contentArea.innerHTML += `
                         <div class="item-wrapper" data-index="${idx}">
-                            <a href="${escapeHTML(link.url)}" target="_blank" class="link-button" oncontextmenu="openContextMenu(event, 'link', '${group.id}', ${idx})">
-                                ${lEmoji}${escapeHTML(link.name)}
+                            <a href="${link.url}" target="_blank" class="link-button" oncontextmenu="openContextMenu(event, 'link', '${group.id}', ${idx})">
+                                ${lEmoji}${link.name}
                             </a>
                         </div>`;
                 });
@@ -509,7 +406,7 @@ function renderDashboard() {
                     const item = document.createElement('div');
                     item.className = 'item-wrapper';
                     item.setAttribute('data-index', idx);
-                    item.innerHTML = `<div class="note-button" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})">${nEmoji}${escapeHTML(note.title || "Ghi chú")}</div>`;
+                    item.innerHTML = `<div class="note-button" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})">${nEmoji}${note.title || "Ghi chú"}</div>`;
                     item.querySelector('.note-button').onclick = () => showContentDetail(group.id, idx, 'note');
                     contentArea.appendChild(item);
                 });
@@ -557,7 +454,7 @@ function renderDashboard() {
                         <td class="schedule-date">${displayDate}</td>
                         <td class="schedule-date schedule-time" style="color:#38bdf8;font-weight:600">${dayOfWeek}</td>
                         <td class="schedule-countdown-cell" style="text-align:center;font-size:11px;font-weight:bold;font-family:monospace">⏳ Tính...</td>
-                        <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${escapeHTML(sch.title || "")}</td>
+                        <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${sch.title || ""}</td>
                     `;
                     tbody.appendChild(row);
                 });
@@ -601,13 +498,11 @@ function openGroupModal(editGroupId = false, defaultType = 'link') {
         const group = getGroup(editGroupId);
         if (titleEl) titleEl.innerText = "📝 Sửa Tên/Icon Nhóm";
         if (nameInput) nameInput.value = group ? group.title : '';
-        const tagInput = getEl('groupTagsInput'); if (tagInput) tagInput.value = tagsToString(group?.tags);
         buildEmojiPicker('groupEmojiGrid', group ? (group.emoji || "NONE") : "NONE");
     } else {
         const typeTexts = { link: "Nhóm Link", note: "Nhóm Ghi Chú", schedule: "Nhóm Lịch Trình" };
         if (titleEl) titleEl.innerText = `📌 Tạo ${typeTexts[defaultType] || 'Nhóm'} Mới`;
         if (nameInput) nameInput.value = '';
-        const tagInput = getEl('groupTagsInput'); if (tagInput) tagInput.value = '';
         buildEmojiPicker('groupEmojiGrid', "NONE");
     }
     openModal('groupModal');
@@ -615,15 +510,14 @@ function openGroupModal(editGroupId = false, defaultType = 'link') {
 
 function submitGroupForm() {
     const name = getEl('groupNameInput')?.value.trim();
-    const tags = parseTags(getEl('groupTagsInput')?.value || '');
     if (!name) return;
 
     if (state.isEditMode) {
         const group = getGroup(state.activeGroupId);
-        if (group) { group.title = name; group.emoji = state.selectedEmoji; group.tags = tags; }
+        if (group) { group.title = name; group.emoji = state.selectedEmoji; }
     } else {
         state.dashboardData.push({ 
-            id: 'g_' + Date.now(), title: name, emoji: state.selectedEmoji, type: state.currentGroupType, tags,
+            id: 'g_' + Date.now(), title: name, emoji: state.selectedEmoji, type: state.currentGroupType,
             [`${state.currentGroupType}s`]: []
         });
     }
@@ -643,14 +537,12 @@ function openItemModal(type, groupId, index = false) {
         getEl('linkModalTitle').innerText = state.isEditMode ? "📝 Sửa Nút Bấm" : "➕ Thêm Liên Kết Mới";
         getEl('linkNameInput').value = item ? item.name : '';
         getEl('linkUrlInput').value = item ? item.url : '';
-        const linkTags = getEl('linkTagsInput'); if (linkTags) linkTags.value = tagsToString(item?.tags);
         buildEmojiPicker('linkEmojiGrid', item ? item.emoji : "NONE");
         openModal('linkModal');
     } else if (type === 'note') {
         getEl('noteModalTitle').innerText = state.isEditMode ? "📝 Sửa Nút Ghi Chú" : "➕ Thêm Nút Ghi Chú Mới";
         getEl('noteTitleInput').value = item ? item.title : '';
         getEl('noteContentInput').value = item ? item.content : '';
-        const noteTags = getEl('noteTagsInput'); if (noteTags) noteTags.value = tagsToString(item?.tags);
         buildEmojiPicker('noteEmojiGrid', item ? item.emoji : "NONE");
         openModal('noteModal');
     }
@@ -666,12 +558,12 @@ function submitItemForm(type) {
         let url = getEl('linkUrlInput').value.trim();
         if (!name || !url) return;
         if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-        targetData = { name, url, emoji: state.selectedEmoji, tags: parseTags(getEl('linkTagsInput')?.value || '') };
+        targetData = { name, url, emoji: state.selectedEmoji };
     } else if (type === 'note') {
         const title = getEl('noteTitleInput').value.trim();
         const content = getEl('noteContentInput').value;
         if (!title) return;
-        targetData = { title, content, emoji: state.selectedEmoji, tags: parseTags(getEl('noteTagsInput')?.value || '') };
+        targetData = { title, content, emoji: state.selectedEmoji };
     }
 
     if (state.isEditMode) group[`${type}s`][state.activeIndex] = targetData;
@@ -849,8 +741,6 @@ function addScheduleBlock(data = null) {
             <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-sub)">📋 Danh sách các đầu việc cần làm:</label>
             <textarea class="form-input sch-content-input" placeholder="Nhập các chi tiết đầu việc tại đây..." rows="3" style="width:100%;resize:vertical">${content}</textarea>
         </div>
-        <label style="display:block;margin:8px 0 4px;font-size:12px;color:var(--text-sub)">🏷️ Tag lịch:</label>
-        <input type="text" class="form-input sch-tags-input" placeholder="Ví dụ: họp, deadline" value="${tagsToString(data ? data.tags : [])}" style="width:100%;margin-bottom:8px">
         <input type="hidden" class="sch-emoji-hidden" value="${emoji}">
     `;
 
@@ -912,7 +802,6 @@ function submitScheduleForm() {
         const content = block.querySelector('.sch-content-input').value;
         const important = block.querySelector('.sch-important-cb').checked;
         const hiddenEmoji = block.querySelector('.sch-emoji-hidden').value;
-        const tags = parseTags(block.querySelector('.sch-tags-input')?.value || '');
 
         if (!title || !date || !time || !endDate || !endTime) hasError = true;
 
@@ -921,7 +810,7 @@ function submitScheduleForm() {
         if (endDateTime < startDateTime) hasTimeError = true;
 
         return { 
-            title, date, time, endDate, endTime, content, important, tags, 
+            title, date, time, endDate, endTime, content, important, 
             emoji: state.isEditMode ? hiddenEmoji : (important ? "⚠️" : "📅") 
         };
     });
@@ -1513,9 +1402,9 @@ function openContextMenu(e, targetType, groupId, index = null) {
         : `<div class="context-menu-divider"></div><div class="context-menu-item" onclick="handleLockMenuAction('${groupId}')">🔒 Thiết lập Mã Khóa</div>`;
 
     const actions = {
-        'group-link': `<div class="context-menu-item" onclick="openLinkModal('${groupId}')">➕ Thêm nút bấm link</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="toggleFavoriteGroup('${groupId}', event)">⭐ Ghim / bỏ ghim nhóm</div><div class="context-menu-item" onclick="openGroupModal('${groupId}','link')">📝 Sửa tên nhóm</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>${lockMenuHTML}`,
-        'group-note': `<div class="context-menu-item" onclick="openNoteModal('${groupId}')">➕ Thêm nút ghi chú</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="toggleFavoriteGroup('${groupId}', event)">⭐ Ghim / bỏ ghim nhóm</div><div class="context-menu-item" onclick="openGroupModal('${groupId}','note')">📝 Sửa tên nhóm</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>${lockMenuHTML}`,
-        'group-schedule': `<div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Thêm mốc lịch trình</div><div class="context-menu-item" onclick="triggerExcelImport('${groupId}')">📥 Import từ Excel</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="toggleFavoriteGroup('${groupId}', event)">⭐ Ghim / bỏ ghim nhóm</div><div class="context-menu-item" onclick="openGroupModal('${groupId}','schedule')">📝 Sửa tên nhóm</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>${lockMenuHTML}`,
+        'group-link': `<div class="context-menu-item" onclick="openLinkModal('${groupId}')">➕ Thêm nút bấm link</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="openGroupModal('${groupId}','link')">📝 Sửa tên nhóm</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>${lockMenuHTML}`,
+        'group-note': `<div class="context-menu-item" onclick="openNoteModal('${groupId}')">➕ Thêm nút ghi chú</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="openGroupModal('${groupId}','note')">📝 Sửa tên nhóm</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>${lockMenuHTML}`,
+        'group-schedule': `<div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Thêm mốc lịch trình</div><div class="context-menu-item" onclick="triggerExcelImport('${groupId}')">📥 Import từ Excel</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="openGroupModal('${groupId}','schedule')">📝 Sửa tên nhóm</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Xóa toàn bộ nhóm</div>${lockMenuHTML}`,
         'link': `<div class="context-menu-item" onclick="duplicateItem('link','${groupId}',${index})">✨ Nhân bản nút</div>${buildMoveSubMenuHTML('link',groupId,index)}<div class="context-menu-item" onclick="openLinkModal('${groupId}',${index})">📝 Chỉnh sửa nút</div><div class="context-menu-item delete" onclick="triggerDelete('Link')">❌ Xóa nút bấm này</div>`,
         'note': `<div class="context-menu-item" onclick="duplicateItem('note','${groupId}',${index})">✨ Nhân bản ghi chú</div>${buildMoveSubMenuHTML('note',groupId,index)}<div class="context-menu-item" onclick="openNoteModal('${groupId}',${index})">📝 Chỉnh sửa ghi chú</div><div class="context-menu-item delete" onclick="triggerDelete('Note')">❌ Xóa ghi chú này</div>`,
         'schedule': `<div class="context-menu-item" onclick="duplicateItem('schedule','${groupId}',${index})">✨ Nhân bản mốc lịch</div>${buildMoveSubMenuHTML('schedule',groupId,index)}<div class="context-menu-item" onclick="openScheduleModal('${groupId}',${index})">📝 Chỉnh sửa mốc lịch</div><div class="context-menu-item delete" onclick="triggerDelete('Schedule')">❌ Xóa mốc lịch này</div>`
@@ -1534,16 +1423,14 @@ function initDragAndDrop() {
     const groupsContainer = getEl('groupsContainer');
     if (groupsContainer) {
         if (Sortable.get(groupsContainer)) Sortable.get(groupsContainer).destroy();
-        if (!isAutoSortMode) {
-            Sortable.create(groupsContainer, {
-                animation: 200, ghostClass: 'sortable-ghost-group', handle: '.group-title', forceFallback: isMobile, fallbackClass: 'sortable-fallback', fallbackTolerance: isMobile ? 10 : 5,
-                onEnd: () => {
-                    const order = Array.from(document.querySelectorAll('#groupsContainer .group-card')).map(c => c.getAttribute('data-id'));
-                    state.dashboardData.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
-                    saveData();
-                }
-            });
-        }
+        Sortable.create(groupsContainer, {
+            animation: 200, ghostClass: 'sortable-ghost-group', handle: '.group-title', forceFallback: isMobile, fallbackClass: 'sortable-fallback', fallbackTolerance: isMobile ? 10 : 5,
+            onEnd: () => {
+                const order = Array.from(document.querySelectorAll('#groupsContainer .group-card')).map(c => c.getAttribute('data-id'));
+                state.dashboardData.sort((a, b) => order.indexOf(a.id) - order.indexOf(b.id));
+                saveData();
+            }
+        });
     }
 
     document.querySelectorAll('.links-area, .notes-area, .schedules-area').forEach(area => {
@@ -1714,647 +1601,3 @@ window.addEventListener('load', () => {
     setTimeout(() => { checkAuthStates(); }, 500);
     setTimeout(showTodayImportantTasks, 300);
 });
-
-// ========================================================================== 
-// 20. SMART WORKSPACE UPGRADE: Favorites, Recent, Command Palette, Trash/Undo
-// ========================================================================== 
-const RECENT_KEY = 'dashboardRecentItemsV2';
-const TRASH_KEY = 'dashboardTrashItemsV2';
-const AUTO_SORT_KEY = 'dashboardAutoSortFoldersV1';
-let lastTrashSnapshot = null;
-let isAutoSortMode = false;
-
-function readJSONStore(key, fallback = []) {
-    try { return JSON.parse(localStorage.getItem(key)) || fallback; }
-    catch { return fallback; }
-}
-function writeJSONStore(key, value) { localStorage.setItem(key, JSON.stringify(value)); }
-function normalizeText(value = '') { return String(value || '').toLowerCase(); }
-
-function saveDataOnly() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-    if (gapiInited && gisInited && gapi.client.getToken()) syncToGoogleDrive(true);
-}
-
-function addRecentItem(item) {
-    const recent = readJSONStore(RECENT_KEY, []);
-    const key = `${item.type}-${item.groupId}-${item.index ?? item.title}`;
-    const next = [{ ...item, key, at: Date.now() }, ...recent.filter(x => x.key !== key)].slice(0, 12);
-    writeJSONStore(RECENT_KEY, next);
-    renderSmartPanels();
-}
-
-function collectDashboardItems() {
-    const items = [];
-    state.dashboardData.forEach(group => {
-        if (group.pinKey && group.pinKey !== '' && group.isLocked) return;
-        const gLabel = `${group.emoji && group.emoji !== 'NONE' ? group.emoji + ' ' : ''}${group.title}`;
-        items.push({ type:'group', icon:'📁', title:gLabel, subtitle:`Nhóm ${group.type}`, groupId:group.id, action: () => scrollToGroup(group.id) });
-        (group.links || []).forEach((link, index) => items.push({ type:'link', icon:'🔗', title:link.name, subtitle:group.title, groupId:group.id, index, url:link.url, action: () => { addRecentItem({type:'link', title:link.name, subtitle:group.title, groupId:group.id, index, url:link.url}); window.open(link.url, '_blank'); } }));
-        (group.notes || []).forEach((note, index) => items.push({ type:'note', icon:'📝', title:note.title, subtitle:group.title, groupId:group.id, index, text:note.content, action: () => showContentDetail(group.id, index, 'note') }));
-        (group.schedules || []).forEach((sch, index) => items.push({ type:'schedule', icon:'📅', title:sch.title, subtitle:`${group.title} · ${sch.date || ''} ${sch.time || ''}`, groupId:group.id, index, text:sch.content, date:sch.date, action: () => showContentDetail(group.id, index, 'schedule') }));
-    });
-    return items;
-}
-
-function renderSmartPanels() {
-    renderSmartFavorites();
-    renderSmartRecent();
-    renderSmartUpcoming();
-}
-
-function renderSmartFavorites() {
-    const el = getEl('smartFavorites'); if (!el) return;
-    const favs = state.dashboardData.filter(g => g.favorite).slice(0, 8);
-    if (!favs.length) { el.className = 'smart-list empty'; el.textContent = 'Chưa có nhóm yêu thích.'; return; }
-    el.className = 'smart-list';
-    el.innerHTML = favs.map(g => `<div class="smart-item" onclick="scrollToGroup('${g.id}')"><span>${g.emoji && g.emoji !== 'NONE' ? g.emoji : '⭐'} ${escapeHTML(g.title)}</span><small>${g.type}</small></div>`).join('');
-}
-
-function renderSmartRecent() {
-    const el = getEl('smartRecent'); if (!el) return;
-    const recent = readJSONStore(RECENT_KEY, []).slice(0, 8);
-    const panel = el.closest('.smart-panel');
-    const title = panel?.querySelector('.panel-title');
-    if (title && !title.classList.contains('panel-title-row')) {
-        title.classList.add('panel-title-row');
-        title.innerHTML = `<span>🕘 Recent</span><button class="btn-secondary panel-mini-btn" onclick="clearRecentItems(event)">Xóa tất cả</button>`;
-    }
-    if (!recent.length) { el.className = 'smart-list empty'; el.textContent = 'Chưa có lịch sử mở gần đây.'; return; }
-    el.className = 'smart-list';
-    el.innerHTML = recent.map((r, i) => `
-        <div class="smart-item">
-            <div class="smart-item-main" onclick="openRecentItem(${i})">
-                <span>${r.type === 'link' ? '🔗' : r.type === 'note' ? '📝' : '📅'} ${escapeHTML(r.title)}</span>
-                <small>${escapeHTML(r.subtitle || '')}</small>
-            </div>
-            <div class="smart-item-actions">
-                <button class="smart-icon-btn" onclick="removeRecentItem(${i}, event)" title="Xóa khỏi Recent">✕</button>
-            </div>
-        </div>`).join('');
-}
-
-function removeRecentItem(index, event) {
-    event?.stopPropagation?.();
-    const recent = readJSONStore(RECENT_KEY, []);
-    recent.splice(index, 1);
-    writeJSONStore(RECENT_KEY, recent);
-    renderSmartRecent();
-}
-
-function clearRecentItems(event) {
-    event?.stopPropagation?.();
-    writeJSONStore(RECENT_KEY, []);
-    renderSmartRecent();
-}
-
-function renderSmartUpcoming() {
-    const el = getEl('smartUpcoming'); if (!el) return;
-    const now = new Date();
-    const upcoming = [];
-    state.dashboardData.forEach(group => {
-        if (group.pinKey && group.pinKey !== '' && group.isLocked) return;
-        (group.schedules || []).forEach((sch, index) => {
-            const d = getScheduleEndDateTime(sch);
-            if (!isNaN(d) && d >= now) upcoming.push({ group, sch, index, d });
-        });
-    });
-    upcoming.sort((a,b) => a.d - b.d);
-    const top = upcoming.slice(0, 8);
-    if (!top.length) { el.className = 'smart-list empty'; el.textContent = 'Chưa có lịch sắp tới.'; return; }
-    el.className = 'smart-list';
-    el.innerHTML = top.map(x => `<div class="smart-item" onclick="openCalendarScheduleDetail('${x.group.id}', ${x.index})"><span>${x.sch.important ? '⚠️' : '📅'} ${escapeHTML(x.sch.title)}</span><small>${escapeHTML(x.group.title)} · ${String(x.sch.endDate || x.sch.date || '').split('-').reverse().join('/')}</small></div>`).join('');
-}
-
-function openRecentItem(index) {
-    const r = readJSONStore(RECENT_KEY, [])[index];
-    if (!r) return;
-    if (r.type === 'link' && r.url) window.open(r.url, '_blank');
-    else if (r.type === 'note' || r.type === 'schedule') showContentDetail(r.groupId, r.index, r.type);
-}
-
-function scrollToGroup(groupId) {
-    const group = getGroup(groupId);
-    if (group?.collapsed) group.collapsed = false;
-    renderDashboard();
-    setTimeout(() => {
-        const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
-        card?.scrollIntoView({ behavior:'smooth', block:'center' });
-        card?.animate?.([{ transform:'scale(1)' }, { transform:'scale(1.025)' }, { transform:'scale(1)' }], { duration: 500 });
-    }, 30);
-}
-
-function openCommandPalette() {
-    openModal('commandPaletteModal');
-    const input = getEl('commandInput');
-    if (input) { input.value = ''; setTimeout(() => input.focus(), 50); }
-    renderCommandPalette();
-}
-
-function renderCommandPalette() {
-    const box = getEl('commandResults'); if (!box) return;
-    const keyword = normalizeText(getEl('commandInput')?.value || '');
-    const quickActions = [
-        { icon:'⌘', title:'Mở Command Palette', subtitle:'Thao tác nhanh', action:() => openCommandPalette() },
-        { icon:'⚠️', title:'Xem việc quan trọng hôm nay', subtitle:'Dashboard', action:() => { closeModal('commandPaletteModal'); showTodayImportantTasks(); } },
-        { icon:'🗑', title:'Mở thùng rác', subtitle:'Khôi phục mục đã xóa', action:() => { closeModal('commandPaletteModal'); openTrashModal(); } },
-        { icon:'📆', title:'Mở Calendar View', subtitle:'Xem lịch theo tháng', action:() => { closeModal('commandPaletteModal'); openCalendarModal(); } },
-        { icon:'💾', title:'Mở Backup phiên bản', subtitle:'Khôi phục bản lưu cũ', action:() => { closeModal('commandPaletteModal'); openBackupModal(); } }
-    ];
-    const all = [...quickActions, ...collectDashboardItems()];
-    const result = all.filter(item => !keyword || normalizeText(`${item.title} ${item.subtitle || ''} ${item.text || ''} ${item.url || ''}`).includes(keyword)).slice(0, 30);
-    if (!result.length) { box.innerHTML = '<div class="empty-search-state">Không có kết quả phù hợp.</div>'; return; }
-    window.__commandActions = result;
-    box.innerHTML = result.map((item, i) => `<button class="command-result-item" onclick="runCommandAction(${i})"><strong>${item.icon || '•'} ${escapeHTML(item.title)}</strong><small>${escapeHTML(item.subtitle || '')}</small></button>`).join('');
-}
-
-function runCommandAction(index) {
-    const item = window.__commandActions?.[index];
-    if (!item) return;
-    closeModal('commandPaletteModal');
-    item.action?.();
-}
-
-const __originalShowContentDetail = showContentDetail;
-showContentDetail = function(groupId, index, type) {
-    const group = getGroup(groupId);
-    const item = group?.[`${type}s`]?.[index];
-    if (item) addRecentItem({ type, title: item.title || item.name || 'Không tên', subtitle: group.title, groupId, index });
-    return __originalShowContentDetail(groupId, index, type);
-};
-
-const __originalRenderDashboard = renderDashboard;
-renderDashboard = function() {
-    __originalRenderDashboard();
-    renderSmartPanels();
-};
-
-const __originalToggleFavoriteGroup = toggleFavoriteGroup;
-toggleFavoriteGroup = function(groupId, event) {
-    __originalToggleFavoriteGroup(groupId, event);
-    renderSmartPanels();
-};
-
-const __originalOpenContextMenu = openContextMenu;
-openContextMenu = function(e, targetType, groupId, index = null) {
-    __originalOpenContextMenu(e, targetType, groupId, index);
-    const menuContent = getEl('menuItemsContent');
-    if (!menuContent) return;
-    if (['link','note','schedule'].includes(targetType)) {
-        menuContent.insertAdjacentHTML('afterbegin', `<div class="context-menu-item" onclick="favoriteSingleItem('${targetType}','${groupId}',${index})">⭐ Ghim mục này</div>`);
-    }
-};
-
-function favoriteSingleItem(type, groupId, index) {
-    const group = getGroup(groupId);
-    const item = group?.[`${type}s`]?.[index];
-    if (!item) return;
-    item.favorite = !item.favorite;
-    saveData();
-    getEl('customContextMenu').style.display = 'none';
-}
-
-function showUndoToast(label) {
-    const toast = getEl('undoToast'); if (!toast) return;
-    toast.innerHTML = `<span>Đã chuyển <b>${escapeHTML(label)}</b> vào thùng rác.</span><button class="btn-primary" onclick="openTrashModal()">Mở thùng rác</button>`;
-    toast.style.display = 'flex';
-    clearTimeout(window.__undoToastTimer);
-    window.__undoToastTimer = setTimeout(() => { toast.style.display = 'none'; }, 7000);
-}
-
-triggerDelete = function(type) {
-    const group = getGroup(state.activeGroupId);
-    if (!group) return;
-    const typeMap = { Group:'nhóm', Link:'link', Note:'ghi chú', Schedule:'lịch trình' };
-    const label = type === 'Group' ? group.title : (group[`${type.toLowerCase()}s`]?.[state.activeIndex]?.title || group[`${type.toLowerCase()}s`]?.[state.activeIndex]?.name || 'mục này');
-    customConfirm(`Bạn có chắc chắn muốn xóa ${typeMap[type] || 'mục'} "${label}"?\nDữ liệu sẽ được chuyển vào thùng rác và có thể khôi phục.`, '🗑 Xác nhận xóa').then(ok => {
-        if (!ok) return;
-        const trash = readJSONStore(TRASH_KEY, []);
-        let payload = null;
-        if (type === 'Group') {
-            const idx = state.dashboardData.findIndex(g => g.id === state.activeGroupId);
-            if (idx >= 0) payload = { kind:'Group', index:idx, data: state.dashboardData.splice(idx, 1)[0] };
-        } else {
-            const key = `${type.toLowerCase()}s`;
-            const item = group[key]?.splice(state.activeIndex, 1)[0];
-            if (item) payload = { kind:type, groupId: group.id, index: state.activeIndex, data: item };
-        }
-        if (!payload) return;
-        payload.deletedAt = Date.now();
-        lastTrashSnapshot = payload;
-        trash.unshift(payload);
-        writeJSONStore(TRASH_KEY, trash.slice(0, 50));
-        saveData();
-        showUndoToast(label);
-    });
-};
-
-function formatTrashTime(ts) {
-    try { return new Date(ts).toLocaleString('vi-VN'); }
-    catch { return ''; }
-}
-
-function getTrashLabel(item) {
-    if (!item) return 'Không tên';
-    if (item.kind === 'Group') return item.data?.title || 'Nhóm không tên';
-    return item.data?.title || item.data?.name || 'Mục không tên';
-}
-
-function getTrashKindLabel(kind) {
-    return { Group:'📁 Nhóm', Link:'🔗 Link', Note:'📝 Ghi chú', Schedule:'📅 Lịch trình' }[kind] || 'Mục';
-}
-
-function openTrashModal() {
-    renderTrashModal();
-    openModal('trashModal');
-    const toast = getEl('undoToast'); if (toast) toast.style.display = 'none';
-}
-
-function renderTrashModal() {
-    const el = getEl('trashList'); if (!el) return;
-    const trash = readJSONStore(TRASH_KEY, []);
-    if (!trash.length) {
-        el.className = 'trash-list empty';
-        el.textContent = 'Thùng rác đang trống.';
-        return;
-    }
-    el.className = 'trash-list';
-    el.innerHTML = trash.map((item, index) => `
-        <div class="trash-item">
-            <div>
-                <strong>${getTrashKindLabel(item.kind)} · ${escapeHTML(getTrashLabel(item))}</strong>
-                <small>${escapeHTML(item.data?.title || item.data?.name || '')}${item.kind !== 'Group' ? ' · Nhóm gốc: ' + escapeHTML(getGroup(item.groupId)?.title || 'không còn tồn tại') : ''}<br>Đã xóa: ${formatTrashTime(item.deletedAt)}</small>
-            </div>
-            <div class="trash-actions">
-                <button class="btn-success" onclick="restoreTrashItemAt(${index})">Khôi phục</button>
-                <button class="btn-real-danger" onclick="removeTrashItemAt(${index})">Xóa hẳn</button>
-            </div>
-        </div>`).join('');
-}
-
-function restoreTrashItemAt(index) {
-    const trash = readJSONStore(TRASH_KEY, []);
-    const item = trash[index];
-    if (!item) return;
-    if (item.kind === 'Group') {
-        state.dashboardData.splice(Math.min(item.index ?? state.dashboardData.length, state.dashboardData.length), 0, item.data);
-    } else {
-        const group = getGroup(item.groupId);
-        if (!group) return alert('Không tìm thấy nhóm gốc để khôi phục mục này. Bạn cần khôi phục nhóm gốc trước nếu nhóm đó đã bị xóa.');
-        const key = `${item.kind.toLowerCase()}s`;
-        if (!group[key]) group[key] = [];
-        group[key].splice(Math.min(item.index ?? group[key].length, group[key].length), 0, item.data);
-    }
-    trash.splice(index, 1);
-    lastTrashSnapshot = null;
-    writeJSONStore(TRASH_KEY, trash);
-    saveData();
-    renderTrashModal();
-}
-
-function removeTrashItemAt(index) {
-    const trash = readJSONStore(TRASH_KEY, []);
-    trash.splice(index, 1);
-    writeJSONStore(TRASH_KEY, trash);
-    renderTrashModal();
-}
-
-function clearTrashItems() {
-    customConfirm('Bạn có chắc muốn xóa sạch toàn bộ thùng rác? Thao tác này không thể khôi phục.', '🗑 Xóa sạch thùng rác').then(ok => {
-        if (!ok) return;
-        writeJSONStore(TRASH_KEY, []);
-        lastTrashSnapshot = null;
-        renderTrashModal();
-    });
-}
-
-function restoreLastTrashItem() {
-    const trash = readJSONStore(TRASH_KEY, []);
-    if (!trash.length && !lastTrashSnapshot) return alert('Không có dữ liệu nào trong thùng rác để khôi phục.');
-    const targetIndex = lastTrashSnapshot ? trash.findIndex(x => x.deletedAt === lastTrashSnapshot.deletedAt) : 0;
-    restoreTrashItemAt(targetIndex >= 0 ? targetIndex : 0);
-    const toast = getEl('undoToast'); if (toast) toast.style.display = 'none';
-}
-
-document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
-        e.preventDefault(); openCommandPalette();
-    }
-    if (e.key === 'Escape') closeModal('commandPaletteModal');
-});
-
-document.addEventListener('click', e => {
-    const link = e.target.closest('.link-button');
-    if (!link) return;
-    const card = link.closest('.group-card');
-    const wrapper = link.closest('.item-wrapper');
-    const group = getGroup(card?.dataset.id);
-    const idx = Number(wrapper?.dataset.index);
-    const item = group?.links?.[idx];
-    if (item) addRecentItem({ type:'link', title:item.name, subtitle:group.title, groupId:group.id, index:idx, url:item.url });
-}, true);
-
-window.addEventListener('load', () => { applyAutoSortUI(); setTimeout(renderSmartPanels, 350); });
-
-// ==========================================================================
-// 15. V4 MOBILE WORKSPACE: SIDEBAR, TAG, CALENDAR, BACKUP, CTRL+Z
-// ==========================================================================
-const BACKUP_KEY = 'dashboardVersionBackupsV1';
-let activeTagFilter = '';
-let currentCalendarDate = new Date();
-let __backupLock = false;
-
-function parseTags(value = '') {
-    return [...new Set(String(value || '')
-        .split(/[#,，;\n]/)
-        .map(x => x.trim().replace(/^#/, '').toLowerCase())
-        .filter(Boolean))].slice(0, 12);
-}
-
-function tagsToString(tags = []) {
-    return Array.isArray(tags) ? tags.join(', ') : '';
-}
-
-function getAllDashboardTags() {
-    const bag = new Set();
-    state.dashboardData.forEach(group => {
-        (group.tags || []).forEach(t => bag.add(t));
-        ['links', 'notes', 'schedules'].forEach(key => (group[key] || []).forEach(item => (item.tags || []).forEach(t => bag.add(t))));
-    });
-    return [...bag].sort((a, b) => a.localeCompare(b, 'vi'));
-}
-
-function groupMatchesActiveTag(group) {
-    if (!activeTagFilter) return true;
-    if ((group.tags || []).includes(activeTagFilter)) return true;
-    return ['links', 'notes', 'schedules'].some(key => (group[key] || []).some(item => (item.tags || []).includes(activeTagFilter)));
-}
-
-function setActiveTag(tag = '') {
-    activeTagFilter = tag;
-    renderTagFilterChips();
-    renderDashboard();
-}
-
-function renderTagFilterChips() {
-    const el = getEl('tagFilterChips');
-    if (!el) return;
-    const tags = getAllDashboardTags();
-    const base = `<button class="tag-chip ${!activeTagFilter ? 'active' : ''}" onclick="setActiveTag('')">Tất cả</button>`;
-    el.innerHTML = base + tags.map(tag => `<button class="tag-chip ${activeTagFilter === tag ? 'active' : ''}" onclick="setActiveTag('${escapeHTML(tag)}')">#${escapeHTML(tag)}</button>`).join('');
-}
-
-function renderItemTags(item = {}) {
-    const tags = item.tags || [];
-    if (!tags.length) return '';
-    return `<div class="item-tags">${tags.slice(0, 4).map(t => `<span>#${escapeHTML(t)}</span>`).join('')}</div>`;
-}
-
-function scrollToSection(section) {
-    if (section === 'top') return window.scrollTo({ top: 0, behavior: 'smooth' });
-    const el = getEl(section);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-}
-
-function getVisibleSchedules() {
-    const out = [];
-    state.dashboardData.forEach(group => {
-        if (group.pinKey && group.pinKey !== '' && group.isLocked) return;
-        (group.schedules || []).forEach((sch, index) => {
-            const d = getScheduleEndDateTime(sch);
-            if (!isNaN(d)) out.push({ group, sch, index, d });
-        });
-    });
-    return out;
-}
-
-function openCalendarModal() {
-    currentCalendarDate = new Date();
-    currentCalendarDate.setDate(1);
-    renderCalendarView();
-    openModal('calendarModal');
-}
-
-function changeCalendarMonth(offset) {
-    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + offset);
-    renderCalendarView();
-}
-
-function renderCalendarView() {
-    const label = getEl('calendarMonthLabel');
-    const grid = getEl('calendarGrid');
-    if (!label || !grid) return;
-    const y = currentCalendarDate.getFullYear();
-    const m = currentCalendarDate.getMonth();
-    label.textContent = `Tháng ${m + 1}/${y}`;
-    const first = new Date(y, m, 1);
-    const last = new Date(y, m + 1, 0);
-    const startDay = first.getDay();
-    const schedules = getVisibleSchedules();
-    const byDay = {};
-    schedules.forEach(x => {
-        const sd = new Date((x.sch.endDate || x.sch.date) + 'T' + (x.sch.endTime || x.sch.time || '00:00'));
-        if (sd.getFullYear() === y && sd.getMonth() === m) {
-            const key = sd.getDate();
-            (byDay[key] ||= []).push(x);
-        }
-    });
-    let html = ['CN','T2','T3','T4','T5','T6','T7'].map(d => `<div class="calendar-weekday">${d}</div>`).join('');
-    for (let i = 0; i < startDay; i++) html += `<div class="calendar-cell muted"></div>`;
-    for (let day = 1; day <= last.getDate(); day++) {
-        const items = (byDay[day] || []).sort((a,b) => a.d - b.d).slice(0, 3);
-        html += `<div class="calendar-cell"><div class="calendar-day-number">${day}</div>${items.map(x => `<button class="calendar-event ${x.sch.important ? 'important' : ''}" onclick="openCalendarScheduleDetail('${x.group.id}', ${x.index})">${x.sch.important ? '⚠️' : '•'} ${escapeHTML(x.sch.title)}</button>`).join('')}${(byDay[day] || []).length > 3 ? `<small>+${byDay[day].length - 3} lịch</small>` : ''}</div>`;
-    }
-    grid.innerHTML = html;
-}
-
-
-function toggleMobileSidebar(force) {
-    const shouldOpen = typeof force === 'boolean' ? force : !document.body.classList.contains('sidebar-open');
-    document.body.classList.toggle('sidebar-open', shouldOpen);
-}
-
-function openSidebarPanel(type) {
-    const title = getEl('sidebarPanelTitle');
-    const box = getEl('sidebarPanelContent');
-    if (!title || !box) return;
-    const titles = { favorites: '⭐ Favorites', recent: '🕘 Recent', upcoming: '📅 Sắp tới' };
-    title.textContent = titles[type] || 'Bảng nhanh';
-    box.innerHTML = renderSidebarPanelContent(type);
-    openModal('sidebarPanelModal');
-    toggleMobileSidebar(false);
-}
-
-function renderSidebarPanelContent(type) {
-    if (type === 'favorites') {
-        const favs = state.dashboardData.filter(g => g.favorite).slice(0, 30);
-        if (!favs.length) return '<div class="smart-list empty">Chưa có nhóm yêu thích.</div>';
-        return `<div class="smart-list">${favs.map(g => `<div class="smart-item" onclick="closeModal('sidebarPanelModal'); scrollToGroup('${g.id}')"><span>${g.emoji && g.emoji !== 'NONE' ? g.emoji : '⭐'} ${escapeHTML(g.title)}</span><small>${escapeHTML(g.type || '')}</small></div>`).join('')}</div>`;
-    }
-    if (type === 'recent') {
-        const recent = readJSONStore(RECENT_KEY, []);
-        if (!recent.length) return '<div class="smart-list empty">Chưa có lịch sử mở gần đây.</div>';
-        return `<div class="sidebar-panel-actions"><button class="btn-real-danger" onclick="clearRecentItems(event); openSidebarPanel('recent')">Xóa tất cả</button></div><div class="smart-list">${recent.map((r, i) => `
-            <div class="smart-item">
-                <div class="smart-item-main" onclick="openRecentItem(${i}); closeModal('sidebarPanelModal')">
-                    <span>${r.type === 'link' ? '🔗' : r.type === 'note' ? '📝' : '📅'} ${escapeHTML(r.title)}</span>
-                    <small>${escapeHTML(r.subtitle || '')}</small>
-                </div>
-                <div class="smart-item-actions"><button class="smart-icon-btn" onclick="removeRecentItem(${i}, event); openSidebarPanel('recent')" title="Xóa khỏi Recent">✕</button></div>
-            </div>`).join('')}</div>`;
-    }
-    if (type === 'upcoming') {
-        const now = new Date();
-        const upcoming = [];
-        state.dashboardData.forEach(group => {
-            if (group.pinKey && group.pinKey !== '' && group.isLocked) return;
-            (group.schedules || []).forEach((sch, index) => {
-                const d = getScheduleEndDateTime(sch);
-                if (!isNaN(d) && d >= now) upcoming.push({ group, sch, index, d });
-            });
-        });
-        upcoming.sort((a,b) => a.d - b.d);
-        if (!upcoming.length) return '<div class="smart-list empty">Chưa có lịch sắp tới.</div>';
-        return `<div class="smart-list">${upcoming.slice(0, 30).map(x => `<div class="smart-item" onclick="closeModal('sidebarPanelModal'); showContentDetail('${x.group.id}', ${x.index}, 'schedule')"><span>${x.sch.important ? '⚠️' : '📅'} ${escapeHTML(x.sch.title)}</span><small>${escapeHTML(x.group.title)} · ${String(x.sch.endDate || x.sch.date || '').split('-').reverse().join('/')}</small></div>`).join('')}</div>`;
-    }
-    return '';
-}
-
-function openCalendarScheduleDetail(groupId, index) {
-    showContentDetail(groupId, index, 'schedule');
-    const readModal = getEl('readModal');
-    if (readModal) readModal.classList.add('modal-on-top');
-}
-
-function readBackups() {
-    return readJSONStore(BACKUP_KEY, []);
-}
-
-function writeBackups(items) {
-    writeJSONStore(BACKUP_KEY, items.slice(0, 10));
-}
-
-function createDashboardBackup(reason = 'Tự động') {
-    if (__backupLock) return;
-    const backups = readBackups();
-    const snapshot = JSON.stringify(state.dashboardData);
-    if (backups[0]?.snapshot === snapshot) return;
-    backups.unshift({ id: 'bk_' + Date.now(), reason, at: Date.now(), snapshot });
-    writeBackups(backups);
-}
-
-function createManualBackup() {
-    createDashboardBackup('Thủ công');
-    renderBackupModal();
-}
-
-function openBackupModal() {
-    renderBackupModal();
-    openModal('backupModal');
-}
-
-function renderBackupModal() {
-    const el = getEl('backupList');
-    if (!el) return;
-    const backups = readBackups();
-    if (!backups.length) {
-        el.className = 'trash-list empty';
-        el.textContent = 'Chưa có backup.';
-        return;
-    }
-    el.className = 'trash-list';
-    el.innerHTML = backups.map((bk, index) => `<div class="trash-item"><div><strong>💾 ${escapeHTML(bk.reason || 'Backup')}</strong><small>${formatTrashTime(bk.at)}</small></div><div class="trash-actions"><button class="btn-success" onclick="restoreBackupAt(${index})">Khôi phục</button><button class="btn-real-danger" onclick="removeBackupAt(${index})">Xóa</button></div></div>`).join('');
-}
-
-function restoreBackupAt(index) {
-    const backups = readBackups();
-    const bk = backups[index];
-    if (!bk) return;
-    customConfirm('Khôi phục backup này sẽ thay thế dữ liệu dashboard hiện tại. Bạn có muốn tiếp tục?', '💾 Khôi phục backup').then(ok => {
-        if (!ok) return;
-        try {
-            createDashboardBackup('Trước khi khôi phục');
-            state.dashboardData = JSON.parse(bk.snapshot);
-            saveData();
-            renderBackupModal();
-            closeModal('backupModal');
-        } catch (err) {
-            alert('Backup này bị lỗi hoặc không đọc được.');
-        }
-    });
-}
-
-function removeBackupAt(index) {
-    const backups = readBackups();
-    backups.splice(index, 1);
-    writeBackups(backups);
-    renderBackupModal();
-}
-
-function clearBackups() {
-    customConfirm('Xóa toàn bộ backup phiên bản?', '💾 Xóa backup').then(ok => {
-        if (!ok) return;
-        writeBackups([]);
-        renderBackupModal();
-    });
-}
-
-const __v4SaveData = saveData;
-saveData = function() {
-    createDashboardBackup('Tự động');
-    return __v4SaveData();
-};
-
-const __v4RenderDashboard = renderDashboard;
-renderDashboard = function() {
-    __v4RenderDashboard();
-    renderTagFilterChips();
-    document.querySelectorAll('.group-card').forEach(card => {
-        const group = getGroup(card.dataset.id);
-        const header = card.querySelector('.group-header');
-        if (group && header && group.tags?.length && !header.querySelector('.group-tags-inline')) {
-            header.insertAdjacentHTML('afterend', `<div class="group-tags-inline">${renderItemTags(group)}</div>`);
-        }
-        card.querySelectorAll('.item-wrapper').forEach(wrap => {
-            const idx = Number(wrap.dataset.index);
-            const area = wrap.parentElement;
-            const type = area?.classList.contains('links-area') ? 'link' : area?.classList.contains('notes-area') ? 'note' : area?.classList.contains('schedules-area') ? 'schedule' : '';
-            const item = group?.[`${type}s`]?.[idx];
-            if (item?.tags?.length && !wrap.querySelector('.item-tags')) wrap.insertAdjacentHTML('beforeend', renderItemTags(item));
-        });
-    });
-};
-
-const __v4CollectDashboardItems = collectDashboardItems;
-collectDashboardItems = function() {
-    return __v4CollectDashboardItems().map(item => ({ ...item, subtitle: `${item.subtitle || ''}${item.tags?.length ? ' · #' + item.tags.join(' #') : ''}` }));
-};
-
-// Ctrl+Z khôi phục nhanh mục mới xóa gần nhất
-const __v4Keydown = function(e) {
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
-        const active = document.activeElement;
-        const isTyping = active && ['INPUT','TEXTAREA'].includes(active.tagName);
-        if (!isTyping) {
-            e.preventDefault();
-            restoreLastTrashItem();
-        }
-    }
-};
-document.addEventListener('keydown', __v4Keydown);
-
-window.addEventListener('load', () => {
-    createDashboardBackup('Phiên mở trang');
-    renderTagFilterChips();
-});
-
-// ========================================================================== 
-// V6 - UI refinements: compact create group, cleaner modals/recent
-// ========================================================================== 
-function openCreateGroupTypeModal() {
-    openModal('createGroupTypeModal');
-}
-function chooseCreateGroupType(type) {
-    closeModal('createGroupTypeModal');
-    openGroupModal(false, type);
-}
