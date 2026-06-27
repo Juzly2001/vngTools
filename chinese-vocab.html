@@ -1030,7 +1030,7 @@
             .mobile-flip-card {
                 display: block;
                 width: 100%;
-                height: 260px;
+                height: 280px;
                 cursor: pointer;
                 perspective: 1200px;
                 -webkit-tap-highlight-color: transparent;
@@ -1104,7 +1104,7 @@
                 justify-content: center;
                 width: fit-content;
                 max-width: 100%;
-                margin-bottom: 14px;
+                margin-top: 10px;
                 padding: 5px 11px;
                 border-radius: 999px;
                 background: var(--primary-soft);
@@ -1382,6 +1382,360 @@
             }
         }
 
+
+        /* ===== Nâng cấp học tập: tìm kiếm, yêu thích, đã thuộc, SRS ===== */
+        .study-dashboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .study-stat {
+            padding: 12px;
+            border-radius: 16px;
+            background: var(--table-bg);
+            border: 1px solid var(--line);
+        }
+
+        .study-stat-label {
+            color: var(--text-muted);
+            font-size: .76rem;
+            font-weight: 800;
+            margin-bottom: 4px;
+        }
+
+        .study-stat-value {
+            color: var(--text-main);
+            font-size: 1.25rem;
+            font-weight: 950;
+            line-height: 1;
+        }
+
+        .table-tools {
+            display: grid;
+            grid-template-columns: 1fr 150px;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .quick-filter-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+
+        .quick-chip {
+            min-height: 34px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            background: var(--table-bg);
+            color: var(--text-main);
+            padding: 0 12px;
+            font-size: .82rem;
+            font-weight: 850;
+            cursor: pointer;
+        }
+
+        .quick-chip.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+        }
+
+        .word-hidden { display: none !important; }
+
+        .word-action-mini {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            background: var(--table-bg);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: transform .2s ease, background .2s ease, color .2s ease;
+        }
+
+        .word-action-mini:hover { transform: translateY(-2px) scale(1.05); }
+        .word-action-mini.is-favorite { background: rgba(245, 158, 11, .14); color: #f59e0b; border-color: rgba(245, 158, 11, .28); }
+        .word-action-mini.is-mastered { background: rgba(22, 163, 74, .14); color: var(--success); border-color: rgba(22, 163, 74, .28); }
+
+        .mobile-status-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
+
+        .mobile-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 5px 9px;
+            border-radius: 999px;
+            background: var(--table-bg);
+            border: 1px solid var(--line);
+            color: var(--primary);
+            font-size: .75rem;
+            font-weight: 850;
+            margin-bottom: 10px;
+        }
+
+        .review-button {
+            background: linear-gradient(135deg, var(--success), #14b8a6) !important;
+            border: none !important;
+            color: #fff !important;
+        }
+
+        @media (max-width: 768px) {
+            .study-dashboard { grid-template-columns: repeat(3, 1fr); }
+            .table-tools { grid-template-columns: 1fr; }
+            .quick-filter-row { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; }
+            .quick-chip { flex: 0 0 auto; }
+            .mobile-card-front { padding: 18px; }
+        }
+
+
+        /* ===== Bản tinh gọn giao diện học tập ===== */
+        #inputArea .card {
+            margin-bottom: .78rem;
+        }
+
+        #inputArea .card.p-3,
+        #inputArea .card.p-4 {
+            padding: 14px !important;
+        }
+
+        .study-dashboard {
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .study-stat {
+            padding: 10px 8px;
+            text-align: center;
+            border-radius: 14px;
+        }
+
+        .study-stat-label {
+            font-size: .7rem;
+            margin-bottom: 5px;
+            white-space: nowrap;
+        }
+
+        .study-stat-value {
+            font-size: 1.08rem;
+        }
+
+        .table-tools {
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .quick-filter-row {
+            gap: 6px;
+            margin-top: 8px;
+        }
+
+        .quick-chip {
+            min-height: 32px;
+            padding: 0 10px;
+            font-size: .78rem;
+        }
+
+        .compact-action-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 10px 0 0;
+            border-top: 1px dashed var(--line);
+        }
+
+        .compact-action-btn,
+        .compact-status-pill {
+            height: 32px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            border: 1px solid var(--line);
+            background: var(--table-bg);
+            color: var(--text-muted);
+            padding: 0 11px;
+            font-size: .78rem;
+            font-weight: 850;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .compact-action-btn {
+            cursor: pointer;
+            transition: transform .18s ease, background .18s ease, color .18s ease, border-color .18s ease;
+        }
+
+        .compact-action-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .compact-action-btn.is-favorite {
+            background: rgba(245,158,11,.13);
+            color: #d97706;
+            border-color: rgba(245,158,11,.28);
+        }
+
+        .compact-action-btn.is-mastered {
+            background: rgba(5,150,105,.13);
+            color: var(--success);
+            border-color: rgba(5,150,105,.28);
+        }
+
+        .compact-status-pill {
+            background: var(--primary-soft);
+            color: var(--primary);
+            max-width: 100%;
+        }
+
+        .meaning-wrap {
+            padding-right: 44px;
+        }
+
+        .meaning-main {
+            font-size: 1.03rem;
+            font-weight: 780;
+        }
+
+        .example-card {
+            margin-top: 12px;
+            padding: 12px 14px;
+        }
+
+        .trans-text {
+            padding-left: 2px;
+        }
+
+        .mobile-type-badge,
+        .mobile-status-badge.type-badge-mobile {
+            background: rgba(124,58,237,.12);
+            color: #7c3aed;
+            border-color: rgba(124,58,237,.26);
+        }
+
+        body.dark-mode .mobile-type-badge,
+        body.dark-mode .mobile-status-badge.type-badge-mobile {
+            background: rgba(167,139,250,.16);
+            color: #c4b5fd;
+            border-color: rgba(167,139,250,.28);
+        }
+
+        .mobile-status-badge.favorite-badge-mobile {
+            background: rgba(245,158,11,.13);
+            color: #d97706;
+            border-color: rgba(245,158,11,.3);
+        }
+
+        .mobile-status-badge.mastered-badge-mobile {
+            background: rgba(5,150,105,.13);
+            color: var(--success);
+            border-color: rgba(5,150,105,.3);
+        }
+
+        .mobile-status-badge.due-badge-mobile {
+            background: var(--example-bg);
+            color: var(--text-muted);
+            border-color: var(--example-line);
+        }
+
+        .mobile-action-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--line);
+            background: var(--table-bg);
+            color: var(--text-main);
+            cursor: pointer;
+            transition: transform .18s ease, background .18s ease, color .18s ease;
+        }
+
+        .mobile-action-btn:active {
+            transform: scale(.94);
+        }
+
+        .mobile-action-btn.is-favorite {
+            background: rgba(245,158,11,.13);
+            color: #d97706;
+            border-color: rgba(245,158,11,.3);
+        }
+
+        .mobile-action-btn.is-mastered {
+            background: rgba(5,150,105,.13);
+            color: var(--success);
+            border-color: rgba(5,150,105,.3);
+        }
+
+        .mobile-action-btn.mobile-delete-btn {
+            background: var(--danger-soft);
+            color: var(--danger);
+            border-color: rgba(220,38,38,.22);
+        }
+
+        @media (max-width: 768px) {
+            #inputArea .card.p-3,
+            #inputArea .card.p-4 {
+                padding: 12px !important;
+            }
+
+            .study-dashboard {
+                gap: 6px;
+            }
+
+            .study-stat {
+                padding: 9px 6px;
+            }
+
+            .study-stat-label {
+                font-size: .66rem;
+            }
+
+            .study-stat-value {
+                font-size: 1rem;
+            }
+
+            .mobile-status-row {
+                gap: 6px;
+                margin-top: 0;
+                margin-bottom: 10px;
+            }
+
+            .mobile-status-badge {
+                margin-bottom: 0;
+                font-size: .7rem;
+                padding: 5px 8px;
+            }
+
+            .mobile-card-topline {
+                align-items: flex-start;
+            }
+
+            .mobile-meaning {
+                margin-top: 12px;
+            }
+
+            .mobile-back-actions .mobile-action-row {
+                gap: 7px;
+            }
+        }
+
     </style>
 </head>
 
@@ -1420,6 +1774,44 @@
                 </div>
             </div>
 
+            <div class="card p-3">
+                <div class="study-dashboard">
+                    <div class="study-stat">
+                        <div class="study-stat-label">Cần ôn</div>
+                        <div class="study-stat-value" id="dueCount">0</div>
+                    </div>
+                    <div class="study-stat">
+                        <div class="study-stat-label">Đã thuộc</div>
+                        <div class="study-stat-value" id="masteredCount">0</div>
+                    </div>
+                    <div class="study-stat">
+                        <div class="study-stat-label">Yêu thích</div>
+                        <div class="study-stat-value" id="favoriteCount">0</div>
+                    </div>
+                </div>
+                <button class="btn review-button w-100 mt-3" onclick="startTodayReview()">Ôn tập hôm nay</button>
+            </div>
+
+            <div class="card p-3">
+                <label class="small text-muted">Tìm & lọc trong bảng</label>
+                <div class="table-tools">
+                    <input type="text" id="tableSearch" class="form-control" placeholder="Tìm từ đang học..." oninput="applyTableFilter()">
+                    <select id="sortMode" class="form-select" onchange="renderTable()">
+                        <option value="newest">Mới thêm</option>
+                        <option value="az">A-Z chữ Hán</option>
+                        <option value="type">Loại từ</option>
+                        <option value="due">Cần ôn trước</option>
+                    </select>
+                </div>
+                <div class="quick-filter-row">
+                    <button class="quick-chip active" type="button" data-filter="all" onclick="setQuickFilter('all')">Tất cả</button>
+                    <button class="quick-chip" type="button" data-filter="due" onclick="setQuickFilter('due')">Cần ôn</button>
+                    <button class="quick-chip" type="button" data-filter="favorite" onclick="setQuickFilter('favorite')">Yêu thích</button>
+                    <button class="quick-chip" type="button" data-filter="mastered" onclick="setQuickFilter('mastered')">Đã thuộc</button>
+                    <button class="quick-chip" type="button" data-filter="learning" onclick="setQuickFilter('learning')">Đang học</button>
+                </div>
+            </div>
+
             <div class="card p-4">
                 <textarea id="wordInput" class="form-control mb-2" rows="2" placeholder="Nhập từ, ví dụ: 觉得, 路..."></textarea>
                 <button class="btn btn-primary w-100" onclick="processAllWords()">Tra & Thêm từ</button>
@@ -1428,7 +1820,7 @@
             <div class="card p-3">
                 <label class="small text-muted">Thêm từ nhanh</label>
                 <div class="input-group mb-2">
-                    <input type="number" id="randomCount" class="form-control" value="5">
+                    <input type="number" id="randomCount" class="form-control" value="10">
                     <button class="btn btn-outline-info" onclick="addRandomWords()">Ngẫu nhiên</button>
                 </div>
             </div>
@@ -1447,6 +1839,7 @@
             </div>
 
             <div class="card p-3">
+                <label class="small text-muted">Tạo bài kiểm tra</label>
                 <select id="quizMode" class="form-select mb-2">
                     <option value="zh-vi">Trung - Việt</option>
                     <option value="vi-zh">Việt - Trung</option>
@@ -1638,8 +2031,8 @@
             let myModal = new bootstrap.Modal(document.getElementById('messageModal'));
             myModal.show();
         }
-    
-        const MAX_WORDS = 100;
+        // giới hạn từ
+        const MAX_WORDS = 200;
         let vocabData = JSON.parse(localStorage.getItem('myChineseVocab')) || [];
 
         // Nếu dữ liệu cũ đã vượt quá 100 từ thì chỉ tải 100 từ đầu để tránh nặng máy.
@@ -1648,10 +2041,152 @@
             localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
         }
 
+        let currentQuickFilter = "all";
+        let currentQuizWords = [];
+
+        vocabData = vocabData.map(initWordMeta);
+        localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
+
         window.onload = () => {
             renderTable();
             updateCounter();
+            updateDashboard();
         };
+
+        function todayISO() {
+            return new Date().toISOString().split('T')[0];
+        }
+
+        function addDaysISO(days) {
+            const d = new Date();
+            d.setDate(d.getDate() + days);
+            return d.toISOString().split('T')[0];
+        }
+
+        function initWordMeta(item) {
+            return {
+                ...item,
+                favorite: item.favorite === true,
+                mastered: item.mastered === true,
+                reviewLevel: Number.isFinite(item.reviewLevel) ? item.reviewLevel : 0,
+                correctCount: Number.isFinite(item.correctCount) ? item.correctCount : 0,
+                wrongCount: Number.isFinite(item.wrongCount) ? item.wrongCount : 0,
+                dateAdded: item.dateAdded || todayISO(),
+                nextReview: item.nextReview || todayISO()
+            };
+        }
+
+        function saveVocab() {
+            localStorage.setItem('myChineseVocab', JSON.stringify(vocabData));
+            updateCounter();
+            updateDashboard();
+        }
+
+        function isDueToday(item) {
+            return !item.mastered && (!item.nextReview || item.nextReview <= todayISO());
+        }
+
+        function updateDashboard() {
+            const dueEl = document.getElementById("dueCount");
+            const masteredEl = document.getElementById("masteredCount");
+            const favEl = document.getElementById("favoriteCount");
+            if (dueEl) dueEl.textContent = vocabData.filter(isDueToday).length;
+            if (masteredEl) masteredEl.textContent = vocabData.filter(i => i.mastered).length;
+            if (favEl) favEl.textContent = vocabData.filter(i => i.favorite).length;
+        }
+
+        function setQuickFilter(filter) {
+            currentQuickFilter = filter;
+            document.querySelectorAll('.quick-chip').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.filter === filter);
+            });
+            applyTableFilter();
+        }
+
+        function matchesQuickFilter(item) {
+            if (currentQuickFilter === "due") return isDueToday(item);
+            if (currentQuickFilter === "favorite") return item.favorite === true;
+            if (currentQuickFilter === "mastered") return item.mastered === true;
+            if (currentQuickFilter === "learning") return item.mastered !== true;
+            return true;
+        }
+
+        function handleMobileCardAction(event, action) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            const card = event?.target?.closest?.('.mobile-flip-card');
+            if (typeof action === 'function') action();
+            if (card) {
+                requestAnimationFrame(() => {
+                    const word = card.closest('tr')?.dataset?.word;
+                    const newCard = word ? document.querySelector(`#wordTable tbody tr[data-word="${CSS.escape(word)}"] .mobile-flip-card`) : card;
+                    if (newCard) newCard.classList.add('is-flipped');
+                });
+            }
+        }
+
+        function applyTableFilter() {
+            const keyword = removeTone((document.getElementById("tableSearch")?.value || "").trim().toLowerCase());
+            document.querySelectorAll("#wordTable tbody tr").forEach(row => {
+                const item = vocabData.find(v => v.word === row.dataset.word);
+                if (!item) return;
+                const text = removeTone(`${item.word} ${item.pinyin} ${item.meaning} ${item.fromType || ""} ${item.example || ""} ${item.trans || ""}`.toLowerCase());
+                const visible = matchesQuickFilter(item) && (!keyword || text.includes(keyword));
+                row.classList.toggle("word-hidden", !visible);
+            });
+        }
+
+        function sortWords(list) {
+            const mode = document.getElementById("sortMode")?.value || "newest";
+            return [...list].sort((a, b) => {
+                if (mode === "az") return String(a.word).localeCompare(String(b.word), "zh-Hans-CN");
+                if (mode === "type") return String(a.fromType || "").localeCompare(String(b.fromType || ""), "vi") || String(a.word).localeCompare(String(b.word), "zh-Hans-CN");
+                if (mode === "due") return Number(isDueToday(b)) - Number(isDueToday(a));
+                return String(b.dateAdded || "").localeCompare(String(a.dateAdded || ""));
+            });
+        }
+
+        function toggleFavorite(word) {
+            const item = vocabData.find(i => i.word === word);
+            if (!item) return;
+            item.favorite = !item.favorite;
+            saveVocab();
+            renderTable();
+        }
+
+        function toggleMastered(word) {
+            const item = vocabData.find(i => i.word === word);
+            if (!item) return;
+            item.mastered = !item.mastered;
+            item.nextReview = item.mastered ? addDaysISO(30) : todayISO();
+            saveVocab();
+            renderTable();
+        }
+
+        function startTodayReview() {
+            const dueWords = vocabData.filter(isDueToday);
+            if (dueWords.length === 0) return showModal("Hôm nay chưa có từ nào cần ôn. Bạn có thể thêm từ mới hoặc bỏ đánh dấu 'Đã thuộc' nếu muốn ôn lại.");
+            startQuiz(dueWords);
+        }
+
+        function updateWordReview(word, isCorrect) {
+            const item = vocabData.find(i => i.word === word);
+            if (!item) return;
+            if (isCorrect) {
+                item.correctCount = (item.correctCount || 0) + 1;
+                item.reviewLevel = Math.min((item.reviewLevel || 0) + 1, 6);
+                const intervals = [1, 2, 4, 7, 15, 30, 60];
+                item.nextReview = addDaysISO(intervals[item.reviewLevel] || 60);
+                if (item.reviewLevel >= 5) item.mastered = true;
+            } else {
+                item.wrongCount = (item.wrongCount || 0) + 1;
+                item.reviewLevel = 0;
+                item.mastered = false;
+                item.nextReview = todayISO();
+            }
+        }
 
         function updateCounter() {
             const counter = document.getElementById("wordCounter");
@@ -1663,6 +2198,7 @@
             bar.style.width = `${percent}%`;
             bar.classList.toggle("warn", percent >= 70 && percent < 100);
             bar.classList.toggle("full", percent >= 100);
+            updateDashboard();
         }
 
         function canAddMoreWords(showWarning = true) {
@@ -1678,6 +2214,7 @@
         function addFromLibrary(item) {
             if (!canAddMoreWords(false)) return false;
             if (vocabData.find(i => i.word === item.word)) return false;
+            item = initWordMeta(item);
             vocabData.push(item);
             renderRow(item);
             updateCounter();
@@ -1758,18 +2295,23 @@
     
     // Hàm render từng dòng (có tích hợp xóa & highlight)
    function renderRow(obj) {
+    obj = initWordMeta(obj);
     let tbody = document.querySelector("#wordTable tbody");
     let row = tbody.insertRow();
+    row.dataset.word = obj.word;
 
     const highlight = (text) => {
         if (!lastQuery || !text) return text;
         const regex = new RegExp(`(${lastQuery})`, 'gi');
-        return text.replace(regex, `<span class="highlight-match">$1</span>`);
+        return String(text).replace(regex, `<span class="highlight-match">$1</span>`);
     };
 
     const isSingle = [...obj.word].length === 1;
+    const typeText = obj.fromType || "-";
+    const favoriteIcon = obj.favorite ? "⭐" : "☆";
+    const masteredIcon = obj.mastered ? "✅" : "☑️";
+    const dueText = isDueToday(obj) ? "Hôm nay cần ôn" : `Ôn: ${obj.nextReview || "-"}`;
 
-    // Chuẩn bị dữ liệu ví dụ dùng cho cả desktop và mobile
     let exampleText = obj.example || "";
     let highlightedExample = exampleText.replace(new RegExp(obj.word, 'g'), `<span class="example-highlight">${obj.word}</span>`);
     let examplePinyin = exampleText ? pinyinPro.pinyin(exampleText, { toneType: 'symbol' }) : "";
@@ -1779,14 +2321,21 @@
         : "";
 
     row.insertCell(0).innerHTML = `
-        <div class="desktop-hanzi-cell hanzi-cell"><span>${highlight(obj.word)}</span>${drawBtn}</div>
+        <div class="desktop-hanzi-cell hanzi-cell">
+            <span>${highlight(obj.word)}</span>${drawBtn}
+           
+        </div>
         <div class="mobile-flip-card" onclick="this.classList.toggle('is-flipped')" title="Chạm để xem ví dụ">
             <div class="mobile-flip-inner">
                 <div class="mobile-card-face mobile-card-front">
                     <div>
                         <div class="mobile-card-topline">
                             <div>
-                                <div class="mobile-type-badge">${obj.fromType || "-"}</div>
+                                <div class="mobile-status-row">
+                                    <span class="mobile-status-badge type-badge-mobile">${typeText}</span>
+                                    ${obj.favorite ? `<span class="mobile-status-badge favorite-badge-mobile">⭐ Yêu thích</span>` : ""}
+                                    ${obj.mastered ? `<span class="mobile-status-badge mastered-badge-mobile">✅ Đã thuộc</span>` : `<span class="mobile-status-badge due-badge-mobile">🗓 ${dueText}</span>`}
+                                </div>
                                 <div class="mobile-word-main">${highlight(obj.word)}</div>
                                 <div class="mobile-pinyin">${highlight(obj.pinyin)}</div>
                             </div>
@@ -1810,8 +2359,10 @@
                     <div class="mobile-back-actions">
                         <span class="mobile-back-note">Chạm lại để quay về</span>
                         <div class="mobile-action-row">
-                            ${exampleText ? `<button class="btn-audio" title="Nghe ví dụ" onclick="event.stopPropagation(); speakChinese('${exampleText}')">🔊</button>` : ""}
-                            <button class="btn-audio mobile-delete-btn" title="Xóa từ" onclick="event.stopPropagation(); deleteWord('${obj.word}')">🗑️</button>
+                            <button class="mobile-action-btn ${obj.favorite ? 'is-favorite' : ''}" type="button" title="Yêu thích" onclick="handleMobileCardAction(event, () => toggleFavorite('${obj.word}'))">${favoriteIcon}</button>
+                            <button class="mobile-action-btn ${obj.mastered ? 'is-mastered' : ''}" type="button" title="Đã thuộc" onclick="handleMobileCardAction(event, () => toggleMastered('${obj.word}'))">${masteredIcon}</button>
+                            ${exampleText ? `<button class="mobile-action-btn" type="button" title="Nghe ví dụ" onclick="handleMobileCardAction(event, () => speakChinese('${exampleText}'))">🔊</button>` : ""}
+                            <button class="mobile-action-btn mobile-delete-btn" type="button" title="Xóa từ" onclick="handleMobileCardAction(event, () => deleteWord('${obj.word}'))">🗑️</button>
                         </div>
                     </div>
                 </div>
@@ -1819,14 +2370,18 @@
         </div>`;
     row.insertCell(1).innerHTML = `<span class="pinyin-cell">${highlight(obj.pinyin)}</span>`;
     row.insertCell(2).innerHTML = `<button class="btn-audio" title="Phát âm" onclick="speakChinese('${obj.word}')">🔊</button>`;
-    row.insertCell(3).innerHTML = `<span class="type-pill">${obj.fromType || "-"}</span>`;
+    row.insertCell(3).innerHTML = `<span class="type-pill">${typeText}</span>`;
     
-    // --- PHẦN CẬP NHẬT CHO VÍ DỤ ---
     let meaningCell = row.insertCell(4);
-    meaningCell.style.position = "relative"; // Quan trọng để nút xóa bám theo ô này
+    meaningCell.style.position = "relative";
     meaningCell.innerHTML = `
         <div class="meaning-wrap">
             <div class="meaning-main">${highlight(obj.meaning)}</div>
+            <div class="compact-action-row">
+                <button class="compact-action-btn ${obj.favorite ? 'is-favorite' : ''}" type="button" onclick="toggleFavorite('${obj.word}')" title="Yêu thích">${favoriteIcon} Yêu thích</button>
+                <button class="compact-action-btn ${obj.mastered ? 'is-mastered' : ''}" type="button" onclick="toggleMastered('${obj.word}')" title="Đã thuộc">${masteredIcon} Đã thuộc</button>
+                <span class="compact-status-pill">${dueText}</span>
+            </div>
             ${exampleText ? `
                 <div class="example-card">
                     <button class="btn-audio" title="Nghe ví dụ" onclick="speakChinese('${exampleText}')">🔊</button>
@@ -1851,15 +2406,16 @@
         }
     
     // Hàm khởi tạo bài kiểm tra
-   function startQuiz() {
+   function startQuiz(sourceWords = null) {
     if (vocabData.length === 0) return showModal("Vui lòng thêm từ trước!");
     
     const mode = document.getElementById("quizMode").value;
     const quizForm = document.getElementById("quizForm");
     quizForm.innerHTML = ""; 
     
-    // Xáo trộn mảng vocabData trước khi hiển thị
-    let shuffledData = [...vocabData].sort(() => 0.5 - Math.random());
+    // Xáo trộn mảng từ trước khi hiển thị
+    currentQuizWords = sourceWords && sourceWords.length ? sourceWords : vocabData;
+    let shuffledData = [...currentQuizWords].sort(() => 0.5 - Math.random());
 
     document.getElementById("inputArea").style.display="none";
 
@@ -1893,6 +2449,7 @@
                    data-correct-word="${item.word.toLowerCase()}" 
                    data-correct-pinyin="${item.pinyin.toLowerCase()}" 
                    data-correct-meaning="${item.meaning.toLowerCase()}"
+                   data-word="${item.word}"
                    placeholder="Nhập đáp án...">
         `;
         quizForm.appendChild(div);
@@ -1902,7 +2459,7 @@
         // Hàm kiểm tra đáp án (Bản nâng cấp: không phân biệt hoa thường + hiện đáp án đúng)
 function checkQuiz() {
     let score = 0;
-    let total = vocabData.length;
+    let total = document.querySelectorAll('.quiz-ans').length;
     const mode = document.getElementById("quizMode").value;
     
     document.querySelectorAll('.quiz-ans').forEach((input) => {
@@ -1936,6 +2493,8 @@ function checkQuiz() {
             if (userAnswer === correctMeaning) isCorrect = true;
         }
     
+        updateWordReview(input.dataset.word || correctWord, isCorrect);
+
         // 2. LOGIC HIỂN THỊ KẾT QUẢ
         if (isCorrect) {
             input.className = "form-control quiz-ans correct-input";
@@ -1961,6 +2520,7 @@ function checkQuiz() {
         }
     });
     
+    saveVocab();
     showQuizFeedback(score, total);
 }
 
@@ -2059,7 +2619,7 @@ function launchConfetti() {
                 }
 
                 if (!vocabData.find(i => i.word === item.word)) {
-                    vocabData.push(item);
+                    vocabData.push(initWordMeta(item));
                     addedCount++;
                 }
             }
@@ -2090,8 +2650,9 @@ function launchConfetti() {
         // Thêm hàm render lại toàn bộ bảng
     function renderTable() {
         document.querySelector("#wordTable tbody").innerHTML = "";
-        vocabData.forEach(item => renderRow(item));
+        sortWords(vocabData).forEach(item => renderRow(item));
         updateCounter();
+        applyTableFilter();
     }
     
     // Biến tạm để lưu từ cần xóa
@@ -2217,7 +2778,11 @@ function resetWriter() {
     }, 100);
 }
 
-
+document.addEventListener("hide.bs.modal", function (event) {
+    if (event.target.contains(document.activeElement)) {
+        document.activeElement.blur();
+    }
+});
 
     </script>
 </body>
