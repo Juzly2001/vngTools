@@ -43,7 +43,7 @@
             <div class="overview-card"><span>📁 Nhóm</span><strong id="statGroups">0</strong></div>
             <div class="overview-card"><span>🔗 Link</span><strong id="statLinks">0</strong></div>
             <div class="overview-card"><span>📝 Ghi chú</span><strong id="statNotes">0</strong></div>
-            <div class="overview-card danger"><span>⚠️ Việc hôm nay</span><strong id="statTodayImportant">0</strong></div>
+            <div class="overview-card danger"><span>⚠️ Việc quan trọng hôm nay</span><strong id="statTodayImportant">0</strong></div>
         </section>
 
         <section class="command-bar" aria-label="Thanh thao tác nhanh">
@@ -98,7 +98,7 @@
             <span class="close-modal-x" onclick="closeModal('alertModal'); document.querySelector('.modal-footer-excel')?.remove();">&times;</span>
             <h3 id="alertModalTitle" style="color: var(--danger-color); margin-top: 10px;">⚠️ Thông báo</h3>
             <p id="alertMessage" style="color: var(--text-main); margin-bottom: 20px;"></p>
-            <button class="btn-primary" style="text-align: center; margin: 0 auto;" onclick="closeModal('alertModal'); document.querySelector('.modal-footer-excel')?.remove();">Đã hiểu</button>
+            <button class="btn-primary" style="text-align: center; margin: 12px auto;" onclick="closeModal('alertModal'); document.querySelector('.modal-footer-excel')?.remove();">Đã hiểu</button>
         </div>
     </div>
 
@@ -232,7 +232,7 @@
             <label for="groupKeyInput">Mã Khóa (Key)</label>
             <div style="position: relative; display: flex; align-items: center;">
                 <input type="password" id="groupKeyInput" placeholder="Nhập mã khóa tại đây..." style="margin-bottom: 0; padding-right: 45px;">
-                <button type="button" id="toggleKeyVisibility" onclick="toggleKeyVisibility()" style="position: absolute; right: 5px; background: none; border: none; color: var(--text-sub); padding: 8px; cursor: pointer; font-size: 16px;">
+                <button type="button" id="toggleKeyVisibility" onclick="toggleKeyVisibility()" style="position: absolute; right: 20px; background: none; border: none; color: var(--text-sub); padding: 8px; cursor: pointer; font-size: 16px;">
                     👁️
                 </button>
             </div>
