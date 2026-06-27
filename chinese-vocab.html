@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ tay Tiếng Trung</title>
+    <title>Chinese Notebook Offline</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' style='background-color:%230b74de;border-radius:20%25;'%3E%3Cpath d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ffffff' style='background-color:%230b74de;border-radius:20%25;'%3E%3Cpath d='M13 10V3L4 14h7v7l9-11h-7z'/%3E%3C/svg%3E">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -1736,6 +1736,384 @@
             }
         }
 
+
+        /* ===== Offline Dictionary Analyzer: không AI, không API ===== */
+        .offline-dict-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offline-dict-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .offline-dict-title strong {
+            color: var(--text-main);
+            font-size: .98rem;
+            font-weight: 900;
+        }
+
+        .offline-dict-note {
+            color: var(--text-muted);
+            font-size: .78rem;
+            font-weight: 700;
+            line-height: 1.45;
+            margin-bottom: 10px;
+        }
+
+        #offlineInput {
+            min-height: 82px;
+            resize: vertical;
+        }
+
+        .offline-action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .offline-action-row .btn {
+            min-width: 0;
+            white-space: nowrap;
+            padding-left: 10px;
+            padding-right: 10px;
+        }
+
+        .offline-action-row .offline-main-btn {
+            grid-column: 1 / -1;
+            font-weight: 850;
+        }
+
+        .offline-action-row .offline-secondary-btn {
+            font-size: .9rem;
+        }
+
+        .offline-result {
+            display: none;
+            margin-top: 12px;
+            padding: 12px;
+            border-radius: 18px;
+            border: 1px solid var(--line);
+            background: var(--table-bg);
+        }
+
+        .offline-result.show { display: block; }
+
+        .offline-summary {
+            padding: 10px 12px;
+            border-radius: 15px;
+            background: var(--primary-soft);
+            color: var(--text-main);
+            margin-bottom: 12px;
+        }
+
+        .offline-summary-label {
+            color: var(--text-muted);
+            font-size: .75rem;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 4px;
+        }
+
+        .offline-summary-main {
+            font-size: 1rem;
+            font-weight: 800;
+            line-height: 1.55;
+        }
+
+        .offline-token-list {
+            display: grid;
+            gap: 8px;
+        }
+
+        .offline-token {
+            border: 1px solid var(--line);
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 10px 11px;
+        }
+
+        .offline-token-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 4px;
+        }
+
+        .offline-token-word {
+            color: var(--text-main);
+            font-size: 1.35rem;
+            font-weight: 650;
+            line-height: 1.2;
+            font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+        }
+
+        .offline-token-pinyin {
+            color: var(--primary);
+            font-size: .9rem;
+            font-weight: 800;
+            margin-top: 2px;
+        }
+
+        .offline-token-meaning {
+            color: var(--text-main);
+            font-size: .92rem;
+            font-weight: 650;
+            line-height: 1.45;
+            margin-top: 4px;
+        }
+
+        .offline-token-meta {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 7px;
+        }
+
+        .offline-mini-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 8px;
+            border-radius: 999px;
+            background: var(--example-bg);
+            border: 1px solid var(--example-line);
+            color: var(--text-muted);
+            font-size: .74rem;
+            font-weight: 800;
+        }
+
+        .offline-token-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+
+        .offline-token-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid var(--line);
+            background: var(--table-bg);
+            color: var(--text-main);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: .9rem;
+        }
+
+        .offline-token-btn:hover {
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .offline-unknown {
+            border-style: dashed;
+            opacity: .78;
+        }
+
+        @media (max-width: 768px) {
+            .offline-action-row { grid-template-columns: 1fr; }
+            .offline-token-word { font-size: 1.55rem; }
+        }
+
+
+        /* ===== Bảng điều khiển gọn: các chức năng phụ thu gọn mặc định ===== */
+        .primary-tool-card {
+            border-color: color-mix(in srgb, var(--primary) 22%, var(--line));
+        }
+
+        .control-fold {
+            border:1px solid var(--line);
+            border-radius:18px;
+            background:var(--card-bg);
+            margin-bottom:12px;
+            overflow:hidden;
+        }
+
+        .control-fold summary{
+            list-style:none;
+        }
+
+        .control-fold summary::-webkit-details-marker{
+            display:none;
+        }
+
+        .control-fold-head {
+            min-height: 52px;
+            padding:16px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            cursor: pointer;
+            user-select: none;
+            list-style: none;
+            font-weight: 900;
+            color: var(--text-main);
+        }
+
+        .control-fold-head::-webkit-details-marker { display: none; }
+
+        .control-fold-title {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight:800;
+            font-size:1rem;
+        }
+
+        .control-fold-caret {
+            flex: 0 0 auto;
+            width: 30px;
+            height: 30px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--primary-soft);
+            color: var(--primary);
+            transition: transform .25s ease, background .22s ease, color .22s ease;
+        }
+
+        .control-fold-subtitle{
+            margin-top:3px;
+            color:var(--text-muted);
+            font-size:.78rem;
+        }
+
+        .control-fold[open] .control-fold-caret {
+            transform:rotate(180deg);
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .control-fold-body {
+            padding:0 18px 18px;
+            animation: foldIn .18s ease;
+        }
+
+        @keyframes foldIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 768px) {
+            .control-fold-head { min-height: 50px; padding: 0 12px; }
+            .control-fold-body { padding: 0 12px 12px; }
+            .primary-tool-card { margin-top: 4px; }
+        }
+
+
+        /* ===== Quiz mode linh hoạt ===== */
+        .quiz-mode-picker,
+        .quiz-live-mode-tools {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+        }
+
+        .quiz-mode-btn,
+        .quiz-live-mode-btn {
+            min-height: 42px;
+            border-radius: 14px;
+            border: 1px solid var(--line);
+            background: var(--table-bg);
+            color: var(--text-main);
+            font-weight: 850;
+            cursor: pointer;
+            transition: transform .18s ease, background .18s ease, color .18s ease, border-color .18s ease;
+        }
+
+        .quiz-mode-btn:hover,
+        .quiz-live-mode-btn:hover {
+            transform: translateY(-1px);
+            background: var(--primary-soft);
+            color: var(--primary);
+        }
+
+        .quiz-mode-btn.active,
+        .quiz-live-mode-btn.active {
+            background: var(--primary);
+            color: #fff;
+            border-color: var(--primary);
+            box-shadow: 0 8px 18px rgba(37,99,235,.18);
+        }
+
+        .quiz-options-box {
+            display: grid;
+            gap: 8px;
+            padding: 10px 12px;
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: var(--table-bg);
+        }
+
+        .quiz-options-box label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+            font-size: .9rem;
+            font-weight: 750;
+        }
+
+        .quiz-live-panel {
+            margin: 0 auto 16px;
+            padding: 12px;
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            background: var(--table-bg);
+        }
+
+        .quiz-live-title {
+            color: var(--text-muted);
+            font-size: .78rem;
+            font-weight: 850;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+
+        .quiz-question-meta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            color: var(--primary);
+            font-size: .75rem;
+            font-weight: 850;
+            margin-left: 6px;
+        }
+
+        @media (max-width: 768px) {
+            .quiz-mode-picker,
+            .quiz-live-mode-tools {
+                grid-template-columns: 1fr;
+            }
+
+            .quiz-live-panel {
+                padding: 10px;
+                margin-bottom: 12px;
+            }
+        }
+
     </style>
 </head>
 
@@ -1792,72 +2170,128 @@
                 <button class="btn review-button w-100 mt-3" onclick="startTodayReview()">Ôn tập hôm nay</button>
             </div>
 
-            <div class="card p-3">
-                <label class="small text-muted">Tìm & lọc trong bảng</label>
-                <div class="table-tools">
-                    <input type="text" id="tableSearch" class="form-control" placeholder="Tìm từ đang học..." oninput="applyTableFilter()">
-                    <select id="sortMode" class="form-select" onchange="renderTable()">
-                        <option value="newest">Mới thêm</option>
-                        <option value="az">A-Z chữ Hán</option>
-                        <option value="type">Loại từ</option>
-                        <option value="due">Cần ôn trước</option>
+            <div class="card p-3 offline-dict-card primary-tool-card">
+                <div class="offline-dict-title">
+                    <strong>📖 Tra từ / phân tích câu offline</strong>
+                    <span class="type-pill">Không AI</span>
+                </div>
+                <!-- <div class="offline-dict-note">Nhập tiếng Trung để phân tích câu, hoặc nhập tiếng Việt như “hôm nay tôi mệt quá”, “ngân hàng”, “cảm thấy” để tìm từ Trung tương ứng. Đây là chức năng chính thay cho ô “Tra & Thêm từ” cũ.</div> -->
+                <textarea id="offlineInput" class="form-control" rows="3" placeholder="Nhập Câu/Từ Hán, Việt, Pinyin"></textarea>
+                <div class="offline-action-row">
+                    <button class="btn btn-primary offline-main-btn" type="button" onclick="offlineLookup()">🔍 Tra từ / phân tích câu</button>
+                    <button class="btn btn-outline-success offline-secondary-btn" type="button" onclick="addOfflineResultWords()">＋ Thêm từ tìm được</button>
+                    <button class="btn btn-outline-danger offline-secondary-btn" type="button" onclick="clearOfflineResults()">🧹 Xóa kết quả</button>
+                </div>
+                <div id="offlineResult" class="offline-result"></div>
+            </div>
+
+            <details class="card control-fold" id="foldFilter">
+                <summary class="control-fold-head">
+                    <span class="control-fold-title">🔍 Tìm & lọc trong bảng</span>
+                    <span class="control-fold-caret">▼</span>
+                </summary>
+                <div class="control-fold-body">
+                    <div class="table-tools">
+                        <input type="text" id="tableSearch" class="form-control" placeholder="Tìm từ đang học..." oninput="applyTableFilter()">
+                        <select id="sortMode" class="form-select" onchange="renderTable()">
+                            <option value="newest">Mới thêm</option>
+                            <option value="az">A-Z chữ Hán</option>
+                            <option value="type">Loại từ</option>
+                            <option value="due">Cần ôn trước</option>
+                        </select>
+                    </div>
+                    <div class="quick-filter-row">
+                        <button class="quick-chip active" type="button" data-filter="all" onclick="setQuickFilter('all')">Tất cả</button>
+                        <button class="quick-chip" type="button" data-filter="due" onclick="setQuickFilter('due')">Cần ôn</button>
+                        <button class="quick-chip" type="button" data-filter="favorite" onclick="setQuickFilter('favorite')">Yêu thích</button>
+                        <button class="quick-chip" type="button" data-filter="mastered" onclick="setQuickFilter('mastered')">Đã thuộc</button>
+                        <button class="quick-chip" type="button" data-filter="learning" onclick="setQuickFilter('learning')">Đang học</button>
+                    </div>
+                </div>
+            </details>
+
+            <details class="card control-fold" id="foldRandom">
+                <summary class="control-fold-head">
+                    <span class="control-fold-title">🎲 Thêm từ nhanh</span>
+                    <span class="control-fold-caret">▼</span>
+                </summary>
+                <div class="control-fold-body">
+                    <label class="small text-muted">Số từ muốn thêm ngẫu nhiên</label>
+                    <div class="input-group mb-2">
+                        <input type="number" id="randomCount" class="form-control" value="5">
+                        <button class="btn btn-outline-info" onclick="addRandomWords()">Ngẫu nhiên</button>
+                    </div>
+                </div>
+            </details>
+
+            <details class="card control-fold" id="foldTopic">
+                <summary class="control-fold-head">
+                    <span class="control-fold-title">🏷️ Thêm từ theo chủ đề</span>
+                    <span class="control-fold-caret">▼</span>
+                </summary>
+                <div class="control-fold-body">
+                    <div class="row g-2 mb-2">
+                        <div class="col-8">
+                            <input type="text" id="topicInput" class="form-control" placeholder="VD: hsk1, hsk2...">
+                        </div>
+                        <div class="col-4">
+                            <input type="number" id="topicCount" class="form-control" value="5">
+                        </div>
+                    </div>
+                    <button class="btn btn-outline-primary w-100" onclick="addByTopic()">Thêm theo chủ đề</button>
+                </div>
+            </details>
+
+            <details class="card control-fold" id="foldQuiz">
+                <summary class="control-fold-head">
+                    <span class="control-fold-title">📝 Tạo bài kiểm tra</span>
+                    <span class="control-fold-caret">▼</span>
+                </summary>
+                <div class="control-fold-body">
+                    <input type="hidden" id="quizMode" value="zh-vi">
+                    <label class="small text-muted mb-2 d-block">Chọn chế độ kiểm tra</label>
+                    <div class="quiz-mode-picker" id="quizModePicker">
+                        <button type="button" class="quiz-mode-btn active" data-mode="zh-vi" onclick="setQuizMode('zh-vi')">🇨🇳 → 🇻🇳</button>
+                        <button type="button" class="quiz-mode-btn" data-mode="vi-zh" onclick="setQuizMode('vi-zh')">🇻🇳 → 🇨🇳</button>
+                        <button type="button" class="quiz-mode-btn" data-mode="listen" onclick="setQuizMode('listen')">🔊 Nghe</button>
+                        <button type="button" class="quiz-mode-btn" data-mode="mix" onclick="setQuizMode('mix')">🔀 Trộn</button>
+                    </div>
+
+                    <label class="small text-muted mt-3 mb-2 d-block">Số câu</label>
+                    <select id="quizQuestionCount" class="form-select mb-2">
+                        <option value="10">10 câu</option>
+                        <option value="20" selected>20 câu</option>
+                        <option value="30">30 câu</option>
+                        <option value="50">50 câu</option>
+                        <option value="all">Tất cả từ đang có</option>
+                    </select>
+
+                    <div class="quiz-options-box">
+                        <label><input type="checkbox" id="quizOnlyDue"> Chỉ hỏi từ cần ôn</label>
+                        <label><input type="checkbox" id="quizOnlyLearning"> Bỏ qua từ đã thuộc</label>
+                    </div>
+
+                    <button class="btn btn-warning w-100 mt-3" onclick="startQuiz()">Bắt đầu bài kiểm tra</button>
+                </div>
+            </details>
+
+            <details class="control-fold" id="foldSpeech">
+                <summary class="control-fold-head">
+                    <span class="control-fold-title">🔊 Tốc độ nghe</span>
+                    <!-- <div class="control-fold-subtitle">Điều chỉnh tốc độ phát âm</div> -->
+                    <span class="control-fold-caret">▼</span>
+                </summary>
+
+                <div class="control-fold-body">
+                    <select id="speechRate" class="form-select">
+                        <option value="0.2">🐢 Rất chậm (0.2x)</option>
+                        <option value="0.5">🐢 Chậm (0.5x)</option>
+                        <option value="0.75">🙂 Vừa (0.75x)</option>
+                        <option value="1" selected>⚡ Bình thường (1x)</option>
+                        <option value="1.5">🚀 Nhanh (1.5x)</option>
                     </select>
                 </div>
-                <div class="quick-filter-row">
-                    <button class="quick-chip active" type="button" data-filter="all" onclick="setQuickFilter('all')">Tất cả</button>
-                    <button class="quick-chip" type="button" data-filter="due" onclick="setQuickFilter('due')">Cần ôn</button>
-                    <button class="quick-chip" type="button" data-filter="favorite" onclick="setQuickFilter('favorite')">Yêu thích</button>
-                    <button class="quick-chip" type="button" data-filter="mastered" onclick="setQuickFilter('mastered')">Đã thuộc</button>
-                    <button class="quick-chip" type="button" data-filter="learning" onclick="setQuickFilter('learning')">Đang học</button>
-                </div>
-            </div>
-
-            <div class="card p-4">
-                <textarea id="wordInput" class="form-control mb-2" rows="2" placeholder="Nhập từ, ví dụ: 觉得, 路..."></textarea>
-                <button class="btn btn-primary w-100" onclick="processAllWords()">Tra & Thêm từ</button>
-            </div>
-
-            <div class="card p-3">
-                <label class="small text-muted">Thêm từ nhanh</label>
-                <div class="input-group mb-2">
-                    <input type="number" id="randomCount" class="form-control" value="10">
-                    <button class="btn btn-outline-info" onclick="addRandomWords()">Ngẫu nhiên</button>
-                </div>
-            </div>
-
-            <div class="card p-3">
-                <label class="small text-muted">Thêm từ theo chủ đề</label>
-                <div class="row g-2 mb-2">
-                    <div class="col-8">
-                        <input type="text" id="topicInput" class="form-control" placeholder="VD: hsk1, hsk2...">
-                    </div>
-                    <div class="col-4">
-                        <input type="number" id="topicCount" class="form-control" value="5">
-                    </div>
-                </div>
-                <button class="btn btn-outline-primary w-100" onclick="addByTopic()">Thêm theo chủ đề</button>
-            </div>
-
-            <div class="card p-3">
-                <label class="small text-muted">Tạo bài kiểm tra</label>
-                <select id="quizMode" class="form-select mb-2">
-                    <option value="zh-vi">Trung - Việt</option>
-                    <option value="vi-zh">Việt - Trung</option>
-                    <option value="listen">Luyện nghe</option>
-                </select>
-                <button class="btn btn-warning w-100" onclick="startQuiz()">Bắt đầu bài kiểm tra</button>
-            </div>
-
-            <div class="card p-3">
-                <label class="small text-muted">Tốc độ đọc</label>
-                <select id="speechRate" class="form-select">
-                    <option value="0.2">Ơ sao chậm thế? (0.2x)</option>
-                    <option value="0.5">Rất chậm (0.5x)</option>
-                    <option value="0.75">Chậm (0.75x)</option>
-                    <option value="1" selected>Bình thường (1x)</option>
-                    <option value="1.5">Nhanh (1.5x)</option>
-                </select>
-            </div>
+            </details>
 
             <div class="card p-3">
                 <div class="d-flex gap-2">
@@ -2031,8 +2465,8 @@
             let myModal = new bootstrap.Modal(document.getElementById('messageModal'));
             myModal.show();
         }
-        // giới hạn từ
-        const MAX_WORDS = 200;
+    
+        const MAX_WORDS = 100;
         let vocabData = JSON.parse(localStorage.getItem('myChineseVocab')) || [];
 
         // Nếu dữ liệu cũ đã vượt quá 100 từ thì chỉ tải 100 từ đầu để tránh nặng máy.
@@ -2310,7 +2744,7 @@
     const typeText = obj.fromType || "-";
     const favoriteIcon = obj.favorite ? "⭐" : "☆";
     const masteredIcon = obj.mastered ? "✅" : "☑️";
-    const dueText = isDueToday(obj) ? "Hôm nay cần ôn" : `Ôn: ${obj.nextReview || "-"}`;
+    const dueText = isDueToday(obj) ? "Hôm nay cần ôn" : `Ôn lại vào: ${obj.nextReview || "-"}`;
 
     let exampleText = obj.example || "";
     let highlightedExample = exampleText.replace(new RegExp(obj.word, 'g'), `<span class="example-highlight">${obj.word}</span>`);
@@ -2406,96 +2840,167 @@
         }
     
     // Hàm khởi tạo bài kiểm tra
-   function startQuiz(sourceWords = null) {
-    if (vocabData.length === 0) return showModal("Vui lòng thêm từ trước!");
-    
-    const mode = document.getElementById("quizMode").value;
-    const quizForm = document.getElementById("quizForm");
-    quizForm.innerHTML = ""; 
-    
-    // Xáo trộn mảng từ trước khi hiển thị
-    currentQuizWords = sourceWords && sourceWords.length ? sourceWords : vocabData;
-    let shuffledData = [...currentQuizWords].sort(() => 0.5 - Math.random());
+   function setQuizMode(mode, rerender = false) {
+    const input = document.getElementById("quizMode");
+    if (input) input.value = mode;
 
-    document.getElementById("inputArea").style.display="none";
-
-    document.getElementById("tableContainer").style.display="none";
-
-    const quiz=document.getElementById("quizSection");
-
-    quiz.style.display="block";
-
-    quiz.scrollIntoView({
-        behavior:"smooth",
-        block:"center"
+    document.querySelectorAll('.quiz-mode-btn, .quiz-live-mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
     });
 
-    shuffledData.forEach((item, index) => {
+    if (rerender && document.getElementById("quizSection")?.style.display !== "none") {
+        renderQuizQuestions(currentQuizWords, mode);
+    }
+}
+
+function getQuizModeLabel(mode) {
+    if (mode === "zh-vi") return "Trung → Việt";
+    if (mode === "vi-zh") return "Việt → Trung";
+    if (mode === "listen") return "Luyện nghe";
+    if (mode === "mix") return "Trộn";
+    return "Kiểm tra";
+}
+
+function getRealQuizMode(mode, index) {
+    if (mode !== "mix") return mode;
+    const modes = ["zh-vi", "vi-zh", "listen"];
+    return modes[index % modes.length];
+}
+
+function ensureQuizModeTools() {
+    const quiz = document.getElementById("quizSection");
+    const title = quiz?.querySelector("h2");
+    if (!quiz || !title) return;
+
+    let tools = document.getElementById("quizLiveModeTools");
+    if (!tools) {
+        tools = document.createElement("div");
+        tools.id = "quizLiveModeTools";
+        tools.className = "quiz-live-panel";
+        title.insertAdjacentElement("afterend", tools);
+    }
+
+    tools.innerHTML = `
+        <div class="quiz-live-mode-tools">
+            <button type="button" class="quiz-live-mode-btn" data-mode="zh-vi" onclick="setQuizMode('zh-vi', true)">🇨🇳 → 🇻🇳</button>
+            <button type="button" class="quiz-live-mode-btn" data-mode="vi-zh" onclick="setQuizMode('vi-zh', true)">🇻🇳 → 🇨🇳</button>
+            <button type="button" class="quiz-live-mode-btn" data-mode="listen" onclick="setQuizMode('listen', true)">🔊 Nghe</button>
+            <button type="button" class="quiz-live-mode-btn" data-mode="mix" onclick="setQuizMode('mix', true)">🔀 Trộn</button>
+        </div>
+    `;
+}
+
+function renderQuizQuestions(words, mode) {
+    const quizForm = document.getElementById("quizForm");
+    const quizResult = document.getElementById("quizResult");
+    if (!quizForm) return;
+
+    quizForm.innerHTML = "";
+    if (quizResult) quizResult.innerHTML = "";
+
+    ensureQuizModeTools();
+    setQuizMode(mode, false);
+
+    words.forEach((item, index) => {
+        const realMode = getRealQuizMode(mode, index);
         let displayContent = "";
-        if (mode === "zh-vi") {
-            displayContent = `<span class="quiz-hanzi">${item.word}</span>`;
-        } else if (mode === "vi-zh") {
-            displayContent = `<b style="font-size:1.1rem;">${item.meaning}</b>`;
-        } else if (mode === "listen") {
-            // Chế độ nghe: Chỉ hiện nút phát âm
-            displayContent = `<span class="quiz-listen-row"><button type="button" class="btn-audio quiz-listen-btn" onclick="speakChinese('${item.word}')">🔊 <span>Nghe phát âm</span></button></span>`;
+        let placeholder = "Nhập đáp án...";
+
+        if (realMode === "zh-vi") {
+            displayContent = `<span class="quiz-hanzi">${item.word}</span><span class="quiz-question-meta">Trung → Việt</span>`;
+            placeholder = "Nhập nghĩa tiếng Việt...";
+        } else if (realMode === "vi-zh") {
+            displayContent = `<b style="font-size:1.1rem;">${item.meaning}</b><span class="quiz-question-meta">Việt → Trung</span>`;
+            placeholder = "Nhập chữ Hán hoặc pinyin...";
+        } else if (realMode === "listen") {
+            displayContent = `<span class="quiz-listen-row"><button type="button" class="btn-audio quiz-listen-btn" onclick="speakChinese('${item.word}')">🔊 <span>Nghe phát âm</span></button></span><span class="quiz-question-meta">Nghe</span>`;
+            placeholder = "Nghe rồi nhập chữ Hán hoặc pinyin...";
         }
-        
+
         let div = document.createElement("div");
         div.className = "quiz-question-card";
         div.innerHTML = `
             <label class="form-label"><b>${index + 1}.</b> ${displayContent}</label>
             <input type="text" class="form-control quiz-ans" 
-                   data-correct-word="${item.word.toLowerCase()}" 
-                   data-correct-pinyin="${item.pinyin.toLowerCase()}" 
-                   data-correct-meaning="${item.meaning.toLowerCase()}"
+                   data-quiz-mode="${realMode}"
+                   data-correct-word="${String(item.word).toLowerCase()}" 
+                   data-correct-pinyin="${String(item.pinyin || '').toLowerCase()}" 
+                   data-correct-meaning="${String(item.meaning || '').toLowerCase()}"
                    data-word="${item.word}"
-                   placeholder="Nhập đáp án...">
+                   placeholder="${placeholder}">
         `;
         quizForm.appendChild(div);
     });
 }
-    
-        // Hàm kiểm tra đáp án (Bản nâng cấp: không phân biệt hoa thường + hiện đáp án đúng)
+
+// Hàm khởi tạo bài kiểm tra
+function startQuiz(sourceWords = null) {
+    if (vocabData.length === 0) return showModal("Vui lòng thêm từ trước!");
+
+    let selectedWords = sourceWords && sourceWords.length ? [...sourceWords] : [...vocabData];
+
+    if (!sourceWords) {
+        const onlyDue = document.getElementById("quizOnlyDue")?.checked;
+        const onlyLearning = document.getElementById("quizOnlyLearning")?.checked;
+        if (onlyDue) selectedWords = selectedWords.filter(isDueToday);
+        if (onlyLearning) selectedWords = selectedWords.filter(item => item.mastered !== true);
+    }
+
+    if (selectedWords.length === 0) {
+        return showModal("Không có từ phù hợp với bộ lọc bài kiểm tra. Hãy bỏ bớt điều kiện hoặc thêm từ mới.");
+    }
+
+    selectedWords = selectedWords.sort(() => 0.5 - Math.random());
+
+    const countValue = document.getElementById("quizQuestionCount")?.value || "all";
+    if (countValue !== "all") {
+        selectedWords = selectedWords.slice(0, parseInt(countValue, 10) || selectedWords.length);
+    }
+
+    currentQuizWords = selectedWords;
+    const mode = document.getElementById("quizMode")?.value || "zh-vi";
+
+    document.getElementById("inputArea").style.display = "none";
+    document.getElementById("tableContainer").style.display = "none";
+
+    const quiz = document.getElementById("quizSection");
+    quiz.style.display = "block";
+
+    renderQuizQuestions(currentQuizWords, mode);
+
+    quiz.scrollIntoView({ behavior: "smooth", block: "center" });
+}
+
+// Hàm kiểm tra đáp án: mỗi câu tự chấm theo chế độ riêng
 function checkQuiz() {
     let score = 0;
     let total = document.querySelectorAll('.quiz-ans').length;
-    const mode = document.getElementById("quizMode").value;
-    
+
     document.querySelectorAll('.quiz-ans').forEach((input) => {
-        // Lấy giá trị người dùng nhập và chuẩn hóa
-        // Dùng removeTone cho Pinyin/Hán, dùng normalizeVietnamese cho tiếng Việt
-        let userAnswer = (mode === "zh-vi") 
-            ? normalizeVietnamese(input.value) 
+        const mode = input.dataset.quizMode || document.getElementById("quizMode")?.value || "zh-vi";
+
+        let userAnswer = (mode === "zh-vi")
+            ? normalizeVietnamese(input.value)
             : removeTone(input.value.trim().toLowerCase());
-        
-        // Lấy dữ liệu gốc từ data-attributes
+
         let correctWord = input.dataset.correctWord.toLowerCase();
         let correctPinyin = removeTone(input.dataset.correctPinyin.toLowerCase());
-        let correctMeaning = (mode === "zh-vi") ? normalizeVietnamese(input.dataset.correctMeaning) : "";
-        let correctExample = (input.dataset.correctExample || "").toLowerCase();
-        let correctExamplePinyin = removeTone(pinyinPro.pinyin(input.dataset.correctExample || "", { toneType: 'none' }).replace(/\s+/g, ''));
+        let correctMeaning = normalizeVietnamese(input.dataset.correctMeaning);
 
         let parent = input.parentElement;
         let oldMsg = parent.querySelector('.show-answer');
         if (oldMsg) oldMsg.remove();
-    
+
         let isCorrect = false;
-    
-        // 1. LOGIC CHẤM ĐIỂM
-        if (mode === "vi-zh") {
+
+        if (mode === "vi-zh" || mode === "listen") {
             if (userAnswer === correctWord || userAnswer === correctPinyin) isCorrect = true;
-        } else if (mode === "listen") {
-            if (userAnswer === correctWord || userAnswer === correctPinyin) isCorrect = true;
-        } else if (mode === "listen-example") {
-            if (userAnswer === correctExample || userAnswer === correctExamplePinyin) isCorrect = true;
         } else if (mode === "zh-vi") {
             if (userAnswer === correctMeaning) isCorrect = true;
         }
-    
+
         updateWordReview(input.dataset.word || correctWord, isCorrect);
 
-        // 2. LOGIC HIỂN THỊ KẾT QUẢ
         if (isCorrect) {
             input.className = "form-control quiz-ans correct-input";
             score++;
@@ -2503,23 +3008,19 @@ function checkQuiz() {
             input.className = "form-control quiz-ans wrong-input";
             let msg = document.createElement("div");
             msg.className = "show-answer";
-            
-            // Hiển thị đáp án gợi ý theo chế độ
+
             let hint = "";
             if (mode === "vi-zh" || mode === "listen") {
                 hint = `${input.dataset.correctWord} (${input.dataset.correctPinyin})`;
             } else if (mode === "zh-vi") {
                 hint = input.dataset.correctMeaning;
-            } else if (mode === "listen-example") {
-                let exPinyin = pinyinPro.pinyin(input.dataset.correctExample, { toneType: 'none' }).replace(/\s+/g, '');
-                hint = `${input.dataset.correctExample} (${exPinyin})`;
             }
-            
+
             msg.textContent = `Đáp án: ${hint}`;
             parent.appendChild(msg);
         }
     });
-    
+
     saveVocab();
     showQuizFeedback(score, total);
 }
@@ -2581,6 +3082,346 @@ function launchConfetti() {
 
     setTimeout(() => layer.remove(), 4300);
 }
+
+
+
+        /* ===== Tra từ / phân tích câu offline, không AI/API ===== */
+        let offlineLastTokens = [];
+
+        function buildOfflineDictionary() {
+            const dict = new Map();
+            const add = (item) => {
+                if (!item || !item.word) return;
+                const word = String(item.word).trim();
+                if (!word) return;
+                if (!dict.has(word)) dict.set(word, initWordMeta(item));
+            };
+
+            try {
+                if (Array.isArray(window.allVocabulary)) window.allVocabulary.forEach(add);
+                if (window.fullLibrary && typeof window.fullLibrary === "object") {
+                    Object.values(window.fullLibrary).forEach(list => {
+                        if (Array.isArray(list)) list.forEach(add);
+                    });
+                }
+            } catch (e) {
+                console.warn("Không đọc được thư viện ngoài:", e);
+            }
+
+            vocabData.forEach(add);
+            return dict;
+        }
+
+        function isChineseChar(ch) {
+            return /[\u4e00-\u9fff]/.test(ch);
+        }
+
+        function isChineseText(text) {
+            return /[\u4e00-\u9fff]/.test(text || "");
+        }
+
+        function escapeHtml(str) {
+            return String(str ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        function escapeAttr(str) {
+            return escapeHtml(str).replace(/`/g, "&#96;");
+        }
+
+        function segmentChineseSentence(text, dict) {
+            const tokens = [];
+            const clean = String(text || "").trim();
+            const maxLen = Math.min(8, Math.max(1, ...Array.from(dict.keys()).map(w => [...w].length)));
+            let i = 0;
+            const chars = [...clean];
+
+            while (i < chars.length) {
+                const ch = chars[i];
+
+                if (/\s/.test(ch)) { i++; continue; }
+
+                if (!isChineseChar(ch)) {
+                    let j = i + 1;
+                    while (j < chars.length && !isChineseChar(chars[j]) && !/\s/.test(chars[j])) j++;
+                    const raw = chars.slice(i, j).join("");
+                    tokens.push({ word: raw, raw, unknown: true, punctuation: true });
+                    i = j;
+                    continue;
+                }
+
+                let found = null;
+                const limit = Math.min(maxLen, chars.length - i);
+                for (let len = limit; len >= 1; len--) {
+                    const candidate = chars.slice(i, i + len).join("");
+                    if (dict.has(candidate)) {
+                        found = dict.get(candidate);
+                        break;
+                    }
+                }
+
+                if (found) {
+                    tokens.push({ ...found, unknown: false });
+                    i += [...found.word].length;
+                } else {
+                    const single = ch;
+                    tokens.push({
+                        word: single,
+                        pinyin: getPinyin(single),
+                        meaning: "Chưa có trong thư viện",
+                        fromType: "-",
+                        unknown: true
+                    });
+                    i++;
+                }
+            }
+
+            return tokens.filter(t => t.word && !/^[，。！？、,.!?;；：:]$/.test(t.word));
+        }
+
+        function tokenizeVietnameseText(text) {
+            return removeTone(String(text || "").toLowerCase())
+                .replace(/[^a-z0-9\s]/g, " ")
+                .split(/\s+/)
+                .map(x => x.trim())
+                .filter(Boolean);
+        }
+
+        function getVietnameseSearchText(item) {
+            return removeTone(`${item.meaning || ""} ${item.trans || ""} ${item.fromType || ""}`.toLowerCase())
+                .replace(/[^a-z0-9\s]/g, " ")
+                .replace(/\s+/g, " ")
+                .trim();
+        }
+
+        function findBestVietnameseMatch(phrase, dict, usedWords = new Set()) {
+            const q = removeTone(String(phrase || "").toLowerCase()).replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+            if (!q) return null;
+
+            let best = null;
+            let bestScore = 0;
+            for (const item of dict.values()) {
+                if (!item || !item.word || usedWords.has(item.word)) continue;
+                const text = getVietnameseSearchText(item);
+                if (!text) continue;
+
+                let score = 0;
+                if (text === q) score = 100;
+                else if (text.startsWith(q + " ")) score = 92;
+                else if (text.includes(" " + q + " ")) score = 88;
+                else if (text.includes(q)) score = 75;
+                else {
+                    const qWords = q.split(" ");
+                    const matched = qWords.filter(w => w.length > 1 && text.includes(w)).length;
+                    if (matched === qWords.length && qWords.length > 1) score = 60 + matched;
+                    else if (matched > 0 && qWords.length === 1) score = 40;
+                }
+
+                // Ưu tiên từ ngắn/gọn khi điểm bằng nhau, vì thường sát nghĩa hơn cho từng cụm Việt.
+                if (score > bestScore || (score === bestScore && best && String(item.word).length < String(best.word).length)) {
+                    bestScore = score;
+                    best = item;
+                }
+            }
+
+            return bestScore >= 60 ? { ...best, unknown: false, viQuery: phrase } : null;
+        }
+
+        function segmentVietnameseSentence(text, dict) {
+            const words = tokenizeVietnameseText(text);
+            const tokens = [];
+            const usedWords = new Set();
+            let i = 0;
+            const maxLen = Math.min(5, words.length);
+
+            while (i < words.length) {
+                let found = null;
+                let foundLen = 0;
+
+                for (let len = Math.min(maxLen, words.length - i); len >= 1; len--) {
+                    const phrase = words.slice(i, i + len).join(" ");
+                    const match = findBestVietnameseMatch(phrase, dict, usedWords);
+                    if (match) {
+                        found = match;
+                        found.viQuery = phrase;
+                        foundLen = len;
+                        break;
+                    }
+                }
+
+                if (found) {
+                    tokens.push(found);
+                    usedWords.add(found.word);
+                    i += foundLen;
+                } else {
+                    tokens.push({
+                        word: words[i],
+                        pinyin: "",
+                        meaning: "Chưa tìm thấy từ Trung tương ứng trong thư viện",
+                        fromType: "-",
+                        unknown: true,
+                        viQuery: words[i]
+                    });
+                    i++;
+                }
+            }
+
+            return tokens;
+        }
+
+        function lookupSingleTerm(query, dict) {
+            const rawQuery = String(query || "").trim();
+            const q = rawQuery.toLowerCase();
+            const qNoTone = removeTone(q);
+            const all = Array.from(dict.values());
+
+            let exact = dict.get(rawQuery);
+            if (exact) return [{ ...exact, unknown: false }];
+
+            const scoreItem = (item) => {
+                const word = String(item.word || "").toLowerCase();
+                const pinyinNoTone = removeTone(item.pinyin || "");
+                const meaningNoTone = removeTone(String(item.meaning || "").toLowerCase());
+                const transNoTone = removeTone(String(item.trans || "").toLowerCase());
+                const exampleNoTone = removeTone(String(item.example || "").toLowerCase());
+                const typeNoTone = removeTone(String(item.fromType || "").toLowerCase());
+
+                if (word === q) return 100;
+                if (meaningNoTone === qNoTone) return 95;
+                if (pinyinNoTone === qNoTone) return 90;
+                if (word.includes(q)) return 80;
+                if (meaningNoTone.includes(qNoTone)) return 70;
+                if (transNoTone.includes(qNoTone)) return 62;
+                if (pinyinNoTone.includes(qNoTone)) return 58;
+                if (typeNoTone.includes(qNoTone)) return 35;
+                if (exampleNoTone.includes(qNoTone)) return 25;
+                return 0;
+            };
+
+            return all
+                .map(item => ({ item, score: scoreItem(item) }))
+                .filter(x => x.score > 0)
+                .sort((a, b) => b.score - a.score || String(a.item.word).length - String(b.item.word).length)
+                .slice(0, 30)
+                .map(x => ({ ...x.item, unknown: false }));
+        }
+
+        function offlineLookup() {
+            const input = document.getElementById("offlineInput");
+            const result = document.getElementById("offlineResult");
+            if (!input || !result) return;
+
+            const query = input.value.trim();
+            if (!query) return showModal("Vui lòng nhập từ hoặc câu cần tra.");
+
+            const dict = buildOfflineDictionary();
+            const chineseChars = [...query].filter(isChineseChar).length;
+            let tokens = [];
+
+            if (isChineseText(query) && chineseChars > 1) {
+                tokens = segmentChineseSentence(query, dict);
+            } else if (!isChineseText(query) && tokenizeVietnameseText(query).length > 1) {
+                tokens = segmentVietnameseSentence(query, dict);
+            } else {
+                tokens = lookupSingleTerm(query, dict);
+            }
+
+            offlineLastTokens = tokens.filter(t => !t.unknown && !t.punctuation);
+            renderOfflineResult(query, tokens);
+        }
+
+        function renderOfflineResult(query, tokens) {
+            const result = document.getElementById("offlineResult");
+            if (!result) return;
+
+            if (!tokens.length) {
+                result.classList.add("show");
+                result.innerHTML = `<div class="offline-summary"><div class="offline-summary-label">Không tìm thấy</div><div class="offline-summary-main">Chưa có dữ liệu phù hợp trong thư viện hiện tại.</div></div>`;
+                return;
+            }
+
+            const known = tokens.filter(t => !t.unknown && !t.punctuation);
+            const isVietnameseLookup = !isChineseText(query);
+            const roughTranslation = known.map(t => t.meaning).filter(Boolean).join(" / ") || "Chưa đủ dữ liệu để ghép nghĩa.";
+            const pinyinLine = tokens.map(t => t.pinyin || (isChineseText(t.word) ? getPinyin(t.word) : t.word)).join(" ");
+
+            const rows = tokens.map(t => {
+                const isKnown = !t.unknown && !t.punctuation;
+                const safeWord = escapeAttr(t.word);
+                return `
+                    <div class="offline-token ${isKnown ? "" : "offline-unknown"}">
+                        <div class="offline-token-head">
+                            <div>
+                                ${t.viQuery ? `<div class="offline-mini-badge" style="margin-bottom:6px;">${escapeHtml(t.viQuery)}</div>` : ""}
+                                <div class="offline-token-word">${escapeHtml(t.word)}</div>
+                                <div class="offline-token-pinyin">${escapeHtml(t.pinyin || (isChineseText(t.word) ? getPinyin(t.word) : ""))}</div>
+                            </div>
+                            <div class="offline-token-actions">
+                                ${isChineseText(t.word) ? `<button class="offline-token-btn" type="button" title="Nghe" onclick="speakChinese('${safeWord}')">🔊</button>` : ""}
+                                ${isKnown ? `<button class="offline-token-btn" type="button" title="Thêm vào bảng" onclick="addOneOfflineWord('${safeWord}')">＋</button>` : ""}
+                            </div>
+                        </div>
+                        <div class="offline-token-meaning">${escapeHtml(t.meaning || "Chưa có nghĩa")}</div>
+                        <div class="offline-token-meta">
+                            <span class="offline-mini-badge">${escapeHtml(t.fromType || "-")}</span>
+                            ${t.example ? `<span class="offline-mini-badge">Có ví dụ</span>` : ""}
+                            ${t.unknown ? `<span class="offline-mini-badge">Chưa có dữ liệu</span>` : ""}
+                        </div>
+                    </div>`;
+            }).join("");
+
+            result.classList.add("show");
+            result.innerHTML = `
+                <div class="offline-summary">
+                    <div class="offline-summary-label">${isVietnameseLookup ? "Kết quả tìm theo tiếng Việt" : "Kết quả phân tích"}</div>
+                    <div class="offline-summary-main">${escapeHtml(query)}</div>
+                    <div class="offline-token-pinyin" style="margin-top:6px;">${isVietnameseLookup ? "Tìm thấy " + known.length + " từ/cụm từ phù hợp" : escapeHtml(pinyinLine)}</div>
+                    <div class="offline-token-meaning" style="margin-top:8px;">${isVietnameseLookup ? "Nếu nhập cả câu tiếng Việt, hệ thống sẽ tách cụm và dò ngược trong thư viện. Chọn ＋ để thêm từ bạn cần." : "Dịch thô theo từ điển: " + escapeHtml(roughTranslation)}</div>
+                </div>
+                <div class="offline-token-list">${rows}</div>
+            `;
+        }
+
+        function addOneOfflineWord(word) {
+            const dict = buildOfflineDictionary();
+            const item = dict.get(word);
+            if (!item) return showModal("Không tìm thấy từ này trong thư viện.");
+            if (vocabData.find(i => i.word === item.word)) return showModal(`Từ "${item.word}" đã có trong bảng.`);
+            if (!canAddMoreWords()) return;
+            vocabData.push(initWordMeta(item));
+            saveVocab();
+            renderTable();
+            showModal(`Đã thêm "${item.word}" vào bảng từ vựng.`);
+        }
+
+        function addOfflineResultWords() {
+            if (!offlineLastTokens.length) {
+                offlineLookup();
+                if (!offlineLastTokens.length) return;
+            }
+
+            let added = 0;
+            for (const item of offlineLastTokens) {
+                if (vocabData.length >= MAX_WORDS) break;
+                if (!vocabData.find(i => i.word === item.word)) {
+                    vocabData.push(initWordMeta(item));
+                    added++;
+                }
+            }
+
+            if (added > 0) {
+                saveVocab();
+                renderTable();
+                showModal(`Đã thêm ${added} từ tìm được vào bảng.`);
+            } else {
+                showModal(vocabData.length >= MAX_WORDS ? `Đã đạt giới hạn ${MAX_WORDS} từ.` : "Các từ tìm được đã có sẵn trong bảng.");
+            }
+        }
+
 
         // Hàm tìm kiếm & thêm từ
     function processAllWords() {
@@ -2778,12 +3619,30 @@ function resetWriter() {
     }, 100);
 }
 
+// Sửa cảnh báo aria-hidden khi đóng Bootstrap modal mà nút vẫn đang focus
 document.addEventListener("hide.bs.modal", function (event) {
-    if (event.target.contains(document.activeElement)) {
+    if (event.target && event.target.contains(document.activeElement)) {
         document.activeElement.blur();
     }
 });
 
+
+        function clearOfflineResults() {
+            offlineLastTokens = [];
+            const input = document.getElementById("offlineInput");
+            const result = document.getElementById("offlineResult");
+            if (input) input.value = "";
+            if (result) {
+                result.classList.remove("show");
+                result.innerHTML = "";
+            }
+        }
+
+
+
+        document.addEventListener("DOMContentLoaded", function() {
+            setQuizMode(document.getElementById("quizMode")?.value || "zh-vi");
+        });
     </script>
 </body>
 </html>
