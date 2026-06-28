@@ -1,398 +1,451 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sổ tay từ vựng</title>
-    <link rel="icon" type="image/png" href="eng.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <style>
-        body { background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%); min-height: 100vh; padding: 20px 10px; }
-        .container { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .btn-audio, .btn-speak { padding: 4px 8px; font-size: 12px; margin: 2px; }
-        /* Tinh chỉnh nút nghe */
-        .btn-audio, .btn-speak {
-            padding: 5px 8px;
-            font-size: 14px;
-            border-radius: 6px;
-            border: none;
-            margin: 2px;
-            transition: transform 0.1s;
-        }
-        .btn-audio:active, .btn-speak:active { transform: scale(0.95); }
-        .btn-audio { background-color: #0d6efd; color: white; }
-        .btn-speak { background-color: #ffc107; color: black; }
-        
-        /* Đảm bảo ô Phát âm không bị quá hẹp */
-        td:nth-child(3) { white-space: nowrap; }
-        /* Tối ưu bảng cho mobile */
-        .table-responsive { overflow-x: auto; }
-        #wordTable { min-width: 500px; } 
-        input.form-control { min-width: 80px; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sổ tay từ vựng Pro</title>
+  <link rel="icon" type="image/png" href="eng.png">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <style>
+    :root{
+      --bg:#eef4ff; --card:#ffffff; --card2:#f8fbff; --text:#172033; --muted:#6b7280;
+      --primary:#2563eb; --primary2:#06b6d4; --danger:#ef4444; --success:#16a34a;
+      --border:#e5e7eb; --shadow:0 18px 45px rgba(15,23,42,.10); --radius:22px;
+    }
+    [data-theme="dark"]{
+      --bg:#0b1020; --card:#151b2e; --card2:#101827; --text:#f3f6ff; --muted:#aeb8cc;
+      --primary:#7c9cff; --primary2:#4dd4ff; --danger:#ff6b7a; --success:#5ee089;
+      --border:#2b3650; --shadow:0 18px 45px rgba(0,0,0,.42);
+      color-scheme:dark;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; min-height:100vh; color:var(--text); background:
+      radial-gradient(circle at top left, rgba(37,99,235,.20), transparent 35%),
+      radial-gradient(circle at top right, rgba(6,182,212,.20), transparent 30%), var(--bg);
+      font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; padding:22px 12px;}
+    .app{max-width:1180px; margin:auto;}
+    .hero{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:24px; border:1px solid var(--border); background:linear-gradient(135deg,var(--card),var(--card2)); border-radius:var(--radius); box-shadow:var(--shadow);}
+    .hero h1{font-size:clamp(26px,4vw,42px); margin:0; font-weight:850; letter-spacing:-.04em;}
+    .hero p{color:var(--muted); margin:8px 0 0;}
+    .hero-actions{display:flex; gap:10px; flex-wrap:wrap; justify-content:flex-end;}
+    .soft-card{background:var(--card); border:1px solid var(--border); border-radius:var(--radius); box-shadow:var(--shadow); padding:18px;}
+    .section-title{font-weight:800; display:flex; align-items:center; gap:8px; margin-bottom:12px;}
+    .grid{display:grid; grid-template-columns:1.05fr .95fr; gap:16px; margin-top:16px;}
+    .tool-grid{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;}
+    .stat-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin:16px 0;}
+    .stat{padding:14px; border-radius:18px; background:var(--card); border:1px solid var(--border);}
+    .stat b{font-size:24px; display:block}.stat span{color:var(--muted); font-size:13px}
+    textarea,.form-control,.form-select{background:var(--card)!important; color:var(--text)!important; border-color:var(--border)!important; border-radius:14px!important;}
+    textarea::placeholder,.form-control::placeholder{color:var(--muted)!important; opacity:.9;}
+    [data-theme="dark"] .form-control,[data-theme="dark"] .form-select,[data-theme="dark"] textarea{
+      background:#0f172a!important; color:#f8fafc!important; border-color:#36445f!important; box-shadow:none!important;
+    }
+    [data-theme="dark"] .form-control:focus,[data-theme="dark"] .form-select:focus,[data-theme="dark"] textarea:focus{
+      border-color:#7c9cff!important; box-shadow:0 0 0 .22rem rgba(124,156,255,.18)!important;
+    }
+    [data-theme="dark"] .btn-light{background:#24314a!important;color:#f8fafc!important;border-color:#384863!important;}
+    [data-theme="dark"] .btn-outline-primary{color:#a9c1ff!important;border-color:#5e78b7!important;}
+    [data-theme="dark"] .btn-outline-secondary{color:#d5dbea!important;border-color:#526078!important;}
+    [data-theme="dark"] .btn-outline-danger{color:#ff9aa5!important;border-color:#a64e5b!important;}
+    [data-theme="dark"] .table{--bs-table-bg:#151b2e;--bs-table-color:#f3f6ff;--bs-table-border-color:#2b3650;--bs-table-hover-bg:#1d2740;--bs-table-hover-color:#ffffff;}
+    [data-theme="dark"] .modal-content{background:#151b2e;color:#f3f6ff;border-color:#2b3650;}
+    [data-theme="dark"] .btn-close{filter:invert(1) grayscale(100%);}
+    .btn{border-radius:14px; font-weight:700;}
+    .btn-icon{width:38px; height:38px; display:inline-flex; align-items:center; justify-content:center; padding:0;}
+    .table-wrap{margin-top:16px; overflow:hidden;}
+    .table-scroll{max-height:560px; overflow:auto; border-radius:18px; border:1px solid var(--border);}
+    .table-scroll::-webkit-scrollbar{width:0;height:0}
+    table{margin:0!important; min-width:820px;} th{position:sticky; top:0; z-index:2;} td,th{vertical-align:middle;}
+    .word-cell{font-weight:800; font-size:17px}.muted{color:var(--muted)}
+    .action-btn{border:0; border-radius:12px; padding:7px 9px; margin:1px; background:#eaf1ff; color:#174ea6;}
+    [data-theme="dark"] .action-btn{background:#1e293b;color:#dbeafe}
+    .empty{padding:38px; text-align:center; color:var(--muted);}
+    .quiz-card{border:1px solid var(--border); background:var(--card); border-radius:18px; padding:16px; margin-bottom:12px;}
+    .correct-input{border:2px solid var(--success)!important; background:rgba(22,163,74,.12)!important;}
+    .wrong-input{border:2px solid var(--danger)!important; background:rgba(239,68,68,.12)!important;}
+    .show-answer{color:var(--danger); font-size:.92rem; font-weight:800; margin-top:7px;}
+    .loading-bar{height:8px; background:var(--border); border-radius:999px; overflow:hidden; display:none; margin-top:12px;}
+    .loading-bar span{display:block; width:45%; height:100%; background:linear-gradient(90deg,var(--primary),var(--primary2)); border-radius:999px; animation:load 1s infinite alternate;}
+    @keyframes load{from{transform:translateX(-70%)}to{transform:translateX(160%)}}
+    .mobile-card-list{display:none;}
+    .mobile-control-toggle{display:none; width:100%; margin:12px 0 0; align-items:center; justify-content:space-between; gap:10px; border:1px solid var(--border); background:linear-gradient(135deg,var(--card),var(--card2)); color:var(--text); box-shadow:0 10px 24px rgba(15,23,42,.08);}
+    .mobile-control-toggle span{font-weight:850;}
+    .mobile-control-toggle.is-sticky{position:sticky; top:8px; z-index:50; backdrop-filter:blur(12px);}
+    body.quiz-mode .hero, body.quiz-mode .stat-grid, body.quiz-mode #mobileControlToggle, body.quiz-mode #inputArea, body.quiz-mode #tableSection{display:none!important;}
+    body.quiz-mode{padding-top:10px;}
+    body.quiz-mode .app{max-width:900px;}
+    .quiz-head{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:12px;}
+    .quiz-card strong{font-size:18px;}
+    .quiz-type{display:inline-flex; padding:5px 10px; border-radius:999px; background:rgba(37,99,235,.10); color:var(--primary); font-weight:850; font-size:12px; margin-bottom:8px;}
+    .listen-box{display:flex; align-items:center; justify-content:center; gap:10px; padding:18px; border:1px dashed var(--border); border-radius:16px; background:rgba(37,99,235,.06);}
+    .listen-btn{font-size:20px; border:0; border-radius:999px; padding:10px 16px; background:linear-gradient(135deg,var(--primary),var(--primary2)); color:white; font-weight:900;}
+    .vocab-card{perspective:1000px; cursor:pointer;}
+    .vocab-card-inner{position:relative; min-height:190px; transition:transform .45s ease; transform-style:preserve-3d;}
+    .vocab-card.flipped .vocab-card-inner{transform:rotateY(180deg);}
+    .vocab-face{position:absolute; inset:0; backface-visibility:hidden; border:1px solid var(--border); border-radius:22px; background:linear-gradient(145deg,var(--card),var(--card2)); box-shadow:0 12px 30px rgba(15,23,42,.10); padding:16px; overflow:hidden;}
+    .vocab-face::after{content:"Chạm vào thẻ để lật"; position:absolute; right:14px; bottom:10px; font-size:11px; color:var(--muted); font-weight:700; opacity:.75;}
+    .vocab-back{transform:rotateY(180deg); display:flex; flex-direction:column;}
+    .vocab-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px;}
+    .vocab-index{font-size:12px; color:var(--muted); font-weight:800;}
+    .vocab-word{font-size:28px; font-weight:900; letter-spacing:-.03em; margin-top:8px;}
+    .vocab-phonetic{display:inline-flex; margin-top:8px; padding:6px 10px; border-radius:999px; background:rgba(37,99,235,.10); color:var(--primary); font-weight:800;}
+    .vocab-actions{display:flex; gap:8px; flex-wrap:wrap; margin-top:14px;}
+    .mini-btn{border:1px solid var(--border); background:var(--card2); color:var(--text); border-radius:13px; padding:8px 10px; font-weight:800;}
+    .meaning-box{flex:1; display:flex; align-items:center; justify-content:center; text-align:center; border:1px dashed var(--border); background:rgba(37,99,235,.06); border-radius:18px; padding:18px; font-size:22px; font-weight:900; line-height:1.45; overflow:auto;}
+    .meaning-edit{margin-top:10px;}
+    [data-theme="dark"] .vocab-face{box-shadow:0 14px 36px rgba(0,0,0,.38); background:linear-gradient(145deg,#182033,#111a2d);}
+    [data-theme="dark"] .vocab-phonetic{background:rgba(124,156,255,.16); color:#bdd0ff;}
+    [data-theme="dark"] .mini-btn{background:#202a40; border-color:#394761; color:#f3f6ff;}
 
-        /* Tối ưu Input Group cho mobile */
-        @media (max-width: 576px) {
-            .input-group {
-                flex-direction: column;
-            }
-            .input-group > .form-select, 
-            .input-group > .btn {
-                width: 100% !important;
-                border-radius: 6px !important;
-                margin-left: 0 !important;
-                margin-top: 5px;
-            }
-        }
-
-        /* Thu nhỏ các input trong bảng để không bị tràn */
-        #wordTable input.form-control {
-            padding: 4px 8px;
-            font-size: 13px;
-            min-width: 60px;
-        }
-
-        .correct-input { border: 2px solid green !important; background-color: #d4edda !important; }
-        .wrong-input { border: 2px solid red !important; background-color: #f8d7da !important; }
-        .show-answer { color: red; font-size: 0.9em; font-weight: bold; margin-top: 5px; }
-    </style>
+    @media(max-width:860px){.grid{grid-template-columns:1fr}.hero{align-items:flex-start; flex-direction:column}.hero-actions{justify-content:flex-start}.tool-grid,.stat-grid{grid-template-columns:1fr} body{padding:10px}.soft-card,.hero{border-radius:18px; padding:15px} table{min-width:760px}}
+    @media(max-width:640px){
+      body{padding:8px;}
+      .hero h1{font-size:28px;}
+      .mobile-control-toggle{display:flex;}
+      .mobile-control-toggle.is-sticky{top:8px;}
+      #inputArea{transition:max-height .35s ease, opacity .25s ease, transform .25s ease; max-height:1200px; overflow:hidden; transform-origin:top;}
+      #inputArea.controls-collapsed{max-height:0; opacity:0; transform:scale(.98); margin-top:0;}
+      .hero-actions .btn{width:100%;}
+      .stat-grid{grid-template-columns:repeat(3,1fr); gap:7px;}
+      .stat{padding:10px; border-radius:15px;}
+      .stat b{font-size:20px;}
+      .table-scroll{border:0; max-height:none; overflow:visible;}
+      #wordTable{display:none;}
+      .mobile-card-list{display:grid; gap:14px;}
+      #searchInput{width:100%!important;}
+      .vocab-card-inner{min-height:210px;}
+      .vocab-actions{gap:7px;}
+      .mini-btn{padding:8px 9px; font-size:13px;}
+      .meaning-box{font-size:24px;}
+    }
+  </style>
 </head>
 <body>
+<div class="app" id="app">
+  <div class="hero">
+    <div>
+      <h1>📚 Sổ tay từ vựng</h1>
+      <p>Tích hợp giao diện Mobile tiện lợi</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn btn-light" onclick="toggleTheme()" id="themeBtn">🌙 Giao diện tối</button>
+      <button class="btn btn-outline-primary" onclick="speakSelected()">🔊 Đọc từ đã lọc</button>
+      <button class="btn btn-success" onclick="exportToExcel()">⬇ Xuất Excel</button>
+    </div>
+  </div>
 
-<div class="container">
-    <h2 class="mb-4">Sổ tay từ vựng</h2>
-    
-    <div id="inputArea">
-        <textarea id="wordInput" class="form-control" rows="3" placeholder="Nhập từ, cách nhau bởi dấu phẩy..."></textarea>
-        <button class="btn btn-primary mt-2 w-100" onclick="processAllWords()">Tra & Thêm từ</button>
-        
-        <div class="mt-3 p-3 bg-secondary bg-opacity-10 border rounded">
-            <label class="fw-bold">Thêm từ ngẫu nhiên:</label>
-            <div class="input-group mt-2">
-                <input type="number" id="randomCount" class="form-control" value="5" min="1" max="10">
-                <button class="btn btn-info" onclick="addRandomWords()">Thêm ngay</button>
-            </div>
+  <div class="stat-grid">
+    <div class="stat"><b id="totalWords">0</b><span>Tổng từ đã lưu</span></div>
+    <div class="stat"><b id="visibleWords">0</b><span>Từ đang hiển thị</span></div>
+    <div class="stat"><b id="lastScore">-</b><span>Điểm quiz gần nhất</span></div>
+  </div>
+
+  <button class="btn mobile-control-toggle" id="mobileControlToggle" onclick="toggleMobileControls()">
+    <span>⚙️ Bảng điều khiển</span><b>Thu nhỏ ▲</b>
+  </button>
+
+  <div class="grid" id="inputArea">
+    <div class="soft-card">
+      <div class="section-title">➕ Thêm từ mới</div>
+      <textarea id="wordInput" class="form-control" rows="4" placeholder="Nhập từ tiếng Anh, cách nhau bằng dấu phẩy hoặc xuống dòng..."></textarea>
+      <div class="d-flex gap-2 mt-3 flex-wrap">
+        <button class="btn btn-primary flex-grow-1" onclick="processAllWords(event)">Tra & thêm từ</button>
+        <button class="btn btn-outline-secondary" onclick="document.getElementById('wordInput').value=''">Xóa ô nhập</button>
+      </div>
+      <div class="loading-bar" id="loadingBar"><span></span></div>
+    </div>
+
+    <div class="soft-card">
+      <div class="section-title">⚙️ Công cụ nhanh</div>
+      <div class="tool-grid">
+        <div>
+          <label class="form-label fw-bold">Từ ngẫu nhiên</label>
+          <div class="input-group"><input type="number" id="randomCount" class="form-control" value="5" min="1" max="30"><button class="btn btn-info" onclick="addRandomWords(event)">Thêm</button></div>
         </div>
-
-    <div class="mt-3 p-3 bg-primary bg-opacity-10 border rounded">
-        <label class="fw-bold">Thêm từ theo chủ đề:</label>
-        <div class="row g-2 mt-2">
-            <div class="col-8">
-                <input type="text" id="topicInput" class="form-control" placeholder="Chủ đề (VD: food)">
-            </div>
-            <div class="col-4">
-                <input type="number" id="topicCount" class="form-control" value="5" min="1" max="20">
-            </div>
+        <div>
+          <label class="form-label fw-bold">Chủ đề</label>
+          <div class="input-group"><input type="text" id="topicInput" class="form-control" placeholder="food, travel..."><input type="number" id="topicCount" class="form-control" value="5" min="1" max="30"><button class="btn btn-primary" onclick="addByTopic(event)">Thêm</button></div>
         </div>
-        <button class="btn btn-primary w-100 mt-2" onclick="addByTopic()">Thêm theo chủ đề</button>
-    </div>
-        
-        <div class="mt-3 p-3 bg-light border">
-            <label class="fw-bold">Chế độ kiểm tra:</label>
-            <div class="input-group mt-2"> <select id="quizMode" class="form-select">
-                    <option value="en-vi">Anh - Việt</option>
-                    <option value="vi-en">Việt - Anh</option>
-                    <option value="mixed">Trộn Việt - Anh</option>
-                </select>
-                <button class="btn btn-warning" onclick="startQuiz()">Bắt đầu</button>
-            </div>
+        <div>
+          <label class="form-label fw-bold">Nhập Excel</label>
+          <input type="file" id="excelInput" class="form-control" accept=".xlsx,.xls,.csv" onchange="importExcel(event)">
         </div>
+        <div>
+          <label class="form-label fw-bold">Chế độ kiểm tra</label>
+          <div class="input-group"><select id="quizMode" class="form-select"><option value="en-vi">Anh → Việt</option><option value="vi-en">Việt → Anh</option><option value="listen">Nghe → Gõ từ</option><option value="mixed3">Trộn 3 chiều</option></select><button class="btn btn-warning" onclick="startQuiz()">Quiz</button></div>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <div class="table-responsive mt-4">
-        <table class="table table-bordered table-hover" id="wordTable">
-            <thead class="table-dark">
-                <tr><th>Từ vựng</th><th>Phiên âm</th><th>Phát âm</th><th>Nghĩa</th></tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+  <div class="soft-card table-wrap" id="tableSection">
+    <div class="d-flex justify-content-between align-items-center gap-2 flex-wrap mb-3">
+      <div class="section-title mb-0">🗂️ Danh sách từ vựng</div>
+      <div class="d-flex gap-2 flex-wrap">
+        <input id="searchInput" class="form-control" style="width:260px" placeholder="Tìm từ / nghĩa / phiên âm..." oninput="renderTable()">
+        <button class="btn btn-outline-secondary" onclick="sortWords()">A → Z</button>
+        <button class="btn btn-outline-danger" onclick="clearAll()">Xóa hết</button>
+      </div>
     </div>
+    <div class="table-scroll">
+      <table class="table table-hover align-middle" id="wordTable">
+        <thead class="table-dark"><tr><th>#</th><th>Từ vựng</th><th>Phiên âm</th><th>Phát âm</th><th>Nghĩa</th><th>Thao tác</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <div class="mobile-card-list" id="mobileCardList"></div>
+      <div class="empty" id="emptyState" style="display:none">Chưa có từ nào. Hãy nhập vài từ để bắt đầu nhé.</div>
+    </div>
+  </div>
 
-    <div id="quizSection" style="display:none;">
-        <h4>Bài kiểm tra từ vựng</h4>
-        <div id="quizForm" class="mt-3"></div>
-        <button class="btn btn-primary mt-3" onclick="checkQuiz()">Kiểm tra</button>
-        <button class="btn btn-secondary mt-3" onclick="goBack()">Quay lại</button>
-        <div id="quizResult" class="mt-3 h4"></div>
+  <div id="quizSection" class="soft-card mt-3" style="display:none;">
+    <div class="quiz-head">
+      <div>
+        <div class="section-title mb-0">🧠 Bài kiểm tra từ vựng</div>
+        <div class="muted" id="quizSubTitle">Câu hỏi đã được trộn ngẫu nhiên.</div>
+      </div>
+      <div class="d-flex gap-2 flex-wrap">
+        <button class="btn btn-outline-warning" onclick="startQuiz()">Làm đề khác</button>
+        <button class="btn btn-secondary" onclick="goBack()">Quay lại</button>
+      </div>
     </div>
-
-    <div class="mt-4 d-flex gap-2">
-        <button class="btn btn-success flex-grow-1" onclick="exportToExcel()">Xuất Excel</button>
-        <button class="btn btn-danger flex-grow-1" onclick="clearAll()">Xóa hết</button>
-    </div>
+    <div id="quizForm" class="mt-3"></div>
+    <button class="btn btn-primary mt-2 w-100" onclick="checkQuiz()">Kiểm tra đáp án</button>
+    <div id="quizResult" class="mt-3 h4"></div>
+  </div>
 </div>
+
+<div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">Thông báo</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body" id="modalContent"></div><div class="modal-footer"><button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button></div></div></div></div>
 
 <script>
+let quizData = safeParse(localStorage.getItem('myVocab'), []);
+let activeQuestions = [];
+let sortAsc = true;
 
-    function showModal(message) {
-        document.getElementById('modalContent').innerText = message;
-        // Sử dụng instance của Bootstrap để show
-        const modalElement = document.getElementById('infoModal');
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-    }
-    
-    let quizData = JSON.parse(localStorage.getItem('myVocab')) || [];
-    window.onload = () => quizData.forEach(item => renderRow(item));
+function safeParse(raw, fallback){ try{return JSON.parse(raw)||fallback}catch{return fallback} }
+function escapeHtml(str=''){return String(str).replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#039;','"':'&quot;'}[m]))}
+function saveData(){ localStorage.setItem('myVocab', JSON.stringify(quizData)); updateStats(); }
+function showModal(message){ document.getElementById('modalContent').innerText = message; new bootstrap.Modal(document.getElementById('infoModal')).show(); }
+function setLoading(isOn){ document.getElementById('loadingBar').style.display = isOn ? 'block' : 'none'; }
 
-    // Hàm đọc bằng trình duyệt
-    function speakWord(word) {
-        const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'en-US';
-        window.speechSynthesis.speak(utterance);
-    }
+window.addEventListener('load',()=>{ applySavedTheme(); renderTable(); updateStats(); });
+document.addEventListener('keydown', e=>{ if(document.body.classList.contains('quiz-mode') && e.ctrlKey && e.key==='Enter') checkQuiz(); });
 
-function renderRow(obj) {
-    let tbody = document.querySelector("#wordTable tbody");
-    let row = tbody.insertRow();
-    
-    // Cột Từ vựng
-    row.insertCell(0).textContent = obj.word;
-    
-    // Cột Phiên âm (Chuyển thành ô input)
-    let phoneticCell = row.insertCell(1);
-    phoneticCell.innerHTML = `<input type="text" class="form-control" value="${obj.phonetic || ""}" 
-                             onchange="updateField('${obj.word}', 'phonetic', this.value)">`;
-    
-    // Cột Phát âm
-    let audioHtml = obj.audio ? `<button class="btn-audio" title="Nghe Gốc" onclick="new Audio('${obj.audio}').play()">🔊</button>` : "";
-    audioHtml += `<button class="btn-speak" title="Đọc Máy" onclick="speakWord('${obj.word}')">🤖</button>`;
-    row.insertCell(2).innerHTML = audioHtml;
-
-    // Cột Nghĩa (Chuyển thành ô input)
-    let meaningCell = row.insertCell(3);
-    meaningCell.innerHTML = `<input type="text" class="form-control" value="${obj.meaning}" 
-                             onchange="updateField('${obj.word}', 'meaning', this.value)">`;
+function updateStats(){
+  document.getElementById('totalWords').textContent = quizData.length;
+  document.getElementById('visibleWords').textContent = getFilteredData().length;
+  document.getElementById('lastScore').textContent = localStorage.getItem('lastVocabScore') || '-';
 }
-
-    // Thêm hàm này để lưu lại mỗi khi bạn sửa
-function updateField(word, field, newValue) {
-    let item = quizData.find(i => i.word === word);
-    if (item) {
-        item[field] = newValue; // Cập nhật linh hoạt theo trường (phonetic hoặc meaning)
-        localStorage.setItem('myVocab', JSON.stringify(quizData));
-        console.log(`Đã cập nhật ${field} cho từ: ${word}`);
-    }
+function getFilteredData(){
+  const key = document.getElementById('searchInput')?.value?.trim().toLowerCase() || '';
+  if(!key) return quizData;
+  return quizData.filter(i => [i.word,i.phonetic,i.meaning].some(v => String(v||'').toLowerCase().includes(key)));
 }
+function renderTable(){
+  const tbody = document.querySelector('#wordTable tbody'); tbody.innerHTML = '';
+  const cardList = document.getElementById('mobileCardList'); if(cardList) cardList.innerHTML = '';
+  const data = getFilteredData();
+  document.getElementById('emptyState').style.display = quizData.length ? 'none' : 'block';
+  data.forEach((obj, idx) => {
+    const originalIndex = quizData.findIndex(i => i.id === obj.id || i.word === obj.word);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="muted">${idx+1}</td>
+      <td class="word-cell">${escapeHtml(obj.word)}</td>
+      <td><input class="form-control form-control-sm" value="${escapeHtml(obj.phonetic||'')}" onchange="updateField(${originalIndex}, 'phonetic', this.value)"></td>
+      <td>${obj.audio ? `<button class="action-btn" title="Nghe gốc" onclick="playAudio('${escapeHtml(obj.audio)}')">🔊</button>` : ''}<button class="action-btn" title="Đọc máy" onclick="speakWord('${escapeHtml(obj.word)}')">🤖</button></td>
+      <td><input class="form-control form-control-sm" value="${escapeHtml(obj.meaning||'')}" onchange="updateField(${originalIndex}, 'meaning', this.value)"></td>
+      <td><button class="btn btn-sm btn-outline-primary" onclick="copyWord(${originalIndex})">Copy</button> <button class="btn btn-sm btn-outline-danger" onclick="deleteWord(${originalIndex})">Xóa</button></td>`;
+    tbody.appendChild(tr);
 
-async function addRandomWords() {
-    let count = document.getElementById("randomCount").value;
-    // API Datamuse: lấy 100 từ phổ biến nhất (văn bản tiếng Anh)
-    // 'topics=vocabulary' giúp lấy từ vựng chung
-    const url = `https://api.datamuse.com/words?ml=common&max=100`; 
-    
-    try {
-        let res = await fetch(url);
-        let data = await res.json();
-        
-        // Lấy ngẫu nhiên vài từ từ danh sách trả về
-        for (let i = 0; i < count; i++) {
-            let randomIndex = Math.floor(Math.random() * data.length);
-            let word = data[randomIndex].word;
-            await addWordToTable(word);
-        }
-        showModal(`Đã thêm ${count} từ ngẫu nhiên!`);
-    } catch (e) {
-        showModal("Lỗi khi lấy từ thông dụng!");
+    if(cardList){
+      const card = document.createElement('div');
+      card.className = 'vocab-card';
+      card.setAttribute('onclick', 'handleCardTap(event, this)');
+      card.innerHTML = `
+        <div class="vocab-card-inner">
+          <div class="vocab-face vocab-front">
+            <div class="vocab-top">
+              <div class="vocab-index">#${idx+1}</div>
+            </div>
+            <div class="vocab-word">${escapeHtml(obj.word)}</div>
+            <div class="vocab-phonetic">${escapeHtml(obj.phonetic || 'N/A')}</div>
+            <div class="vocab-actions">
+              ${obj.audio ? `<button class="mini-btn" onclick="event.stopPropagation(); playAudio('${escapeHtml(obj.audio)}')">🔊 Nghe gốc</button>` : ''}
+              <button class="mini-btn" onclick="event.stopPropagation(); speakWord('${escapeHtml(obj.word)}')">🤖 Đọc máy</button>
+              <button class="mini-btn" onclick="event.stopPropagation(); copyWord(${originalIndex})">📋 Copy</button>
+              <button class="mini-btn" onclick="event.stopPropagation(); deleteWord(${originalIndex})">🗑 Xóa</button>
+            </div>
+          </div>
+          <div class="vocab-face vocab-back">
+            <div class="vocab-top">
+              <div class="vocab-index">#${idx+1}</div>
+            </div>
+            <div class="meaning-box">${escapeHtml(obj.meaning || 'Chưa có nghĩa')}</div>
+          </div>
+        </div>`;
+      cardList.appendChild(card);
     }
+  });
+  updateStats();
 }
+function handleCardTap(event, card){ if(event.target.closest('button,input,select,textarea,a')) return; card.classList.toggle('flipped'); }
+function toggleMobileControls(){
+  const panel=document.getElementById('inputArea');
+  const btn=document.getElementById('mobileControlToggle');
+  const wasClosed = panel.classList.contains('controls-collapsed');
 
-    // Thay thế hàm addWordToTable cũ bằng hàm này:
-async function addWordToTable(inputWord) {
-    inputWord = inputWord.trim().toLowerCase();
-    
-    // 1. Kiểm tra Cache
-    const existing = quizData.find(item => item.word === inputWord);
-    if (existing) return;
+  panel.classList.toggle('controls-collapsed');
+  const closed=panel.classList.contains('controls-collapsed');
+  btn.classList.toggle('is-sticky', closed);
+  btn.innerHTML = closed ? '<span>⚙️ Bảng điều khiển</span><b>Phóng to ▼</b>' : '<span>⚙️ Bảng điều khiển</span><b>Thu nhỏ ▲</b>';
 
-    try {
-        let phonetic = "N/A";
-        let audio = null;
-        let meaning = "";
-
-        // 2. Vẫn lấy phiên âm và audio từ Dictionary API (để giữ chức năng nghe/phiên âm)
-        const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(inputWord)}`);
-        if (dictRes.ok) {
-            const dictData = await dictRes.json();
-            const entry = dictData[0];
-            phonetic = entry.phonetics?.find(ph => ph.text)?.text || entry.phonetic || "N/A";
-            const audioObj = entry.phonetics.find(ph => ph.audio && ph.audio.length > 0);
-            audio = audioObj ? audioObj.audio : null;
-        }
-
-        // 3. DỊCH NGHĨA TRỰC TIẾP TỪ (Thay vì dịch câu định nghĩa)
-        // Cách này sẽ trả về nghĩa thông dụng nhất của từ
-        const transUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q=${encodeURIComponent(inputWord)}`;
-        const transRes = await fetch(transUrl);
-        const transData = await transRes.json();
-        
-        if (transData && transData[0]) {
-            // Lấy kết quả dịch trực tiếp từ Google
-            meaning = transData[0][0][0]; 
-        } else {
-            meaning = "Không tìm thấy nghĩa";
-        }
-        
-        const obj = { word: inputWord, meaning: meaning, audio: audio, phonetic: phonetic };
-        
-        quizData.push(obj);
-        localStorage.setItem('myVocab', JSON.stringify(quizData));
-        renderRow(obj);
-    } catch (e) { 
-        console.error("Lỗi:", e);
-    }
+  // Khi đang cuộn xuống dưới mà bấm mở bảng điều khiển,
+  // tự kéo lên đầu để người dùng nhìn thấy panel ngay.
+  if (wasClosed && !closed) {
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  }
 }
+function updateField(index, field, value){ if(quizData[index]){ quizData[index][field]=value; saveData(); } }
+function deleteWord(index){ if(!quizData[index])return; if(confirm(`Xóa từ "${quizData[index].word}"?`)){ quizData.splice(index,1); saveData(); renderTable(); } }
+function copyWord(index){ const i=quizData[index]; if(!i)return; navigator.clipboard?.writeText(`${i.word} - ${i.phonetic||''} - ${i.meaning||''}`); showModal('Đã copy từ vựng.'); }
+function sortWords(){ quizData.sort((a,b)=> sortAsc ? a.word.localeCompare(b.word) : b.word.localeCompare(a.word)); sortAsc=!sortAsc; saveData(); renderTable(); }
+function playAudio(url){ new Audio(url).play(); }
+function speakWord(word){ speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(word); u.lang='en-US'; u.rate=.9; speechSynthesis.speak(u); }
+function speakSelected(){ const words=getFilteredData().map(i=>i.word).slice(0,30); if(!words.length)return showModal('Không có từ để đọc.'); speakWord(words.join(', ')); }
 
-    function processAllWords() {
-        let input = document.getElementById("wordInput").value;
-        let words = input.split(/[,\n]/).map(w => w.trim()).filter(w => w !== "");
-        words.forEach(w => addWordToTable(w));
-        document.getElementById("wordInput").value = "";
-        showModal("Đã thêm các từ vào danh sách!");
-    }
-
-    // Các hàm Quiz và Tiện ích giữ nguyên như cũ...
-    function startQuiz() {
-        if (quizData.length === 0) return showModal("Chưa có từ!");
-        document.getElementById("inputArea").style.display = "none";
-        document.getElementById("wordTable").style.display = "none";
-        document.getElementById("quizSection").style.display = "block";
-        
-        let mode = document.getElementById("quizMode").value;
-        let activeQuestions = [...quizData].sort(() => Math.random() - 0.5);
-        
-        document.getElementById("quizForm").innerHTML = activeQuestions.map((item, index) => {
-            // Nếu là 'mixed', tung đồng xu (Math.random()) để quyết định chiều dịch
-            let isEnVi = mode === 'en-vi' || (mode === 'mixed' && Math.random() > 0.5);
-            
-            return `<div class="card mb-3 p-3">
-                    <strong>${index + 1}. ${isEnVi ? item.word : item.meaning}</strong>
-                    <input type="text" class="form-control mt-2" id="ans_${index}" data-correct="${isEnVi ? item.meaning : item.word}">
-                </div>`;
-        }).join("");
-        window.activeQuestions = activeQuestions;
-    }
-
-    function checkQuiz() {
-        let score = 0;
-        window.activeQuestions.forEach((item, index) => {
-            let input = document.getElementById(`ans_${index}`);
-            let correctAnswer = input.dataset.correct.toLowerCase();
-            let userAnswer = input.value.trim().toLowerCase();
-            
-            // Tạo một div để hiển thị đáp án đúng nếu sai
-            let parent = input.parentElement;
-            let feedback = parent.querySelector('.show-answer');
-            if (!feedback) {
-                feedback = document.createElement('div');
-                feedback.className = 'show-answer';
-                parent.appendChild(feedback);
-            }
-
-            if (userAnswer === correctAnswer) {
-                input.classList.add('correct-input');
-                input.classList.remove('wrong-input');
-                feedback.innerText = "";
-                score++;
-            } else {
-                input.classList.add('wrong-input');
-                input.classList.remove('correct-input');
-                feedback.innerText = `Sai rồi! Đáp án đúng là: ${input.dataset.correct}`;
-            }
-        });
-        document.getElementById("quizResult").innerHTML = `<b>Kết quả: ${score}/${window.activeQuestions.length} đúng.</b>`;
-    }
-
-    function goBack() { location.reload(); }
-    function clearAll() { localStorage.removeItem('myVocab'); location.reload(); }
-    function exportToExcel() {
-    // 1. Chỉ lấy các trường dữ liệu cần thiết
-    const dataToExport = quizData.map(item => ({
-        "Từ vựng": item.word,
-        "Phiên âm": item.phonetic,
-        "Nghĩa": item.meaning
-    }));
-
-    // 2. Tạo worksheet từ dữ liệu đã chọn
-    const worksheet = XLSX.utils.json_to_sheet(dataToExport);
-    
-    // 3. Tạo workbook và thêm worksheet vào
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "TuVung");
-
-    // 4. Xuất file
-    XLSX.writeFile(workbook, "TuVung.xlsx");
+async function addWordToTable(inputWord){
+  inputWord = String(inputWord||'').trim().toLowerCase();
+  if(!inputWord || quizData.some(i=>i.word===inputWord)) return false;
+  let phonetic='N/A', audio=null, meaning='Không tìm thấy nghĩa';
+  try{
+    const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(inputWord)}`);
+    if(dictRes.ok){ const d=await dictRes.json(); const e=d[0]; phonetic=e.phonetics?.find(p=>p.text)?.text || e.phonetic || 'N/A'; const au=e.phonetics?.find(p=>p.audio); audio=au?.audio || null; }
+  }catch(e){}
+  try{
+    const transRes = await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=vi&dt=t&q=${encodeURIComponent(inputWord)}`);
+    const transData = await transRes.json(); meaning = transData?.[0]?.[0]?.[0] || meaning;
+  }catch(e){}
+  quizData.push({id:Date.now()+Math.random(), word:inputWord, meaning, audio, phonetic}); saveData(); renderTable(); return true;
 }
-
-// Khai báo biến này ở ngoài cùng (phần khai báo biến chung)
-// Biến lưu trữ trạng thái trang hiện tại cho chủ đề
-let topicPage = 1;
-let lastTopic = "";
-
-async function addByTopic() {
-    let topic = document.getElementById("topicInput").value.trim();
-    let count = parseInt(document.getElementById("topicCount").value);
-    
-    if (!topic) return showModal("Vui lòng nhập chủ đề!");
-    
-    const btn = event.target;
-    btn.innerText = "Đang tải...";
-    btn.disabled = true;
-
-    // Lấy 100 từ (số lượng lớn giúp tăng cơ hội có từ mới)
-    const url = `https://api.datamuse.com/words?ml=${encodeURIComponent(topic)}&max=100`;
-    
-    try {
-        let res = await fetch(url);
-        let data = await res.json();
-        
-        // 1. Lọc: Chỉ giữ lại các từ chưa có trong danh sách hiện tại (quizData)
-        let newWords = data.filter(item => !quizData.some(q => q.word === item.word));
-        
-        if (newWords.length === 0) {
-            showModal("Đã hết từ vựng mới cho chủ đề này!");
-        } else {
-            // 2. Xáo trộn ngẫu nhiên (Fisher-Yates shuffle)
-            for (let i = newWords.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [newWords[i], newWords[j]] = [newWords[j], newWords[i]];
-            }
-            
-            // 3. Lấy ra số lượng từ cần thêm
-            let wordsToAdd = newWords.slice(0, count);
-            
-            // 4. Thêm từng từ
-            for (let item of wordsToAdd) {
-                await addWordToTable(item.word);
-            }
-            showModal(`Đã thêm ${wordsToAdd.length} từ mới về: ${topic}`);
-        }
-    } catch (e) {
-        showModal("Lỗi kết nối.");
-    } finally {
-        btn.innerText = "Thêm theo chủ đề";
-        btn.disabled = false;
-    }
+async function processAllWords(event){
+  const btn=event?.target; const input=document.getElementById('wordInput'); const words=input.value.split(/[\n,]/).map(w=>w.trim()).filter(Boolean);
+  if(!words.length) return showModal('Bạn chưa nhập từ nào.');
+  setLoading(true); if(btn)btn.disabled=true; let added=0;
+  for(const w of words){ if(await addWordToTable(w)) added++; }
+  input.value=''; setLoading(false); if(btn)btn.disabled=false; showModal(`Đã thêm ${added}/${words.length} từ mới.`);
 }
+async function addRandomWords(event){
+  const btn=event?.target; const count=+document.getElementById('randomCount').value || 5; setLoading(true); if(btn)btn.disabled=true;
+  try{ const res=await fetch('https://api.datamuse.com/words?ml=common&max=150'); const data=await res.json(); let added=0;
+    for(const item of data.sort(()=>Math.random()-.5).slice(0,count*3)){ if(added>=count)break; if(await addWordToTable(item.word)) added++; }
+    showModal(`Đã thêm ${added} từ ngẫu nhiên.`);
+  }catch(e){ showModal('Lỗi khi lấy từ ngẫu nhiên.'); }
+  setLoading(false); if(btn)btn.disabled=false;
+}
+async function addByTopic(event){
+  const topic=document.getElementById('topicInput').value.trim(); const count=+document.getElementById('topicCount').value || 5; if(!topic)return showModal('Vui lòng nhập chủ đề.');
+  const btn=event?.target; setLoading(true); if(btn)btn.disabled=true;
+  try{ const res=await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(topic)}&max=150`); const data=await res.json(); let added=0;
+    for(const item of data.sort(()=>Math.random()-.5)){ if(added>=count)break; if(await addWordToTable(item.word)) added++; }
+    showModal(`Đã thêm ${added} từ về chủ đề: ${topic}`);
+  }catch(e){ showModal('Lỗi kết nối khi thêm theo chủ đề.'); }
+  setLoading(false); if(btn)btn.disabled=false;
+}
+function importExcel(event){
+  const file=event.target.files[0]; if(!file)return; const reader=new FileReader();
+  reader.onload=e=>{ const wb=XLSX.read(e.target.result,{type:'array'}); const rows=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{defval:''}); let added=0;
+    rows.forEach(r=>{ const word=(r['Từ vựng']||r.word||r.Word||r['word']||'').toString().trim().toLowerCase(); if(word && !quizData.some(i=>i.word===word)){ quizData.push({id:Date.now()+Math.random(), word, phonetic:r['Phiên âm']||r.phonetic||'', meaning:r['Nghĩa']||r.meaning||'', audio:null}); added++; }});
+    saveData(); renderTable(); showModal(`Đã nhập ${added} từ từ Excel.`); event.target.value=''; };
+  reader.readAsArrayBuffer(file);
+}
+function exportToExcel(){
+  const data=quizData.map(i=>({'Từ vựng':i.word,'Phiên âm':i.phonetic,'Nghĩa':i.meaning}));
+  const ws=XLSX.utils.json_to_sheet(data); const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,ws,'TuVung'); XLSX.writeFile(wb,'TuVung.xlsx');
+}
+function clearAll(){ if(confirm('Xóa toàn bộ từ vựng đã lưu?')){ localStorage.removeItem('myVocab'); quizData=[]; renderTable(); updateStats(); } }
+
+function shuffleArray(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function normalizeAnswer(str=''){
+  return String(str).trim().toLowerCase().replace(/\s+/g,' ');
+}
+function getQuizDirection(mode){
+  if(mode==='mixed3') return ['en-vi','vi-en','listen'][Math.floor(Math.random()*3)];
+  return mode;
+}
+function quizModeLabel(mode){
+  return ({'en-vi':'Anh → Việt','vi-en':'Việt → Anh','listen':'Nghe → Gõ từ','mixed3':'Trộn 3 chiều'})[mode] || 'Quiz';
+}
+function buildQuestionHtml(item,index,direction){
+  let prompt='', hint='', correct='', type='';
+  if(direction==='listen'){
+    correct=item.word;
+    type='Nghe';
+    prompt=`<div class="listen-box"><button class="listen-btn" type="button" onclick="speakWord('${escapeHtml(item.word)}')">🔊 Nghe từ</button></div>`;
+    hint='Nghe phát âm và nhập lại từ tiếng Anh';
+  }else if(direction==='vi-en'){
+    correct=item.word;
+    type='Việt → Anh';
+    prompt=`<strong>${escapeHtml(item.meaning || 'Chưa có nghĩa')}</strong>`;
+    hint='Nhập từ tiếng Anh';
+  }else{
+    correct=item.meaning;
+    type='Anh → Việt';
+    prompt=`<strong>${escapeHtml(item.word)}</strong>`;
+    hint='Nhập nghĩa tiếng Việt';
+  }
+  return `<div class="quiz-card" data-direction="${direction}">
+    <div class="quiz-type">${index+1}. ${type}</div>
+    <div>${prompt}</div>
+    <div class="muted mt-2">${hint}</div>
+    <input class="form-control mt-2" id="ans_${index}" data-correct="${escapeHtml(correct||'')}" autocomplete="off">
+  </div>`;
+}
+function startQuiz(){
+  if(!quizData.length)return showModal('Chưa có từ để kiểm tra.');
+  document.body.classList.add('quiz-mode');
+  document.getElementById('quizSection').style.display='block';
+  const mode=document.getElementById('quizMode').value;
+  activeQuestions=shuffleArray(quizData).slice(0,Math.min(quizData.length,30)).map(item=>({ ...item, direction:getQuizDirection(mode) }));
+  document.getElementById('quizSubTitle').textContent = `${quizModeLabel(mode)} • ${activeQuestions.length} câu • đã trộn ngẫu nhiên`;
+  document.getElementById('quizForm').innerHTML=activeQuestions.map((item,index)=>buildQuestionHtml(item,index,item.direction)).join('');
+  document.getElementById('quizResult').innerHTML='';
+  setTimeout(()=>document.getElementById('ans_0')?.focus(),80);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function checkQuiz(){
+  let score=0;
+  activeQuestions.forEach((item,index)=>{
+    const input=document.getElementById(`ans_${index}`);
+    const correct=normalizeAnswer(input.dataset.correct);
+    const user=normalizeAnswer(input.value);
+    let fb=input.parentElement.querySelector('.show-answer');
+    if(!fb){fb=document.createElement('div'); fb.className='show-answer'; input.parentElement.appendChild(fb);}
+    const ok = user && (user===correct || (item.direction!=='listen' && correct.includes(user)));
+    if(ok){ input.classList.add('correct-input'); input.classList.remove('wrong-input'); fb.textContent=''; score++; }
+    else { input.classList.add('wrong-input'); input.classList.remove('correct-input'); fb.textContent=`Đáp án đúng: ${input.dataset.correct}`; }
+  });
+  const result=`${score}/${activeQuestions.length}`;
+  localStorage.setItem('lastVocabScore',result);
+  document.getElementById('quizResult').innerHTML=`<b>Kết quả: ${result} đúng.</b>`;
+  updateStats();
+}
+function goBack(){
+  document.body.classList.remove('quiz-mode');
+  document.getElementById('quizSection').style.display='none';
+  document.getElementById('inputArea').style.display='grid';
+  document.getElementById('tableSection').style.display='block';
+  renderTable();
+}
+function toggleTheme(){ const app=document.documentElement; const isDark=app.getAttribute('data-theme')==='dark'; app.setAttribute('data-theme',isDark?'light':'dark'); localStorage.setItem('vocabTheme',isDark?'light':'dark'); document.getElementById('themeBtn').textContent=isDark?'🌙 Giao diện tối':'☀️ Giao diện sáng'; }
+function applySavedTheme(){ const t=localStorage.getItem('vocabTheme')||'light'; document.documentElement.setAttribute('data-theme',t); document.getElementById('themeBtn').textContent=t==='dark'?'☀️ Giao diện sáng':'🌙 Giao diện tối'; }
 </script>
-
-<div class="modal fade" id="infoModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Thông báo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="modalContent">
-                </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Đóng</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
