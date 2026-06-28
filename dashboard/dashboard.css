@@ -1813,7 +1813,7 @@ body.light-mode .trash-item { background: #fff; }
     margin: 0 0 12px;
 }
 .sidebar-panel-actions::before {
-    content: 'Lịch sử mở gần đây';
+    content: 'Recently Opened';
     color: var(--text-sub);
     font-size: 12px;
     font-weight: 800;
