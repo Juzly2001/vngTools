@@ -225,7 +225,7 @@ function toggleTheme() {
     const isLight = document.body.classList.toggle('light-mode');
     localStorage.setItem(THEME_KEY, isLight ? 'light' : 'dark');
     const btn = getEl('themeBtn');
-    if (btn) btn.innerHTML = (isLight ? '🌙' : '💡') + '<span>Light/Dark</span>';
+    if (btn) btn.innerHTML = `<span class="sidebar-menu-icon" aria-hidden="true">${isLight ? '🌙' : '💡'}</span><span>Light/Dark</span>`;
     if (isCanvasEnabled) initBackgroundObjects();
 }
 
@@ -243,7 +243,7 @@ function applyCanvasState() {
         canvas.style.display = 'block';
         resizeCanvas();
         if (!animationFrameId) animationFrameId = requestAnimationFrame(drawBackground);
-        if (btn) btn.innerHTML = '⭐<span>Visuals</span>';
+        if (btn) btn.innerHTML = '<span class="sidebar-menu-icon" aria-hidden="true">⭐</span><span>Visuals</span>';
     } else {
         canvas.style.display = 'none';
         if (animationFrameId) {
@@ -251,7 +251,7 @@ function applyCanvasState() {
             animationFrameId = null;
         }
         ctx?.clearRect(0, 0, canvas.width, canvas.height);
-        if (btn) btn.innerHTML = '🌟<span>Visuals</span>';
+        if (btn) btn.innerHTML = '<span class="sidebar-menu-icon" aria-hidden="true">🌟</span><span>Visuals</span>';
     }
 }
 

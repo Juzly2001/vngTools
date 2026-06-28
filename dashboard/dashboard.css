@@ -4516,3 +4516,142 @@ body.light-mode .schedule-date {
         max-height: 140px !important;
     }
 }
+
+
+/* ==========================================================================
+   FINAL PATCH V2 - keep sidebar icons visible + hidden scrollbars
+   ========================================================================== */
+
+/* Keep every sidebar icon visible even when the sidebar is collapsed.
+   Older rules hide all spans; this restores only .sidebar-menu-icon. */
+.sidebar-menu-icon {
+    display: inline-grid !important;
+    place-items: center !important;
+    flex: 0 0 24px !important;
+    width: 24px !important;
+    min-width: 24px !important;
+    height: 24px !important;
+    font-size: 18px !important;
+    line-height: 1 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    color: inherit !important;
+}
+
+@media (min-width: 769px) {
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 100% !important;
+        min-height: 46px !important;
+        padding: 10px 0 !important;
+        gap: 0 !important;
+        overflow: visible !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) .sidebar-menu-icon {
+        display: inline-grid !important;
+        place-items: center !important;
+        flex: 0 0 24px !important;
+        width: 24px !important;
+        min-width: 24px !important;
+        height: 24px !important;
+        max-width: 24px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transform: none !important;
+        margin: 0 auto !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) > span:not(.sidebar-menu-icon) {
+        display: none !important;
+        max-width: 0 !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
+        overflow: hidden !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) .sidebar-menu-icon {
+        margin: 0 !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) > span:not(.sidebar-menu-icon) {
+        display: inline-block !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+}
+
+/* Hide scrollbars in modals and modal inner lists while preserving scroll. */
+.modal-box,
+.modal-overlay .modal-box,
+#calendarModal .calendar-grid,
+#calendarModal #calendarGrid,
+#calendarModal .schedule-hub-list,
+#calendarModal .schedule-hub-pane,
+#calendarModal .schedule-upcoming-list,
+#calendarModal .schedule-past-list,
+#calendarModal .schedule-past-items,
+#calendarModal .past-milestones-list,
+#todayImportantContent,
+#readModalBody,
+#scheduleBlocksWrapper,
+.schedules-blocks-container,
+.command-results,
+.trash-list,
+.sidebar-panel-list,
+.backup-list,
+.view-note-content,
+.emoji-items {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.modal-box::-webkit-scrollbar,
+.modal-overlay .modal-box::-webkit-scrollbar,
+#calendarModal .calendar-grid::-webkit-scrollbar,
+#calendarModal #calendarGrid::-webkit-scrollbar,
+#calendarModal .schedule-hub-list::-webkit-scrollbar,
+#calendarModal .schedule-hub-pane::-webkit-scrollbar,
+#calendarModal .schedule-upcoming-list::-webkit-scrollbar,
+#calendarModal .schedule-past-list::-webkit-scrollbar,
+#calendarModal .schedule-past-items::-webkit-scrollbar,
+#calendarModal .past-milestones-list::-webkit-scrollbar,
+#todayImportantContent::-webkit-scrollbar,
+#readModalBody::-webkit-scrollbar,
+#scheduleBlocksWrapper::-webkit-scrollbar,
+.schedules-blocks-container::-webkit-scrollbar,
+.command-results::-webkit-scrollbar,
+.trash-list::-webkit-scrollbar,
+.sidebar-panel-list::-webkit-scrollbar,
+.backup-list::-webkit-scrollbar,
+.view-note-content::-webkit-scrollbar,
+.emoji-items::-webkit-scrollbar {
+    width: 0 !important;
+    height: 0 !important;
+    display: none !important;
+}
+
+/* Keep Calendar/Past scrollable to the very bottom even after hiding scrollbars. */
+#calendarModal #calendarGrid.calendar-grid,
+#calendarModal .schedule-hub-list {
+    overflow-y: auto !important;
+    padding-bottom: 120px !important;
+    scroll-padding-bottom: 120px !important;
+}
