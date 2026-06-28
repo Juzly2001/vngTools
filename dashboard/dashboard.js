@@ -356,13 +356,21 @@ function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
     state.selectedEmoji = preSelectedEmoji || "NONE";
     const pickerId = `${gridId}_picker`;
     const recentIcons = getRecentEmojis();
-    const groups = EMOJI_GROUPS
-        .map(group => group.key === 'recent' ? { ...group, icons: recentIcons } : group)
-        .filter(group => group.key !== 'recent' || group.icons.length);
+
+    const allGroup = { name: "Tất cả", key: "all", icons: EMOJI_LIST };
+    const recentGroup = { name: "Gần đây", key: "recent", icons: recentIcons };
+    const normalGroups = EMOJI_GROUPS.filter(group => group.key !== "recent");
+
+    const groups = [
+        allGroup,
+        ...(recentIcons.length ? [recentGroup] : []),
+        ...normalGroups
+    ];
 
     const renderEmojiItems = (icons, keyword = '') => {
         const normalizedKeyword = (keyword || '').trim().toLowerCase();
-        const source = normalizedKeyword ? EMOJI_LIST.filter(icon => icon !== 'NONE') : icons;
+        const source = normalizedKeyword ? EMOJI_LIST : icons;
+
         const filtered = source.filter(icon => {
             if (!normalizedKeyword) return true;
             const groupName = (EMOJI_GROUPS.find(group => group.icons.includes(icon))?.name || '').toLowerCase();
@@ -387,7 +395,7 @@ function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
             <div class="emoji-tabs">
                 ${groups.map((group, index) => `<button type="button" class="emoji-tab ${index === 0 ? 'active' : ''}" data-key="${group.key}">${group.name}</button>`).join('')}
             </div>
-            <div class="emoji-items">${renderEmojiItems(groups[0]?.icons || EMOJI_LIST)}</div>
+            <div class="emoji-items">${renderEmojiItems(allGroup.icons)}</div>
         </div>
     `;
 
@@ -397,7 +405,7 @@ function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
     const searchInput = shell.querySelector('.emoji-search-input');
     const itemsBox = shell.querySelector('.emoji-items');
     const tabsBox = shell.querySelector('.emoji-tabs');
-    let activeGroup = groups[0] || { icons: EMOJI_LIST };
+    let activeGroup = allGroup;
 
     const markSelected = () => {
         itemsBox.querySelectorAll('.emoji-item').forEach(el => {
@@ -419,58 +427,58 @@ function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
 
     searchInput.addEventListener('input', refresh);
 
+    // Kéo ngang thanh tab icon nhưng không nuốt click.
+    let pointerDown = false;
+    let didDragTab = false;
+    let startX = 0;
+    let startScrollLeft = 0;
+
+    tabsBox.addEventListener('pointerdown', event => {
+        if (event.button !== undefined && event.button !== 0) return;
+        pointerDown = true;
+        didDragTab = false;
+        startX = event.clientX;
+        startScrollLeft = tabsBox.scrollLeft;
+    });
+
+    tabsBox.addEventListener('pointermove', event => {
+        if (!pointerDown) return;
+        const diffX = event.clientX - startX;
+        if (Math.abs(diffX) > 8) {
+            didDragTab = true;
+            tabsBox.classList.add('is-dragging');
+            tabsBox.scrollLeft = startScrollLeft - diffX;
+        }
+    });
+
+    const stopTabPointer = () => {
+        pointerDown = false;
+        tabsBox.classList.remove('is-dragging');
+    };
+
+    tabsBox.addEventListener('pointerup', stopTabPointer);
+    tabsBox.addEventListener('pointercancel', stopTabPointer);
+    tabsBox.addEventListener('pointerleave', stopTabPointer);
+
     tabsBox.addEventListener('click', event => {
+        if (didDragTab) {
+            event.preventDefault();
+            event.stopPropagation();
+            didDragTab = false;
+            return;
+        }
+
         const tab = event.target.closest('.emoji-tab');
         if (!tab) return;
+
         shell.querySelectorAll('.emoji-tab').forEach(btn => btn.classList.remove('active'));
         tab.classList.add('active');
-        activeGroup = groups.find(group => group.key === tab.dataset.key) || groups[0] || { icons: EMOJI_LIST };
+
+        activeGroup = groups.find(group => group.key === tab.dataset.key) || allGroup;
         searchInput.value = '';
         refresh();
     });
 
-    // Kéo ngang thanh tab icon, không chặn click chọn icon.
-    let isTabDragging = false;
-    let tabDragStartX = 0;
-    let tabDragStartScroll = 0;
-
-    tabsBox.addEventListener('pointerdown', event => {
-        if (event.button !== undefined && event.button !== 0) return;
-        isTabDragging = false;
-        tabDragStartX = event.clientX;
-        tabDragStartScroll = tabsBox.scrollLeft;
-        tabsBox.setPointerCapture?.(event.pointerId);
-    });
-
-    tabsBox.addEventListener('pointermove', event => {
-        if (!tabsBox.hasPointerCapture?.(event.pointerId)) return;
-        const diffX = event.clientX - tabDragStartX;
-        if (Math.abs(diffX) > 6) {
-            isTabDragging = true;
-            tabsBox.classList.add('is-dragging');
-            tabsBox.scrollLeft = tabDragStartScroll - diffX;
-        }
-    });
-
-    const stopTabDrag = event => {
-        if (tabsBox.hasPointerCapture?.(event.pointerId)) tabsBox.releasePointerCapture(event.pointerId);
-        setTimeout(() => {
-            isTabDragging = false;
-            tabsBox.classList.remove('is-dragging');
-        }, 0);
-    };
-
-    tabsBox.addEventListener('click', event => {
-        if (!isTabDragging) return;
-        event.preventDefault();
-        event.stopPropagation();
-    }, true);
-
-    tabsBox.addEventListener('pointerup', stopTabDrag);
-    tabsBox.addEventListener('pointercancel', stopTabDrag);
-    tabsBox.addEventListener('pointerleave', stopTabDrag);
-
-    // Dùng click/mousedown trực tiếp, không dùng kéo tự viết nữa để tránh chặn chọn icon.
     itemsBox.addEventListener('click', event => {
         const item = event.target.closest('.emoji-item');
         if (!item) return;
@@ -486,7 +494,6 @@ function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
         chooseEmoji(item.dataset.emoji);
     });
 }
-
 
 function getScheduleEndDateTime(sch) {
     return new Date(`${sch.endDate || sch.date || ''}T${sch.endTime || sch.time || '00:00'}`);

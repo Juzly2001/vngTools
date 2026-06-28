@@ -793,7 +793,7 @@ body.light-mode .emoji-search-wrap { background: rgba(0,0,0,0.03); }
     bottom: 30px;
     right: 30px;
     display: none;
-    padding: 12px 16px;
+    padding: 12px 12px;
     border-radius: 50%;
     border: none;
     background: var(--accent-color);
@@ -3946,4 +3946,27 @@ body.light-mode .schedule-date {
     body.sidebar-pro-enabled .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) span {
         line-height: 1.15 !important;
     }
+}
+
+
+/* ==========================================================================
+   EMOJI TAB CLICK FIX
+   Bấm tab chọn chủ đề được, kéo ngang vẫn mượt
+   ========================================================================== */
+.emoji-tabs {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-x;
+}
+
+.emoji-tabs.is-dragging {
+    cursor: grabbing;
+}
+
+.emoji-tab {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
 }
