@@ -419,47 +419,7 @@ function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
 
     searchInput.addEventListener('input', refresh);
 
-    // Kéo ngang thanh tab icon bằng chuột/touch, không ảnh hưởng click chọn icon.
-    let tabDragStartX = 0;
-    let tabDragStartScroll = 0;
-    let isTabPointerDown = false;
-    let didTabDrag = false;
-
-    tabsBox.addEventListener('pointerdown', event => {
-        if (event.button !== undefined && event.button !== 0) return;
-        isTabPointerDown = true;
-        didTabDrag = false;
-        tabDragStartX = event.clientX;
-        tabDragStartScroll = tabsBox.scrollLeft;
-        tabsBox.classList.add('dragging-scroll');
-    });
-
-    tabsBox.addEventListener('pointermove', event => {
-        if (!isTabPointerDown) return;
-        const diffX = event.clientX - tabDragStartX;
-        if (Math.abs(diffX) > 5) {
-            didTabDrag = true;
-            tabsBox.scrollLeft = tabDragStartScroll - diffX;
-            event.preventDefault();
-        }
-    });
-
-    const stopTabDrag = () => {
-        isTabPointerDown = false;
-        tabsBox.classList.remove('dragging-scroll');
-        setTimeout(() => { didTabDrag = false; }, 0);
-    };
-
-    tabsBox.addEventListener('pointerup', stopTabDrag);
-    tabsBox.addEventListener('pointercancel', stopTabDrag);
-    tabsBox.addEventListener('pointerleave', stopTabDrag);
-
     tabsBox.addEventListener('click', event => {
-        if (didTabDrag) {
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-        }
         const tab = event.target.closest('.emoji-tab');
         if (!tab) return;
         shell.querySelectorAll('.emoji-tab').forEach(btn => btn.classList.remove('active'));
@@ -469,7 +429,48 @@ function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
         refresh();
     });
 
-    // Vùng icon chỉ dùng scroll tự nhiên + click chọn, không kéo tự viết để tránh chặn chọn icon.
+    // Kéo ngang thanh tab icon, không chặn click chọn icon.
+    let isTabDragging = false;
+    let tabDragStartX = 0;
+    let tabDragStartScroll = 0;
+
+    tabsBox.addEventListener('pointerdown', event => {
+        if (event.button !== undefined && event.button !== 0) return;
+        isTabDragging = false;
+        tabDragStartX = event.clientX;
+        tabDragStartScroll = tabsBox.scrollLeft;
+        tabsBox.setPointerCapture?.(event.pointerId);
+    });
+
+    tabsBox.addEventListener('pointermove', event => {
+        if (!tabsBox.hasPointerCapture?.(event.pointerId)) return;
+        const diffX = event.clientX - tabDragStartX;
+        if (Math.abs(diffX) > 6) {
+            isTabDragging = true;
+            tabsBox.classList.add('is-dragging');
+            tabsBox.scrollLeft = tabDragStartScroll - diffX;
+        }
+    });
+
+    const stopTabDrag = event => {
+        if (tabsBox.hasPointerCapture?.(event.pointerId)) tabsBox.releasePointerCapture(event.pointerId);
+        setTimeout(() => {
+            isTabDragging = false;
+            tabsBox.classList.remove('is-dragging');
+        }, 0);
+    };
+
+    tabsBox.addEventListener('click', event => {
+        if (!isTabDragging) return;
+        event.preventDefault();
+        event.stopPropagation();
+    }, true);
+
+    tabsBox.addEventListener('pointerup', stopTabDrag);
+    tabsBox.addEventListener('pointercancel', stopTabDrag);
+    tabsBox.addEventListener('pointerleave', stopTabDrag);
+
+    // Dùng click/mousedown trực tiếp, không dùng kéo tự viết nữa để tránh chặn chọn icon.
     itemsBox.addEventListener('click', event => {
         const item = event.target.closest('.emoji-item');
         if (!item) return;
@@ -619,14 +620,13 @@ function renderDashboard() {
         const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
         const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
         const isCollapsed = group.collapsed || false;
+        const mobileLite = typeof isMobileLiteView === 'function' && isMobileLiteView();
+        const shouldLazyRenderContent = mobileLite && isCollapsed;
         const safeTitle = escapeHTML(group.title || 'Không tên');
 
         groupCard.innerHTML = `
             <div class="group-header" onclick="toggleCollapseGroup('${group.id}')">
-                <span class="group-title">
-                    <span class="group-title-text">${gEmoji}${safeTitle}</span>
-                    ${renderGroupTitleTags(group)}
-                </span>
+                <span class="group-title">${gEmoji}${safeTitle}${renderFolderTags(group)}</span>
                 <div class="group-header-actions">
                     <button class="favorite-btn ${group.favorite ? 'active' : ''}" onclick="toggleFavoriteGroup('${group.id}', event)" title="Ghim nhóm yêu thích">${group.favorite ? '⭐' : '☆'}</button>
                     <span class="group-tag tag-${group.type}">${tags[group.type]}</span>
@@ -644,6 +644,13 @@ function renderDashboard() {
             contentArea.innerHTML = `<span class="no-data-text" style="display:flex; justify-content:center; align-items:center; gap:5px;">🔒 Nội dung đã ẩn</span>`;
             container.appendChild(groupCard);
             return; 
+        }
+
+        if (shouldLazyRenderContent) {
+            const count = (group.links?.length || 0) + (group.notes?.length || 0) + (group.schedules?.length || 0);
+            contentArea.innerHTML = `<span class="no-data-text mobile-lite-placeholder">📱 Đã ẩn ${count} mục để giảm tải. Bấm mở nhóm để tải nội dung.</span>`;
+            container.appendChild(groupCard);
+            return;
         }
 
         if (group.type === 'link') {
@@ -1006,6 +1013,8 @@ function addScheduleBlock(data = null) {
             <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-sub)">📋 Danh sách các đầu việc cần làm:</label>
             <textarea class="form-input sch-content-input" placeholder="Nhập các chi tiết đầu việc tại đây..." rows="3" style="width:100%;resize:vertical">${content}</textarea>
         </div>
+        <label style="display:block;margin:8px 0 4px;font-size:12px;color:var(--text-sub)">🏷️ Tag lịch:</label>
+        <input type="text" class="form-input sch-tags-input" placeholder="Ví dụ: họp, deadline" value="${tagsToString(data ? data.tags : [])}" style="width:100%;margin-bottom:8px">
         <input type="hidden" class="sch-emoji-hidden" value="${emoji}">
     `;
 
@@ -1067,6 +1076,7 @@ function submitScheduleForm() {
         const content = block.querySelector('.sch-content-input').value;
         const important = block.querySelector('.sch-important-cb').checked;
         const hiddenEmoji = block.querySelector('.sch-emoji-hidden').value;
+        const tags = parseTags(block.querySelector('.sch-tags-input')?.value || '');
 
         if (!title || !date || !time || !endDate || !endTime) hasError = true;
 
@@ -1075,7 +1085,7 @@ function submitScheduleForm() {
         if (endDateTime < startDateTime) hasTimeError = true;
 
         return { 
-            title, date, time, endDate, endTime, content, important, 
+            title, date, time, endDate, endTime, content, important, tags, 
             emoji: state.isEditMode ? hiddenEmoji : (important ? "⚠️" : "📅") 
         };
     });
@@ -2226,9 +2236,7 @@ function tagsToString(tags = []) {
 
 function getAllDashboardTags() {
     const bag = new Set();
-    state.dashboardData.forEach(group => {
-        (group.tags || []).forEach(t => bag.add(t));
-    });
+    state.dashboardData.forEach(group => (group.tags || []).forEach(t => bag.add(t)));
     return [...bag].sort((a, b) => a.localeCompare(b, 'vi'));
 }
 
@@ -2251,16 +2259,16 @@ function renderTagFilterChips() {
     el.innerHTML = base + tags.map(tag => `<button class="tag-chip ${activeTagFilter === tag ? 'active' : ''}" onclick="setActiveTag('${escapeHTML(tag)}')">#${escapeHTML(tag)}</button>`).join('');
 }
 
-function renderItemTags(item = {}) {
-    const tags = item.tags || [];
+function renderFolderTags(group = {}) {
+    const tags = group.tags || [];
     if (!tags.length) return '';
-    return `<div class="item-tags">${tags.slice(0, 4).map(t => `<span>#${escapeHTML(t)}</span>`).join('')}</div>`;
+    const visible = tags.slice(0, 4).map(t => `<span class="folder-tag">#${escapeHTML(t)}</span>`).join('');
+    const more = tags.length > 4 ? `<span class="folder-tag more">+${tags.length - 4}</span>` : '';
+    return `<span class="folder-tags-inline">${visible}${more}</span>`;
 }
 
-function renderGroupTitleTags(group = {}) {
-    const tags = Array.isArray(group.tags) ? group.tags.filter(Boolean) : [];
-    if (!tags.length) return '';
-    return `<span class="folder-title-tags">${tags.slice(0, 6).map(t => `<span>#${escapeHTML(t)}</span>`).join('')}</span>`;
+function renderItemTags(item = {}) {
+    return '';
 }
 
 function scrollToSection(section) {
@@ -2541,11 +2549,18 @@ const __v4RenderDashboard = renderDashboard;
 renderDashboard = function() {
     __v4RenderDashboard();
     renderTagFilterChips();
+    document.querySelectorAll('.group-card').forEach(card => {
+        const group = getGroup(card.dataset.id);
+        const titleEl = card.querySelector('.group-title');
+        if (group && titleEl && group.tags?.length && !titleEl.querySelector('.folder-tags-inline')) {
+            titleEl.insertAdjacentHTML('beforeend', renderFolderTags(group));
+        }
+    });
 };
 
 const __v4CollectDashboardItems = collectDashboardItems;
 collectDashboardItems = function() {
-    return __v4CollectDashboardItems();
+    return __v4CollectDashboardItems().map(item => ({ ...item, subtitle: `${item.subtitle || ''}${item.tags?.length ? ' · #' + item.tags.join(' #') : ''}` }));
 };
 
 // Ctrl+Z khôi phục nhanh mục mới xóa gần nhất
@@ -2602,31 +2617,91 @@ toggleAllGroups = function(shouldOpen = true) {
     queueScheduleUIUpdate();
 };
 
-document.addEventListener("mousedown", function (e) {
 
-    // Lấy tất cả modal đang mở
-    const activeModals = [...document.querySelectorAll(".modal-overlay.active")];
+// ========================================================================== 
+// MOBILE LITE PATCH - GIẢM TẢI RIÊNG CHO ĐIỆN THOẠI, DESKTOP GIỮ NGUYÊN
+// ========================================================================== 
+const MOBILE_LITE_KEY = 'dashboardMobileLiteAppliedV1';
+function isMobileLiteView() {
+    return window.matchMedia('(max-width: 768px), (pointer: coarse) and (max-width: 900px)').matches;
+}
 
-    if (!activeModals.length) return;
+function applyMobileLiteMode() {
+    const mobile = isMobileLiteView();
+    document.body.classList.toggle('mobile-lite', mobile);
 
-    // Modal mở sau cùng (ở trên cùng)
-    const topModal = activeModals[activeModals.length - 1];
+    // Mobile: tắt hẳn canvas nền để giảm GPU/CPU. Desktop giữ nguyên.
+    if (mobile && typeof isCanvasEnabled !== 'undefined') {
+        isCanvasEnabled = false;
+        localStorage.setItem('canvas-enabled', 'false');
+        if (typeof applyCanvasState === 'function') applyCanvasState();
+    }
 
-    // Chỉ xử lý nếu click đúng nền của modal trên cùng
-    if (e.target !== topModal) return;
+    // Lần đầu vào mobile: thu gọn toàn bộ nhóm để không render quá nhiều bảng/lịch cùng lúc.
+    if (mobile && !sessionStorage.getItem(MOBILE_LITE_KEY)) {
+        state.dashboardData.forEach(group => group.collapsed = true);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+        sessionStorage.setItem(MOBILE_LITE_KEY, '1');
+    }
+}
 
-    closeModal(topModal.id);
+const __mobileLiteToggleCollapseGroup = toggleCollapseGroup;
+toggleCollapseGroup = function(groupId) {
+    const group = getGroup(groupId);
+    const wasCollapsed = !!group?.collapsed;
+    __mobileLiteToggleCollapseGroup(groupId);
 
+    // Nếu mobile đang mở một nhóm đã lazy render, render lại riêng một lần để tạo nội dung thật.
+    if (isMobileLiteView() && wasCollapsed) {
+        queueMicrotask(() => {
+            renderDashboard();
+            const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
+            if (card) card.scrollIntoView({ block: 'nearest' });
+        });
+    }
+};
+
+const __mobileLiteSaveData = saveData;
+saveData = function() {
+    if (isMobileLiteView()) document.body.classList.add('mobile-lite-saving');
+    __mobileLiteSaveData();
+    if (isMobileLiteView()) setTimeout(() => document.body.classList.remove('mobile-lite-saving'), 180);
+};
+
+window.addEventListener('resize', () => {
+    const wasMobile = document.body.classList.contains('mobile-lite');
+    applyMobileLiteMode();
+    if (wasMobile !== document.body.classList.contains('mobile-lite')) renderDashboard();
+}, { passive: true });
+
+window.addEventListener('load', () => {
+    applyMobileLiteMode();
+    if (isMobileLiteView()) renderDashboard();
 });
 
-document.addEventListener("keydown", function (e) {
 
-    if (e.key !== "Escape") return;
+// ========================================================================== 
+// DASHBOARD_MODAL_STACK_MANAGER - click nền/ESC chỉ đóng modal trên cùng
+// ========================================================================== 
+(function initModalStackManager() {
+    if (window.__dashboardModalStackManagerReady) return;
+    window.__dashboardModalStackManagerReady = true;
 
-    const activeModals = [...document.querySelectorAll(".modal-overlay.active")];
+    function getTopActiveModal() {
+        const activeModals = [...document.querySelectorAll('.modal-overlay.active')];
+        if (!activeModals.length) return null;
+        return activeModals.sort((a, b) => (Number(getComputedStyle(a).zIndex) || 0) - (Number(getComputedStyle(b).zIndex) || 0)).at(-1);
+    }
 
-    if (!activeModals.length) return;
+    document.addEventListener('mousedown', function(e) {
+        const topModal = getTopActiveModal();
+        if (!topModal) return;
+        if (e.target === topModal) closeModal(topModal.id);
+    });
 
-    closeModal(activeModals[activeModals.length - 1].id);
-
-});
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape') return;
+        const topModal = getTopActiveModal();
+        if (topModal) closeModal(topModal.id);
+    });
+})();
