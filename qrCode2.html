@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 
-<title>Scanner v1.0 Mono</title>
+<title>HBP Scanner v1.0 Mono</title>
 
 <link rel="icon" href="data:image/svg+xml,
 <svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'>
@@ -324,6 +324,83 @@ button:disabled{
     display:block;
 }
 
+.live-ocr-panel{
+    display:none;
+    margin:12px 0;
+    padding:12px;
+    border:1px solid rgba(139,92,246,.28);
+    border-radius:18px;
+    background:linear-gradient(180deg,rgba(139,92,246,.12),rgba(255,255,255,.82));
+    box-shadow:0 10px 26px rgba(36,48,78,.08);
+}
+
+.live-ocr-panel.show{
+    display:block;
+}
+
+.live-ocr-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    font-size:11px;
+    font-weight:800;
+    color:var(--muted);
+    margin-bottom:8px;
+}
+
+.live-ocr-head b{
+    color:#8b5cf6;
+    white-space:nowrap;
+}
+
+.live-ocr-result{
+    min-height:44px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border:1px dashed rgba(139,92,246,.45);
+    border-radius:14px;
+    background:rgba(255,255,255,.76);
+    color:var(--text);
+    font-size:24px;
+    font-weight:900;
+    letter-spacing:.08em;
+    word-break:break-all;
+}
+
+.live-ocr-sub{
+    margin-top:8px;
+    font-size:11px;
+    line-height:1.45;
+    color:var(--muted);
+    text-align:center;
+}
+
+.live-ocr-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:10px;
+}
+
+.live-ocr-actions button{
+    padding:10px;
+    border-radius:12px;
+    font-size:12px;
+}
+
+#liveOcrAddNowBtn{ background:linear-gradient(135deg,#16c784,#33e09d); }
+#liveOcrStopBtn{ background:linear-gradient(135deg,#64748b,#94a3b8); }
+
+body.dark .live-ocr-panel{
+    background:linear-gradient(180deg,rgba(139,92,246,.16),rgba(18,27,43,.88));
+}
+
+body.dark .live-ocr-result{
+    background:rgba(8,15,29,.62);
+}
+
 .ocr-modal{
     position:fixed;
     inset:0;
@@ -399,6 +476,29 @@ button:disabled{
     color:var(--primary);
     margin:8px 0;
 }
+
+.ocr-tips{
+    display:grid;
+    gap:5px;
+    padding:9px 10px;
+    border-radius:14px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    color:var(--muted);
+    font-size:11px;
+    line-height:1.35;
+    margin:8px 0 10px;
+}
+
+.ocr-mini-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+    margin-top:8px;
+}
+
+#ocrRetryBtn{ background:linear-gradient(135deg,#8b5cf6,#c084fc); }
+#ocrClearBtn{ background:linear-gradient(135deg,#f59e0b,#fbbf24); }
 
 .tool-card{
     background:var(--card);
@@ -699,7 +799,7 @@ body.dark .highlight{
     <div class="brand">
         <div class="logo">▣</div>
         <div>
-            <h1>Scanner</h1>
+            <h1>HBP Scanner</h1>
             <p>QR · Barcode · Số viết tay · Import</p>
         </div>
     </div>
@@ -713,7 +813,20 @@ body.dark .highlight{
     <div id="reader"></div>
     <div class="scan-frame"></div>
     <div class="scan-line"></div>
-    <div class="ocr-hint">Đưa số viết tay vào khung tím rồi bấm 🔢</div>
+    <div class="ocr-hint">Đưa đúng dãy số vào khung tím nhỏ, càng đầy khung càng tốt</div>
+</section>
+
+<section id="liveOcrPanel" class="live-ocr-panel">
+    <div class="live-ocr-head">
+        <span>🔴 Đang quét số viết tay trực tiếp</span>
+        <b id="liveOcrState">Đang khởi động</b>
+    </div>
+    <div class="live-ocr-result" id="liveOcrResult">---</div>
+    <div class="live-ocr-sub">Giữ dãy số trong khung tím. Khi kết quả ổn định, mã sẽ tự thêm vào danh sách.</div>
+    <div class="live-ocr-actions">
+        <button id="liveOcrAddNowBtn" type="button">Thêm ngay</button>
+        <button id="liveOcrStopBtn" type="button">Tắt quét số</button>
+    </div>
 </section>
 
 <div class="quick-stats">
@@ -754,8 +867,17 @@ body.dark .highlight{
         <p>Ảnh được lấy từ vùng giữa camera. Số viết càng to, đậm, thẳng hàng thì càng dễ nhận diện.</p>
         <canvas id="ocrCanvas" class="hidden"></canvas>
         <img id="ocrPreview" class="ocr-preview" alt="Ảnh số viết tay">
+        <div class="ocr-tips">
+            <div>• Đưa dãy số nằm ngang, đầy khung tím.</div>
+            <div>• Số nhỏ nên đưa camera lại gần hơn, đủ sáng, nét đậm.</div>
+            <div>• Nếu OCR sai, sửa trực tiếp ở ô dưới rồi thêm mã.</div>
+        </div>
         <div id="ocrLoading" class="ocr-loading">Đang nhận diện...</div>
         <input id="ocrResultInput" class="ocr-input" inputmode="numeric" placeholder="Kết quả số">
+        <div class="ocr-mini-actions">
+            <button id="ocrRetryBtn" type="button">Quét lại</button>
+            <button id="ocrClearBtn" type="button">Xóa ô</button>
+        </div>
         <div class="ocr-actions">
             <button id="ocrCancelBtn" type="button">Đóng</button>
             <button id="ocrAddBtn" type="button">Thêm mã</button>
@@ -779,7 +901,7 @@ if (!isPhone) {
 }
 
 const dropdownOptions = ["Út", "Cường", "Phong", "Dũng", "Đạt", "Minh", "Tùng", "Lâm"];
-const actionOptions = ["Đẩy đơn", "Đẩy app", "Đẩy lấy", "Đẩy trả", "Đẩy ra", "XN hủy", "Chuyển tuyến"];
+const actionOptions = ["Đẩy đơn", "Đẩy app", "Đẩy lấy", "Đẩy ra", "XN hủy", "Kiểm kho", "Xác nhận BC", "Chuyển tuyến"];
 const SHEET_WEBHOOK = "https://script.google.com/macros/s/AKfycbyMinlMSUi2quS9phTXnV3GfEilYY65KhPJE8p3qB4WT03XBBnXAblpwEDux0ebs3KP/exec";
 
 let scannedCodes = [];
@@ -813,6 +935,23 @@ const ocrLoading = document.getElementById("ocrLoading");
 const ocrResultInput = document.getElementById("ocrResultInput");
 const ocrCancelBtn = document.getElementById("ocrCancelBtn");
 const ocrAddBtn = document.getElementById("ocrAddBtn");
+const ocrRetryBtn = document.getElementById("ocrRetryBtn");
+const ocrClearBtn = document.getElementById("ocrClearBtn");
+const liveOcrPanel = document.getElementById("liveOcrPanel");
+const liveOcrState = document.getElementById("liveOcrState");
+const liveOcrResult = document.getElementById("liveOcrResult");
+const liveOcrAddNowBtn = document.getElementById("liveOcrAddNowBtn");
+const liveOcrStopBtn = document.getElementById("liveOcrStopBtn");
+let ocrWorker = null;
+let ocrWorkerReady = false;
+let liveOcrActive = false;
+let liveOcrBusy = false;
+let liveOcrTimer = null;
+let liveOcrLastText = "";
+let liveOcrStableCount = 0;
+let liveOcrCurrentText = "";
+let liveOcrLastAdded = "";
+let liveOcrLastAddedAt = 0;
 
 const beep = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
 
@@ -865,7 +1004,7 @@ function updateStatus(){
     taggedCount.textContent = tagged;
     matchedCount.textContent = matched;
     statusEl.textContent = scannedCodes.length
-        ? `✅ Đã quét ${scannedCodes.length}`
+        ? `✅ Đã quét ${scannedCodes.length} mã · Đối chiếu trùng ${matched} mã`
         : "Chưa có mã nào";
 
     if (!scannedCodes.length) {
@@ -1063,6 +1202,7 @@ async function startCamera(){
 }
 
 async function stopCamera(){
+    if (liveOcrActive) stopLiveHandwritingScan();
     if (!html5QrCode || !cameraRunning) return;
     try {
         await html5QrCode.stop();
@@ -1079,39 +1219,123 @@ function getReaderVideo(){
     return document.querySelector("#reader video");
 }
 
+function getCropBox(video){
+    const vw = video.videoWidth;
+    const vh = video.videoHeight;
+    const cropW = Math.floor(vw * 0.64);
+    const cropH = Math.floor(vh * 0.24);
+    const sx = Math.floor((vw - cropW) / 2);
+    const sy = Math.floor((vh - cropH) / 2);
+    return { sx, sy, cropW, cropH };
+}
+
+function otsuThreshold(grayValues){
+    const hist = new Array(256).fill(0);
+    for (const v of grayValues) hist[v]++;
+    const total = grayValues.length;
+    let sum = 0;
+    for (let i = 0; i < 256; i++) sum += i * hist[i];
+    let sumB = 0, wB = 0, maxVar = 0, threshold = 150;
+    for (let i = 0; i < 256; i++) {
+        wB += hist[i];
+        if (!wB) continue;
+        const wF = total - wB;
+        if (!wF) break;
+        sumB += i * hist[i];
+        const mB = sumB / wB;
+        const mF = (sum - sumB) / wF;
+        const between = wB * wF * (mB - mF) * (mB - mF);
+        if (between > maxVar) { maxVar = between; threshold = i; }
+    }
+    return Math.max(95, Math.min(190, threshold));
+}
+
 function preprocessHandwritingFrame(){
     const video = getReaderVideo();
     if (!video || !video.videoWidth || !video.videoHeight) {
         throw new Error("Camera chưa sẵn sàng");
     }
 
-    const vw = video.videoWidth;
-    const vh = video.videoHeight;
-    const cropW = Math.floor(vw * 0.82);
-    const cropH = Math.floor(vh * 0.36);
-    const sx = Math.floor((vw - cropW) / 2);
-    const sy = Math.floor((vh - cropH) / 2);
-    const scale = 2.6;
+    const { sx, sy, cropW, cropH } = getCropBox(video);
+    const scale = 5;
 
     ocrCanvas.width = Math.floor(cropW * scale);
     ocrCanvas.height = Math.floor(cropH * scale);
 
     const ctx = ocrCanvas.getContext("2d", { willReadFrequently:true });
-    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingEnabled = false;
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(0, 0, ocrCanvas.width, ocrCanvas.height);
     ctx.drawImage(video, sx, sy, cropW, cropH, 0, 0, ocrCanvas.width, ocrCanvas.height);
 
     const img = ctx.getImageData(0, 0, ocrCanvas.width, ocrCanvas.height);
     const data = img.data;
+    const grays = [];
 
     for (let i = 0; i < data.length; i += 4) {
-        const gray = data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114;
-        const value = gray < 150 ? 0 : 255;
+        const gray = Math.round(data[i] * 0.299 + data[i + 1] * 0.587 + data[i + 2] * 0.114);
+        grays.push(gray);
+    }
+
+    const threshold = otsuThreshold(grays);
+    let darkCount = 0;
+
+    for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+        let value = grays[j] < threshold ? 0 : 255;
+        if (value === 0) darkCount++;
         data[i] = data[i + 1] = data[i + 2] = value;
+        data[i + 3] = 255;
+    }
+
+    // Nếu nền ảnh tối nhiều quá thì đảo màu để chữ thành đen trên nền trắng.
+    if (darkCount > grays.length * 0.55) {
+        for (let i = 0; i < data.length; i += 4) {
+            const value = data[i] === 0 ? 255 : 0;
+            data[i] = data[i + 1] = data[i + 2] = value;
+        }
     }
 
     ctx.putImageData(img, 0, 0);
+
+    // Thêm viền trắng giúp Tesseract đọc dãy số nhỏ ổn hơn.
+    const padded = document.createElement("canvas");
+    padded.width = ocrCanvas.width + 80;
+    padded.height = ocrCanvas.height + 60;
+    const pctx = padded.getContext("2d");
+    pctx.fillStyle = "#fff";
+    pctx.fillRect(0, 0, padded.width, padded.height);
+    pctx.drawImage(ocrCanvas, 40, 30);
+
+    ocrCanvas.width = padded.width;
+    ocrCanvas.height = padded.height;
+    ctx.drawImage(padded, 0, 0);
+
     ocrPreview.src = ocrCanvas.toDataURL("image/png");
     return ocrCanvas;
+}
+
+async function getOcrWorker(){
+    if (!window.Tesseract) throw new Error("Chưa tải được thư viện nhận diện số");
+    if (ocrWorkerReady && ocrWorker) return ocrWorker;
+
+    ocrLoading.textContent = "Đang khởi động OCR lần đầu...";
+    ocrWorker = await Tesseract.createWorker("eng", 1, {
+        logger: m => {
+            if (m.status === "recognizing text") {
+                ocrLoading.textContent = `Đang nhận diện... ${Math.round((m.progress || 0) * 100)}%`;
+            }
+        }
+    });
+
+    await ocrWorker.setParameters({
+        tessedit_char_whitelist: "0123456789",
+        tessedit_pageseg_mode: "7",
+        classify_bln_numeric_mode: "1",
+        preserve_interword_spaces: "0"
+    });
+
+    ocrWorkerReady = true;
+    return ocrWorker;
 }
 
 async function scanHandwrittenNumber(){
@@ -1121,39 +1345,125 @@ async function scanHandwrittenNumber(){
         handScanBtn.disabled = true;
         handScanBtn.innerHTML = "⏳<br>Đọc";
 
+        // Cho người dùng có khoảnh khắc đưa số vào đúng khung sau khi bấm.
+        await new Promise(resolve => setTimeout(resolve, 180));
+
         const canvas = preprocessHandwritingFrame();
         ocrModal.classList.add("show");
-        ocrLoading.textContent = "Đang nhận diện...";
+        ocrLoading.textContent = "Đang nhận diện ảnh đã phóng to...";
         ocrResultInput.value = "";
         ocrAddBtn.disabled = true;
 
-        if (!window.Tesseract) {
-            throw new Error("Chưa tải được thư viện nhận diện số");
-        }
-
-        const result = await Tesseract.recognize(canvas, "eng", {
-            tessedit_char_whitelist: "0123456789",
-            logger: m => {
-                if (m.status === "recognizing text") {
-                    ocrLoading.textContent = `Đang nhận diện... ${Math.round((m.progress || 0) * 100)}%`;
-                }
-            }
-        });
+        const worker = await getOcrWorker();
+        const result = await worker.recognize(canvas);
 
         const rawText = result?.data?.text || "";
         const digits = rawText.replace(/[^0-9]/g, "");
         ocrResultInput.value = digits;
-        ocrLoading.textContent = digits ? "Đã nhận diện, kiểm tra lại rồi thêm mã." : "Chưa nhận ra số. Hãy chụp lại hoặc nhập/sửa thủ công.";
+        ocrLoading.textContent = digits ? "Đã nhận diện. Kiểm tra/sửa lại rồi thêm mã." : "Chưa nhận ra số. Hãy đưa số sát khung hơn rồi bấm Quét lại.";
         ocrAddBtn.disabled = false;
         setTimeout(() => ocrResultInput.focus(), 100);
     } catch (err) {
         console.error(err);
-        alert("Không nhận diện được số viết tay. Hãy thử để số to, đậm hơn và đủ sáng.");
+        alert("Không nhận diện được số viết tay. Hãy đưa số vào đầy khung tím, đủ sáng và nét đậm hơn.");
     } finally {
         handScanBtn.disabled = false;
         handScanBtn.innerHTML = "🔢<br>Số tay";
-        setTimeout(() => scannerCard.classList.remove("handwriting-mode"), 1200);
+        setTimeout(() => scannerCard.classList.remove("handwriting-mode"), 900);
     }
+}
+
+
+function setLiveOcrUi(active){
+    liveOcrPanel.classList.toggle("show", active);
+    scannerCard.classList.toggle("handwriting-mode", active);
+    handScanBtn.innerHTML = active ? "⏹<br>Dừng số" : "🔢<br>Số tay";
+}
+
+function cleanLiveDigits(text){
+    return String(text || "").replace(/[^0-9]/g, "").trim();
+}
+
+async function recognizeLiveFrame(){
+    if (!liveOcrActive || liveOcrBusy) return;
+    liveOcrBusy = true;
+
+    try {
+        const canvas = preprocessHandwritingFrame();
+        const worker = await getOcrWorker();
+        liveOcrState.textContent = "Đang đọc";
+
+        const result = await worker.recognize(canvas);
+        const digits = cleanLiveDigits(result?.data?.text);
+        liveOcrCurrentText = digits;
+
+        if (digits) {
+            liveOcrResult.textContent = digits;
+            if (digits === liveOcrLastText) liveOcrStableCount++;
+            else {
+                liveOcrLastText = digits;
+                liveOcrStableCount = 1;
+            }
+
+            liveOcrState.textContent = `Ổn định ${liveOcrStableCount}/3`;
+
+            const now = Date.now();
+            if (
+                liveOcrStableCount >= 3 &&
+                digits.length >= 3 &&
+                !(digits === liveOcrLastAdded && now - liveOcrLastAddedAt < 5000)
+            ) {
+                liveOcrLastAdded = digits;
+                liveOcrLastAddedAt = now;
+                liveOcrStableCount = 0;
+                onScanSuccess(digits);
+                liveOcrState.textContent = "Đã thêm";
+                showToast(`Đã thêm số ${digits}`);
+            }
+        } else {
+            liveOcrResult.textContent = "---";
+            liveOcrState.textContent = "Chưa thấy số";
+            liveOcrStableCount = 0;
+        }
+    } catch (err) {
+        console.error(err);
+        liveOcrState.textContent = "Lỗi đọc";
+    } finally {
+        liveOcrBusy = false;
+    }
+}
+
+async function startLiveHandwritingScan(){
+    if (liveOcrActive) return;
+    if (!cameraRunning) await startCamera();
+    liveOcrActive = true;
+    liveOcrLastText = "";
+    liveOcrStableCount = 0;
+    liveOcrCurrentText = "";
+    liveOcrResult.textContent = "---";
+    liveOcrState.textContent = "Đang khởi động";
+    setLiveOcrUi(true);
+
+    // Khởi động worker trước để các lần đọc sau nhanh hơn.
+    getOcrWorker().catch(console.error);
+
+    await new Promise(resolve => setTimeout(resolve, 250));
+    recognizeLiveFrame();
+    liveOcrTimer = setInterval(recognizeLiveFrame, 850);
+}
+
+function stopLiveHandwritingScan(){
+    liveOcrActive = false;
+    liveOcrBusy = false;
+    if (liveOcrTimer) clearInterval(liveOcrTimer);
+    liveOcrTimer = null;
+    setLiveOcrUi(false);
+    liveOcrState.textContent = "Đã tắt";
+}
+
+function toggleLiveHandwritingScan(){
+    if (liveOcrActive) stopLiveHandwritingScan();
+    else startLiveHandwritingScan();
 }
 
 function closeOcrModal(){
@@ -1219,9 +1529,14 @@ addManualBtn.onclick = () => {
     }
 };
 
-handScanBtn.onclick = scanHandwrittenNumber;
+handScanBtn.onclick = toggleLiveHandwritingScan;
 
 ocrCancelBtn.onclick = closeOcrModal;
+ocrRetryBtn.onclick = scanHandwrittenNumber;
+ocrClearBtn.onclick = () => {
+    ocrResultInput.value = "";
+    ocrResultInput.focus();
+};
 ocrModal.addEventListener("click", e => {
     if (e.target === ocrModal) closeOcrModal();
 });
@@ -1237,6 +1552,16 @@ ocrAddBtn.onclick = () => {
 ocrResultInput.addEventListener("input", () => {
     ocrResultInput.value = ocrResultInput.value.replace(/[^0-9]/g, "");
 });
+
+liveOcrStopBtn.onclick = stopLiveHandwritingScan;
+liveOcrAddNowBtn.onclick = () => {
+    const code = cleanLiveDigits(liveOcrCurrentText || liveOcrResult.textContent);
+    if (!code || code === "---") {
+        showToast("Chưa nhận được số để thêm");
+        return;
+    }
+    onScanSuccess(code);
+};
 
 checkListInput.addEventListener("input", function(){
     localStorage.setItem("hbp_checkList", this.value);
