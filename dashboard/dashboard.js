@@ -6,7 +6,89 @@ const API_KEY = 'AIzaSyAc5DuR0oxr7yEdTQnvIIS-PRKGtIfWrro';
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
-const EMOJI_LIST = ["NONE", "📅", "⏰", "⏳", "🚀", "🤖", "🔥", "✨", "🌟", "💻", "💼", "📚", "🛠️", "💬", "📌", "✅", "⚠️"];
+const EMOJI_LIST = [
+"NONE",
+
+// ==================== 📁 Thư mục & Dữ liệu ====================
+"📁","📂","🗂️","🗃️","🗄️","📦","🧺","🧳","🎒","📋","📑","📄","📃","📜","📰","🗞️",
+"📒","📓","📔","📕","📗","📘","📙","📚","📖","📝","✏️","🖊️","🖋️","✒️","📐","📏",
+"📎","🖇️","📌","📍","🧷","✂️","🗑️",
+
+// ==================== 💻 Công nghệ ====================
+"💻","🖥️","🖨️","⌨️","🖱️","🖲️","💾","💿","📀","💽","📱","📲","☎️","📞","📟",
+"📠","📡","📶","🛰️","🌐","🔗","⚙️","🛠️","🔧","🔨","🔩","🧰","🧲","🧪","🔬","🔭",
+"🤖","🧠","💡","🔌","🔋","🪫","📺","📷","📸","🎥","🎬","🎙️","🎤","🎧","📻",
+
+// ==================== 📅 Thời gian ====================
+"📅","🗓️","📆","⏰","⏱️","⏲️","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙",
+"🕚","🕛","⌛","⏳","🌅","🌄","🌇","🌆","🌃","🌙","🌞",
+
+// ==================== 🚀 Hiệu suất ====================
+"🚀","⚡","🔥","✨","🌟","⭐","💥","🎯","🏆","🥇","🥈","🥉","🏅","🎖️","💪","📈",
+"📉","📊","📌","🔝","⬆️","⬇️","➡️","⬅️","↗️","↘️","↖️","↙️",
+
+// ==================== 💼 Công việc ====================
+"💼","👔","🧑‍💼","🏢","🏬","🏭","🏦","🏪","🏫","🏛️","🏗️","🧾","💳","💰","💵",
+"💶","💷","💴","🪙","💸","🏷️","🛒","🛍️",
+
+// ==================== 🌍 Internet ====================
+"🌍","🌎","🌏","🛰️","🌐","📡","📶","📤","📥","📨","📧","📩","✉️","📬","📭","📪",
+"📫","📮","📯",
+
+// ==================== 🔒 Bảo mật ====================
+"🔒","🔓","🔐","🔑","🗝️","🛡️","⚔️","🚨","🚔","👮","🕵️","🛂","🧬",
+
+// ==================== 📝 Ghi chú ====================
+"📝","📒","📓","📔","📖","📚","📋","📌","📍","🧷","📎","🖇️","📑","📜",
+
+// ==================== 💬 Liên hệ ====================
+"💬","🗨️","🗯️","📢","📣","🔔","🔕","📨","📩","✉️","📧","📬","☎️","📞",
+
+// ==================== ✅ Trạng thái ====================
+"✅","☑️","✔️","❌","❎","⭕","🟢","🟡","🔴","⚪","⚫","🟠","🟣","🟤","🔵",
+
+// ==================== ⚠️ Cảnh báo ====================
+"⚠️","🚨","⛔","🚫","❗","❕","❓","❔","‼️","⁉️","💢","☢️","☣️",
+
+// ==================== ❤️ Yêu thích ====================
+"❤️","🩷","🧡","💛","💚","🩵","💙","💜","🤎","🖤","🤍","💖","💗","💝","💕","💞",
+"💘","💓","💟","⭐","🌟","✨",
+
+// ==================== 🎨 Thiết kế ====================
+"🎨","🖌️","🖍️","🧵","🪡","🎭","🎬","🎼","🎵","🎶","🎤","🎧","📷","📸",
+
+// ==================== 📦 Kho vận ====================
+"📦","🚚","🚛","🚜","🏭","🏗️","📍","🧭","🗺️","🚢","✈️","🚆","🚄","🚅","🚉",
+"🚲","🏍️","🚗","🚕","🚙",
+
+// ==================== 🏠 Cá nhân ====================
+"🏠","🏡","🏢","🛏️","🛋️","🚪","🪟","🪑","🍔","🍕","🍜","🍚","🍱","☕","🧋","🥤",
+"🍎","🍉","🍇","🍓","🥑","🥗",
+
+// ==================== 👥 Người ====================
+"👤","👥","🧑","👨","👩","🧒","👴","👵","🙋","🙆","🙇","🤝","👏","👍","👎","👌",
+"✌️","🤞","🤟","🤙","👋","🙏",
+
+// ==================== 😀 Cảm xúc ====================
+"😀","😁","😂","🤣","😊","😇","🙂","😉","😍","😘","😎","🤩","🥳","😴","🤔","🤯",
+"😭","😡","🥶","🥵","😱","🤗","🤭","🫡","🤝",
+
+// ==================== 🎉 Giải trí ====================
+"🎉","🎊","🎁","🎈","🎂","🍰","🎆","🎇","🎃","🎄","🎅","🎀","🎗️","🏅","🎯",
+
+// ==================== 🌿 Thiên nhiên ====================
+"🌱","🌿","🍀","🌴","🌳","🌲","🌵","🌷","🌹","🌺","🌸","🌼","🌻","🍁","🍂","🍃",
+"☀️","⛅","☁️","🌧️","⛈️","❄️","🌈",
+
+// ==================== Động vật ====================
+"🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵",
+"🐔","🐧","🦅","🦉","🦄","🐝","🦋","🐢","🐬","🐳","🦈","🐙",
+
+// ==================== Biểu tượng ====================
+"🔷","🔶","🔹","🔸","🔺","🔻","💠","♦️","♣️","♠️","♥️",
+"➕","➖","✖️","➗","➰","➿","〽️","💯"
+];
+
 const STORAGE_KEY = 'myDashboardDataButtonsEdition';
 const THEME_KEY = 'dashboardTheme';
 
@@ -948,80 +1030,75 @@ function updateScheduleUI() {
     const rows = document.querySelectorAll('.schedule-table tbody tr');
 
     rows.forEach(row => {
-        let startStr = row.getAttribute('data-start');
-        let endStr = row.getAttribute('data-end');
+        // Bỏ qua lịch đang nằm trong nhóm thu gọn/ẩn để mở hết/thu gọn/import không bị khựng.
+        if (row.offsetParent === null) return;
+
+        const startStr = row.getAttribute('data-start');
+        const endStr = row.getAttribute('data-end');
         const countdownCell = row.querySelector('.schedule-countdown-cell');
         const jobCell = row.querySelector('.schedule-name')?.innerText.trim();
 
         if (!startStr || !endStr || !countdownCell) return;
 
-        // SỬA LỖI TẠI ĐÂY:
-        // Định dạng data-start thường là YYYY-MM-DDTHH:mm
-        // Thêm ":00" vào cuối để trình duyệt trên Mobile (Safari/Chrome) hiểu đây là định dạng ISO hợp lệ
-        const startTime = new Date(startStr + ":00");
-        const endTime = new Date(endStr + ":00");
+        const startTime = new Date(startStr.length === 16 ? startStr + ':00' : startStr);
+        const endTime = new Date(endStr.length === 16 ? endStr + ':00' : endStr);
 
         if (isNaN(startTime.getTime()) || isNaN(endTime.getTime())) return;
 
         const diffToStartMs = startTime - now;
         const diffToEndMs = endTime - now;
-        
         let countdownText = "";
         let badgeColor = "";
-
-        row.style.display = ""; 
-        row.style.textDecoration = "none";
-        row.classList.remove('highlight-warning', 'blink-effect');
-        row.removeAttribute('data-pulse');
-        
-        const cells = Array.from(row.cells);
+        let pulse = false;
+        let past = false;
+        let running = false;
 
         if (diffToEndMs < 0) {
             countdownText = "Hết hạn";
             badgeColor = "#ef4444";
-            row.style.textDecoration = "line-through";
-            row.style.borderLeft = ""; 
-            cells.forEach(cell => {
-                cell.style.opacity = "0.45"; 
-                cell.style.color = "var(--text-sub)";
-                cell.style.backgroundColor = "transparent";
-            });
-        } 
-        else if (diffToStartMs <= 0 && diffToEndMs >= 0) {
+            past = true;
+        } else if (diffToStartMs <= 0 && diffToEndMs >= 0) {
             countdownText = "Đang chạy";
-            badgeColor = "#a855f7"; 
-            row.style.borderLeft = "4px solid #a855f7";
-            cells.forEach(cell => { cell.style.opacity = "1"; cell.style.color = ""; });
-
-            if (Math.floor(diffToEndMs / 60000) <= 30) row.setAttribute('data-pulse', 'true');
-        } 
-        else {
-            row.style.borderLeft = ""; 
-            cells.forEach(cell => { cell.style.opacity = "1"; cell.style.color = ""; cell.style.backgroundColor = "transparent"; });
-
+            badgeColor = "#a855f7";
+            running = true;
+            pulse = Math.floor(diffToEndMs / 60000) <= 30;
+        } else {
             const diffMin = Math.floor(diffToStartMs / 60000);
             const diffHour = Math.floor(diffMin / 60);
             const diffDay = Math.floor(diffHour / 24);
 
             if (diffDay > 0) {
                 countdownText = `Còn ${diffDay} ngày`;
-                badgeColor = "#10b981"; 
+                badgeColor = "#10b981";
             } else if (diffHour > 0) {
                 countdownText = `${diffHour}g : ${diffMin % 60}ph`;
-                badgeColor = "#f59e0b"; 
+                badgeColor = "#f59e0b";
             } else {
                 countdownText = `🚨 Còn ${diffMin} phút`;
-                badgeColor = "#ef4444"; 
-                if (diffMin <= 30) {
-                    row.setAttribute('data-pulse', 'true');
-                    if (Notification.permission === "granted" && !row.dataset.notified) {
-                        new Notification("🚨 SẮP ĐẾN MỐC HẸN!", { body: `Sắp tới giờ: ${jobCell} (còn ${diffMin} phút).` });
-                        row.dataset.notified = "true";
-                    }
+                badgeColor = "#ef4444";
+                pulse = diffMin <= 30;
+                if (pulse && Notification.permission === "granted" && !row.dataset.notified) {
+                    new Notification("🚨 SẮP ĐẾN MỐC HẸN!", { body: `Sắp tới giờ: ${jobCell} (còn ${diffMin} phút).` });
+                    row.dataset.notified = "true";
                 }
             }
         }
-        countdownCell.innerHTML = `<span style="color:${badgeColor}">${countdownText}</span>`;
+
+        row.classList.toggle('is-past-schedule', past);
+        row.classList.toggle('is-running-schedule', running);
+        row.style.textDecoration = past ? "line-through" : "none";
+        row.style.borderLeft = running ? "4px solid #a855f7" : "";
+        if (pulse) row.setAttribute('data-pulse', 'true');
+        else row.removeAttribute('data-pulse');
+
+        Array.from(row.cells).forEach(cell => {
+            cell.style.opacity = past ? "0.45" : "1";
+            cell.style.color = past ? "var(--text-sub)" : "";
+            if (!pulse) cell.style.backgroundColor = "transparent";
+        });
+
+        const nextHTML = `<span style="color:${badgeColor}">${countdownText}</span>`;
+        if (countdownCell.innerHTML !== nextHTML) countdownCell.innerHTML = nextHTML;
     });
     initGlobalPulseSystem();
 }
@@ -2437,3 +2514,28 @@ function chooseCreateGroupType(type) {
     closeModal('createGroupTypeModal');
     openGroupModal(false, type);
 }
+
+
+// ========================================================================== 
+// PATCH: CẬP NHẬT COUNTDOWN NGAY SAU KHI RENDER, NHƯNG KHÔNG GÂY GIẬT LAG
+// ========================================================================== 
+let __scheduleUIRaf = null;
+function queueScheduleUIUpdate() {
+    if (__scheduleUIRaf) cancelAnimationFrame(__scheduleUIRaf);
+    __scheduleUIRaf = requestAnimationFrame(() => {
+        __scheduleUIRaf = null;
+        updateScheduleUI();
+    });
+}
+
+const __fastRenderDashboard = renderDashboard;
+renderDashboard = function() {
+    __fastRenderDashboard();
+    queueScheduleUIUpdate();
+};
+
+const __fastToggleAllGroups = toggleAllGroups;
+toggleAllGroups = function(shouldOpen = true) {
+    __fastToggleAllGroups(shouldOpen);
+    queueScheduleUIUpdate();
+};
