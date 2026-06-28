@@ -2705,3 +2705,175 @@ window.addEventListener('load', () => {
         if (topModal) closeModal(topModal.id);
     });
 })();
+
+
+// ==========================================================================
+
+// ==========================================================================
+
+// ==========================================================================// ==========================================================================
+
+// ==========================================================================
+
+// ==========================================================================
+// SIDEBAR PRO MANAGER
+// Desktop: rail/sidebar chuyên nghiệp, click nút mở rộng/thu gọn, không tự sinh nhiều nút.
+// Mobile: drawer trượt chuẩn; mở drawer thì ẩn nút ☰, không có ghim.
+// ==========================================================================
+const SIDEBAR_PRO_KEY = "dashboardSidebarProCollapsed";
+
+function isSidebarProDesktop() {
+    return window.matchMedia("(min-width: 769px)").matches;
+}
+
+function cleanupSidebarExperimentNodes() {
+    [
+        "desktopSidebarToggle",
+        "edgeSidebarHotspot",
+        "sidebarV2Hotspot",
+        "sidebarV2Rail",
+        "sidebarV2PinBtn",
+        "sidebarV3Hotspot",
+        "sidebarV3Rail",
+        "sidebarV3PinBtn",
+        "sidebarFinalHotspot",
+        "sidebarFinalRail",
+        "sidebarFinalPinBtn"
+    ].forEach(id => document.getElementById(id)?.remove());
+
+    document.querySelectorAll(
+        ".desktop-sidebar-toggle,.edge-sidebar-pin-btn,.sidebar-v2-pin-btn,.sidebar-v3-pin-btn,.sidebar-final-pin-btn"
+    ).forEach(el => el.remove());
+
+    document.body.classList.remove(
+        "sidebar-collapsed-desktop",
+        "edge-sidebar-enabled","edge-sidebar-open","edge-sidebar-pinned",
+        "sidebar-v2-enabled","sidebar-v2-open","sidebar-v2-pinned",
+        "sidebar-v3-enabled","sidebar-v3-open","sidebar-v3-pinned",
+        "sidebar-final-enabled","sidebar-final-open","sidebar-final-pinned"
+    );
+}
+
+function setSidebarProCollapsed(collapsed) {
+    if (!isSidebarProDesktop()) {
+        document.body.classList.remove("sidebar-pro-collapsed");
+        return;
+    }
+
+    document.body.classList.toggle("sidebar-pro-collapsed", Boolean(collapsed));
+    localStorage.setItem(SIDEBAR_PRO_KEY, collapsed ? "true" : "false");
+    updateSidebarProToggle();
+}
+
+function toggleSidebarPro() {
+    const collapsed = document.body.classList.contains("sidebar-pro-collapsed");
+    setSidebarProCollapsed(!collapsed);
+}
+
+function updateSidebarProToggle() {
+    const btn = document.getElementById("sidebarProToggle");
+    if (!btn) return;
+
+    const collapsed = document.body.classList.contains("sidebar-pro-collapsed");
+    btn.innerHTML = collapsed ? "»" : "«";
+    btn.title = collapsed ? "Mở rộng sidebar" : "Thu gọn sidebar";
+    btn.setAttribute("aria-label", collapsed ? "Mở rộng sidebar" : "Thu gọn sidebar");
+}
+
+function initSidebarPro() {
+    cleanupSidebarExperimentNodes();
+
+    const sidebar = document.querySelector(".app-sidebar");
+    if (!sidebar) return;
+
+    // Desktop toggle: chỉ một nút duy nhất, nằm trong sidebar.
+    let toggleBtn = document.getElementById("sidebarProToggle");
+    if (!toggleBtn) {
+        toggleBtn = document.createElement("button");
+        toggleBtn.id = "sidebarProToggle";
+        toggleBtn.type = "button";
+        toggleBtn.className = "sidebar-pro-toggle";
+        toggleBtn.onclick = (event) => {
+            event.stopPropagation();
+            toggleSidebarPro();
+        };
+        sidebar.appendChild(toggleBtn);
+    }
+
+    // Mobile close button: nếu HTML chưa có thì tự thêm.
+    if (!sidebar.querySelector(".sidebar-close")) {
+        const closeBtn = document.createElement("button");
+        closeBtn.type = "button";
+        closeBtn.className = "sidebar-close";
+        closeBtn.innerHTML = "×";
+        closeBtn.setAttribute("aria-label", "Đóng menu");
+        closeBtn.onclick = () => toggleMobileSidebar(false);
+        const logo = sidebar.querySelector(".sidebar-logo");
+        if (logo?.nextSibling) sidebar.insertBefore(closeBtn, logo.nextSibling);
+        else sidebar.prepend(closeBtn);
+    }
+
+    sidebar.querySelectorAll("button").forEach(btn => {
+        if (btn.id === "sidebarProToggle" || btn.classList.contains("sidebar-close")) return;
+        const label = btn.querySelector("span")?.textContent?.trim();
+        if (label) btn.title = label;
+    });
+
+    const apply = () => {
+        const desktop = isSidebarProDesktop();
+        document.body.classList.toggle("sidebar-pro-enabled", desktop);
+
+        if (!desktop) {
+            document.body.classList.remove("sidebar-pro-collapsed");
+            updateSidebarProToggle();
+            return;
+        }
+
+        const savedValue = localStorage.getItem(SIDEBAR_PRO_KEY);
+        const savedCollapsed = savedValue === null ? true : savedValue === "true";
+        document.body.classList.toggle("sidebar-pro-collapsed", savedCollapsed);
+        updateSidebarProToggle();
+    };
+
+    window.addEventListener("resize", apply);
+    apply();
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initSidebarPro);
+} else {
+    initSidebarPro();
+}
+
+
+// ==========================================================================
+// RESTORE DESKTOP BACKGROUND CANVAS
+// Desktop luôn giữ hiệu ứng nền/canvas. Mobile vẫn có thể giảm tải.
+ // ==========================================================================
+function ensureDesktopBackgroundCanvas() {
+    const isDesktop = window.matchMedia("(min-width: 769px)").matches;
+    const canvasEl = document.getElementById("bgCanvas");
+
+    if (!canvasEl) return;
+
+    if (isDesktop) {
+        // Không ép localStorage nếu người dùng tự tắt bằng nút,
+        // nhưng nếu đang bị mobile-lite/patch cũ ẩn bằng style thì mở lại.
+        if (localStorage.getItem("canvas-enabled") !== "false") {
+            isCanvasEnabled = true;
+            canvasEl.style.display = "block";
+            resizeCanvas?.();
+
+            if (!animationFrameId && typeof drawBackground === "function") {
+                animationFrameId = requestAnimationFrame(drawBackground);
+            }
+        }
+    }
+}
+
+if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", ensureDesktopBackgroundCanvas);
+} else {
+    ensureDesktopBackgroundCanvas();
+}
+window.addEventListener("resize", ensureDesktopBackgroundCanvas);

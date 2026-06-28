@@ -121,7 +121,7 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="readModal">
+    <div class="modal-overlay" style="z-index: 9999999 !important;" id="readModal">
         <div class="modal-box" style="max-width: 550px; width: 95%;">
             <h3 id="readModalTitle" style="margin-top: 0; display:flex; align-items:center; gap:8px;">📋 Chi Tiết</h3>
             <div id="readModalBody"></div>
@@ -295,9 +295,9 @@
                 <button class="btn-secondary" onclick="closeModal('calendarModal')">Đóng</button>
             </div>
             <div class="calendar-toolbar">
-                <button class="btn-secondary" onclick="changeCalendarMonth(-1)">‹ Tháng trước</button>
+                <button class="btn-secondary calendar-nav-btn calendar-prev-btn" onclick="changeCalendarMonth(-1)" aria-label="Tháng trước"><span class="calendar-nav-icon">‹</span></button>
                 <strong id="calendarMonthLabel">--</strong>
-                <button class="btn-secondary" onclick="changeCalendarMonth(1)">Tháng sau ›</button>
+                <button class="btn-secondary calendar-nav-btn calendar-next-btn" onclick="changeCalendarMonth(1)" aria-label="Tháng sau"><span class="calendar-nav-icon">›</span></button>
             </div>
             <div id="calendarGrid" class="calendar-grid"></div>
         </div>
