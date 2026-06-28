@@ -1398,6 +1398,9 @@ body.light-mode .smart-item { background:#fff; }
     padding: 0;
     overflow: hidden;
 }
+.calendar-nav-text {
+    display: block;
+}
 .calendar-toolbar {
     display: flex;
     align-items: center;
@@ -4654,4 +4657,113 @@ body.light-mode .schedule-date {
     overflow-y: auto !important;
     padding-bottom: 120px !important;
     scroll-padding-bottom: 120px !important;
+}
+
+
+/* ==========================================================================
+   PATCH v3.1 - Desktop calendar nav text + collapsed sidebar icons
+   ========================================================================== */
+
+/* Desktop/tablet: show Previous month / Next month text again. */
+@media (min-width: 641px) {
+    #calendarModal .calendar-toolbar .calendar-nav-btn,
+    .calendar-toolbar .calendar-nav-btn {
+        width: auto !important;
+        height: 42px !important;
+        min-width: 150px !important;
+        max-width: none !important;
+        padding: 0 14px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 8px !important;
+        overflow: visible !important;
+        font-size: 14px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+    }
+
+    #calendarModal .calendar-toolbar .calendar-nav-text,
+    .calendar-toolbar .calendar-nav-text {
+        display: inline-flex !important;
+        align-items: center !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        width: auto !important;
+        height: auto !important;
+        overflow: visible !important;
+        font-size: 14px !important;
+        line-height: 1.2 !important;
+    }
+
+    #calendarModal .calendar-toolbar .calendar-nav-icon,
+    .calendar-toolbar .calendar-nav-icon {
+        width: 18px !important;
+        height: 18px !important;
+        min-width: 18px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 18px !important;
+        transform: none !important;
+    }
+
+    #calendarModal .calendar-toolbar .calendar-nav-icon svg,
+    .calendar-toolbar .calendar-nav-icon svg {
+        width: 18px !important;
+        height: 18px !important;
+    }
+}
+
+/* Mobile: keep compact icon-only navigation. */
+@media (max-width: 640px) {
+    #calendarModal .calendar-toolbar .calendar-nav-btn,
+    .calendar-toolbar .calendar-nav-btn {
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+        padding: 0 !important;
+        font-size: 0 !important;
+        overflow: hidden !important;
+    }
+
+    #calendarModal .calendar-toolbar .calendar-nav-text,
+    .calendar-toolbar .calendar-nav-text {
+        display: none !important;
+    }
+}
+
+/* Collapsed desktop sidebar: hide only labels, never icon spans. */
+@media (min-width: 769px) {
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) .sidebar-menu-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 24px !important;
+        min-width: 24px !important;
+        height: 24px !important;
+        font-size: 20px !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) span:not(.sidebar-menu-icon) {
+        display: none !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 10px !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) .sidebar-menu-icon {
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        width: 24px !important;
+        min-width: 24px !important;
+        height: 24px !important;
+    }
 }
