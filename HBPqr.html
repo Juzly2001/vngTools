@@ -3,101 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HBP QrCode</title>
+    <title>QrCode Pro</title>
+
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
-    
+
     <style id="dynamic-print-style">
-        /* Khổ giấy mặc định lúc khởi tạo sẽ là 40mm x 30mm */
         @media print {
             @page { size: 40mm 40mm; margin: 0; }
         }
     </style>
 
     <style>
-        /* CSS cho giao diện hiển thị trên máy tính */
+        :root {
+            --bg: #f4f6f9;
+            --card: #ffffff;
+            --text: #1f2937;
+            --sub: #6b7280;
+            --border: #d1d5db;
+            --soft: #f8f9fa;
+            --primary: #007bff;
+            --success: #28a745;
+            --danger: #dc3545;
+            --warning: #ffc107;
+        }
+
+        body.dark {
+            --bg: #0f172a;
+            --card: #111827;
+            --text: #f9fafb;
+            --sub: #9ca3af;
+            --border: #374151;
+            --soft: #1f2937;
+            --primary: #3b82f6;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --warning: #facc15;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background-color: #f4f6f9;
+            background-color: var(--bg);
+            color: var(--text);
+            transition: background .2s, color .2s;
         }
+
         .container {
-            max-width: 800px;
+            max-width: 900px;
             margin: 0 auto;
-            background: white;
+            background: var(--card);
             padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 2px 14px rgba(0,0,0,0.12);
         }
+
+        .top-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 22px;
+        }
+
         textarea {
             width: 100%;
-            height: 120px;
+            height: 135px;
             padding: 10px;
             box-sizing: border-box;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--card);
+            color: var(--text);
+            font-family: Consolas, monospace;
+            resize: vertical;
+            outline: none;
         }
+
+        textarea:focus,
+        input:focus,
+        select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,123,255,.12);
+        }
+
         .options-group {
             margin-bottom: 15px;
-            padding: 10px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            border: 1px solid #e9ecef;
+            padding: 12px;
+            background: var(--soft);
+            border-radius: 8px;
+            border: 1px solid var(--border);
         }
+
         .options-group label {
-            margin-right: 20px;
+            margin-right: 16px;
             font-weight: bold;
             cursor: pointer;
         }
+
         .input-size {
-            width: 60px;
-            padding: 5px;
+            width: 68px;
+            padding: 6px;
             font-size: 14px;
             text-align: center;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
             margin: 0 5px;
+            background: var(--card);
+            color: var(--text);
         }
+
+        select {
+            padding: 7px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--card);
+            color: var(--text);
+        }
+
         .actions-group {
             margin-bottom: 20px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
         }
+
         button {
-            padding: 10px 20px;
-            font-size: 16px;
+            padding: 10px 16px;
+            font-size: 15px;
             border: none;
-            border-radius: 4px;
+            border-radius: 7px;
             cursor: pointer;
-            margin-right: 10px;
+            font-weight: 700;
         }
-        .btn-generate { background-color: #007bff; color: white; }
-        .btn-print { background-color: #28a745; color: white; }
-        
-        /* Vùng chứa các mã hiển thị trên màn hình */
+
+        .btn-generate { background-color: var(--primary); color: white; }
+        .btn-print { background-color: var(--success); color: white; }
+        .btn-soft { background-color: #e5e7eb; color: #111827; }
+        .btn-danger { background-color: var(--danger); color: white; }
+        .btn-warning { background-color: var(--warning); color: #111827; }
+
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin: 10px 0 15px;
+        }
+
+        .stat-box {
+            background: var(--soft);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-box b {
+            display: block;
+            font-size: 20px;
+        }
+
+        .stat-box span {
+            color: var(--sub);
+            font-size: 12px;
+        }
+
+        .preset-row {
+            display: inline-flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .preset-row button {
+            padding: 6px 10px;
+            font-size: 13px;
+        }
+
+        .mini-setting {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-top: 8px;
+        }
+
+        .mini-setting label {
+            font-weight: normal;
+            margin-right: 0;
+        }
+
+        .preview-toolbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+
+        .preview-toolbar input {
+            max-width: 240px;
+            padding: 8px;
+            border: 1px solid var(--border);
+            border-radius: 7px;
+            background: var(--card);
+            color: var(--text);
+        }
+
         #print-zone {
             display: flex;
             flex-wrap: wrap;
             gap: 15px;
-            margin-top: 20px;
+            margin-top: 10px;
             padding: 15px;
-            border: 1px dashed #ccc;
+            border: 1px dashed var(--border);
             background: #fff;
+            min-height: 120px;
+            border-radius: 8px;
         }
+
         .barcode-item {
             text-align: center;
             border: 1px solid #eee;
             padding: 10px;
             background: #fff;
+            color: #000;
+            border-radius: 6px;
+            min-width: 120px;
+            position: relative;
+            cursor: pointer;
         }
+
+        .barcode-item:hover {
+            outline: 2px solid #93c5fd;
+        }
+
         .qr-label {
             margin-top: 5px;
             font-size: 14px;
             font-family: monospace;
+            word-break: break-all;
         }
 
-        /* =================================================== */
-        /* CSS ĐẶC BIỆT KHI IN (ẨN GIAO DIỆN & CĂN GIỮA)        */
-        /* =================================================== */
+        .empty-preview {
+            width: 100%;
+            color: #777;
+            text-align: center;
+            padding: 30px 10px;
+        }
+
+        .small-note {
+            color: var(--sub);
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 24px;
+            transform: translateX(-50%);
+            background: #111827;
+            color: white;
+            padding: 10px 14px;
+            border-radius: 999px;
+            font-size: 14px;
+            opacity: 0;
+            pointer-events: none;
+            transition: .2s;
+            z-index: 9999;
+        }
+
+        .toast.show {
+            opacity: 1;
+            bottom: 34px;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                margin: 10px;
+            }
+
+            .container {
+                padding: 14px;
+            }
+
+            .stats-bar {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            button {
+                width: 100%;
+            }
+
+            .actions-group button,
+            .preset-row button,
+            .top-title button {
+                width: auto;
+            }
+
+            .options-group label {
+                display: inline-block;
+                margin-bottom: 8px;
+            }
+
+            #print-zone {
+                gap: 10px;
+                padding: 10px;
+            }
+
+            .barcode-item {
+                min-width: calc(50% - 8px);
+                padding: 8px;
+            }
+        }
+
         @media print {
             body {
                 background: #fff !important;
@@ -106,18 +337,25 @@
                 height: 100vh;
                 width: 100vw;
             }
+
             .container {
                 box-shadow: none !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 max-width: 100% !important;
                 height: 100% !important;
+                background: #fff !important;
             }
-            .container > p, 
-            textarea, 
-            .options-group, 
-            .actions-group, 
-            h3 {
+
+            .container > p,
+            textarea,
+            .options-group,
+            .actions-group,
+            h2,
+            h3,
+            .top-title,
+            .stats-bar,
+            .preview-toolbar {
                 display: none !important;
             }
 
@@ -130,138 +368,564 @@
                 background: transparent !important;
                 width: 100% !important;
                 height: 100% !important;
-                align-items: center !important;     /* Căn giữa dọc */
-                justify-content: center !important;   /* Căn giữa ngang */
+                align-items: center !important;
+                justify-content: center !important;
+                gap: 0 !important;
+                border-radius: 0 !important;
             }
 
             .barcode-item {
                 border: none !important;
                 padding: 0 !important;
                 background: #fff !important;
+                color: #000 !important;
                 display: flex !important;
                 flex-direction: column !important;
                 align-items: center !important;
                 justify-content: center !important;
                 page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                border-radius: 0 !important;
+                width: 100% !important;
+                height: 100% !important;
             }
-            
-            /* Tự động co giãn kích thước mã vừa vặn 90% khổ giấy bạn nhập */
-            .barcode-item svg, .barcode-item canvas {
+
+            .barcode-item svg,
+            .barcode-item canvas {
                 max-width: 90% !important;
                 max-height: 75% !important;
                 width: auto !important;
                 height: auto !important;
             }
+
             .qr-label {
                 font-size: 12px !important;
                 margin-top: 2px !important;
             }
         }
+
+        .theme-toggle{
+            position:fixed;
+            top:18px;
+            right:18px;
+
+            z-index:9999;
+
+            min-width:115px;
+            height:42px;
+
+            border:none;
+            border-radius:999px;
+
+            background:#ffffff;
+            color:#222;
+
+            font-weight:700;
+            font-size:14px;
+
+            cursor:pointer;
+
+            box-shadow:
+                0 8px 20px rgba(0,0,0,.18);
+
+            transition:.25s;
+        }
+
+        .theme-toggle:hover{
+            transform:translateY(-2px);
+        }
+
+        body.dark .theme-toggle{
+            background:#1f2937;
+            color:#fff;
+        }
+
+        @media (max-width:700px){
+
+            .theme-toggle{
+                display: none;
+            }
+
+        }
+
+        .code-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.65);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            padding: 20px;
+        }
+
+        .code-modal.show {
+            display: flex;
+        }
+
+        .code-modal-box {
+            width: min(92vw, 420px);
+            background: #fff;
+            color: #111;
+            border-radius: 18px;
+            padding: 22px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 20px 60px rgba(0,0,0,.35);
+        }
+
+        .code-modal-close {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 36px;
+            height: 36px;
+            padding: 0;
+            border-radius: 50%;
+            background: #ef4444;
+            color: #fff;
+            font-size: 24px;
+        }
+
+        #modalCodePreview canvas,
+        #modalCodePreview svg {
+            max-width: 100%;
+            height: auto;
+        }
+
     </style>
 </head>
 <body>
 
 <div class="container">
+    <h2>🏷️ HBP QrCode</h2>
+    <button id="themeBtn" class="theme-toggle" onclick="toggleDarkMode()">
+        🌙 Dark
+    </button>
+
     <p>Nhập danh sách mã (mỗi mã một dòng):</p>
     <textarea id="barcode-inputs" placeholder="Ví dụ:&#10;BAO00001&#10;BAO00002&#10;BAO00003"></textarea>
-    
+
+    <div class="stats-bar">
+        <div class="stat-box">
+            <b id="count-total">0</b>
+            <span>Tổng mã</span>
+        </div>
+        <div class="stat-box">
+            <b id="count-unique">0</b>
+            <span>Không trùng</span>
+        </div>
+        <div class="stat-box">
+            <b id="count-duplicate">0</b>
+            <span>Bị trùng</span>
+        </div>
+        <div class="stat-box">
+            <b id="count-preview">0</b>
+            <span>Đang xem</span>
+        </div>
+    </div>
+
     <div class="options-group">
         <span>Chọn loại mã in: </span>
         <label><input type="radio" name="code-type" value="barcode" checked> Mã vạch (Barcode)</label>
         <label><input type="radio" name="code-type" value="qrcode"> Mã QR (QR Code)</label>
+
+        <div class="mini-setting">
+            <label><input type="checkbox" id="show-label" checked> Hiện chữ dưới mã</label>
+            <label><input type="checkbox" id="auto-remove-duplicate"> Tự bỏ mã trùng khi tạo</label>
+            <label>
+                Kích thước:
+                <select id="code-size">
+                    <option value="small">Nhỏ</option>
+                    <option value="medium" selected>Vừa</option>
+                    <option value="large">Lớn</option>
+                </select>
+            </label>
+        </div>
     </div>
 
     <div class="options-group">
         <span>Cấu hình khổ giấy in (mm): </span>
-        <label>Rộng: <input type="number" id="paper-width" class="input-size" value="40" oninput="updatePaperSize()"></label>
-        <label>Cao: <input type="number" id="paper-height" class="input-size" value="40" oninput="updatePaperSize()"></label>
-        <small style="color: #666; font-weight: normal;">(Thay đổi số để đổi khổ giấy ngay lập tức)</small>
+        <label>Rộng: <input type="number" id="paper-width" class="input-size" value="40" oninput="updatePaperSize(); saveData();"></label>
+        <label>Cao: <input type="number" id="paper-height" class="input-size" value="40" oninput="updatePaperSize(); saveData();"></label>
+        <small class="small-note">(Thay đổi số để đổi khổ giấy ngay lập tức)</small>
+
+        <div class="preset-row">
+            <button class="btn-soft" onclick="setPreset(40,40)">40×40</button>
+            <button class="btn-soft" onclick="setPreset(40,30)">40×30</button>
+            <button class="btn-soft" onclick="setPreset(50,30)">50×30</button>
+            <button class="btn-soft" onclick="setPreset(60,40)">60×40</button>
+            <button class="btn-soft" onclick="setPreset(100,50)">100×50</button>
+        </div>
     </div>
-    
+
     <div class="actions-group">
         <button class="btn-generate" onclick="generateCodes()">Tạo mã</button>
         <button class="btn-print" onclick="window.print()">In mã</button>
+        <button class="btn-warning" onclick="removeDuplicateCodes()">Lọc trùng</button>
+        <!-- <button class="btn-soft" onclick="copyAllCodes()">Copy danh sách</button> -->
+        <button class="btn-danger" onclick="clearCodes()">Xóa</button>
     </div>
 
-    <h3>Bản xem trước:</h3>
-    <div id="print-zone"></div>
+    <div class="preview-toolbar">
+        <h3>Bản xem trước:</h3>
+        <input id="search-preview" type="text" placeholder="Tìm mã trong preview..." oninput="generateCodes(false)">
+    </div>
+
+    <div id="print-zone">
+        <div class="empty-preview">Chưa có mã nào. Hãy nhập mã rồi bấm “Tạo mã”.</div>
+    </div>
 </div>
 
+<div id="toast" class="toast">Đã copy</div>
+
 <script>
-    // Hàm lấy giá trị từ 2 ô nhập liệu để tự động tính toán kích thước khổ in
+    const STORAGE_KEY = "hbp_qrcode_pro_data";
+
+    function getEl(id) {
+        return document.getElementById(id);
+    }
+
+    function showToast(message) {
+        const toast = getEl("toast");
+        toast.textContent = message;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1500);
+    }
+
+    function getLines() {
+        const textarea = getEl("barcode-inputs");
+        return textarea.value
+            .split(/\n+/)
+            .map(line => line.trim())
+            .filter(line => line !== "");
+    }
+
+    function updateStats(previewCount = null) {
+        const lines = getLines();
+        const unique = [...new Set(lines)];
+
+        getEl("count-total").textContent = lines.length;
+        getEl("count-unique").textContent = unique.length;
+        getEl("count-duplicate").textContent = lines.length - unique.length;
+        getEl("count-preview").textContent = previewCount === null ? 0 : previewCount;
+    }
+
     function updatePaperSize() {
-        const width = document.getElementById('paper-width').value || 40;
-        const height = document.getElementById('paper-height').value || 40;
-        const styleElement = document.getElementById('dynamic-print-style');
-        
+        const width = getEl("paper-width").value || 40;
+        const height = getEl("paper-height").value || 40;
+        const styleElement = getEl("dynamic-print-style");
+
         styleElement.innerHTML = `
             @media print {
-                @page { 
-                    size: ${width}mm ${height}mm; 
-                    margin: 0; 
+                @page {
+                    size: ${width}mm ${height}mm;
+                    margin: 0;
                 }
             }
         `;
     }
 
-    function generateCodes() {
-        const textarea = document.getElementById('barcode-inputs');
-        const printZone = document.getElementById('print-zone');
+    function setPreset(width, height) {
+        getEl("paper-width").value = width;
+        getEl("paper-height").value = height;
+        updatePaperSize();
+        saveData();
+        showToast(`Đã chọn khổ ${width}×${height}mm`);
+    }
+
+    function getCodeSizeConfig() {
+        const size = getEl("code-size").value;
+
+        if (size === "small") {
+            return {
+                barcodeHeight: 70,
+                barcodeWidth: 1.6,
+                qrWidth: 120,
+                fontSize: 12
+            };
+        }
+
+        if (size === "large") {
+            return {
+                barcodeHeight: 120,
+                barcodeWidth: 2.4,
+                qrWidth: 180,
+                fontSize: 16
+            };
+        }
+
+        return {
+            barcodeHeight: 100,
+            barcodeWidth: 2,
+            qrWidth: 150,
+            fontSize: 14
+        };
+    }
+
+    function generateCodes(showAlert = true) {
+        const textarea = getEl("barcode-inputs");
+        const printZone = getEl("print-zone");
         const codeType = document.querySelector('input[name="code-type"]:checked').value;
-        
-        const lines = textarea.value.split('\n').map(line => line.trim()).filter(line => line !== "");
-        printZone.innerHTML = '';
-        
-        if(lines.length === 0) {
-            alert("Vui lòng nhập ít nhất một mã!");
+        const showLabel = getEl("show-label").checked;
+        const autoRemoveDuplicate = getEl("auto-remove-duplicate").checked;
+        const searchText = getEl("search-preview").value.trim().toLowerCase();
+        const config = getCodeSizeConfig();
+
+        let lines = textarea.value
+            .split(/\n+/)
+            .map(line => line.trim())
+            .filter(line => line !== "");
+
+        if (autoRemoveDuplicate) {
+            lines = [...new Set(lines)];
+            textarea.value = lines.join("\n");
+        }
+
+        let previewLines = lines;
+
+        if (searchText) {
+            previewLines = lines.filter(code => code.toLowerCase().includes(searchText));
+        }
+
+        printZone.innerHTML = "";
+
+        if (lines.length === 0) {
+            updateStats(0);
+            if (showAlert) alert("Vui lòng nhập ít nhất một mã!");
+            printZone.innerHTML = '<div class="empty-preview">Chưa có mã nào. Hãy nhập mã rồi bấm “Tạo mã”.</div>';
             return;
         }
 
-        lines.forEach((code, index) => {
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'barcode-item';
-            
-            if (codeType === 'barcode') {
+        if (previewLines.length === 0) {
+            updateStats(0);
+            printZone.innerHTML = '<div class="empty-preview">Không tìm thấy mã phù hợp.</div>';
+            return;
+        }
+
+        previewLines.forEach((code, index) => {
+            const itemDiv = document.createElement("div");
+            itemDiv.className = "barcode-item";
+            itemDiv.title = "Click để phóng to: " + code;
+            itemDiv.onclick = () => {
+                openCodeModal(code, codeType);
+            };
+
+            if (codeType === "barcode") {
                 const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-                svg.id = "code-" + index;
+                svg.id = "code-" + index + "-" + Date.now();
                 itemDiv.appendChild(svg);
                 printZone.appendChild(itemDiv);
-                
+
                 try {
-                    JsBarcode("#code-" + index, code, {
+                    JsBarcode(svg, code, {
                         format: "CODE128",
                         lineColor: "#000",
-                        width: 2,
-                        height: 100,
-                        displayValue: true
+                        width: config.barcodeWidth,
+                        height: config.barcodeHeight,
+                        displayValue: showLabel,
+                        fontSize: config.fontSize,
+                        margin: 4
                     });
                 } catch (error) {
                     console.error("Lỗi tạo mã vạch cho: " + code, error);
+                    itemDiv.innerHTML = `<div class="qr-label">Lỗi Barcode:<br>${code}</div>`;
                 }
-                
+
             } else {
-                const canvas = document.createElement('canvas');
-                canvas.id = "code-" + index;
+                const canvas = document.createElement("canvas");
+                canvas.id = "code-" + index + "-" + Date.now();
                 itemDiv.appendChild(canvas);
-                
-                const labelDiv = document.createElement('div');
-                labelDiv.className = 'qr-label';
-                labelDiv.innerText = code;
-                itemDiv.appendChild(labelDiv);
-                
+
+                if (showLabel) {
+                    const labelDiv = document.createElement("div");
+                    labelDiv.className = "qr-label";
+                    labelDiv.innerText = code;
+                    itemDiv.appendChild(labelDiv);
+                }
+
                 printZone.appendChild(itemDiv);
-                
-                QRCode.toCanvas(document.getElementById("code-" + index), code, {
-                    width: 150,
+
+                QRCode.toCanvas(canvas, code, {
+                    width: config.qrWidth,
                     margin: 2,
-                    errorCorrectionLevel: 'H'
+                    errorCorrectionLevel: "H"
                 }, function (error) {
-                    if (error) console.error("Lỗi tạo QR cho: " + code, error);
+                    if (error) {
+                        console.error("Lỗi tạo QR cho: " + code, error);
+                        itemDiv.innerHTML = `<div class="qr-label">Lỗi QR:<br>${code}</div>`;
+                    }
                 });
             }
         });
+
+        updateStats(previewLines.length);
+        saveData();
     }
+
+    function removeDuplicateCodes() {
+        const lines = getLines();
+        const unique = [...new Set(lines)];
+        getEl("barcode-inputs").value = unique.join("\n");
+        updateStats();
+        saveData();
+        generateCodes(false);
+        showToast(`Đã lọc ${lines.length - unique.length} mã trùng`);
+    }
+
+    function copyAllCodes() {
+        const text = getEl("barcode-inputs").value.trim();
+
+        if (!text) {
+            alert("Không có mã để copy!");
+            return;
+        }
+
+        navigator.clipboard.writeText(text);
+        showToast("Đã copy danh sách mã");
+    }
+
+    function clearCodes() {
+        if (!confirm("Bạn có chắc muốn xóa toàn bộ mã không?")) return;
+
+        getEl("barcode-inputs").value = "";
+        getEl("search-preview").value = "";
+        getEl("print-zone").innerHTML = '<div class="empty-preview">Chưa có mã nào. Hãy nhập mã rồi bấm “Tạo mã”.</div>';
+        updateStats(0);
+        saveData();
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle("dark");
+
+        const btn = document.getElementById("themeBtn");
+
+        if (document.body.classList.contains("dark")) {
+            btn.innerHTML = "☀️ Light";
+        } else {
+            btn.innerHTML = "🌙 Dark";
+        }
+
+        saveData();
+    }
+
+    function saveData() {
+        const data = {
+            text: getEl("barcode-inputs").value,
+            width: getEl("paper-width").value,
+            height: getEl("paper-height").value,
+            codeType: document.querySelector('input[name="code-type"]:checked')?.value || "barcode",
+            showLabel: getEl("show-label").checked,
+            autoRemoveDuplicate: getEl("auto-remove-duplicate").checked,
+            codeSize: getEl("code-size").value,
+            dark: document.body.classList.contains("dark")
+        };
+
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function loadData() {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+
+        try {
+            const data = JSON.parse(raw);
+
+            getEl("barcode-inputs").value = data.text || "";
+            getEl("paper-width").value = data.width || 40;
+            getEl("paper-height").value = data.height || 40;
+            getEl("show-label").checked = data.showLabel !== false;
+            getEl("auto-remove-duplicate").checked = !!data.autoRemoveDuplicate;
+            getEl("code-size").value = data.codeSize || "medium";
+
+            const radio = document.querySelector(`input[name="code-type"][value="${data.codeType || "barcode"}"]`);
+            if (radio) radio.checked = true;
+
+            const btn = document.getElementById("themeBtn");
+
+            if (data.dark) {
+                document.body.classList.add("dark");
+                btn.innerHTML = "☀️ Light";
+            } else {
+                btn.innerHTML = "🌙 Dark";
+            }
+        } catch (error) {
+            console.warn("Không đọc được dữ liệu đã lưu", error);
+        }
+    }
+
+    getEl("barcode-inputs").addEventListener("input", () => {
+        updateStats();
+        saveData();
+    });
+
+    document.querySelectorAll('input[name="code-type"], #show-label, #auto-remove-duplicate, #code-size').forEach(el => {
+        el.addEventListener("change", () => {
+            saveData();
+            if (getLines().length) generateCodes(false);
+        });
+    });
+
+    document.addEventListener("keydown", function(e) {
+        if (e.ctrlKey && e.key === "Enter") {
+            e.preventDefault();
+            generateCodes();
+        }
+    });
+
+    window.addEventListener("beforeprint", updatePaperSize);
+
+    function openCodeModal(code, codeType) {
+        const modal = getEl("codeModal");
+        const preview = getEl("modalCodePreview");
+
+        preview.innerHTML = "";
+
+        if (codeType === "barcode") {
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            preview.appendChild(svg);
+
+            JsBarcode(svg, code, {
+                format: "CODE128",
+                lineColor: "#000",
+                width: 2.5,
+                height: 140,
+                displayValue: true,
+                fontSize: 18,
+                margin: 10
+            });
+
+        } else {
+            const canvas = document.createElement("canvas");
+            preview.appendChild(canvas);
+
+            QRCode.toCanvas(canvas, code, {
+                width: 320,
+                margin: 2,
+                errorCorrectionLevel: "H"
+            });
+        }
+
+        modal.classList.add("show");
+    }
+
+    function closeCodeModal(event) {
+        if (event && event.target.id !== "codeModal") return;
+        getEl("codeModal").classList.remove("show");
+    }
+
+    loadData();
+    updatePaperSize();
+    updateStats();
 </script>
+
+<div id="codeModal" class="code-modal" onclick="closeCodeModal(event)">
+    <div class="code-modal-box">
+        <button class="code-modal-close" onclick="closeCodeModal()">×</button>
+        <!-- <h3 id="modalCodeTitle">Mã</h3> -->
+        <div id="modalCodePreview"></div>
+    </div>
+</div>
 
 </body>
 </html>
