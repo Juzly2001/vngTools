@@ -2601,3 +2601,32 @@ toggleAllGroups = function(shouldOpen = true) {
     __fastToggleAllGroups(shouldOpen);
     queueScheduleUIUpdate();
 };
+
+document.addEventListener("mousedown", function (e) {
+
+    // Lấy tất cả modal đang mở
+    const activeModals = [...document.querySelectorAll(".modal-overlay.active")];
+
+    if (!activeModals.length) return;
+
+    // Modal mở sau cùng (ở trên cùng)
+    const topModal = activeModals[activeModals.length - 1];
+
+    // Chỉ xử lý nếu click đúng nền của modal trên cùng
+    if (e.target !== topModal) return;
+
+    closeModal(topModal.id);
+
+});
+
+document.addEventListener("keydown", function (e) {
+
+    if (e.key !== "Escape") return;
+
+    const activeModals = [...document.querySelectorAll(".modal-overlay.active")];
+
+    if (!activeModals.length) return;
+
+    closeModal(activeModals[activeModals.length - 1].id);
+
+});
