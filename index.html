@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,61 +16,60 @@
     <canvas id="bgCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
     <button id="backToTop" onclick="scrollToTop()">▲</button>
 
-    <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" onclick="toggleMobileSidebar()" aria-label="Mở menu">☰</button>
+    <button id="mobileSidebarToggle" class="mobile-sidebar-toggle" onclick="toggleMobileSidebar()" aria-label="Open menu">☰</button>
     <div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleMobileSidebar(false)"></div>
-    <aside class="app-sidebar" aria-label="Điều hướng nhanh">
+    <aside class="app-sidebar" aria-label="Quick navigation">
         <div class="sidebar-logo">🌟</div>
-        <button class="sidebar-close" onclick="toggleMobileSidebar(false)" aria-label="Đóng menu">×</button>
-        <button onclick="scrollToSection('top'); toggleMobileSidebar(false)">🏠<span>Home</span></button>
-        <button onclick="openSidebarPanel('favorites')">⭐<span>Favorites</span></button>
-        <button onclick="openSidebarPanel('recent')">🕘<span>Recent</span></button>
-        <button onclick="openSidebarPanel('upcoming')">📅<span>Upcoming</span></button>
-        <button onclick="openCommandPalette(); toggleMobileSidebar(false)">⚡<span>Find</span></button>
-        <button onclick="openCalendarModal(); toggleMobileSidebar(false)">📆<span>Calendar</span></button>
-        <button onclick="openBackupModal(); toggleMobileSidebar(false)">💾<span>Backup</span></button>
-        <button onclick="openTrashModal(); toggleMobileSidebar(false)">🗑️<span>Trash</span></button>
-        <button id="themeBtn" onclick="toggleTheme()">💡<span>Sáng/Tối</span></button>
-        <button id="themeBtnCanvas" onclick="toggleThemeCanvas()">🌟<span>Toggle Visuals</span></button>
+        <button class="sidebar-close" onclick="toggleMobileSidebar(false)" aria-label="Close menu">×</button>
+        <button onclick="scrollToSection('top'); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">🏠</span><span>Home</span></button>
+        <button onclick="openSidebarPanel('favorites')"><span class="sidebar-menu-icon" aria-hidden="true">⭐</span><span>Favorites</span></button>
+        <button onclick="openSidebarPanel('recent')"><span class="sidebar-menu-icon" aria-hidden="true">🕘</span><span>Recent</span></button>
+<button onclick="openScheduleHub('calendar'); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">📆</span><span>Schedule</span></button>
+        <button onclick="openCommandPalette(); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">⚡</span><span>Find</span></button>
+        <button onclick="openBackupModal(); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">💾</span><span>Backup</span></button>
+        <button onclick="openTrashModal(); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">🗑️</span><span>Trash</span></button>
+        <button id="themeBtn" onclick="toggleTheme()"><span class="sidebar-menu-icon" aria-hidden="true">💡</span><span>Light/Dark</span></button>
+        <button id="themeBtnCanvas" onclick="toggleThemeCanvas()"><span class="sidebar-menu-icon" aria-hidden="true">🌟</span><span>Toggle Visuals</span></button>
     </aside>
 
     <div class="container" id="top">
         <header class="hero-header">
             <div class="hero-badge">✨ Personal Command Center</div>
             <h1>🌟 WORKSPACE DASHBOARD</h1>
-            <p class="hero-subtitle">Quản lý link, ghi chú, lịch trình và đồng bộ dữ liệu trong một giao diện gọn hơn.</p>
+            <p class="hero-subtitle">Manage links, notes, schedules, and synced data in one cleaner interface.</p>
         </header>
 
-        <section class="dashboard-overview" aria-label="Tổng quan dashboard">
-            <div class="overview-card"><span>📁 Nhóm</span><strong id="statGroups">0</strong></div>
+        <section class="dashboard-overview" aria-label="Dashboard overview">
+            <div class="overview-card"><span>📁 Groups</span><strong id="statGroups">0</strong></div>
             <div class="overview-card"><span>🔗 Link</span><strong id="statLinks">0</strong></div>
-            <div class="overview-card"><span>📝 Ghi chú</span><strong id="statNotes">0</strong></div>
-            <div class="overview-card danger"><span>⚠️ Việc quan trọng hôm nay</span><strong id="statTodayImportant">0</strong></div>
+            <div class="overview-card"><span>📝 Notes</span><strong id="statNotes">0</strong></div>
+            <div class="overview-card danger"><span>⚠️ Important today</span><strong id="statTodayImportant">0</strong></div>
         </section>
 
-        <section class="command-bar" aria-label="Thanh thao tác nhanh">
+        <section class="command-bar" aria-label="Quick action bar">
             <div class="search-box">
                 <span>🔎</span>
-                <input id="globalSearch" type="search" placeholder="Tìm nhóm, link, ghi chú, lịch trình..." oninput="renderDashboard()">
-                <button type="button" onclick="clearDashboardSearch()" title="Xóa tìm kiếm">✕</button>
+                <input id="globalSearch" type="search" placeholder="Search groups, links, notes, schedules..." oninput="renderDashboard()">
+                <button type="button" onclick="clearDashboardSearch()" title="Clear search">✕</button>
             </div>
             <div class="quick-actions">
-                <button class="btn-secondary" onclick="toggleAllGroups(true)">📂 Mở hết</button>
-                <button class="btn-secondary" onclick="toggleAllGroups(false)">📁 Thu gọn</button>
-                <button class="btn-secondary" onclick="showTodayImportantTasks()">⚠️ Hôm nay</button>
+                <button class="btn-secondary" onclick="toggleAllGroups(true)">📂 Expand all</button>
+                <button class="btn-secondary" onclick="toggleAllGroups(false)">📁 Collapse all</button>
+                <button class="btn-secondary" onclick="showTodayImportantTasks()">⚠️ Today</button>
             </div>
         </section>
 
-        <section class="tag-filter-bar" aria-label="Lọc theo tag">
+        <section class="tag-filter-bar" aria-label="Filter by tag">
             <div class="tag-filter-head">🏷️ Tag</div>
-            <div id="tagFilterChips" class="tag-filter-chips"><button class="tag-chip active" onclick="setActiveTag('')">Tất cả</button></div>
+            <div id="tagFilterChips" class="tag-filter-chips"><button class="tag-chip active" onclick="setActiveTag('')">All</button></div>
         </section>
 
         <div class="toolbar">
             <div class="toolbar-left">
                 <button class="btn-primary create-group-main-btn"
-                    data-tooltip="Tạo nhóm link, ghi chú hoặc lịch trình"
+                    data-tooltip="Create a link, note, or schedule group"
                     onclick="openCreateGroupTypeModal()">
-                    ➕ Tạo nhóm
+                    ➕ Create group
                 </button>
             </div>
 
@@ -96,36 +96,36 @@
     <div class="modal-overlay" style="z-index: 999999;" id="alertModal">
         <div class="modal-box" style="max-width: 300px; text-align: center; position: relative;">
             <span class="close-modal-x" onclick="closeModal('alertModal'); document.querySelector('.modal-footer-excel')?.remove();">&times;</span>
-            <h3 id="alertModalTitle" style="color: var(--danger-color); margin-top: 10px;">⚠️ Thông báo</h3>
+            <h3 id="alertModalTitle" style="color: var(--danger-color); margin-top: 10px;">⚠️ Notice</h3>
             <p id="alertMessage" style="color: var(--text-main); margin-bottom: 20px;"></p>
-            <button class="btn-primary" style="text-align: center; margin: 12px auto;" onclick="closeModal('alertModal'); document.querySelector('.modal-footer-excel')?.remove();">Đã hiểu</button>
+            <button class="btn-primary" style="text-align: center; margin: 12px auto;" onclick="closeModal('alertModal'); document.querySelector('.modal-footer-excel')?.remove();">Got it</button>
         </div>
     </div>
 
     <div class="modal-overlay zindex-modal" id="confirmModal">
         <div class="modal-box" style="text-align: center;">
-            <h3 id="confirmTitle" style="color: var(--danger-color)">⚠️ Xác Nhận Thao Tác</h3>
+            <h3 id="confirmTitle" style="color: var(--danger-color)">⚠️ Confirm Action</h3>
             <p id="confirmMessage" style="color: var(--text-sub); font-size:14px;"></p>
             <div class="modal-footer" style="justify-content: center;">
-                <button class="btn-success" id="confirmCancelBtn">Giữ lại</button>
-                <button class="btn-real-danger" id="confirmDeleteBtn">Đồng ý</button>
+                <button class="btn-success" id="confirmCancelBtn">Keep</button>
+                <button class="btn-real-danger" id="confirmDeleteBtn">Confirm</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="todayImportantModal">
         <div class="modal-box" style="max-width:700px;">
-            <h3 style="color:#ef4444;">⚠️ Công việc quan trọng hôm nay</h3>
+            <h3 style="color:#ef4444;">⚠️ Important tasks today</h3>
             <div id="todayImportantContent"></div>
-            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('todayImportantModal')">Đóng</button></div>
+            <div class="modal-footer"><button class="btn-secondary" onclick="closeModal('todayImportantModal')">Close</button></div>
         </div>
     </div>
 
     <div class="modal-overlay" style="z-index: 9999999 !important;" id="readModal">
         <div class="modal-box" style="max-width: 550px; width: 95%;">
-            <h3 id="readModalTitle" style="margin-top: 0; display:flex; align-items:center; gap:8px;">📋 Chi Tiết</h3>
+            <h3 id="readModalTitle" style="margin-top: 0; display:flex; align-items:center; gap:8px;">📋 Details</h3>
             <div id="readModalBody"></div>
-            <div class="modal-footer"><button class="btn-secondary" id="readModalCloseBtn" onclick="closeModal('readModal')">Đóng</button></div>
+            <div class="modal-footer"><button class="btn-secondary" id="readModalCloseBtn" onclick="closeModal('readModal')">Close</button></div>
         </div>
     </div>
 
@@ -134,23 +134,23 @@
         <div class="modal-box create-group-type-box">
             <div class="command-head redesigned-head">
                 <div>
-                    <span>➕ Tạo nhóm mới</span>
-                    <small>Chọn loại nhóm bạn muốn thêm vào dashboard</small>
+                    <span>➕ Create new group</span>
+                    <small>Choose the type of group to add to the dashboard</small>
                 </div>
                 <button class="modal-close-soft" onclick="closeModal('createGroupTypeModal')">✕</button>
             </div>
             <div class="create-type-grid">
                 <button class="create-type-card link" onclick="chooseCreateGroupType('link')">
-                    <strong>🚀 Nhóm liên kết</strong>
-                    <small>Lưu website, công cụ, hệ thống thường dùng.</small>
+                    <strong>🚀 Link group</strong>
+                    <small>Save websites, tools, and frequently used systems.</small>
                 </button>
                 <button class="create-type-card note" onclick="chooseCreateGroupType('note')">
-                    <strong>📝 Nhóm ghi chú</strong>
-                    <small>Lưu nội dung, mẫu câu, tài liệu ngắn.</small>
+                    <strong>📝 Note group</strong>
+                    <small>Save content, templates, and short documents.</small>
                 </button>
                 <button class="create-type-card schedule" onclick="chooseCreateGroupType('schedule')">
-                    <strong>📅 Nhóm lịch trình</strong>
-                    <small>Quản lý mốc thời gian và việc cần làm.</small>
+                    <strong>📅 Schedule group</strong>
+                    <small>Manage milestones and tasks.</small>
                 </button>
             </div>
         </div>
@@ -158,48 +158,48 @@
 
     <div class="modal-overlay" id="groupModal">
         <div class="modal-box">
-            <h3 id="groupModalTitle">📂 Cấu Thiết Lập Nhóm</h3>
-            <label>Tên nhóm:</label>
-            <input type="text" id="groupNameInput" placeholder="Nhập tên nhóm...">
-            <label>Tag nhóm:</label>
-            <input type="text" id="groupTagsInput" placeholder="Ví dụ: cv, sgv">
-            <label>Chọn Emoji tiêu đề:</label>
+            <h3 id="groupModalTitle">📂 Group Settings</h3>
+            <label>Group name:</label>
+            <input type="text" id="groupNameInput" placeholder="Enter group name...">
+            <label>Group tags:</label>
+            <input type="text" id="groupTagsInput" placeholder="Example: work, sgv">
+            <label>Choose title emoji:</label>
             <div class="emoji-picker-container"><div class="emoji-grid" id="groupEmojiGrid"></div></div>
             <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('groupModal')">Hủy</button>
-                <button class="btn-primary" onclick="submitGroupForm()">Xác nhận</button>
+                <button class="btn-secondary" onclick="closeModal('groupModal')">Cancel</button>
+                <button class="btn-primary" onclick="submitGroupForm()">Confirm</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="linkModal">
         <div class="modal-box">
-            <h3 id="linkModalTitle">🔗 Cấu Hình Nút Bấm</h3>
-            <label>Tên hiển thị:</label>
-            <input type="text" id="linkNameInput" placeholder="Ví dụ: Google...">
-            <label>Địa chỉ URL:</label>
-            <input type="text" id="linkUrlInput" placeholder="Ví dụ: google.com">
-            <label>Chọn Emoji:</label>
+            <h3 id="linkModalTitle">🔗 Button Settings</h3>
+            <label>Display name:</label>
+            <input type="text" id="linkNameInput" placeholder="Example: Google...">
+            <label>URL address:</label>
+            <input type="text" id="linkUrlInput" placeholder="Example: google.com">
+            <label>Choose emoji:</label>
             <div class="emoji-picker-container"><div class="emoji-grid" id="linkEmojiGrid"></div></div>
             <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('linkModal')">Hủy</button>
-                <button class="btn-primary" onclick="submitLinkForm()">Xác nhận</button>
+                <button class="btn-secondary" onclick="closeModal('linkModal')">Cancel</button>
+                <button class="btn-primary" onclick="submitLinkForm()">Confirm</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="noteModal">
         <div class="modal-box">
-            <h3 id="noteModalTitle">📝 Thêm Nút Ghi Chú</h3>
-            <label>Tiêu đề hiển thị trên nút:</label>
-            <input type="text" id="noteTitleInput" placeholder="Ví dụ: Ghi chú gấp...">
-            <label>Nội dung ghi chú chi tiết:</label>
-            <textarea id="noteContentInput" placeholder="Nhập nội dung đầy đủ..."></textarea>
-            <label>Chọn Emoji:</label>
+            <h3 id="noteModalTitle">📝 Add Note Button</h3>
+            <label>Button display title:</label>
+            <input type="text" id="noteTitleInput" placeholder="Example: Urgent notes...">
+            <label>Detailed note content:</label>
+            <textarea id="noteContentInput" placeholder="Enter full content..."></textarea>
+            <label>Choose emoji:</label>
             <div class="emoji-picker-container"><div class="emoji-grid" id="noteEmojiGrid"></div></div>
             <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('noteModal')">Hủy</button>
-                <button class="btn-primary" onclick="submitNoteForm()">Lưu lại</button>
+                <button class="btn-secondary" onclick="closeModal('noteModal')">Cancel</button>
+                <button class="btn-primary" onclick="submitNoteForm()">Save</button>
             </div>
         </div>
     </div>
@@ -207,13 +207,13 @@
     <div class="modal-overlay" id="scheduleModal">
         <div class="modal-box" style="max-width: 580px; width: 95%;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                <h3 id="scheduleModalTitle" style="margin:0;">📅 Thiết Lập Mốc Lịch</h3>
-                <button type="button" class="btn-primary" id="addScheduleBlockBtn" style="padding: 6px 12px; font-size:12px;" onclick="addScheduleBlock()">➕ Thêm Mốc Lịch Mới</button>
+                <h3 id="scheduleModalTitle" style="margin:0;">📅 Schedule Milestone Settings</h3>
+                <button type="button" class="btn-primary" id="addScheduleBlockBtn" style="padding: 6px 12px; font-size:12px;" onclick="addScheduleBlock()">➕ Add New Milestone</button>
             </div>
             <div class="schedules-blocks-container" id="scheduleBlocksWrapper"></div>
             <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('scheduleModal')">Hủy</button>
-                <button class="btn-success" onclick="submitScheduleForm()">Lưu lịch</button>
+                <button class="btn-secondary" onclick="closeModal('scheduleModal')">Cancel</button>
+                <button class="btn-success" onclick="submitScheduleForm()">Save schedule</button>
             </div>
         </div>
     </div>
@@ -221,13 +221,13 @@
     <div class="modal-overlay" id="keyModal">
         <div class="modal-box" style="max-width: 400px; width: 95%;">
             <span class="close-modal-x" onclick="closeModal('keyModal')">&times;</span>
-            <h3 id="keyModalTitle" style="margin-top: 0; display: flex; align-items: center; gap: 8px;">🔑 Xác thực Nhóm</h3>
+            <h3 id="keyModalTitle" style="margin-top: 0; display: flex; align-items: center; gap: 8px;">🔑 Verify Group</h3>
             
-            <p id="keyModalDesc" style="font-size: 13px; color: var(--text-sub); margin-bottom: 15px;">Vui lòng nhập mã khóa để truy cập nhóm này.</p>
+            <p id="keyModalDesc" style="font-size: 13px; color: var(--text-sub); margin-bottom: 15px;">Please enter the PIN to access this group.</p>
             
-            <label for="groupKeyInput">Mã Khóa (Key)</label>
+            <label for="groupKeyInput">PIN / Key</label>
             <div style="position: relative; display: flex; align-items: center;">
-                <input type="password" id="groupKeyInput" placeholder="Nhập mã khóa tại đây..." style="margin-bottom: 0; padding-right: 45px;">
+                <input type="password" id="groupKeyInput" placeholder="Enter PIN here..." style="margin-bottom: 0; padding-right: 45px;">
                 <button type="button" id="toggleKeyVisibility" onclick="toggleKeyVisibility()" style="position: absolute; right: 20px; background: none; border: none; color: var(--text-sub); padding: 8px; cursor: pointer; font-size: 16px;">
                     👁️
                 </button>
@@ -236,8 +236,8 @@
                 style="color:#ef4444;font-size:13px;margin-top:8px;display:none;">
             </div>
             <div class="modal-footer" style="margin-top: 20px;">
-                <button class="btn-secondary" onclick="closeModal('keyModal')">Hủy</button>
-                <button class="btn-primary" id="submitKeyBtn" onclick="submitKeyForm()">Xác nhận</button>
+                <button class="btn-secondary" onclick="closeModal('keyModal')">Cancel</button>
+                <button class="btn-primary" id="submitKeyBtn" onclick="submitKeyForm()">Confirm</button>
             </div>
         </div>
     </div>
@@ -248,7 +248,7 @@
         <div class="modal-box sidebar-panel-box">
             <div class="command-head">
                 <span id="sidebarPanelTitle">⭐ Favorites</span>
-                <button class="btn-secondary" onclick="closeModal('sidebarPanelModal')">Đóng</button>
+                <button class="btn-secondary" onclick="closeModal('sidebarPanelModal')">Close</button>
             </div>
             <div id="sidebarPanelContent" class="sidebar-panel-content"></div>
         </div>
@@ -259,11 +259,11 @@
             <div class="command-head redesigned-head">
                 <div>
                     <span>⚡ Command Palette</span>
-                    <small>Tìm nhanh hoặc chạy lệnh trong dashboard</small>
+                    <small>Quickly find or run dashboard commands</small>
                 </div>
                 <button class="modal-close-soft" onclick="closeModal('commandPaletteModal')">Esc</button>
             </div>
-            <div class="command-search-wrap"><span>🔎</span><input id="commandInput" class="command-input" type="search" placeholder="Tìm link, ghi chú, lịch hoặc gõ: tạo link / tạo note / tạo lịch..." oninput="renderCommandPalette()"></div>
+            <div class="command-search-wrap"><span>🔎</span><input id="commandInput" class="command-input" type="search" placeholder="Search links, notes, schedules, or type: create link / create note / create schedule..." oninput="renderCommandPalette()"></div>
             <div id="commandResults" class="command-results"></div>
         </div>
     </div>
@@ -274,42 +274,72 @@
         <div class="modal-box trash-box">
             <div class="command-head redesigned-head trash-head">
                 <div>
-                    <span>🗑️ Thùng rác</span>
-                    <small>Khôi phục từng nhóm, link, ghi chú hoặc lịch đã xóa</small>
+                    <span>🗑️ Trash</span>
+                    <small>Restore deleted groups, links, notes, or schedules one by one</small>
                 </div>
                 <button class="modal-close-soft" onclick="closeModal('trashModal')">✕</button>
             </div>
-            <p class="trash-hint">Các mục đã xóa được giữ tạm tại đây để bạn chọn khôi phục khi cần.</p>
-            <div id="trashList" class="trash-list empty">Thùng rác đang trống.</div>
+            <p class="trash-hint">Deleted items are temporarily kept here so you can restore them when needed.</p>
+            <div id="trashList" class="trash-list empty">Trash is empty.</div>
             <div class="modal-footer">
-                <button class="btn-real-danger trash-clear-soft" onclick="clearTrashItems()">🧹 Xóa sạch</button>
-                <button class="btn-secondary" onclick="closeModal('trashModal')">Đóng</button>
+                <button class="btn-real-danger trash-clear-soft" onclick="clearTrashItems()">🧹 Clear all</button>
+                <button class="btn-secondary" onclick="closeModal('trashModal')">Close</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="calendarModal">
-        <div class="modal-box calendar-box">
-            <div class="command-head">
-                <span>📆 Calendar View</span>
-                <button class="btn-secondary" onclick="closeModal('calendarModal')">Đóng</button>
+        <div class="modal-box calendar-box schedule-hub-box">
+            <div class="command-head schedule-hub-head">
+                <div>
+                    <span id="scheduleHubTitle">📆 Schedules</span>
+                    <small>Calendar View, Upcoming, and Past milestones in one place</small>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('calendarModal')">✕</button>
             </div>
-            <div class="calendar-toolbar">
-                <button class="btn-secondary calendar-nav-btn calendar-prev-btn" onclick="changeCalendarMonth(-1)" aria-label="Tháng trước"><span class="calendar-nav-icon">‹</span></button>
-                <strong id="calendarMonthLabel">--</strong>
-                <button class="btn-secondary calendar-nav-btn calendar-next-btn" onclick="changeCalendarMonth(1)" aria-label="Tháng sau"><span class="calendar-nav-icon">›</span></button>
+
+            <div class="schedule-hub-tabs" role="tablist" aria-label="Switch schedule tab">
+                <button type="button" class="schedule-hub-tab active" data-tab="calendar" onclick="switchScheduleHubTab('calendar')">📆 Calendar View</button>
+                <button type="button" class="schedule-hub-tab" data-tab="upcoming" onclick="switchScheduleHubTab('upcoming')">📅 Upcoming</button>
+                <button type="button" class="schedule-hub-tab" data-tab="past" onclick="switchScheduleHubTab('past')">🕘 Past milestones</button>
             </div>
-            <div id="calendarGrid" class="calendar-grid"></div>
+
+            <div id="scheduleHubCalendarPane" class="schedule-hub-pane active">
+                <div class="calendar-toolbar">
+                    <button class="btn-secondary calendar-nav-btn calendar-prev-btn" onclick="changeCalendarMonth(-1)" aria-label="Previous month">
+                        <span class="calendar-nav-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" focusable="false"><path d="M15 6L9 12L15 18" /></svg>
+                        </span>
+                        <span class="calendar-nav-text">Previous month</span>
+                    </button>
+                    <strong id="calendarMonthLabel">--</strong>
+                    <button class="btn-secondary calendar-nav-btn calendar-next-btn" onclick="changeCalendarMonth(1)" aria-label="Next month">
+                        <span class="calendar-nav-text">Next month</span>
+                        <span class="calendar-nav-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" focusable="false"><path d="M9 6L15 12L9 18" /></svg>
+                        </span>
+                    </button>
+                </div>
+                <div id="calendarGrid" class="calendar-grid"></div>
+            </div>
+
+            <div id="scheduleHubUpcomingPane" class="schedule-hub-pane">
+                <div id="scheduleHubUpcomingList" class="schedule-hub-list empty">No upcoming schedules.</div>
+            </div>
+
+            <div id="scheduleHubPastPane" class="schedule-hub-pane">
+                <p class="trash-hint schedule-past-hint">Completed schedules automatically leave their folders and move into this list.</p>
+                <div id="pastScheduleList" class="schedule-hub-list empty">No past milestones.</div>
+            </div>
         </div>
     </div>
-
 
     <div class="modal-overlay" id="calendarDayModal">
         <div class="modal-box calendar-day-box">
             <div class="command-head">
                 <div>
-                    <span id="calendarDayTitle">📅 Ngày</span>
-                    <small>Danh sách mốc lịch trong ngày</small>
+                    <span id="calendarDayTitle">📅 Day</span>
+                    <small>Schedules for this day</small>
                 </div>
                 <button class="modal-close-soft" onclick="closeModal('calendarDayModal')">✕</button>
             </div>
@@ -320,15 +350,15 @@
     <div class="modal-overlay" id="backupModal">
         <div class="modal-box backup-box">
             <div class="command-head">
-                <span>💾 Backup phiên bản</span>
-                <button class="btn-secondary" onclick="closeModal('backupModal')">Đóng</button>
+                <span>💾 Version backups</span>
+                <button class="btn-secondary" onclick="closeModal('backupModal')">Close</button>
             </div>
-            <p class="trash-hint">Dashboard tự lưu tối đa 10 phiên bản gần nhất. Bạn có thể tạo bản lưu thủ công trước khi sửa lớn.</p>
+            <p class="trash-hint">The dashboard automatically keeps recent backups. You can create a manual backup before major edits.</p>
             <div class="mini-actions backup-top-actions">
-                <button class="btn-primary" onclick="createManualBackup()">➕ Tạo backup ngay</button>
-                <button class="btn-real-danger" onclick="clearBackups()">Xóa backup</button>
+                <button class="btn-primary" onclick="createManualBackup()">➕ Create backup now</button>
+                <button class="btn-real-danger" onclick="clearBackups()">Delete backups</button>
             </div>
-            <div id="backupList" class="trash-list empty">Chưa có backup.</div>
+            <div id="backupList" class="trash-list empty">No backups yet.</div>
         </div>
     </div>
 

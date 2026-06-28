@@ -4006,3 +4006,513 @@ body.light-mode .schedule-date {
         min-width: 42px !important;
     }
 }
+
+
+/* ==========================================================================
+   SCHEDULE HUB + SIDEBAR ALIGNMENT
+   ========================================================================== */
+
+.schedule-hub-box {
+    max-width: 980px;
+    width: min(96vw, 980px);
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.schedule-hub-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.schedule-hub-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.schedule-hub-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.schedule-hub-tab {
+    flex: 0 0 auto;
+    padding: 9px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--inner-bg);
+    color: var(--text-sub);
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.schedule-hub-tab.active {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: transparent;
+}
+
+.schedule-hub-pane {
+    display: none;
+}
+
+.schedule-hub-pane.active {
+    display: block;
+}
+
+.schedule-hub-list {
+    max-height: 65vh;
+    overflow: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.schedule-hub-list.empty {
+    color: var(--text-sub);
+    font-size: 13px;
+    font-style: italic;
+    padding: 22px 16px;
+}
+
+.schedule-hub-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    background: var(--inner-bg);
+    color: var(--text-main);
+    border-radius: 16px;
+    padding: 12px;
+}
+
+.schedule-hub-item.important {
+    border-color: rgba(239, 68, 68, .35);
+    background: rgba(239, 68, 68, .08);
+}
+
+.schedule-hub-item.past {
+    justify-content: space-between;
+    padding: 0;
+    overflow: hidden;
+}
+
+.schedule-hub-item-view {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+    padding: 12px;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-main);
+    text-align: left;
+}
+
+.schedule-hub-item-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(99,102,241,.12);
+}
+
+.schedule-hub-item-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.schedule-hub-item-main strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-hub-item-main small {
+    color: var(--text-sub);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.past-delete-btn {
+    margin-right: 10px;
+}
+
+.schedule-past-hint {
+    margin: 14px 16px 0;
+}
+
+/* Calendar nav dùng SVG nên căn giữa chuẩn hơn */
+.calendar-nav-icon {
+    width: 22px;
+    height: 22px;
+    display: grid !important;
+    place-items: center !important;
+    line-height: 0 !important;
+}
+
+.calendar-nav-icon svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+.calendar-nav-icon path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@media (max-width: 640px) {
+    .schedule-hub-tabs {
+        padding: 10px 12px;
+    }
+
+    .schedule-hub-tab {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    .schedule-hub-list {
+        max-height: 68vh;
+        padding: 12px;
+    }
+
+    .calendar-toolbar {
+        display: grid !important;
+        grid-template-columns: 42px minmax(0, 1fr) 42px !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 12px !important;
+    }
+
+    .calendar-nav-btn {
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        min-height: 42px !important;
+        padding: 0 !important;
+        display: grid !important;
+        place-items: center !important;
+        border-radius: 14px !important;
+        font-size: 0 !important;
+        line-height: 0 !important;
+    }
+
+    .calendar-nav-text {
+        display: none !important;
+    }
+
+    #calendarMonthLabel {
+        text-align: center !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .calendar-nav-icon,
+    .calendar-nav-icon svg {
+        width: 24px !important;
+        height: 24px !important;
+    }
+}
+
+/* Sidebar desktop mở rộng: icon nằm ngang với tên */
+.sidebar-menu-icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    display: grid !important;
+    place-items: center !important;
+    line-height: 1 !important;
+    font-size: 18px;
+    text-align: center;
+    flex: 0 0 24px;
+}
+
+@media (min-width: 769px) {
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 11px !important;
+        text-align: left !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) > span:not(.sidebar-menu-icon) {
+        display: inline-block !important;
+        max-width: 140px !important;
+        opacity: 1 !important;
+        line-height: 1.15 !important;
+        text-align: left !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        display: grid !important;
+        place-items: center !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) .sidebar-menu-icon {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        display: grid !important;
+        place-items: center !important;
+        font-size: 19px !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) > span:not(.sidebar-menu-icon) {
+        display: none !important;
+    }
+}
+
+.calendar-toolbar .btn-secondary::before,.calendar-toolbar .btn-secondary::after{content:none!important;display:none!important;}
+
+
+/* ==========================================================================
+   FINAL FIX PACK - Schedule Hub scroll, Calendar/Past height, Sidebar alignment
+   ========================================================================== */
+
+/* Schedule Hub modal must keep header/tabs visible and only scroll inside panes */
+#calendarModal .schedule-hub-box,
+#calendarModal .calendar-box {
+    width: min(96vw, 1040px) !important;
+    max-width: 1040px !important;
+    max-height: min(90vh, 820px) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+}
+
+#calendarModal .schedule-hub-head,
+#calendarModal .schedule-hub-tabs,
+#calendarModal .calendar-toolbar {
+    flex: 0 0 auto !important;
+}
+
+#calendarModal .schedule-hub-pane {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+}
+
+#calendarModal .schedule-hub-pane.active {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* Calendar View: keep month buttons in place and make the calendar itself scrollable */
+#calendarModal .calendar-toolbar {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 20 !important;
+    background: var(--modal-bg) !important;
+}
+
+#calendarModal #calendarGrid.calendar-grid {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: calc(90vh - 190px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    padding-bottom: 90px !important;
+    scrollbar-width: thin;
+}
+
+/* Avoid giant day boxes while still allowing events inside a day to scroll */
+#calendarModal .calendar-cell {
+    min-height: 108px !important;
+    max-height: 156px !important;
+    overflow: hidden !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+#calendarModal .calendar-cell .calendar-day-number {
+    flex: 0 0 auto !important;
+}
+
+#calendarModal .calendar-event {
+    flex: 0 0 auto !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* Upcoming and Past lists: reasonable height, own scroll, enough bottom padding */
+#calendarModal .schedule-hub-list {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    max-height: calc(90vh - 180px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
+    padding: 14px 16px 90px !important;
+    scrollbar-width: thin;
+}
+
+#calendarModal .schedule-past-hint {
+    flex: 0 0 auto !important;
+    margin: 12px 16px 0 !important;
+}
+
+#calendarModal .schedule-hub-item {
+    min-height: 54px !important;
+    align-items: center !important;
+    gap: 10px !important;
+}
+
+#calendarModal .schedule-hub-item.past {
+    display: flex !important;
+    width: 100% !important;
+}
+
+#calendarModal .schedule-hub-item-view {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    text-align: left !important;
+}
+
+#calendarModal .schedule-hub-item-main {
+    min-width: 0 !important;
+}
+
+#calendarModal .schedule-hub-item-main strong,
+#calendarModal .schedule-hub-item-main small {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+#calendarModal .past-delete-btn {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    height: 34px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+}
+
+/* Desktop sidebar: collapsed keeps icon, expanded keeps icon and text horizontally aligned */
+@media (min-width: 901px) {
+    .app-sidebar {
+        align-items: center !important;
+    }
+
+    .app-sidebar button:not(.sidebar-close) {
+        width: 54px !important;
+        min-height: 46px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        flex-direction: row !important;
+        gap: 0 !important;
+        overflow: hidden !important;
+        padding: 10px !important;
+    }
+
+    .app-sidebar button:not(.sidebar-close) .sidebar-menu-icon {
+        display: inline-grid !important;
+        place-items: center !important;
+        flex: 0 0 24px !important;
+        width: 24px !important;
+        min-width: 24px !important;
+        height: 24px !important;
+        font-size: 18px !important;
+        line-height: 1 !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    .app-sidebar button:not(.sidebar-close) > span:not(.sidebar-menu-icon) {
+        display: none !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar {
+        width: 210px !important;
+        align-items: stretch !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        width: 100% !important;
+        min-height: 46px !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
+        padding: 10px 12px !important;
+        text-align: left !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) > span:not(.sidebar-menu-icon) {
+        display: inline-block !important;
+        flex: 1 1 auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        font-size: 13px !important;
+        line-height: 1.2 !important;
+        text-align: left !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        color: var(--text-main) !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) .sidebar-menu-icon {
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: inline-grid !important;
+    }
+}
+
+/* Mobile Calendar uses list mode but still scrolls to the end */
+@media (max-width: 640px) {
+    #calendarModal .schedule-hub-box,
+    #calendarModal .calendar-box {
+        width: 96vw !important;
+        max-height: 88vh !important;
+    }
+
+    #calendarModal #calendarGrid.calendar-grid,
+    #calendarModal .schedule-hub-list {
+        max-height: calc(88vh - 180px) !important;
+        padding-bottom: 110px !important;
+    }
+
+    #calendarModal .calendar-cell {
+        max-height: 140px !important;
+    }
+}
