@@ -672,17 +672,96 @@ body.light-mode .schedule-block-header { background: rgba(0,0,0,0.04); }
 /* --- Emoji Picker --- */
 .emoji-picker-container { margin-bottom: 15px; }
 .emoji-grid {
-    display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px;
-    max-height: 100px; overflow-y: auto;
-    padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);
+    padding: 0;
+    border: 0;
+}
+.emoji-picker-shell {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 10px;
+    background: rgba(255,255,255,0.02);
+}
+.emoji-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: rgba(0,0,0,0.12);
+}
+body.light-mode .emoji-search-wrap { background: rgba(0,0,0,0.03); }
+.emoji-search-wrap input,
+.modal-box .emoji-search-wrap input {
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    color: var(--text-main);
+    outline: none;
+    font-size: 13px;
+}
+.emoji-tabs {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding: 2px 0 8px;
+    scrollbar-width: none;
+}
+.emoji-tabs::-webkit-scrollbar { display: none; }
+.emoji-tab {
+    flex: 0 0 auto;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    background: rgba(255,255,255,0.05);
+    color: var(--text-sub);
+    border: 1px solid var(--border-color);
+}
+.emoji-tab.active {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: transparent;
+}
+.emoji-items {
+    display: grid;
+    grid-template-columns: repeat(8, minmax(34px, 1fr));
+    gap: 7px;
+    max-height: 190px;
+    overflow-y: auto;
+    padding: 4px 2px 2px;
 }
 .emoji-item {
-    background: rgba(255,255,255,0.02); border: 1px solid transparent; font-size: 20px;
-    text-align: center; padding: 6px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;
-    transition: transform 0.2s, background-color 0.2s;
+    min-width: 34px;
+    min-height: 34px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid transparent;
+    font-size: 20px;
+    text-align: center;
+    padding: 5px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, background-color 0.15s;
 }
-.emoji-item:hover { background: rgba(99, 102, 241, 0.2); transform: scale(1.1); }
+.emoji-item:hover { background: rgba(99, 102, 241, 0.2); transform: scale(1.08); }
 .emoji-item.selected { background: var(--accent-color); border-color: rgba(255,255,255,0.3); color: white;}
+.emoji-none-label { font-size: 10px; color: currentColor; font-weight: 700; white-space: nowrap; }
+.emoji-empty {
+    grid-column: 1 / -1;
+    color: var(--text-sub);
+    font-size: 13px;
+    text-align: center;
+    padding: 15px 8px;
+}
+@media (max-width: 640px) {
+    .emoji-items { grid-template-columns: repeat(6, minmax(34px, 1fr)); max-height: 210px; }
+    .emoji-tab { font-size: 11px; padding: 6px 9px; }
+}
 
 
 /* ==========================================================================
@@ -2475,4 +2554,259 @@ body.light-mode .calendar-day-timeline-item:hover {
         padding: 11px;
         border-radius: 15px;
     }
+}
+
+
+/* ========================================================================
+   Emoji Picker nâng cấp: scroll + kéo chuột/touch để lướt icon
+   ======================================================================== */
+.emoji-picker-shell {
+    user-select: none;
+}
+
+.emoji-tabs {
+    overflow-x: auto !important;
+    overflow-y: hidden;
+    cursor: grab;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    padding-bottom: 10px;
+    mask-image: linear-gradient(90deg, transparent 0, #000 16px, #000 calc(100% - 16px), transparent 100%);
+}
+
+.emoji-tabs.dragging-scroll,
+.emoji-items.dragging-scroll {
+    cursor: grabbing;
+    scroll-behavior: auto;
+}
+
+
+.emoji-items {
+    max-height: 240px !important;
+    overflow: auto !important;
+    cursor: grab;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 6px 4px 8px !important;
+    scrollbar-width: thin;
+}
+
+.emoji-items::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.emoji-items::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.emoji-items::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.35);
+    border-radius: 999px;
+}
+
+.emoji-item {
+    touch-action: manipulation;
+}
+
+.emoji-tab {
+    touch-action: pan-x;
+}
+
+@media (max-width: 640px) {
+    .emoji-picker-shell {
+        padding: 8px;
+    }
+
+    .emoji-items {
+        grid-template-columns: repeat(7, minmax(34px, 1fr)) !important;
+        max-height: 280px !important;
+        gap: 6px !important;
+    }
+
+    .emoji-item {
+        min-height: 38px;
+        font-size: 21px;
+    }
+}
+
+
+/* ========================================================================
+   FINAL FIX: chọn icon bằng click + tag nằm gọn dưới nút, không tràn bên phải
+   ======================================================================== */
+.emoji-picker-shell,
+.emoji-items,
+.emoji-tabs {
+    user-select: none;
+}
+
+.emoji-tabs {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    cursor: default !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-behavior: smooth;
+}
+
+.emoji-items {
+    max-height: 280px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    cursor: default !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+.emoji-item {
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    touch-action: manipulation !important;
+}
+
+.emoji-item * {
+    pointer-events: none;
+}
+
+/* Tag của link/note/schedule nằm dưới nút thay vì dạt sang phải */
+.item-wrapper {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    vertical-align: top;
+    max-width: 100%;
+}
+
+.item-wrapper .item-tags {
+    margin: 4px 0 0 8px !important;
+    max-width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.item-wrapper .item-tags span {
+    max-width: 110px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.link-button,
+.note-button,
+.schedule-button {
+    max-width: 100%;
+}
+
+@media (max-width: 640px) {
+    .item-wrapper {
+        width: auto;
+        max-width: 100%;
+    }
+    .item-wrapper .item-tags span {
+        max-width: 90px;
+    }
+}
+
+
+/* ==========================================================================
+   PATCH: Folder tags beside folder title + hide item tags inputs/display
+   ========================================================================== */
+
+.group-title {
+    min-width: 0;
+    flex: 1;
+    flex-wrap: wrap;
+    row-gap: 6px;
+}
+
+.group-title-text {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.folder-title-tags {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+
+.folder-title-tags span {
+    display: inline-flex;
+    align-items: center;
+    max-width: 90px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: rgba(99, 102, 241, 0.16);
+    color: #c7d2fe;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.35;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+body.light-mode .folder-title-tags span {
+    background: #eef2ff;
+    color: #4338ca;
+    border-color: #c7d2fe;
+}
+
+/* Chỉ giữ tag cho folder, không hiển thị tag riêng của nút link/note/lịch */
+.item-wrapper .item-tags,
+.group-tags-inline {
+    display: none !important;
+}
+
+/* Nếu HTML cũ còn input tag trong modal nút thì ẩn luôn */
+#linkTagsInput,
+#noteTagsInput,
+#linkTagsInput + label,
+#noteTagsInput + label {
+    display: none !important;
+}
+
+@media (max-width: 640px) {
+    .group-title {
+        align-items: flex-start;
+    }
+
+    .folder-title-tags span {
+        max-width: 72px;
+        font-size: 9px;
+        padding: 2px 6px;
+    }
+}
+
+
+/* ========================================================================
+   FIX: Thanh tab icon kéo ngang được, vùng icon vẫn click chọn bình thường
+   ======================================================================== */
+.emoji-tabs {
+    cursor: grab !important;
+    touch-action: pan-x !important;
+    scroll-snap-type: x proximity;
+}
+
+.emoji-tabs.dragging-scroll {
+    cursor: grabbing !important;
+    scroll-behavior: auto !important;
+}
+
+.emoji-tab {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+}
+
+.emoji-items {
+    cursor: default !important;
+    touch-action: pan-y !important;
 }

@@ -6,89 +6,30 @@ const API_KEY = 'AIzaSyAc5DuR0oxr7yEdTQnvIIS-PRKGtIfWrro';
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
-const EMOJI_LIST = [
-"NONE",
-
-// ==================== 📁 Thư mục & Dữ liệu ====================
-"📁","📂","🗂️","🗃️","🗄️","📦","🧺","🧳","🎒","📋","📑","📄","📃","📜","📰","🗞️",
-"📒","📓","📔","📕","📗","📘","📙","📚","📖","📝","✏️","🖊️","🖋️","✒️","📐","📏",
-"📎","🖇️","📌","📍","🧷","✂️","🗑️",
-
-// ==================== 💻 Công nghệ ====================
-"💻","🖥️","🖨️","⌨️","🖱️","🖲️","💾","💿","📀","💽","📱","📲","☎️","📞","📟",
-"📠","📡","📶","🛰️","🌐","🔗","⚙️","🛠️","🔧","🔨","🔩","🧰","🧲","🧪","🔬","🔭",
-"🤖","🧠","💡","🔌","🔋","🪫","📺","📷","📸","🎥","🎬","🎙️","🎤","🎧","📻",
-
-// ==================== 📅 Thời gian ====================
-"📅","🗓️","📆","⏰","⏱️","⏲️","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙",
-"🕚","🕛","⌛","⏳","🌅","🌄","🌇","🌆","🌃","🌙","🌞",
-
-// ==================== 🚀 Hiệu suất ====================
-"🚀","⚡","🔥","✨","🌟","⭐","💥","🎯","🏆","🥇","🥈","🥉","🏅","🎖️","💪","📈",
-"📉","📊","📌","🔝","⬆️","⬇️","➡️","⬅️","↗️","↘️","↖️","↙️",
-
-// ==================== 💼 Công việc ====================
-"💼","👔","🧑‍💼","🏢","🏬","🏭","🏦","🏪","🏫","🏛️","🏗️","🧾","💳","💰","💵",
-"💶","💷","💴","🪙","💸","🏷️","🛒","🛍️",
-
-// ==================== 🌍 Internet ====================
-"🌍","🌎","🌏","🛰️","🌐","📡","📶","📤","📥","📨","📧","📩","✉️","📬","📭","📪",
-"📫","📮","📯",
-
-// ==================== 🔒 Bảo mật ====================
-"🔒","🔓","🔐","🔑","🗝️","🛡️","⚔️","🚨","🚔","👮","🕵️","🛂","🧬",
-
-// ==================== 📝 Ghi chú ====================
-"📝","📒","📓","📔","📖","📚","📋","📌","📍","🧷","📎","🖇️","📑","📜",
-
-// ==================== 💬 Liên hệ ====================
-"💬","🗨️","🗯️","📢","📣","🔔","🔕","📨","📩","✉️","📧","📬","☎️","📞",
-
-// ==================== ✅ Trạng thái ====================
-"✅","☑️","✔️","❌","❎","⭕","🟢","🟡","🔴","⚪","⚫","🟠","🟣","🟤","🔵",
-
-// ==================== ⚠️ Cảnh báo ====================
-"⚠️","🚨","⛔","🚫","❗","❕","❓","❔","‼️","⁉️","💢","☢️","☣️",
-
-// ==================== ❤️ Yêu thích ====================
-"❤️","🩷","🧡","💛","💚","🩵","💙","💜","🤎","🖤","🤍","💖","💗","💝","💕","💞",
-"💘","💓","💟","⭐","🌟","✨",
-
-// ==================== 🎨 Thiết kế ====================
-"🎨","🖌️","🖍️","🧵","🪡","🎭","🎬","🎼","🎵","🎶","🎤","🎧","📷","📸",
-
-// ==================== 📦 Kho vận ====================
-"📦","🚚","🚛","🚜","🏭","🏗️","📍","🧭","🗺️","🚢","✈️","🚆","🚄","🚅","🚉",
-"🚲","🏍️","🚗","🚕","🚙",
-
-// ==================== 🏠 Cá nhân ====================
-"🏠","🏡","🏢","🛏️","🛋️","🚪","🪟","🪑","🍔","🍕","🍜","🍚","🍱","☕","🧋","🥤",
-"🍎","🍉","🍇","🍓","🥑","🥗",
-
-// ==================== 👥 Người ====================
-"👤","👥","🧑","👨","👩","🧒","👴","👵","🙋","🙆","🙇","🤝","👏","👍","👎","👌",
-"✌️","🤞","🤟","🤙","👋","🙏",
-
-// ==================== 😀 Cảm xúc ====================
-"😀","😁","😂","🤣","😊","😇","🙂","😉","😍","😘","😎","🤩","🥳","😴","🤔","🤯",
-"😭","😡","🥶","🥵","😱","🤗","🤭","🫡","🤝",
-
-// ==================== 🎉 Giải trí ====================
-"🎉","🎊","🎁","🎈","🎂","🍰","🎆","🎇","🎃","🎄","🎅","🎀","🎗️","🏅","🎯",
-
-// ==================== 🌿 Thiên nhiên ====================
-"🌱","🌿","🍀","🌴","🌳","🌲","🌵","🌷","🌹","🌺","🌸","🌼","🌻","🍁","🍂","🍃",
-"☀️","⛅","☁️","🌧️","⛈️","❄️","🌈",
-
-// ==================== Động vật ====================
-"🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵",
-"🐔","🐧","🦅","🦉","🦄","🐝","🦋","🐢","🐬","🐳","🦈","🐙",
-
-// ==================== Biểu tượng ====================
-"🔷","🔶","🔹","🔸","🔺","🔻","💠","♦️","♣️","♠️","♥️",
-"➕","➖","✖️","➗","➰","➿","〽️","💯"
+const EMOJI_GROUPS = [
+    { name: "Gần đây", key: "recent", icons: [] },
+    { name: "Cơ bản", key: "basic", icons: ["NONE","⭐","🌟","✨","🔥","⚡","🚀","🎯","🏆","✅","☑️","✔️","❌","⚠️","🚨","📌","📍","🔔","🔕"] },
+    { name: "Thư mục", key: "folder", icons: ["📁","📂","🗂️","🗃️","🗄️","📦","🧺","🧳","🎒","🗑️","📎","🖇️","🧷","✂️"] },
+    { name: "Ghi chú", key: "note", icons: ["📝","📋","📑","📄","📃","📜","📰","🗞️","📒","📓","📔","📕","📗","📘","📙","📚","📖","✏️","🖊️","🖋️","✒️","📐","📏"] },
+    { name: "Lịch", key: "time", icons: ["📅","🗓️","📆","⏰","⏱️","⏲️","⌛","⏳","🕐","🕑","🕒","🕓","🕔","🕕","🕖","🕗","🕘","🕙","🕚","🕛","🌅","🌄","🌇","🌆","🌃","🌙","🌞"] },
+    { name: "Công nghệ", key: "tech", icons: ["💻","🖥️","🖨️","⌨️","🖱️","🖲️","💾","💿","📀","💽","📱","📲","☎️","📞","📟","📠","📡","📶","🛰️","🌐","🔗","⚙️","🛠️","🔧","🔨","🔩","🧰","🧲","🧪","🔬","🔭","🤖","🧠","💡","🔌","🔋","🪫","📺","📷","📸","🎥","🎬","🎙️","🎤","🎧","📻"] },
+    { name: "Công việc", key: "work", icons: ["💼","👔","🧑‍💼","👨‍💼","👩‍💼","🏢","🏬","🏭","🏦","🏪","🏫","🏛️","🏗️","🧾","💳","💰","💵","💶","💷","💴","🪙","💸","🏷️","🛒","🛍️","📊","📈","📉"] },
+    { name: "Kho vận", key: "logistics", icons: ["📦","🚚","🚛","🚜","🏭","🏗️","📍","🧭","🗺️","🚢","✈️","🚆","🚄","🚅","🚉","🚲","🏍️","🚗","🚕","🚙","🛵","⛽","🚦","🛣️"] },
+    { name: "Bảo mật", key: "security", icons: ["🔒","🔓","🔐","🔑","🗝️","🛡️","⚔️","🚨","🚔","👮","🕵️","🛂","🧬","☢️","☣️","⛔","🚫"] },
+    { name: "Liên hệ", key: "contact", icons: ["💬","🗨️","🗯️","📢","📣","📯","📨","📩","✉️","📧","📬","📭","📪","📫","📮","☎️","📞","🤝","👋","🙏"] },
+    { name: "Màu & trạng thái", key: "status", icons: ["🔴","🟠","🟡","🟢","🔵","🟣","🟤","⚫","⚪","⭕","🔷","🔶","🔹","🔸","🔺","🔻","💠","♦️","♣️","♠️","♥️","💯"] },
+    { name: "Yêu thích", key: "love", icons: ["❤️","🩷","🧡","💛","💚","🩵","💙","💜","🤎","🖤","🤍","💖","💗","💝","💕","💞","💘","💓","💟"] },
+    { name: "Thiết kế", key: "design", icons: ["🎨","🖌️","🖍️","🧵","🪡","🎭","🎬","🎼","🎵","🎶","🎤","🎧","📷","📸","🖼️","🧩"] },
+    { name: "Nhà cửa", key: "home", icons: ["🏠","🏡","🏢","🛏️","🛋️","🚪","🪟","🪑","🧹","🧽","🧴","🪣","🛁","🚿","🚽","🍽️","🍳","☕","🧋","🥤"] },
+    { name: "Ăn uống", key: "food", icons: ["🍔","🍕","🍜","🍚","🍱","🍎","🍉","🍇","🍓","🥑","🥗","🍞","🥐","🥚","🍗","🍖","🍤","🍰","🎂","🍫"] },
+    { name: "Con người", key: "people", icons: ["👤","👥","🧑","👨","👩","🧒","👴","👵","🙋","🙆","🙇","👏","👍","👎","👌","✌️","🤞","🤟","🤙","💪","🫡"] },
+    { name: "Cảm xúc", key: "face", icons: ["😀","😁","😂","🤣","😊","😇","🙂","😉","😍","😘","😎","🤩","🥳","😴","🤔","🤯","😭","😡","🥶","🥵","😱","🤗","🤭"] },
+    { name: "Giải trí", key: "fun", icons: ["🎉","🎊","🎁","🎈","🎂","🍰","🎆","🎇","🎃","🎄","🎅","🎀","🎗️","🎮","🕹️","🎲","♟️","🎯","🎰"] },
+    { name: "Thiên nhiên", key: "nature", icons: ["🌱","🌿","🍀","🌴","🌳","🌲","🌵","🌷","🌹","🌺","🌸","🌼","🌻","🍁","🍂","🍃","☀️","⛅","☁️","🌧️","⛈️","❄️","🌈"] },
+    { name: "Động vật", key: "animal", icons: ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼","🐨","🐯","🦁","🐮","🐷","🐸","🐵","🐔","🐧","🦅","🦉","🦄","🐝","🦋","🐢","🐬","🐳","🦈","🐙"] }
 ];
-
+const EMOJI_LIST = [...new Set(EMOJI_GROUPS.flatMap(group => group.icons))];
+const EMOJI_RECENT_KEY = 'dashboardRecentEmojis';
 const STORAGE_KEY = 'myDashboardDataButtonsEdition';
 const THEME_KEY = 'dashboardTheme';
 
@@ -393,22 +334,155 @@ function saveData() {
 
 const linkify = text => text ? text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank">${url}</a>`) : "";
 
-function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
-    const grid = getEl(gridId); 
-    if (!grid) return;
-    grid.innerHTML = ""; 
-    state.selectedEmoji = preSelectedEmoji;
+function getRecentEmojis() {
+    try {
+        const recent = JSON.parse(localStorage.getItem(EMOJI_RECENT_KEY) || '[]');
+        return Array.isArray(recent) ? recent.filter(icon => EMOJI_LIST.includes(icon)).slice(0, 18) : [];
+    } catch (e) {
+        return [];
+    }
+}
 
-    EMOJI_LIST.forEach(emoji => {
-        const item = document.createElement('div');
-        item.className = `emoji-item ${emoji === preSelectedEmoji ? 'selected' : ''}`;
-        item.innerHTML = emoji === "NONE" ? `<span style="font-size:11px;color:var(--text-sub);font-weight:bold;">🚫 Không</span>` : emoji;
-        item.onclick = () => {
-            grid.querySelectorAll('.emoji-item').forEach(el => el.classList.remove('selected'));
-            item.classList.add('selected'); 
-            state.selectedEmoji = emoji;
-        };
-        grid.appendChild(item);
+function saveRecentEmoji(emoji) {
+    if (!emoji || emoji === 'NONE') return;
+    const recent = [emoji, ...getRecentEmojis().filter(item => item !== emoji)].slice(0, 18);
+    localStorage.setItem(EMOJI_RECENT_KEY, JSON.stringify(recent));
+}
+
+function buildEmojiPicker(gridId, preSelectedEmoji = "NONE") {
+    const grid = getEl(gridId);
+    if (!grid) return;
+
+    state.selectedEmoji = preSelectedEmoji || "NONE";
+    const pickerId = `${gridId}_picker`;
+    const recentIcons = getRecentEmojis();
+    const groups = EMOJI_GROUPS
+        .map(group => group.key === 'recent' ? { ...group, icons: recentIcons } : group)
+        .filter(group => group.key !== 'recent' || group.icons.length);
+
+    const renderEmojiItems = (icons, keyword = '') => {
+        const normalizedKeyword = (keyword || '').trim().toLowerCase();
+        const source = normalizedKeyword ? EMOJI_LIST.filter(icon => icon !== 'NONE') : icons;
+        const filtered = source.filter(icon => {
+            if (!normalizedKeyword) return true;
+            const groupName = (EMOJI_GROUPS.find(group => group.icons.includes(icon))?.name || '').toLowerCase();
+            return icon.includes(normalizedKeyword) || groupName.includes(normalizedKeyword);
+        });
+
+        return filtered.length
+            ? filtered.map(emoji => `
+                <button type="button" class="emoji-item ${emoji === state.selectedEmoji ? 'selected' : ''}" data-emoji="${emoji}" title="${emoji === 'NONE' ? 'Không dùng icon' : emoji}">
+                    ${emoji === "NONE" ? `<span class="emoji-none-label">🚫 Không</span>` : emoji}
+                </button>
+            `).join('')
+            : `<div class="emoji-empty">Không tìm thấy icon phù hợp</div>`;
+    };
+
+    grid.innerHTML = `
+        <div class="emoji-picker-shell" id="${pickerId}">
+            <div class="emoji-search-wrap">
+                <span>🔎</span>
+                <input type="search" class="emoji-search-input" placeholder="Tìm icon hoặc nhóm..." autocomplete="off">
+            </div>
+            <div class="emoji-tabs">
+                ${groups.map((group, index) => `<button type="button" class="emoji-tab ${index === 0 ? 'active' : ''}" data-key="${group.key}">${group.name}</button>`).join('')}
+            </div>
+            <div class="emoji-items">${renderEmojiItems(groups[0]?.icons || EMOJI_LIST)}</div>
+        </div>
+    `;
+
+    const shell = grid.querySelector(`#${pickerId}`);
+    if (!shell) return;
+
+    const searchInput = shell.querySelector('.emoji-search-input');
+    const itemsBox = shell.querySelector('.emoji-items');
+    const tabsBox = shell.querySelector('.emoji-tabs');
+    let activeGroup = groups[0] || { icons: EMOJI_LIST };
+
+    const markSelected = () => {
+        itemsBox.querySelectorAll('.emoji-item').forEach(el => {
+            el.classList.toggle('selected', el.dataset.emoji === state.selectedEmoji);
+        });
+    };
+
+    const refresh = () => {
+        itemsBox.innerHTML = renderEmojiItems(activeGroup.icons, searchInput.value || '');
+        markSelected();
+    };
+
+    const chooseEmoji = (emoji) => {
+        if (!emoji) return;
+        state.selectedEmoji = emoji;
+        saveRecentEmoji(emoji);
+        markSelected();
+    };
+
+    searchInput.addEventListener('input', refresh);
+
+    // Kéo ngang thanh tab icon bằng chuột/touch, không ảnh hưởng click chọn icon.
+    let tabDragStartX = 0;
+    let tabDragStartScroll = 0;
+    let isTabPointerDown = false;
+    let didTabDrag = false;
+
+    tabsBox.addEventListener('pointerdown', event => {
+        if (event.button !== undefined && event.button !== 0) return;
+        isTabPointerDown = true;
+        didTabDrag = false;
+        tabDragStartX = event.clientX;
+        tabDragStartScroll = tabsBox.scrollLeft;
+        tabsBox.classList.add('dragging-scroll');
+    });
+
+    tabsBox.addEventListener('pointermove', event => {
+        if (!isTabPointerDown) return;
+        const diffX = event.clientX - tabDragStartX;
+        if (Math.abs(diffX) > 5) {
+            didTabDrag = true;
+            tabsBox.scrollLeft = tabDragStartScroll - diffX;
+            event.preventDefault();
+        }
+    });
+
+    const stopTabDrag = () => {
+        isTabPointerDown = false;
+        tabsBox.classList.remove('dragging-scroll');
+        setTimeout(() => { didTabDrag = false; }, 0);
+    };
+
+    tabsBox.addEventListener('pointerup', stopTabDrag);
+    tabsBox.addEventListener('pointercancel', stopTabDrag);
+    tabsBox.addEventListener('pointerleave', stopTabDrag);
+
+    tabsBox.addEventListener('click', event => {
+        if (didTabDrag) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+        const tab = event.target.closest('.emoji-tab');
+        if (!tab) return;
+        shell.querySelectorAll('.emoji-tab').forEach(btn => btn.classList.remove('active'));
+        tab.classList.add('active');
+        activeGroup = groups.find(group => group.key === tab.dataset.key) || groups[0] || { icons: EMOJI_LIST };
+        searchInput.value = '';
+        refresh();
+    });
+
+    // Vùng icon chỉ dùng scroll tự nhiên + click chọn, không kéo tự viết để tránh chặn chọn icon.
+    itemsBox.addEventListener('click', event => {
+        const item = event.target.closest('.emoji-item');
+        if (!item) return;
+        event.preventDefault();
+        chooseEmoji(item.dataset.emoji);
+    });
+
+    itemsBox.addEventListener('keydown', event => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const item = event.target.closest('.emoji-item');
+        if (!item) return;
+        event.preventDefault();
+        chooseEmoji(item.dataset.emoji);
     });
 }
 
@@ -549,7 +623,10 @@ function renderDashboard() {
 
         groupCard.innerHTML = `
             <div class="group-header" onclick="toggleCollapseGroup('${group.id}')">
-                <span class="group-title">${gEmoji}${safeTitle}</span>
+                <span class="group-title">
+                    <span class="group-title-text">${gEmoji}${safeTitle}</span>
+                    ${renderGroupTitleTags(group)}
+                </span>
                 <div class="group-header-actions">
                     <button class="favorite-btn ${group.favorite ? 'active' : ''}" onclick="toggleFavoriteGroup('${group.id}', event)" title="Ghim nhóm yêu thích">${group.favorite ? '⭐' : '☆'}</button>
                     <span class="group-tag tag-${group.type}">${tags[group.type]}</span>
@@ -725,14 +802,12 @@ function openItemModal(type, groupId, index = false) {
         getEl('linkModalTitle').innerText = state.isEditMode ? "📝 Sửa Nút Bấm" : "➕ Thêm Liên Kết Mới";
         getEl('linkNameInput').value = item ? item.name : '';
         getEl('linkUrlInput').value = item ? item.url : '';
-        const linkTags = getEl('linkTagsInput'); if (linkTags) linkTags.value = tagsToString(item?.tags);
         buildEmojiPicker('linkEmojiGrid', item ? item.emoji : "NONE");
         openModal('linkModal');
     } else if (type === 'note') {
         getEl('noteModalTitle').innerText = state.isEditMode ? "📝 Sửa Nút Ghi Chú" : "➕ Thêm Nút Ghi Chú Mới";
         getEl('noteTitleInput').value = item ? item.title : '';
         getEl('noteContentInput').value = item ? item.content : '';
-        const noteTags = getEl('noteTagsInput'); if (noteTags) noteTags.value = tagsToString(item?.tags);
         buildEmojiPicker('noteEmojiGrid', item ? item.emoji : "NONE");
         openModal('noteModal');
     }
@@ -748,12 +823,12 @@ function submitItemForm(type) {
         let url = getEl('linkUrlInput').value.trim();
         if (!name || !url) return;
         if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-        targetData = { name, url, emoji: state.selectedEmoji, tags: parseTags(getEl('linkTagsInput')?.value || '') };
+        targetData = { name, url, emoji: state.selectedEmoji };
     } else if (type === 'note') {
         const title = getEl('noteTitleInput').value.trim();
         const content = getEl('noteContentInput').value;
         if (!title) return;
-        targetData = { title, content, emoji: state.selectedEmoji, tags: parseTags(getEl('noteTagsInput')?.value || '') };
+        targetData = { title, content, emoji: state.selectedEmoji };
     }
 
     if (state.isEditMode) group[`${type}s`][state.activeIndex] = targetData;
@@ -931,8 +1006,6 @@ function addScheduleBlock(data = null) {
             <label style="display:block;margin-bottom:4px;font-size:12px;color:var(--text-sub)">📋 Danh sách các đầu việc cần làm:</label>
             <textarea class="form-input sch-content-input" placeholder="Nhập các chi tiết đầu việc tại đây..." rows="3" style="width:100%;resize:vertical">${content}</textarea>
         </div>
-        <label style="display:block;margin:8px 0 4px;font-size:12px;color:var(--text-sub)">🏷️ Tag lịch:</label>
-        <input type="text" class="form-input sch-tags-input" placeholder="Ví dụ: họp, deadline" value="${tagsToString(data ? data.tags : [])}" style="width:100%;margin-bottom:8px">
         <input type="hidden" class="sch-emoji-hidden" value="${emoji}">
     `;
 
@@ -994,7 +1067,6 @@ function submitScheduleForm() {
         const content = block.querySelector('.sch-content-input').value;
         const important = block.querySelector('.sch-important-cb').checked;
         const hiddenEmoji = block.querySelector('.sch-emoji-hidden').value;
-        const tags = parseTags(block.querySelector('.sch-tags-input')?.value || '');
 
         if (!title || !date || !time || !endDate || !endTime) hasError = true;
 
@@ -1003,7 +1075,7 @@ function submitScheduleForm() {
         if (endDateTime < startDateTime) hasTimeError = true;
 
         return { 
-            title, date, time, endDate, endTime, content, important, tags, 
+            title, date, time, endDate, endTime, content, important, 
             emoji: state.isEditMode ? hiddenEmoji : (important ? "⚠️" : "📅") 
         };
     });
@@ -2156,15 +2228,13 @@ function getAllDashboardTags() {
     const bag = new Set();
     state.dashboardData.forEach(group => {
         (group.tags || []).forEach(t => bag.add(t));
-        ['links', 'notes', 'schedules'].forEach(key => (group[key] || []).forEach(item => (item.tags || []).forEach(t => bag.add(t))));
     });
     return [...bag].sort((a, b) => a.localeCompare(b, 'vi'));
 }
 
 function groupMatchesActiveTag(group) {
     if (!activeTagFilter) return true;
-    if ((group.tags || []).includes(activeTagFilter)) return true;
-    return ['links', 'notes', 'schedules'].some(key => (group[key] || []).some(item => (item.tags || []).includes(activeTagFilter)));
+    return (group.tags || []).includes(activeTagFilter);
 }
 
 function setActiveTag(tag = '') {
@@ -2185,6 +2255,12 @@ function renderItemTags(item = {}) {
     const tags = item.tags || [];
     if (!tags.length) return '';
     return `<div class="item-tags">${tags.slice(0, 4).map(t => `<span>#${escapeHTML(t)}</span>`).join('')}</div>`;
+}
+
+function renderGroupTitleTags(group = {}) {
+    const tags = Array.isArray(group.tags) ? group.tags.filter(Boolean) : [];
+    if (!tags.length) return '';
+    return `<span class="folder-title-tags">${tags.slice(0, 6).map(t => `<span>#${escapeHTML(t)}</span>`).join('')}</span>`;
 }
 
 function scrollToSection(section) {
@@ -2465,25 +2541,11 @@ const __v4RenderDashboard = renderDashboard;
 renderDashboard = function() {
     __v4RenderDashboard();
     renderTagFilterChips();
-    document.querySelectorAll('.group-card').forEach(card => {
-        const group = getGroup(card.dataset.id);
-        const header = card.querySelector('.group-header');
-        if (group && header && group.tags?.length && !header.querySelector('.group-tags-inline')) {
-            header.insertAdjacentHTML('afterend', `<div class="group-tags-inline">${renderItemTags(group)}</div>`);
-        }
-        card.querySelectorAll('.item-wrapper').forEach(wrap => {
-            const idx = Number(wrap.dataset.index);
-            const area = wrap.parentElement;
-            const type = area?.classList.contains('links-area') ? 'link' : area?.classList.contains('notes-area') ? 'note' : area?.classList.contains('schedules-area') ? 'schedule' : '';
-            const item = group?.[`${type}s`]?.[idx];
-            if (item?.tags?.length && !wrap.querySelector('.item-tags')) wrap.insertAdjacentHTML('beforeend', renderItemTags(item));
-        });
-    });
 };
 
 const __v4CollectDashboardItems = collectDashboardItems;
 collectDashboardItems = function() {
-    return __v4CollectDashboardItems().map(item => ({ ...item, subtitle: `${item.subtitle || ''}${item.tags?.length ? ' · #' + item.tags.join(' #') : ''}` }));
+    return __v4CollectDashboardItems();
 };
 
 // Ctrl+Z khôi phục nhanh mục mới xóa gần nhất
