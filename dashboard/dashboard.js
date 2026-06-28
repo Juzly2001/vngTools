@@ -2884,3 +2884,227 @@ if (document.readyState === "loading") {
     ensureDesktopBackgroundCanvas();
 }
 window.addEventListener("resize", ensureDesktopBackgroundCanvas);
+
+// ==========================================================================
+// BACKUP PIN + DRIVE FULL SYNC UPGRADE
+// Lưu thêm thùng rác + backup lên Google Drive, và backup đã ghim không bị xoá bởi giới hạn.
+// ==========================================================================
+const BACKUP_MAX_UNPINNED = 20;
+const DRIVE_PAYLOAD_SCHEMA = 2;
+
+function normalizeBackupListForLimit(items = []) {
+    const seen = new Set();
+    const normalized = (Array.isArray(items) ? items : [])
+        .filter(Boolean)
+        .map(item => ({ ...item, id: item.id || ('bk_' + (item.at || Date.now()) + '_' + Math.random().toString(36).slice(2, 6)) }))
+        .filter(item => {
+            if (seen.has(item.id)) return false;
+            seen.add(item.id);
+            return true;
+        })
+        .sort((a, b) => Number(b.at || 0) - Number(a.at || 0));
+
+    const pinned = normalized.filter(item => item.pinned === true);
+    const unpinned = normalized.filter(item => item.pinned !== true).slice(0, BACKUP_MAX_UNPINNED);
+    return [...pinned, ...unpinned];
+}
+
+// Ghi đè writeBackups cũ: giữ toàn bộ backup đã ghim, chỉ giới hạn 20 backup chưa ghim.
+writeBackups = function(items) {
+    writeJSONStore(BACKUP_KEY, normalizeBackupListForLimit(items));
+};
+
+function toggleBackupPinAt(index) {
+    const backups = readBackups();
+    const bk = backups[index];
+    if (!bk) return;
+    bk.pinned = !bk.pinned;
+    writeBackups(backups);
+    renderBackupModal();
+}
+
+// Render lại modal backup có nút ghim.
+renderBackupModal = function() {
+    const el = getEl('backupList');
+    if (!el) return;
+    const backups = readBackups();
+    if (!backups.length) {
+        el.className = 'trash-list empty';
+        el.textContent = 'Chưa có backup.';
+        return;
+    }
+
+    el.className = 'trash-list backup-list';
+    el.innerHTML = backups.map((bk, index) => {
+        const isPinned = bk.pinned === true;
+        return `
+            <div class="trash-item backup-item ${isPinned ? 'backup-pinned' : ''}">
+                <div>
+                    <strong>${isPinned ? '📌' : '💾'} ${escapeHTML(bk.reason || 'Backup')}</strong>
+                    <small>${formatTrashTime(bk.at)}${isPinned ? ' · Đã ghim' : ''}</small>
+                </div>
+                <div class="trash-actions backup-actions">
+                    <button class="btn-secondary backup-pin-btn ${isPinned ? 'active' : ''}" onclick="toggleBackupPinAt(${index})" title="${isPinned ? 'Bỏ ghim backup' : 'Ghim backup'}">${isPinned ? '📌' : '📍'}</button>
+                    <button class="btn-success" onclick="restoreBackupAt(${index})">Khôi phục</button>
+                    <button class="btn-real-danger" onclick="removeBackupAt(${index})">Xóa</button>
+                </div>
+            </div>`;
+    }).join('');
+};
+
+// Xóa backup: nếu backup đang ghim thì hỏi kỹ hơn.
+removeBackupAt = function(index) {
+    const backups = readBackups();
+    const bk = backups[index];
+    if (!bk) return;
+
+    const doRemove = () => {
+        backups.splice(index, 1);
+        writeBackups(backups);
+        renderBackupModal();
+    };
+
+    if (bk.pinned) {
+        customConfirm('Backup này đang được ghim. Bạn vẫn muốn xóa nó?', '📌 Xóa backup đã ghim').then(ok => {
+            if (ok) doRemove();
+        });
+    } else {
+        doRemove();
+    }
+};
+
+// Xóa backup hàng loạt: giữ backup đã ghim lại để tránh xóa nhầm.
+clearBackups = function() {
+    customConfirm('Xóa toàn bộ backup chưa ghim? Backup đã ghim sẽ được giữ lại.', '💾 Xóa backup').then(ok => {
+        if (!ok) return;
+        const pinned = readBackups().filter(item => item.pinned === true);
+        writeBackups(pinned);
+        renderBackupModal();
+    });
+};
+
+function buildDrivePayload() {
+    return {
+        schema: DRIVE_PAYLOAD_SCHEMA,
+        updatedAt: Date.now(),
+        dashboardData: state.dashboardData,
+        trashItems: readJSONStore(TRASH_KEY, []),
+        backups: readBackups()
+    };
+}
+
+function applyDrivePayload(cloudData) {
+    // Tương thích dữ liệu Drive cũ: trước đây file chỉ là mảng dashboardData.
+    if (Array.isArray(cloudData)) {
+        state.dashboardData = cloudData;
+        return;
+    }
+
+    if (!cloudData || typeof cloudData !== 'object') return;
+
+    if (Array.isArray(cloudData.dashboardData)) {
+        state.dashboardData = cloudData.dashboardData;
+    }
+
+    if (Array.isArray(cloudData.trashItems)) {
+        localStorage.setItem(TRASH_KEY, JSON.stringify(cloudData.trashItems));
+    }
+
+    if (Array.isArray(cloudData.backups)) {
+        localStorage.setItem(BACKUP_KEY, JSON.stringify(normalizeBackupListForLimit(cloudData.backups)));
+    }
+}
+
+// Ghi đè sync Drive cũ: lưu cả dashboard + thùng rác + backup.
+syncToGoogleDrive = async function(isSilent = false) {
+    if (!gapi.client.getToken()) return isSilent ? null : alert('Chưa liên kết Google!');
+    const syncBtn = getEl('btn-sync-google');
+    if (!isSilent && syncBtn) syncBtn.innerHTML = '⏳ Đang sync...';
+
+    const localData = JSON.stringify(buildDrivePayload());
+
+    try {
+        if (!googleFileId) {
+            const res = await gapi.client.drive.files.list({ q: "name = 'workspace_data.json'", spaces: 'appDataFolder' });
+            if (res.result.files?.length > 0) googleFileId = res.result.files[0].id;
+        }
+
+        if (googleFileId) {
+            await gapi.client.request({
+                path: `/upload/drive/v3/files/${googleFileId}`,
+                method: 'PATCH',
+                params: { uploadType: 'media' },
+                body: localData
+            });
+        } else {
+            const metadata = { name: 'workspace_data.json', parents: ['appDataFolder'] };
+            const boundary = '314159265358979323846';
+            const body = `\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${JSON.stringify(metadata)}\r\n--${boundary}\r\nContent-Type: application/json\r\n\r\n${localData}\r\n--${boundary}--`;
+            googleFileId = (await gapi.client.request({
+                path: '/upload/drive/v3/files',
+                method: 'POST',
+                params: { uploadType: 'multipart' },
+                headers: { 'Content-Type': `multipart/related; boundary="${boundary}"` },
+                body
+            })).result.id;
+        }
+
+        if (!isSilent) alert('📤 Đồng bộ Drive thành công!\nĐã lưu cả Dashboard, Thùng rác và Backup.');
+    } catch (e) {
+        if (!isSilent) alert('Lỗi sync: ' + e.message);
+    } finally {
+        if (syncBtn) syncBtn.innerHTML = '🔄 Đồng bộ Drive';
+    }
+};
+
+// Ghi đè tải Drive cũ: đọc được cả định dạng cũ và định dạng mới.
+fetchFileFromGoogleDrive = async function() {
+    try {
+        const response = await gapi.client.drive.files.list({
+            q: "name = 'workspace_data.json'",
+            spaces: 'appDataFolder',
+            fields: 'files(id, name)'
+        });
+        const files = response.result.files;
+
+        if (files?.length > 0) {
+            googleFileId = files[0].id;
+            const cloudData = (await gapi.client.drive.files.get({ fileId: googleFileId, alt: 'media' })).result;
+
+            const isValid = Array.isArray(cloudData) || (cloudData && Array.isArray(cloudData.dashboardData));
+            if (isValid) {
+                const ok = await customConfirm(
+                    'Tải dữ liệu mới từ Cloud về máy [Đồng ý], hoặc Ghi đè dữ liệu máy lên Cloud [Giữ lại]?\n\nDữ liệu Cloud mới có thể gồm Dashboard + Thùng rác + Backup.',
+                    '⚠️ XUNG ĐỘT DỮ LIỆU'
+                );
+
+                if (ok) {
+                    applyDrivePayload(cloudData);
+                    state.dashboardData.forEach(g => { if (g.pinKey) g.isLocked = true; });
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+                    renderDashboard();
+                    updateScheduleUI();
+                    renderBackupModal?.();
+                    renderTrashModal?.();
+                    alert('📥 Tải dữ liệu thành công!');
+                } else {
+                    syncToGoogleDrive(false);
+                }
+            }
+        } else {
+            syncToGoogleDrive(true);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+// Nếu thùng rác/backup thay đổi mà đã liên kết Google thì sync ngầm lên Drive.
+const __driveFullSyncWriteJSONStore = writeJSONStore;
+writeJSONStore = function(key, value) {
+    __driveFullSyncWriteJSONStore(key, value);
+    if ((key === TRASH_KEY || key === BACKUP_KEY) && gapiInited && gisInited && gapi.client.getToken()) {
+        clearTimeout(window.__driveMetaSyncTimer);
+        window.__driveMetaSyncTimer = setTimeout(() => syncToGoogleDrive(true), 600);
+    }
+};

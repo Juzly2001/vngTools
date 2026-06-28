@@ -793,7 +793,7 @@ body.light-mode .emoji-search-wrap { background: rgba(0,0,0,0.03); }
     bottom: 30px;
     right: 30px;
     display: none;
-    padding: 12px 12px;
+    padding: 12px 16px;
     border-radius: 50%;
     border: none;
     background: var(--accent-color);
@@ -3969,4 +3969,40 @@ body.light-mode .schedule-date {
     align-items: center !important;
     justify-content: center !important;
     line-height: 1 !important;
+}
+
+/* ==========================================================================
+   BACKUP PIN UI
+   ========================================================================== */
+.backup-item.backup-pinned {
+    border-color: rgba(234, 179, 8, .45) !important;
+    background: linear-gradient(135deg, rgba(234, 179, 8, .12), rgba(255,255,255,.025)) !important;
+}
+
+.backup-pin-btn {
+    min-width: 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 999px !important;
+}
+
+.backup-pin-btn.active {
+    background: var(--note-accent) !important;
+    color: #111827 !important;
+    border-color: transparent !important;
+}
+
+@media (max-width: 640px) {
+    .backup-actions {
+        display: grid !important;
+        grid-template-columns: 42px 1fr 1fr !important;
+        width: 100% !important;
+    }
+
+    .backup-pin-btn {
+        width: 42px !important;
+        min-width: 42px !important;
+    }
 }
