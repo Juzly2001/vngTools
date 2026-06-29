@@ -12,6 +12,7 @@ import { eCommerce } from './eCommerce .js';
 import { technology } from './technology.js';
 import { animal } from './animal.js';
 import { items } from './items.js';
+import { study } from './study.js';
 const fullLibrary = {
   hsk1,
   hsk2,
@@ -27,6 +28,7 @@ const fullLibrary = {
   technology,
   animal,
   items,
+  study,
   
   "cong_nghe_lap_trinh": [
     {
