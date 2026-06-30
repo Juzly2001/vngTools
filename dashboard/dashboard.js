@@ -4180,11 +4180,11 @@ function ensureKanbanWorkspaceModal() {
             </div>
             <div class="kanban-workspace-actions">
                 <button class="btn-primary" onclick="addKanbanBoard()">➕ Board</button>
-                <button class="btn-secondary" onclick="renameKanbanBoard()">📝 Rename board</button>
-                <button class="btn-real-danger" onclick="deleteKanbanBoard()">🗑️ Delete board</button>
-                <button class="btn-secondary" onclick="addKanbanColumn()">➕ Column</button>
-                <button class="btn-secondary" id="kanbanLayoutToggleBtn" onclick="toggleKanbanLayoutMode()">⇄ Row view</button>
+                <button class="btn-primary" onclick="addKanbanColumn()">➕ Column</button>
                 <button class="btn-primary" onclick="openKanbanCardModal()">➕ Card</button>
+                <button class="btn-secondary" onclick="renameKanbanBoard()">📝 Rename board</button>
+                <button class="btn-secondary" id="kanbanLayoutToggleBtn" onclick="toggleKanbanLayoutMode()">⇄ Row view</button>
+                <button class="btn-real-danger" onclick="deleteKanbanBoard()">🗑️ Delete board</button>
                 <input id="kanbanWorkspaceSearch" type="search" placeholder="Search cards..." oninput="renderKanbanWorkspaceBody()">
             </div>
             <div class="kanban-workspace-layout">
