@@ -50,7 +50,7 @@
         <section class="command-bar" aria-label="Quick action bar">
             <div class="search-box">
                 <span>🔎</span>
-                <input id="globalSearch" type="search" placeholder="Search groups, links, notes, schedules..." oninput="renderDashboard()">
+                <input id="globalSearch" type="search" placeholder="Search groups, links, notes, schedules..." oninput="debounceDashboardSearch()">
                 <button type="button" onclick="clearDashboardSearch()" title="Clear search">✕</button>
             </div>
             <div class="quick-actions">

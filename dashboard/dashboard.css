@@ -4767,3 +4767,22 @@ body.light-mode .schedule-date {
         height: 24px !important;
     }
 }
+
+
+/* ==========================================================================
+   PERFORMANCE PATCH: smoother large dashboards
+   ========================================================================== */
+.group-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 260px;
+}
+.group-content-wrapper {
+    contain: layout paint style;
+}
+.links-area, .notes-area, .schedules-area {
+    min-height: 1px;
+}
+.mobile-lite-placeholder {
+    display: block;
+    opacity: 0.85;
+}

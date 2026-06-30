@@ -64,6 +64,35 @@ let pressTimer;
 const getEl = id => document.getElementById(id);
 const getGroup = id => state.dashboardData.find(g => g.id === id);
 
+// Performance helpers: reduce full re-render, localStorage writes, and Drive sync spam.
+let dashboardRenderRAF = null;
+let saveDataTimer = null;
+let driveSyncTimer = null;
+let dashboardSearchTimer = null;
+
+function scheduleDashboardRender() {
+    if (dashboardRenderRAF) cancelAnimationFrame(dashboardRenderRAF);
+    dashboardRenderRAF = requestAnimationFrame(() => {
+        dashboardRenderRAF = null;
+        renderDashboard();
+    });
+}
+
+function persistDashboardData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+}
+
+function scheduleDriveSync() {
+    if (!(gapiInited && gisInited && gapi.client.getToken())) return;
+    clearTimeout(driveSyncTimer);
+    driveSyncTimer = setTimeout(() => syncToGoogleDrive(true), 800);
+}
+
+function debounceDashboardSearch() {
+    clearTimeout(dashboardSearchTimer);
+    dashboardSearchTimer = setTimeout(() => scheduleDashboardRender(), 160);
+}
+
 // ==========================================================================
 // 2. BACKGROUND CANVAS ENGINE (HIỆU ỨNG VŨ TRỤ / MÂY BAY THỜI GIAN THỰC)
 // ==========================================================================
@@ -323,13 +352,19 @@ function closeModal(id) {
 // ==========================================================================
 // 5. QUẢN LÝ DỮ LIỆU & CORE DASHBOARD RENDERING SYSTEM
 // ==========================================================================
-function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-    renderDashboard();
-    updateScheduleUI();
-    if (gapiInited && gisInited && gapi.client.getToken()) {
-        syncToGoogleDrive(true); 
+function saveData(options = {}) {
+    const { render = true, immediate = false } = options;
+
+    clearTimeout(saveDataTimer);
+    if (immediate) {
+        persistDashboardData();
+    } else {
+        saveDataTimer = setTimeout(persistDashboardData, 250);
     }
+
+    if (render) scheduleDashboardRender();
+    updateScheduleUI();
+    scheduleDriveSync();
 }
 
 const linkify = text => text ? text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank">${url}</a>`) : "";
@@ -549,8 +584,7 @@ function clearDashboardSearch() {
 
 function toggleAllGroups(shouldOpen = true) {
     state.dashboardData.forEach(group => group.collapsed = !shouldOpen);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-    renderDashboard();
+    saveData({ render: true });
 }
 
 function toggleFavoriteGroup(groupId, event) {
@@ -582,6 +616,100 @@ function toggleAutoSortMode() {
 
 function escapeHTML(value = '') {
     return String(value).replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
+}
+
+function renderGroupContent(group, contentArea) {
+    if (!group || !contentArea) return;
+    if (contentArea.dataset.rendered === 'true') return;
+
+    contentArea.innerHTML = '';
+
+    if (group.type === 'link') {
+        if (!group.links?.length) {
+            contentArea.innerHTML = `<span class="no-data-text">Right-click to add a link...</span>`;
+        } else {
+            const html = group.links.map((link, idx) => {
+                const lEmoji = (link.emoji && link.emoji !== "NONE") ? `<span>${link.emoji}</span> ` : '';
+                return `
+                    <div class="item-wrapper" data-index="${idx}">
+                        <a href="${escapeHTML(link.url)}" target="_blank" class="link-button" oncontextmenu="openContextMenu(event, 'link', '${group.id}', ${idx})">
+                            ${lEmoji}${escapeHTML(link.name)}
+                        </a>
+                    </div>`;
+            }).join('');
+            contentArea.innerHTML = html;
+        }
+    } 
+    else if (group.type === 'note') {
+        if (!group.notes?.length) {
+            contentArea.innerHTML = `<span class="no-data-text">Right-click to add a note...</span>`;
+        } else {
+            const fragment = document.createDocumentFragment();
+            group.notes.forEach((note, idx) => {
+                const nEmoji = (note.emoji && note.emoji !== "NONE") ? `<span>${note.emoji}</span> ` : '';
+                const item = document.createElement('div');
+                item.className = 'item-wrapper';
+                item.setAttribute('data-index', idx);
+                item.innerHTML = `<div class="note-button" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})">${nEmoji}${escapeHTML(note.title || "Note")}</div>`;
+                item.querySelector('.note-button').onclick = () => showContentDetail(group.id, idx, 'note');
+                fragment.appendChild(item);
+            });
+            contentArea.appendChild(fragment);
+        }
+    } 
+    else if (group.type === 'schedule') {
+        if (!group.schedules?.length) {
+            contentArea.innerHTML = `<span class="no-data-text">Right-click to add a schedule...</span>`;
+        } else {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'schedule-table-wrapper';
+            const table = document.createElement('table');
+            table.className = 'schedule-table';
+            table.innerHTML = `<thead><tr><th style="width:20%">Date</th><th style="width:20%">Day</th><th style="width:30%;text-align:center">Deadline</th><th style="width:30%">Task</th></tr></thead><tbody></tbody>`;
+            
+            const tbody = table.querySelector('tbody');
+            const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+            const now = new Date();
+            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            const todayTime = new Date(todayStr + ' 00:00:00');
+            const fragment = document.createDocumentFragment();
+
+            group.schedules.forEach((sch, idx) => {
+                const row = document.createElement('tr');
+                const startDateObj = new Date(sch.date + ' 00:00:00');
+                const endDateObj = new Date((sch.endDate || sch.date) + ' 00:00:00');
+                let activeDateStr = sch.date;
+                if (todayTime > startDateObj && todayTime <= endDateObj) activeDateStr = todayStr;
+                else if (todayTime > endDateObj) activeDateStr = sch.endDate || sch.date;
+
+                const finalScheduleTime = new Date(`${sch.endDate || sch.date} ${sch.endTime || sch.time || "00:00"}`);
+                row.className = `schedule-row ${sch.important ? 'important' : ''} ${finalScheduleTime < now ? 'past' : ''}`;
+                row.onclick = () => showContentDetail(group.id, idx, 'schedule');
+                row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
+                
+                let displayDate = activeDateStr.split('-').reverse().slice(0,2).join('/');
+                let dayOfWeek = "---";
+                const parsedActiveDate = new Date(activeDateStr.replace(/-/g, '/'));
+                if (!isNaN(parsedActiveDate.getTime())) dayOfWeek = dayLabels[parsedActiveDate.getDay()];
+
+                row.setAttribute('data-start', `${sch.date}T${sch.time || '00:00'}`);
+                row.setAttribute('data-end', `${sch.endDate || sch.date}T${sch.endTime || sch.time || '00:00'}`);
+
+                row.innerHTML = `
+                    <td class="schedule-date">${displayDate}</td>
+                    <td class="schedule-date schedule-time" style="color:#38bdf8;font-weight:600">${dayOfWeek}</td>
+                    <td class="schedule-countdown-cell" style="text-align:center;font-size:11px;font-weight:bold;font-family:monospace">⏳ Calculating...</td>
+                    <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${escapeHTML(sch.title || "")}</td>
+                `;
+                fragment.appendChild(row);
+            });
+            tbody.appendChild(fragment);
+            wrapper.appendChild(table);
+            contentArea.appendChild(wrapper);
+        }
+    }
+
+    contentArea.dataset.rendered = 'true';
 }
 
 function renderDashboard() {
@@ -627,8 +755,7 @@ function renderDashboard() {
         const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
         const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
         const isCollapsed = group.collapsed || false;
-        const mobileLite = typeof isMobileLiteView === 'function' && isMobileLiteView();
-        const shouldLazyRenderContent = mobileLite && isCollapsed;
+        const shouldLazyRenderContent = isCollapsed;
         const safeTitle = escapeHTML(group.title || 'Untitled');
 
         groupCard.innerHTML = `
@@ -660,84 +787,7 @@ function renderDashboard() {
             return;
         }
 
-        if (group.type === 'link') {
-            if (!group.links?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a link...</span>`;
-            else {
-                group.links.forEach((link, idx) => {
-                    const lEmoji = (link.emoji && link.emoji !== "NONE") ? `<span>${link.emoji}</span> ` : '';
-                    contentArea.innerHTML += `
-                        <div class="item-wrapper" data-index="${idx}">
-                            <a href="${escapeHTML(link.url)}" target="_blank" class="link-button" oncontextmenu="openContextMenu(event, 'link', '${group.id}', ${idx})">
-                                ${lEmoji}${escapeHTML(link.name)}
-                            </a>
-                        </div>`;
-                });
-            }
-        } 
-        else if (group.type === 'note') {
-            if (!group.notes?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a note...</span>`;
-            else {
-                group.notes.forEach((note, idx) => {
-                    const nEmoji = (note.emoji && note.emoji !== "NONE") ? `<span>${note.emoji}</span> ` : '';
-                    const item = document.createElement('div');
-                    item.className = 'item-wrapper';
-                    item.setAttribute('data-index', idx);
-                    item.innerHTML = `<div class="note-button" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})">${nEmoji}${escapeHTML(note.title || "Note")}</div>`;
-                    item.querySelector('.note-button').onclick = () => showContentDetail(group.id, idx, 'note');
-                    contentArea.appendChild(item);
-                });
-            }
-        } 
-        else if (group.type === 'schedule') {
-            if (!group.schedules?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a schedule...</span>`;
-            else {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'schedule-table-wrapper';
-                const table = document.createElement('table');
-                table.className = 'schedule-table';
-                table.innerHTML = `<thead><tr><th style="width:20%">Date</th><th style="width:20%">Day</th><th style="width:30%;text-align:center">Deadline</th><th style="width:30%">Task</th></tr></thead><tbody></tbody>`;
-                
-                const tbody = table.querySelector('tbody');
-                const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-                group.schedules.forEach((sch, idx) => {
-                    const row = document.createElement('tr');
-                    const now = new Date();
-                    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-                    const todayTime = new Date(todayStr + ' 00:00:00');
-                    
-                    const startDateObj = new Date(sch.date + ' 00:00:00');
-                    const endDateObj = new Date((sch.endDate || sch.date) + ' 00:00:00');
-                    
-                    let activeDateStr = sch.date;
-                    if (todayTime > startDateObj && todayTime <= endDateObj) activeDateStr = todayStr;
-                    else if (todayTime > endDateObj) activeDateStr = sch.endDate || sch.date;
-
-                    const finalScheduleTime = new Date(`${sch.endDate || sch.date} ${sch.endTime || sch.time || "00:00"}`);
-                    row.className = `schedule-row ${sch.important ? 'important' : ''} ${finalScheduleTime < now ? 'past' : ''}`;
-                    row.onclick = () => showContentDetail(group.id, idx, 'schedule');
-                    row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
-                    
-                    let displayDate = activeDateStr.split('-').reverse().slice(0,2).join('/');
-                    let dayOfWeek = "---";
-                    const parsedActiveDate = new Date(activeDateStr.replace(/-/g, '/'));
-                    if (!isNaN(parsedActiveDate.getTime())) dayOfWeek = dayLabels[parsedActiveDate.getDay()];
-
-                    row.setAttribute('data-start', `${sch.date}T${sch.time || '00:00'}`);
-                    row.setAttribute('data-end', `${sch.endDate || sch.date}T${sch.endTime || sch.time || '00:00'}`);
-
-                    row.innerHTML = `
-                        <td class="schedule-date">${displayDate}</td>
-                        <td class="schedule-date schedule-time" style="color:#38bdf8;font-weight:600">${dayOfWeek}</td>
-                        <td class="schedule-countdown-cell" style="text-align:center;font-size:11px;font-weight:bold;font-family:monospace">⏳ Calculating...</td>
-                        <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${escapeHTML(sch.title || "")}</td>
-                    `;
-                    tbody.appendChild(row);
-                });
-                wrapper.appendChild(table);
-                contentArea.appendChild(wrapper);
-            }
-        }
+        renderGroupContent(group, contentArea);
         container.appendChild(groupCard);
     });
     if (typeof initDragAndDrop === 'function') initDragAndDrop();
@@ -748,13 +798,20 @@ function toggleCollapseGroup(groupId) {
     if (!group) return;
 
     group.collapsed = !group.collapsed;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+    saveData({ render: false });
     
     const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
     if (card) {
         const contentArea = card.querySelector(`.${group.type}s-area`);
         const arrow = card.querySelector(`.arrow-${groupId}`);
-        if (contentArea) contentArea.style.display = group.collapsed ? 'none' : '';
+        if (contentArea) {
+            contentArea.style.display = group.collapsed ? 'none' : '';
+            if (!group.collapsed) {
+                renderGroupContent(group, contentArea);
+                if (typeof initDragAndDrop === 'function') initDragAndDrop();
+                updateScheduleUI();
+            }
+        }
         if (arrow) arrow.style.transform = group.collapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
     }
 }
@@ -1713,6 +1770,7 @@ function initDragAndDrop() {
     }
 
     document.querySelectorAll('.links-area, .notes-area, .schedules-area').forEach(area => {
+        if (area.style.display === 'none' || area.dataset.rendered !== 'true') return;
         const groupId = area.getAttribute('data-group-id');
         const type = area.classList.contains('links-area') ? 'link' : (area.classList.contains('notes-area') ? 'note' : 'schedule');
         if (type === 'schedule') return;
@@ -1898,8 +1956,7 @@ function writeJSONStore(key, value) { localStorage.setItem(key, JSON.stringify(v
 function normalizeText(value = '') { return String(value || '').toLowerCase(); }
 
 function saveDataOnly() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-    if (gapiInited && gisInited && gapi.client.getToken()) syncToGoogleDrive(true);
+    saveData({ render: false, immediate: true });
 }
 
 function addRecentItem(item) {
