@@ -584,6 +584,10 @@ function escapeHTML(value = '') {
     return String(value).replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
 }
 
+function getGroupContentAreaClass(type) {
+    return type === 'kanban' ? 'kanban-area' : `${type}s-area`;
+}
+
 function renderDashboard() {
     const container = getEl('groupsContainer'); 
     if (!container) return;
@@ -630,6 +634,7 @@ function renderDashboard() {
         const mobileLite = typeof isMobileLiteView === 'function' && isMobileLiteView();
         const shouldLazyRenderContent = mobileLite && isCollapsed;
         const safeTitle = escapeHTML(group.title || 'Untitled');
+        const areaClass = getGroupContentAreaClass(group.type);
 
         groupCard.innerHTML = `
             <div class="group-header" onclick="toggleCollapseGroup('${group.id}')">
@@ -642,11 +647,11 @@ function renderDashboard() {
             </div>
             ${lockOverlayHTML}
             <div class="group-content-wrapper">
-                <div class="${group.type}s-area" data-group-id="${group.id}" style="${isCollapsed ? 'display: none;' : ''}"></div>
+                <div class="${areaClass}" data-group-id="${group.id}" style="${isCollapsed ? 'display: none;' : ''}"></div>
             </div>
         `;
 
-        const contentArea = groupCard.querySelector(`.${group.type}s-area`);
+        const contentArea = groupCard.querySelector(`.${areaClass}`);
         if (isLockedCheck) {
             contentArea.innerHTML = `<span class="no-data-text" style="display:flex; justify-content:center; align-items:center; gap:5px;">🔒 Content hidden</span>`;
             container.appendChild(groupCard);
@@ -739,7 +744,9 @@ function renderDashboard() {
             }
         }
         else if (group.type === 'kanban') {
-            renderKanbanBoard(group, contentArea);
+            if (!isCollapsed) {
+                renderKanbanBoard(group, contentArea);
+            }
         }
         container.appendChild(groupCard);
     });
@@ -752,15 +759,12 @@ function toggleCollapseGroup(groupId) {
 
     group.collapsed = !group.collapsed;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-    
-    const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
-    if (card) {
-        const contentArea = card.querySelector(`.${group.type}s-area`);
-        const arrow = card.querySelector(`.arrow-${groupId}`);
-        if (contentArea) contentArea.style.display = group.collapsed ? 'none' : '';
-        if (arrow) arrow.style.transform = group.collapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
-    }
+
+    // Kanban và mobile-lite cần render lại khi mở ra vì lúc thu gọn mình không render nội dung để tránh lag.
+    // Render lại toàn dashboard giúp đồng bộ arrow, placeholder và Sortable/drag-drop.
+    renderDashboard();
 }
+
 
 // ==========================================================================
 // 6. THAO TÁC FORM NGHIỆP VỤ (THÊM / SỬA / XÓA PHẦN TỬ)
