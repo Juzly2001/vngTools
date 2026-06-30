@@ -1024,7 +1024,7 @@ body.light-mode .emoji-search-wrap { background: rgba(0,0,0,0.03); }
 }
 .dashboard-overview {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 14px;
     margin: 0 0 18px;
 }

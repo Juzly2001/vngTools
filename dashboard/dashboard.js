@@ -515,8 +515,11 @@ function getDashboardStats() {
         acc.notes += group.notes?.length || 0;
         acc.schedules += group.schedules?.length || 0;
         acc.todayImportant += (group.schedules || []).filter(isScheduleTodayImportant).length;
+        acc.kanban += Array.isArray(group.kanban)
+        ? group.kanban.length : Array.isArray(group.kanban?.boards) ? group.kanban.boards.length : 0;
+        
         return acc;
-    }, { groups: 0, links: 0, notes: 0, schedules: 0, todayImportant: 0 });
+    }, { groups: 0, links: 0, notes: 0, kanban: 0, schedules: 0, todayImportant: 0 });
 }
 
 function updateDashboardStats() {
@@ -525,6 +528,7 @@ function updateDashboardStats() {
     setText('statGroups', stats.groups);
     setText('statLinks', stats.links);
     setText('statNotes', stats.notes);
+    setText('statKabans', stats.kanban); 
     setText('statTodayImportant', stats.todayImportant);
 }
 
