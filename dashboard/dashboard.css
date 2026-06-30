@@ -4517,6 +4517,7 @@ body.light-mode .schedule-date {
 
     #calendarModal .calendar-cell {
         max-height: 140px !important;
+        min-height: 60px !important;
     }
 }
 
