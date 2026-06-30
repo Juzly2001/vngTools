@@ -64,35 +64,6 @@ let pressTimer;
 const getEl = id => document.getElementById(id);
 const getGroup = id => state.dashboardData.find(g => g.id === id);
 
-// Performance helpers: reduce full re-render, localStorage writes, and Drive sync spam.
-let dashboardRenderRAF = null;
-let saveDataTimer = null;
-let driveSyncTimer = null;
-let dashboardSearchTimer = null;
-
-function scheduleDashboardRender() {
-    if (dashboardRenderRAF) cancelAnimationFrame(dashboardRenderRAF);
-    dashboardRenderRAF = requestAnimationFrame(() => {
-        dashboardRenderRAF = null;
-        renderDashboard();
-    });
-}
-
-function persistDashboardData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-}
-
-function scheduleDriveSync() {
-    if (!(gapiInited && gisInited && gapi.client.getToken())) return;
-    clearTimeout(driveSyncTimer);
-    driveSyncTimer = setTimeout(() => syncToGoogleDrive(true), 800);
-}
-
-function debounceDashboardSearch() {
-    clearTimeout(dashboardSearchTimer);
-    dashboardSearchTimer = setTimeout(() => scheduleDashboardRender(), 160);
-}
-
 // ==========================================================================
 // 2. BACKGROUND CANVAS ENGINE (HIỆU ỨNG VŨ TRỤ / MÂY BAY THỜI GIAN THỰC)
 // ==========================================================================
@@ -302,7 +273,7 @@ window.alert = function(message, title = "⚠️ Notice") {
         alertMsg.innerHTML = message.replace(/\n/g, '<br>');
         const gocBtn = alertModal.querySelector('.btn-primary');
         if (gocBtn) gocBtn.style.display = 'block';
-        alertModal.classList.add('active');
+        openModal('alertModal');
     } else {
         window.alert.__native__(message);
     }
@@ -323,21 +294,21 @@ function customConfirm(message, title = "❓ Confirm action") {
         
         if (confirmTitle) confirmTitle.innerText = title;
         confirmMsg.innerHTML = message.replace(/\n/g, '<br>');
-        confirmModal.classList.add('active');
+        openModal('confirmModal');
         
         confirmBtn.onclick = function() {
-            confirmModal.classList.remove('active');
+            closeModal('confirmModal');
             resolve(true);
         };
         
         cancelBtn.onclick = function() {
-            confirmModal.classList.remove('active');
+            closeModal('confirmModal');
             resolve(false);
         };
     });
 }
 
-const openModal = id => getEl(id)?.classList.add('active');
+let openModal = id => getEl(id)?.classList.add('active');
 function closeModal(id) { 
     const modal = getEl(id);
     if (modal) {
@@ -352,19 +323,13 @@ function closeModal(id) {
 // ==========================================================================
 // 5. QUẢN LÝ DỮ LIỆU & CORE DASHBOARD RENDERING SYSTEM
 // ==========================================================================
-function saveData(options = {}) {
-    const { render = true, immediate = false } = options;
-
-    clearTimeout(saveDataTimer);
-    if (immediate) {
-        persistDashboardData();
-    } else {
-        saveDataTimer = setTimeout(persistDashboardData, 250);
-    }
-
-    if (render) scheduleDashboardRender();
+function saveData() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+    renderDashboard();
     updateScheduleUI();
-    scheduleDriveSync();
+    if (gapiInited && gisInited && gapi.client.getToken()) {
+        syncToGoogleDrive(true); 
+    }
 }
 
 const linkify = text => text ? text.replace(/(https?:\/\/[^\s]+)/g, url => `<a href="${url}" target="_blank">${url}</a>`) : "";
@@ -584,7 +549,8 @@ function clearDashboardSearch() {
 
 function toggleAllGroups(shouldOpen = true) {
     state.dashboardData.forEach(group => group.collapsed = !shouldOpen);
-    saveData({ render: true });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+    renderDashboard();
 }
 
 function toggleFavoriteGroup(groupId, event) {
@@ -616,100 +582,6 @@ function toggleAutoSortMode() {
 
 function escapeHTML(value = '') {
     return String(value).replace(/[&<>'"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[ch]));
-}
-
-function renderGroupContent(group, contentArea) {
-    if (!group || !contentArea) return;
-    if (contentArea.dataset.rendered === 'true') return;
-
-    contentArea.innerHTML = '';
-
-    if (group.type === 'link') {
-        if (!group.links?.length) {
-            contentArea.innerHTML = `<span class="no-data-text">Right-click to add a link...</span>`;
-        } else {
-            const html = group.links.map((link, idx) => {
-                const lEmoji = (link.emoji && link.emoji !== "NONE") ? `<span>${link.emoji}</span> ` : '';
-                return `
-                    <div class="item-wrapper" data-index="${idx}">
-                        <a href="${escapeHTML(link.url)}" target="_blank" class="link-button" oncontextmenu="openContextMenu(event, 'link', '${group.id}', ${idx})">
-                            ${lEmoji}${escapeHTML(link.name)}
-                        </a>
-                    </div>`;
-            }).join('');
-            contentArea.innerHTML = html;
-        }
-    } 
-    else if (group.type === 'note') {
-        if (!group.notes?.length) {
-            contentArea.innerHTML = `<span class="no-data-text">Right-click to add a note...</span>`;
-        } else {
-            const fragment = document.createDocumentFragment();
-            group.notes.forEach((note, idx) => {
-                const nEmoji = (note.emoji && note.emoji !== "NONE") ? `<span>${note.emoji}</span> ` : '';
-                const item = document.createElement('div');
-                item.className = 'item-wrapper';
-                item.setAttribute('data-index', idx);
-                item.innerHTML = `<div class="note-button" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})">${nEmoji}${escapeHTML(note.title || "Note")}</div>`;
-                item.querySelector('.note-button').onclick = () => showContentDetail(group.id, idx, 'note');
-                fragment.appendChild(item);
-            });
-            contentArea.appendChild(fragment);
-        }
-    } 
-    else if (group.type === 'schedule') {
-        if (!group.schedules?.length) {
-            contentArea.innerHTML = `<span class="no-data-text">Right-click to add a schedule...</span>`;
-        } else {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'schedule-table-wrapper';
-            const table = document.createElement('table');
-            table.className = 'schedule-table';
-            table.innerHTML = `<thead><tr><th style="width:20%">Date</th><th style="width:20%">Day</th><th style="width:30%;text-align:center">Deadline</th><th style="width:30%">Task</th></tr></thead><tbody></tbody>`;
-            
-            const tbody = table.querySelector('tbody');
-            const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-            const now = new Date();
-            const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-            const todayTime = new Date(todayStr + ' 00:00:00');
-            const fragment = document.createDocumentFragment();
-
-            group.schedules.forEach((sch, idx) => {
-                const row = document.createElement('tr');
-                const startDateObj = new Date(sch.date + ' 00:00:00');
-                const endDateObj = new Date((sch.endDate || sch.date) + ' 00:00:00');
-                let activeDateStr = sch.date;
-                if (todayTime > startDateObj && todayTime <= endDateObj) activeDateStr = todayStr;
-                else if (todayTime > endDateObj) activeDateStr = sch.endDate || sch.date;
-
-                const finalScheduleTime = new Date(`${sch.endDate || sch.date} ${sch.endTime || sch.time || "00:00"}`);
-                row.className = `schedule-row ${sch.important ? 'important' : ''} ${finalScheduleTime < now ? 'past' : ''}`;
-                row.onclick = () => showContentDetail(group.id, idx, 'schedule');
-                row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
-                
-                let displayDate = activeDateStr.split('-').reverse().slice(0,2).join('/');
-                let dayOfWeek = "---";
-                const parsedActiveDate = new Date(activeDateStr.replace(/-/g, '/'));
-                if (!isNaN(parsedActiveDate.getTime())) dayOfWeek = dayLabels[parsedActiveDate.getDay()];
-
-                row.setAttribute('data-start', `${sch.date}T${sch.time || '00:00'}`);
-                row.setAttribute('data-end', `${sch.endDate || sch.date}T${sch.endTime || sch.time || '00:00'}`);
-
-                row.innerHTML = `
-                    <td class="schedule-date">${displayDate}</td>
-                    <td class="schedule-date schedule-time" style="color:#38bdf8;font-weight:600">${dayOfWeek}</td>
-                    <td class="schedule-countdown-cell" style="text-align:center;font-size:11px;font-weight:bold;font-family:monospace">⏳ Calculating...</td>
-                    <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${escapeHTML(sch.title || "")}</td>
-                `;
-                fragment.appendChild(row);
-            });
-            tbody.appendChild(fragment);
-            wrapper.appendChild(table);
-            contentArea.appendChild(wrapper);
-        }
-    }
-
-    contentArea.dataset.rendered = 'true';
 }
 
 function renderDashboard() {
@@ -753,9 +625,10 @@ function renderDashboard() {
         groupCard.oncontextmenu = (e) => openContextMenu(e, `group-${group.type}`, group.id);
 
         const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
-        const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule' };
+        const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule', kanban: 'Kanban' };
         const isCollapsed = group.collapsed || false;
-        const shouldLazyRenderContent = isCollapsed;
+        const mobileLite = typeof isMobileLiteView === 'function' && isMobileLiteView();
+        const shouldLazyRenderContent = mobileLite && isCollapsed;
         const safeTitle = escapeHTML(group.title || 'Untitled');
 
         groupCard.innerHTML = `
@@ -781,13 +654,93 @@ function renderDashboard() {
         }
 
         if (shouldLazyRenderContent) {
-            const count = (group.links?.length || 0) + (group.notes?.length || 0) + (group.schedules?.length || 0);
+            const count = (group.links?.length || 0) + (group.notes?.length || 0) + (group.schedules?.length || 0) + getKanbanCardCount(group);
             contentArea.innerHTML = `<span class="no-data-text mobile-lite-placeholder">📱 Hidden ${count} items for better performance. Expand the group to load content.</span>`;
             container.appendChild(groupCard);
             return;
         }
 
-        renderGroupContent(group, contentArea);
+        if (group.type === 'link') {
+            if (!group.links?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a link...</span>`;
+            else {
+                group.links.forEach((link, idx) => {
+                    const lEmoji = (link.emoji && link.emoji !== "NONE") ? `<span>${link.emoji}</span> ` : '';
+                    contentArea.innerHTML += `
+                        <div class="item-wrapper" data-index="${idx}">
+                            <a href="${escapeHTML(link.url)}" target="_blank" class="link-button" oncontextmenu="openContextMenu(event, 'link', '${group.id}', ${idx})">
+                                ${lEmoji}${escapeHTML(link.name)}
+                            </a>
+                        </div>`;
+                });
+            }
+        } 
+        else if (group.type === 'note') {
+            if (!group.notes?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a note...</span>`;
+            else {
+                group.notes.forEach((note, idx) => {
+                    const nEmoji = (note.emoji && note.emoji !== "NONE") ? `<span>${note.emoji}</span> ` : '';
+                    const item = document.createElement('div');
+                    item.className = 'item-wrapper';
+                    item.setAttribute('data-index', idx);
+                    item.innerHTML = `<div class="note-button" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})">${nEmoji}${escapeHTML(note.title || "Note")}</div>`;
+                    item.querySelector('.note-button').onclick = () => showContentDetail(group.id, idx, 'note');
+                    contentArea.appendChild(item);
+                });
+            }
+        } 
+        else if (group.type === 'schedule') {
+            if (!group.schedules?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a schedule...</span>`;
+            else {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'schedule-table-wrapper';
+                const table = document.createElement('table');
+                table.className = 'schedule-table';
+                table.innerHTML = `<thead><tr><th style="width:20%">Date</th><th style="width:20%">Day</th><th style="width:30%;text-align:center">Deadline</th><th style="width:30%">Task</th></tr></thead><tbody></tbody>`;
+                
+                const tbody = table.querySelector('tbody');
+                const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+                group.schedules.forEach((sch, idx) => {
+                    const row = document.createElement('tr');
+                    const now = new Date();
+                    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                    const todayTime = new Date(todayStr + ' 00:00:00');
+                    
+                    const startDateObj = new Date(sch.date + ' 00:00:00');
+                    const endDateObj = new Date((sch.endDate || sch.date) + ' 00:00:00');
+                    
+                    let activeDateStr = sch.date;
+                    if (todayTime > startDateObj && todayTime <= endDateObj) activeDateStr = todayStr;
+                    else if (todayTime > endDateObj) activeDateStr = sch.endDate || sch.date;
+
+                    const finalScheduleTime = new Date(`${sch.endDate || sch.date} ${sch.endTime || sch.time || "00:00"}`);
+                    row.className = `schedule-row ${sch.important ? 'important' : ''} ${finalScheduleTime < now ? 'past' : ''}`;
+                    row.onclick = () => showContentDetail(group.id, idx, 'schedule');
+                    row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
+                    
+                    let displayDate = activeDateStr.split('-').reverse().slice(0,2).join('/');
+                    let dayOfWeek = "---";
+                    const parsedActiveDate = new Date(activeDateStr.replace(/-/g, '/'));
+                    if (!isNaN(parsedActiveDate.getTime())) dayOfWeek = dayLabels[parsedActiveDate.getDay()];
+
+                    row.setAttribute('data-start', `${sch.date}T${sch.time || '00:00'}`);
+                    row.setAttribute('data-end', `${sch.endDate || sch.date}T${sch.endTime || sch.time || '00:00'}`);
+
+                    row.innerHTML = `
+                        <td class="schedule-date">${displayDate}</td>
+                        <td class="schedule-date schedule-time" style="color:#38bdf8;font-weight:600">${dayOfWeek}</td>
+                        <td class="schedule-countdown-cell" style="text-align:center;font-size:11px;font-weight:bold;font-family:monospace">⏳ Calculating...</td>
+                        <td class="schedule-name">${sch.important ? '⚠️ ' : ''}${escapeHTML(sch.title || "")}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                wrapper.appendChild(table);
+                contentArea.appendChild(wrapper);
+            }
+        }
+        else if (group.type === 'kanban') {
+            renderKanbanBoard(group, contentArea);
+        }
         container.appendChild(groupCard);
     });
     if (typeof initDragAndDrop === 'function') initDragAndDrop();
@@ -798,20 +751,13 @@ function toggleCollapseGroup(groupId) {
     if (!group) return;
 
     group.collapsed = !group.collapsed;
-    saveData({ render: false });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
     
     const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
     if (card) {
         const contentArea = card.querySelector(`.${group.type}s-area`);
         const arrow = card.querySelector(`.arrow-${groupId}`);
-        if (contentArea) {
-            contentArea.style.display = group.collapsed ? 'none' : '';
-            if (!group.collapsed) {
-                renderGroupContent(group, contentArea);
-                if (typeof initDragAndDrop === 'function') initDragAndDrop();
-                updateScheduleUI();
-            }
-        }
+        if (contentArea) contentArea.style.display = group.collapsed ? 'none' : '';
         if (arrow) arrow.style.transform = group.collapsed ? 'rotate(-90deg)' : 'rotate(0deg)';
     }
 }
@@ -834,7 +780,7 @@ function openGroupModal(editGroupId = false, defaultType = 'link') {
         const tagInput = getEl('groupTagsInput'); if (tagInput) tagInput.value = tagsToString(group?.tags);
         buildEmojiPicker('groupEmojiGrid', group ? (group.emoji || "NONE") : "NONE");
     } else {
-        const typeTexts = { link: "Link Group", note: "Note Group", schedule: "Schedule Group" };
+        const typeTexts = { link: "Link Group", note: "Note Group", schedule: "Schedule Group", kanban: "Kanban Group" };
         if (titleEl) titleEl.innerText = `📌 Create ${typeTexts[defaultType] || 'Group'} New`;
         if (nameInput) nameInput.value = '';
         const tagInput = getEl('groupTagsInput'); if (tagInput) tagInput.value = '';
@@ -852,10 +798,13 @@ function submitGroupForm() {
         const group = getGroup(state.activeGroupId);
         if (group) { group.title = name; group.emoji = state.selectedEmoji; group.tags = tags; }
     } else {
-        state.dashboardData.push({ 
-            id: 'g_' + Date.now(), title: name, emoji: state.selectedEmoji, type: state.currentGroupType, tags,
-            [`${state.currentGroupType}s`]: []
-        });
+        const newGroup = { id: 'g_' + Date.now(), title: name, emoji: state.selectedEmoji, type: state.currentGroupType, tags };
+        if (state.currentGroupType === 'kanban') {
+            newGroup.kanban = createDefaultKanbanBoard();
+        } else {
+            newGroup[`${state.currentGroupType}s`] = [];
+        }
+        state.dashboardData.push(newGroup);
     }
     saveData(); 
     closeModal('groupModal');
@@ -1739,9 +1688,11 @@ function openContextMenu(e, targetType, groupId, index = null) {
         'group-link': `<div class="context-menu-item" onclick="openLinkModal('${groupId}')">➕ Add link button</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="toggleFavoriteGroup('${groupId}', event)">⭐ Pin / unpin group</div><div class="context-menu-item" onclick="openGroupModal('${groupId}','link')">📝 Edit group name</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Delete entire group</div>${lockMenuHTML}`,
         'group-note': `<div class="context-menu-item" onclick="openNoteModal('${groupId}')">➕ Add note button</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="toggleFavoriteGroup('${groupId}', event)">⭐ Pin / unpin group</div><div class="context-menu-item" onclick="openGroupModal('${groupId}','note')">📝 Edit group name</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Delete entire group</div>${lockMenuHTML}`,
         'group-schedule': `<div class="context-menu-item" onclick="openScheduleModal('${groupId}')">➕ Add schedule milestone</div><div class="context-menu-item" onclick="triggerExcelImport('${groupId}')">📥 Import from Excel</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="toggleFavoriteGroup('${groupId}', event)">⭐ Pin / unpin group</div><div class="context-menu-item" onclick="openGroupModal('${groupId}','schedule')">📝 Edit group name</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Delete entire group</div>${lockMenuHTML}`,
+        'group-kanban': `<div class="context-menu-item" onclick="addKanbanBoard('${groupId}')">➕ Add kanban board</div><div class="context-menu-divider"></div><div class="context-menu-item" onclick="toggleFavoriteGroup('${groupId}', event)">⭐ Pin / unpin group</div><div class="context-menu-item" onclick="openGroupModal('${groupId}','kanban')">📝 Edit group name</div><div class="context-menu-item delete" onclick="triggerDelete('Group')">❌ Delete entire group</div>${lockMenuHTML}`,
         'link': `<div class="context-menu-item" onclick="duplicateItem('link','${groupId}',${index})">✨ Duplicate button</div>${buildMoveSubMenuHTML('link',groupId,index)}<div class="context-menu-item" onclick="openLinkModal('${groupId}',${index})">📝 Edit button</div><div class="context-menu-item delete" onclick="triggerDelete('Link')">❌ Delete this button</div>`,
         'note': `<div class="context-menu-item" onclick="duplicateItem('note','${groupId}',${index})">✨ Duplicate note</div>${buildMoveSubMenuHTML('note',groupId,index)}<div class="context-menu-item" onclick="openNoteModal('${groupId}',${index})">📝 Edit note</div><div class="context-menu-item delete" onclick="triggerDelete('Note')">❌ Delete this note</div>`,
-        'schedule': `<div class="context-menu-item" onclick="duplicateItem('schedule','${groupId}',${index})">✨ Duplicate milestone</div>${buildMoveSubMenuHTML('schedule',groupId,index)}<div class="context-menu-item" onclick="openScheduleModal('${groupId}',${index})">📝 Edit milestone</div><div class="context-menu-item delete" onclick="triggerDelete('Schedule')">❌ Delete this schedule milestone</div>`
+        'schedule': `<div class="context-menu-item" onclick="duplicateItem('schedule','${groupId}',${index})">✨ Duplicate milestone</div>${buildMoveSubMenuHTML('schedule',groupId,index)}<div class="context-menu-item" onclick="openScheduleModal('${groupId}',${index})">📝 Edit milestone</div><div class="context-menu-item delete" onclick="triggerDelete('Schedule')">❌ Delete this schedule milestone</div>`,
+        'kanban-card': `<div class="context-menu-item" onclick="duplicateKanbanCard('${groupId}','${index}')">✨ Duplicate card</div><div class="context-menu-item" onclick="openKanbanCardModal('${groupId}',null,'${index}')">📝 Edit card</div><div class="context-menu-item delete" onclick="deleteKanbanCard('${groupId}','${index}')">❌ Delete this card</div>`
     };
 
     if (actions[targetType]) {
@@ -1770,7 +1721,6 @@ function initDragAndDrop() {
     }
 
     document.querySelectorAll('.links-area, .notes-area, .schedules-area').forEach(area => {
-        if (area.style.display === 'none' || area.dataset.rendered !== 'true') return;
         const groupId = area.getAttribute('data-group-id');
         const type = area.classList.contains('links-area') ? 'link' : (area.classList.contains('notes-area') ? 'note' : 'schedule');
         if (type === 'schedule') return;
@@ -1787,6 +1737,649 @@ function initDragAndDrop() {
         });
     });
 }
+
+
+// ========================================================================== 
+// KANBAN FOLDER MODULE - chạy tốt trên GitHub Pages, không cần backend
+// ========================================================================== 
+let kanbanModalState = { groupId: null, columnId: null, cardId: null };
+
+function createDefaultKanbanBoard() {
+    return {
+        columns: [
+            { id: 'todo', title: '📋 Todo', cards: [] },
+            { id: 'doing', title: '⚙️ Doing', cards: [] },
+            { id: 'review', title: '👀 Review', cards: [] },
+            { id: 'done', title: '✅ Done', cards: [] }
+        ]
+    };
+}
+
+function normalizeKanbanGroup(group) {
+    if (!group) return createDefaultKanbanBoard();
+    if (!group.kanban || !Array.isArray(group.kanban.columns)) group.kanban = createDefaultKanbanBoard();
+    group.kanban.columns.forEach((col, colIndex) => {
+        if (!col.id) col.id = `col_${Date.now()}_${colIndex}`;
+        if (!col.title) col.title = `Column ${colIndex + 1}`;
+        if (!Array.isArray(col.cards)) col.cards = [];
+        col.cards.forEach((card, cardIndex) => {
+            if (!card.id) card.id = `card_${Date.now()}_${colIndex}_${cardIndex}`;
+            if (!card.priority) card.priority = 'normal';
+        });
+    });
+    return group.kanban;
+}
+
+function getKanbanCardCount(group) {
+    if (!group || group.type !== 'kanban') return 0;
+    const board = normalizeKanbanGroup(group);
+    return board.columns.reduce((sum, col) => sum + (col.cards?.length || 0), 0);
+}
+
+function getKanbanColumn(group, columnId) {
+    const board = normalizeKanbanGroup(group);
+    return board.columns.find(col => col.id === columnId) || board.columns[0];
+}
+
+function findKanbanCard(group, cardId) {
+    const board = normalizeKanbanGroup(group);
+    for (const col of board.columns) {
+        const index = col.cards.findIndex(card => card.id === cardId);
+        if (index >= 0) return { column: col, index, card: col.cards[index] };
+    }
+    return null;
+}
+
+function renderKanbanBoard(group, contentArea) {
+    const board = normalizeKanbanGroup(group);
+    if (!board.columns.length) board.columns = createDefaultKanbanBoard().columns;
+
+    contentArea.innerHTML = `
+        <div class="kanban-toolbar">
+            <button class="btn-primary kanban-mini-btn" onclick="event.stopPropagation();openKanbanCardModal('${group.id}')">➕ Card</button>
+            <button class="btn-secondary kanban-mini-btn" onclick="event.stopPropagation();addKanbanColumn('${group.id}')">➕ Column</button>
+            <span class="kanban-count">${getKanbanCardCount(group)} cards</span>
+        </div>
+        <div class="kanban-board" data-group-id="${group.id}">
+            ${board.columns.map(col => `
+                <section class="kanban-column" data-column-id="${col.id}">
+                    <div class="kanban-column-head">
+                        <strong>${escapeHTML(col.title)}</strong>
+                        <span>${col.cards.length}</span>
+                    </div>
+                    <div class="kanban-column-actions">
+                        <button onclick="event.stopPropagation();openKanbanCardModal('${group.id}','${col.id}')">＋ Card</button>
+                        <button onclick="event.stopPropagation();renameKanbanColumn('${group.id}','${col.id}')">Edit</button>
+                        <button onclick="event.stopPropagation();deleteKanbanColumn('${group.id}','${col.id}')">Delete</button>
+                    </div>
+                    <div class="kanban-card-list" data-group-id="${group.id}" data-column-id="${col.id}">
+                        ${col.cards.map(card => renderKanbanCardHTML(group.id, card)).join('')}
+                    </div>
+                </section>
+            `).join('')}
+        </div>
+    `;
+}
+
+function renderKanbanCardHTML(groupId, card) {
+    const priority = card.priority || 'normal';
+    const priorityText = priority === 'urgent' ? '🔴 Urgent' : (priority === 'important' ? '🟠 Important' : '🟢 Normal');
+    const deadlineHTML = card.deadline ? `<span>📅 ${escapeHTML(card.deadline.split('-').reverse().join('/'))}</span>` : '';
+    return `
+        <article class="kanban-card priority-${priority}" data-card-id="${card.id}" onclick="openKanbanCardModal('${groupId}',null,'${card.id}')" oncontextmenu="openContextMenu(event, 'kanban-card', '${groupId}', '${card.id}')">
+            <div class="kanban-card-title">${escapeHTML(card.title || 'Untitled card')}</div>
+            ${card.content ? `<div class="kanban-card-desc">${escapeHTML(card.content).slice(0, 120)}</div>` : ''}
+            <div class="kanban-card-meta"><span>${priorityText}</span>${deadlineHTML}</div>
+        </article>
+    `;
+}
+
+function openKanbanCardModal(groupId, columnId = null, cardId = null) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = normalizeKanbanGroup(group);
+    const found = cardId ? findKanbanCard(group, cardId) : null;
+    const firstColumn = board.columns[0];
+
+    kanbanModalState = {
+        groupId,
+        columnId: found?.column?.id || columnId || firstColumn?.id,
+        cardId: found?.card?.id || null
+    };
+
+    getEl('kanbanCardModalTitle').innerText = found ? '📝 Edit Kanban Card' : '➕ Add Kanban Card';
+    getEl('kanbanCardTitleInput').value = found?.card?.title || '';
+    getEl('kanbanCardPriorityInput').value = found?.card?.priority || 'normal';
+    getEl('kanbanCardDeadlineInput').value = found?.card?.deadline || '';
+    getEl('kanbanCardContentInput').value = found?.card?.content || '';
+    openModal('kanbanCardModal');
+}
+
+function submitKanbanCardForm() {
+    const group = getGroup(kanbanModalState.groupId);
+    if (!group) return;
+    const title = getEl('kanbanCardTitleInput')?.value.trim();
+    if (!title) return;
+
+    const data = {
+        id: kanbanModalState.cardId || `card_${Date.now()}`,
+        title,
+        priority: getEl('kanbanCardPriorityInput')?.value || 'normal',
+        deadline: getEl('kanbanCardDeadlineInput')?.value || '',
+        content: getEl('kanbanCardContentInput')?.value || ''
+    };
+
+    if (kanbanModalState.cardId) {
+        const found = findKanbanCard(group, kanbanModalState.cardId);
+        if (found) found.column.cards[found.index] = data;
+    } else {
+        const column = getKanbanColumn(group, kanbanModalState.columnId);
+        column.cards.push(data);
+    }
+    closeModal('kanbanCardModal');
+    saveData();
+}
+
+function duplicateKanbanCard(groupId, cardId) {
+    const group = getGroup(groupId);
+    const found = findKanbanCard(group, cardId);
+    if (!found) return;
+    const copy = JSON.parse(JSON.stringify(found.card));
+    copy.id = `card_${Date.now()}`;
+    copy.title = `${copy.title || 'Card'} (Copy)`;
+    found.column.cards.splice(found.index + 1, 0, copy);
+    saveData();
+}
+
+function deleteKanbanCard(groupId, cardId) {
+    const group = getGroup(groupId);
+    const found = findKanbanCard(group, cardId);
+    if (!found) return;
+    customConfirm(`Delete card "${escapeHTML(found.card.title || 'Untitled')}"?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        found.column.cards.splice(found.index, 1);
+        saveData();
+    });
+}
+
+function addKanbanColumn(groupId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const title = window.prompt('Column name:', 'New Column');
+    if (!title || !title.trim()) return;
+    normalizeKanbanGroup(group).columns.push({ id: `col_${Date.now()}`, title: title.trim(), cards: [] });
+    saveData();
+}
+
+function renameKanbanColumn(groupId, columnId) {
+    const group = getGroup(groupId);
+    const col = getKanbanColumn(group, columnId);
+    if (!col) return;
+    const title = window.prompt('Column name:', col.title);
+    if (!title || !title.trim()) return;
+    col.title = title.trim();
+    saveData();
+}
+
+function deleteKanbanColumn(groupId, columnId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = normalizeKanbanGroup(group);
+    const col = board.columns.find(c => c.id === columnId);
+    if (!col) return;
+    if (board.columns.length <= 1) return alert('Kanban must have at least one column.');
+    customConfirm(`Delete column "${escapeHTML(col.title)}" and ${col.cards.length} cards inside?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        board.columns = board.columns.filter(c => c.id !== columnId);
+        saveData();
+    });
+}
+
+function initKanbanDragAndDrop() {
+    if (typeof Sortable === 'undefined') return;
+    document.querySelectorAll('.kanban-card-list').forEach(list => {
+        if (Sortable.get(list)) Sortable.get(list).destroy();
+        Sortable.create(list, {
+            group: 'dashboard-kanban-cards',
+            animation: 150,
+            ghostClass: 'sortable-ghost-link',
+            delay: window.innerWidth <= 768 ? 250 : 0,
+            delayOnTouchOnly: true,
+            onEnd: event => {
+                const fromGroup = getGroup(event.from.dataset.groupId);
+                const toGroup = getGroup(event.to.dataset.groupId);
+                if (!fromGroup || !toGroup) return;
+                const fromColumn = getKanbanColumn(fromGroup, event.from.dataset.columnId);
+                const toColumn = getKanbanColumn(toGroup, event.to.dataset.columnId);
+                const [moved] = fromColumn.cards.splice(event.oldIndex, 1);
+                if (!moved) return;
+                toColumn.cards.splice(event.newIndex, 0, moved);
+                saveData();
+            }
+        });
+    });
+}
+
+const __kanbanInitDragAndDrop = initDragAndDrop;
+initDragAndDrop = function() {
+    __kanbanInitDragAndDrop();
+    initKanbanDragAndDrop();
+};
+
+
+// ========================================================================== 
+// KANBAN WORKSPACE UPGRADE - fullscreen modal + multiple boards per folder
+// ========================================================================== 
+const KANBAN_LAYOUT_KEY = 'dashboardKanbanLayoutMode';
+let kanbanWorkspaceState = { groupId: null, boardId: null };
+let kanbanLayoutMode = localStorage.getItem(KANBAN_LAYOUT_KEY) || 'column';
+let kanbanCardEditState = { groupId: null, boardId: null, columnId: null, cardId: null };
+
+function createDefaultKanbanBoard(title = 'Main Board') {
+    return {
+        id: `board_${Date.now()}_${Math.random().toString(16).slice(2, 7)}`,
+        title,
+        columns: [
+            { id: 'todo', title: '📋 Todo', cards: [] },
+            { id: 'doing', title: '⚙️ Doing', cards: [] },
+            { id: 'review', title: '👀 Review', cards: [] },
+            { id: 'done', title: '✅ Done', cards: [] }
+        ]
+    };
+}
+
+function createDefaultKanbanWorkspace() {
+    return { boards: [createDefaultKanbanBoard('Main Board')] };
+}
+
+function normalizeKanbanGroup(group) {
+    if (!group) return createDefaultKanbanWorkspace();
+    if (!group.kanban) group.kanban = createDefaultKanbanWorkspace();
+
+    // Convert old single-board structure { columns: [...] } to workspace { boards: [...] }
+    if (Array.isArray(group.kanban.columns)) {
+        group.kanban = {
+            boards: [{
+                id: group.kanban.id || `board_${Date.now()}`,
+                title: group.kanban.title || 'Main Board',
+                columns: group.kanban.columns
+            }]
+        };
+    }
+
+    if (!Array.isArray(group.kanban.boards) || !group.kanban.boards.length) {
+        group.kanban.boards = [createDefaultKanbanBoard('Main Board')];
+    }
+
+    group.kanban.boards.forEach((board, boardIndex) => {
+        if (!board.id) board.id = `board_${Date.now()}_${boardIndex}`;
+        if (!board.title) board.title = `Board ${boardIndex + 1}`;
+        if (!Array.isArray(board.columns) || !board.columns.length) board.columns = createDefaultKanbanBoard().columns;
+        board.columns.forEach((col, colIndex) => {
+            if (!col.id) col.id = `col_${Date.now()}_${boardIndex}_${colIndex}`;
+            if (!col.title) col.title = `Column ${colIndex + 1}`;
+            if (!Array.isArray(col.cards)) col.cards = [];
+            col.cards.forEach((card, cardIndex) => {
+                if (!card.id) card.id = `card_${Date.now()}_${boardIndex}_${colIndex}_${cardIndex}`;
+                if (!card.priority) card.priority = 'normal';
+                if (!card.title) card.title = 'Untitled card';
+            });
+        });
+    });
+    return group.kanban;
+}
+
+function getKanbanBoard(group, boardId = null) {
+    const workspace = normalizeKanbanGroup(group);
+    return workspace.boards.find(board => board.id === boardId) || workspace.boards[0];
+}
+
+function getKanbanCardCount(group, boardId = null) {
+    if (!group || group.type !== 'kanban') return 0;
+    const workspace = normalizeKanbanGroup(group);
+    const boards = boardId ? [getKanbanBoard(group, boardId)] : workspace.boards;
+    return boards.reduce((sum, board) => sum + board.columns.reduce((s, col) => s + (col.cards?.length || 0), 0), 0);
+}
+
+function getKanbanColumn(group, columnId, boardId = null) {
+    const board = getKanbanBoard(group, boardId || kanbanWorkspaceState.boardId);
+    return board.columns.find(col => col.id === columnId) || board.columns[0];
+}
+
+function findKanbanCard(group, cardId, boardId = null) {
+    const workspace = normalizeKanbanGroup(group);
+    const boards = boardId ? [getKanbanBoard(group, boardId)] : workspace.boards;
+    for (const board of boards) {
+        for (const col of board.columns) {
+            const index = col.cards.findIndex(card => card.id === cardId);
+            if (index >= 0) return { board, column: col, index, card: col.cards[index] };
+        }
+    }
+    return null;
+}
+
+function renderKanbanBoard(group, contentArea) {
+    const workspace = normalizeKanbanGroup(group);
+    const totalCards = getKanbanCardCount(group);
+    const boardStats = workspace.boards.map(board => ({
+        title: board.title,
+        cards: getKanbanCardCount(group, board.id),
+        columns: board.columns.length
+    }));
+
+    contentArea.innerHTML = `
+        <div class="kanban-folder-summary" onclick="event.stopPropagation();openKanbanWorkspace('${group.id}')">
+            <div class="kanban-summary-top">
+                <div>
+                    <strong>📌 Kanban Workspace</strong>
+                    <small>${workspace.boards.length} boards · ${totalCards} cards</small>
+                </div>
+                <button class="btn-primary kanban-open-btn" onclick="event.stopPropagation();openKanbanWorkspace('${group.id}')">Open Board</button>
+            </div>
+            <div class="kanban-summary-grid">
+                ${boardStats.slice(0, 6).map(stat => `
+                    <div class="kanban-summary-board">
+                        <span>${escapeHTML(stat.title)}</span>
+                        <b>${stat.cards}</b>
+                        <small>${stat.columns} columns</small>
+                    </div>
+                `).join('')}
+                ${boardStats.length > 6 ? `<div class="kanban-summary-board more"><span>More</span><b>+${boardStats.length - 6}</b><small>boards</small></div>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function ensureKanbanWorkspaceModal() {
+    if (getEl('kanbanWorkspaceModal')) return;
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay kanban-workspace-overlay';
+    modal.id = 'kanbanWorkspaceModal';
+    modal.innerHTML = `
+        <div class="kanban-workspace-box">
+            <div class="kanban-workspace-head">
+                <div>
+                    <h3 id="kanbanWorkspaceTitle">📌 Kanban Workspace</h3>
+                    <p id="kanbanWorkspaceSubtitle">Boards, columns and cards</p>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('kanbanWorkspaceModal')">✕</button>
+            </div>
+            <div class="kanban-workspace-actions">
+                <button class="btn-primary" onclick="addKanbanBoard()">➕ Board</button>
+                <button class="btn-secondary" onclick="renameKanbanBoard()">📝 Rename board</button>
+                <button class="btn-secondary" onclick="addKanbanColumn()">➕ Column</button>
+                <button class="btn-secondary" id="kanbanLayoutToggleBtn" onclick="toggleKanbanLayoutMode()">⇄ Row view</button>
+                <button class="btn-primary" onclick="openKanbanCardModal()">➕ Card</button>
+                <input id="kanbanWorkspaceSearch" type="search" placeholder="Search cards..." oninput="renderKanbanWorkspaceBody()">
+            </div>
+            <div class="kanban-workspace-layout">
+                <aside id="kanbanBoardList" class="kanban-board-list"></aside>
+                <main id="kanbanWorkspaceBody" class="kanban-workspace-body"></main>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function openKanbanWorkspace(groupId, boardId = null) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const workspace = normalizeKanbanGroup(group);
+    kanbanWorkspaceState = { groupId, boardId: boardId || kanbanWorkspaceState.boardId || workspace.boards[0].id };
+    if (!workspace.boards.some(board => board.id === kanbanWorkspaceState.boardId)) kanbanWorkspaceState.boardId = workspace.boards[0].id;
+    ensureKanbanWorkspaceModal();
+    getEl('kanbanWorkspaceTitle').textContent = `${group.emoji && group.emoji !== 'NONE' ? group.emoji + ' ' : '📌 '}${group.title || 'Kanban Workspace'}`;
+    renderKanbanWorkspaceBody();
+    openModal('kanbanWorkspaceModal');
+}
+
+
+function toggleKanbanLayoutMode() {
+    kanbanLayoutMode = kanbanLayoutMode === 'row' ? 'column' : 'row';
+    localStorage.setItem(KANBAN_LAYOUT_KEY, kanbanLayoutMode);
+    renderKanbanWorkspaceBody();
+}
+
+function renderKanbanWorkspaceBody() {
+    const group = getGroup(kanbanWorkspaceState.groupId);
+    if (!group) return;
+    const workspace = normalizeKanbanGroup(group);
+    const activeBoard = getKanbanBoard(group, kanbanWorkspaceState.boardId);
+    kanbanWorkspaceState.boardId = activeBoard.id;
+    const keyword = (getEl('kanbanWorkspaceSearch')?.value || '').trim().toLowerCase();
+    const layoutMode = kanbanLayoutMode === 'row' ? 'row' : 'column';
+    const layoutBtn = getEl('kanbanLayoutToggleBtn');
+    if (layoutBtn) layoutBtn.textContent = layoutMode === 'row' ? '▦ Column view' : '⇄ Row view';
+
+    const boardList = getEl('kanbanBoardList');
+    if (boardList) {
+        boardList.innerHTML = workspace.boards.map(board => `
+            <button class="kanban-board-tab ${board.id === activeBoard.id ? 'active' : ''}" onclick="kanbanWorkspaceState.boardId='${board.id}';renderKanbanWorkspaceBody()">
+                <span>${escapeHTML(board.title)}</span>
+                <small>${getKanbanCardCount(group, board.id)} cards</small>
+            </button>
+        `).join('') + `
+            <button class="kanban-board-tab add" onclick="addKanbanBoard()">＋ New board</button>
+        `;
+    }
+
+    const body = getEl('kanbanWorkspaceBody');
+    if (!body) return;
+    getEl('kanbanWorkspaceSubtitle').textContent = `${workspace.boards.length} boards · ${getKanbanCardCount(group)} total cards · Active: ${activeBoard.title}`;
+
+    body.innerHTML = `
+        <div class="kanban-full-board ${layoutMode === 'row' ? 'kanban-row-mode' : 'kanban-column-mode'}" data-group-id="${group.id}" data-board-id="${activeBoard.id}">
+            ${activeBoard.columns.map(col => {
+                const filteredCards = keyword
+                    ? col.cards.filter(card => [card.title, card.content, card.priority, card.deadline].filter(Boolean).join(' ').toLowerCase().includes(keyword))
+                    : col.cards;
+                return `
+                    <section class="kanban-full-column" data-column-id="${col.id}">
+                        <div class="kanban-full-column-head">
+                            <strong>${escapeHTML(col.title)}</strong>
+                            <span>${filteredCards.length}/${col.cards.length}</span>
+                        </div>
+                        <div class="kanban-full-column-actions">
+                            <button onclick="openKanbanCardModal('${group.id}','${col.id}',null,'${activeBoard.id}')">＋ Card</button>
+                            <button onclick="renameKanbanColumn('${group.id}','${col.id}','${activeBoard.id}')">Edit</button>
+                            <button onclick="deleteKanbanColumn('${group.id}','${col.id}','${activeBoard.id}')">Delete</button>
+                        </div>
+                        <div class="kanban-workspace-card-list" data-group-id="${group.id}" data-board-id="${activeBoard.id}" data-column-id="${col.id}">
+                            ${filteredCards.map(card => renderKanbanWorkspaceCardHTML(group.id, activeBoard.id, card)).join('')}
+                        </div>
+                    </section>
+                `;
+            }).join('')}
+            <section class="kanban-full-column add-column" onclick="addKanbanColumn('${group.id}', '${activeBoard.id}')">＋ Add column</section>
+        </div>
+    `;
+    initKanbanWorkspaceDragAndDrop();
+}
+
+function renderKanbanWorkspaceCardHTML(groupId, boardId, card) {
+    const priority = card.priority || 'normal';
+    const priorityText = priority === 'urgent' ? '🔴 Urgent' : (priority === 'important' ? '🟠 Important' : '🟢 Normal');
+    const deadlineHTML = card.deadline ? `<span>📅 ${escapeHTML(card.deadline.split('-').reverse().join('/'))}</span>` : '';
+    return `
+        <article class="kanban-card priority-${priority}" data-card-id="${card.id}" onclick="openKanbanCardModal('${groupId}',null,'${card.id}','${boardId}')" oncontextmenu="openContextMenu(event, 'kanban-card', '${groupId}', '${card.id}')">
+            <div class="kanban-card-title">${escapeHTML(card.title || 'Untitled card')}</div>
+            ${card.content ? `<div class="kanban-card-desc">${escapeHTML(card.content).slice(0, 180)}</div>` : ''}
+            <div class="kanban-card-meta"><span>${priorityText}</span>${deadlineHTML}</div>
+        </article>
+    `;
+}
+
+function addKanbanBoard(groupId = kanbanWorkspaceState.groupId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const title = window.prompt('Board name:', 'New Board');
+    if (!title || !title.trim()) return;
+    const board = createDefaultKanbanBoard(title.trim());
+    normalizeKanbanGroup(group).boards.push(board);
+    kanbanWorkspaceState.groupId = group.id;
+    kanbanWorkspaceState.boardId = board.id;
+    saveData();
+    openKanbanWorkspace(group.id, board.id);
+}
+
+function renameKanbanBoard(groupId = kanbanWorkspaceState.groupId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = getKanbanBoard(group, boardId);
+    const title = window.prompt('Board name:', board.title);
+    if (!title || !title.trim()) return;
+    board.title = title.trim();
+    saveData();
+    openKanbanWorkspace(group.id, board.id);
+}
+
+function deleteKanbanBoard(groupId = kanbanWorkspaceState.groupId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const workspace = normalizeKanbanGroup(group);
+    if (workspace.boards.length <= 1) return alert('Kanban workspace must have at least one board.');
+    const board = getKanbanBoard(group, boardId);
+    customConfirm(`Delete board "${escapeHTML(board.title)}" and all cards inside?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        workspace.boards = workspace.boards.filter(item => item.id !== board.id);
+        kanbanWorkspaceState.boardId = workspace.boards[0].id;
+        saveData();
+        openKanbanWorkspace(group.id, kanbanWorkspaceState.boardId);
+    });
+}
+
+function openKanbanCardModal(groupId = kanbanWorkspaceState.groupId, columnId = null, cardId = null, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = getKanbanBoard(group, boardId);
+    const found = cardId ? findKanbanCard(group, cardId, board.id) : null;
+    const firstColumn = board.columns[0];
+    kanbanCardEditState = {
+        groupId: group.id,
+        boardId: found?.board?.id || board.id,
+        columnId: found?.column?.id || columnId || firstColumn?.id,
+        cardId: found?.card?.id || null
+    };
+    getEl('kanbanCardModalTitle').innerText = found ? '📝 Edit Kanban Card' : '➕ Add Kanban Card';
+    getEl('kanbanCardTitleInput').value = found?.card?.title || '';
+    getEl('kanbanCardPriorityInput').value = found?.card?.priority || 'normal';
+    getEl('kanbanCardDeadlineInput').value = found?.card?.deadline || '';
+    getEl('kanbanCardContentInput').value = found?.card?.content || '';
+    openModal('kanbanCardModal');
+}
+
+function submitKanbanCardForm() {
+    const group = getGroup(kanbanCardEditState.groupId);
+    if (!group) return;
+    const title = getEl('kanbanCardTitleInput')?.value.trim();
+    if (!title) return;
+    const data = {
+        id: kanbanCardEditState.cardId || `card_${Date.now()}`,
+        title,
+        priority: getEl('kanbanCardPriorityInput')?.value || 'normal',
+        deadline: getEl('kanbanCardDeadlineInput')?.value || '',
+        content: getEl('kanbanCardContentInput')?.value || ''
+    };
+    if (kanbanCardEditState.cardId) {
+        const found = findKanbanCard(group, kanbanCardEditState.cardId, kanbanCardEditState.boardId);
+        if (found) found.column.cards[found.index] = data;
+    } else {
+        const column = getKanbanColumn(group, kanbanCardEditState.columnId, kanbanCardEditState.boardId);
+        column.cards.push(data);
+    }
+    closeModal('kanbanCardModal');
+    saveData();
+    if (getEl('kanbanWorkspaceModal')?.classList.contains('active')) openKanbanWorkspace(group.id, kanbanCardEditState.boardId);
+}
+
+function addKanbanColumn(groupId = kanbanWorkspaceState.groupId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = getKanbanBoard(group, boardId);
+    const title = window.prompt('Column name:', 'New Column');
+    if (!title || !title.trim()) return;
+    board.columns.push({ id: `col_${Date.now()}`, title: title.trim(), cards: [] });
+    saveData();
+    if (getEl('kanbanWorkspaceModal')?.classList.contains('active')) openKanbanWorkspace(group.id, board.id);
+}
+
+function renameKanbanColumn(groupId, columnId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    const col = getKanbanColumn(group, columnId, boardId);
+    if (!col) return;
+    const title = window.prompt('Column name:', col.title);
+    if (!title || !title.trim()) return;
+    col.title = title.trim();
+    saveData();
+    if (getEl('kanbanWorkspaceModal')?.classList.contains('active')) openKanbanWorkspace(group.id, boardId);
+}
+
+function deleteKanbanColumn(groupId, columnId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = getKanbanBoard(group, boardId);
+    const col = board.columns.find(c => c.id === columnId);
+    if (!col) return;
+    if (board.columns.length <= 1) return alert('Kanban must have at least one column.');
+    customConfirm(`Delete column "${escapeHTML(col.title)}" and ${col.cards.length} cards inside?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        board.columns = board.columns.filter(c => c.id !== columnId);
+        saveData();
+        if (getEl('kanbanWorkspaceModal')?.classList.contains('active')) openKanbanWorkspace(group.id, board.id);
+    });
+}
+
+function duplicateKanbanCard(groupId, cardId) {
+    const group = getGroup(groupId);
+    const found = findKanbanCard(group, cardId);
+    if (!found) return;
+    const copy = JSON.parse(JSON.stringify(found.card));
+    copy.id = `card_${Date.now()}`;
+    copy.title = `${copy.title || 'Card'} (Copy)`;
+    found.column.cards.splice(found.index + 1, 0, copy);
+    saveData();
+    if (getEl('kanbanWorkspaceModal')?.classList.contains('active')) openKanbanWorkspace(group.id, found.board.id);
+}
+
+function deleteKanbanCard(groupId, cardId) {
+    const group = getGroup(groupId);
+    const found = findKanbanCard(group, cardId);
+    if (!found) return;
+    customConfirm(`Delete card "${escapeHTML(found.card.title || 'Untitled')}"?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        found.column.cards.splice(found.index, 1);
+        saveData();
+        if (getEl('kanbanWorkspaceModal')?.classList.contains('active')) openKanbanWorkspace(group.id, found.board.id);
+    });
+}
+
+function initKanbanWorkspaceDragAndDrop() {
+    if (typeof Sortable === 'undefined') return;
+    document.querySelectorAll('.kanban-workspace-card-list').forEach(list => {
+        if (Sortable.get(list)) Sortable.get(list).destroy();
+        Sortable.create(list, {
+            group: `kanban-board-${list.dataset.groupId}-${list.dataset.boardId}`,
+            animation: 150,
+            ghostClass: 'sortable-ghost-link',
+            delay: window.innerWidth <= 768 ? 180 : 0,
+            delayOnTouchOnly: true,
+            onEnd: event => {
+                const group = getGroup(event.from.dataset.groupId);
+                if (!group) return;
+                const boardId = event.from.dataset.boardId;
+                const fromColumn = getKanbanColumn(group, event.from.dataset.columnId, boardId);
+                const toColumn = getKanbanColumn(group, event.to.dataset.columnId, boardId);
+                const [moved] = fromColumn.cards.splice(event.oldIndex, 1);
+                if (!moved) return;
+                toColumn.cards.splice(event.newIndex, 0, moved);
+                saveData();
+                renderKanbanWorkspaceBody();
+            }
+        });
+    });
+}
+
+
 const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
 // ==========================================
@@ -1956,7 +2549,8 @@ function writeJSONStore(key, value) { localStorage.setItem(key, JSON.stringify(v
 function normalizeText(value = '') { return String(value || '').toLowerCase(); }
 
 function saveDataOnly() {
-    saveData({ render: false, immediate: true });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+    if (gapiInited && gisInited && gapi.client.getToken()) syncToGoogleDrive(true);
 }
 
 function addRecentItem(item) {
@@ -3477,3 +4071,542 @@ if (typeof writeJSONStore === 'function') {
 document.addEventListener('DOMContentLoaded', () => {
     migratePastSchedules();
 });
+
+// ========================================================================== 
+// KANBAN WORKSPACE FIX - modal based board/column/card actions
+// ========================================================================== 
+let kanbanTextModalResolve = null;
+
+function ensureKanbanTextModal() {
+    if (getEl('kanbanTextModal')) return;
+    const modal = document.createElement('div');
+    modal.className = 'modal-overlay';
+    modal.id = 'kanbanTextModal';
+    modal.innerHTML = `
+        <div class="modal-box kanban-text-modal-box" style="max-width:420px;">
+            <h3 id="kanbanTextModalTitle">Kanban</h3>
+            <label id="kanbanTextModalLabel">Name:</label>
+            <input type="text" id="kanbanTextModalInput" autocomplete="off">
+            <p id="kanbanTextModalHint" class="kanban-modal-hint"></p>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="kanbanTextCancelBtn" type="button">Cancel</button>
+                <button class="btn-primary" id="kanbanTextConfirmBtn" type="button">Confirm</button>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    const cancel = () => {
+        closeModal('kanbanTextModal');
+        if (kanbanTextModalResolve) kanbanTextModalResolve(null);
+        kanbanTextModalResolve = null;
+    };
+    const confirm = () => {
+        const value = (getEl('kanbanTextModalInput')?.value || '').trim();
+        if (!value) {
+            getEl('kanbanTextModalHint').textContent = 'Please enter a name.';
+            return;
+        }
+        closeModal('kanbanTextModal');
+        if (kanbanTextModalResolve) kanbanTextModalResolve(value);
+        kanbanTextModalResolve = null;
+    };
+
+    getEl('kanbanTextCancelBtn').onclick = cancel;
+    getEl('kanbanTextConfirmBtn').onclick = confirm;
+    getEl('kanbanTextModalInput').addEventListener('keydown', event => {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            confirm();
+        }
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            cancel();
+        }
+    });
+}
+
+function openKanbanTextModal({ title = 'Kanban', label = 'Name:', value = '', placeholder = '', confirmText = 'Confirm' } = {}) {
+    ensureKanbanTextModal();
+    getEl('kanbanTextModalTitle').textContent = title;
+    getEl('kanbanTextModalLabel').textContent = label;
+    getEl('kanbanTextModalInput').value = value || '';
+    getEl('kanbanTextModalInput').placeholder = placeholder || '';
+    getEl('kanbanTextModalHint').textContent = '';
+    getEl('kanbanTextConfirmBtn').textContent = confirmText;
+    openModal('kanbanTextModal');
+    setTimeout(() => getEl('kanbanTextModalInput')?.focus(), 50);
+    return new Promise(resolve => { kanbanTextModalResolve = resolve; });
+}
+
+function showKanbanNotice(message, title = '📌 Kanban Notice') {
+    const alertModal = getEl('alertModal');
+    const alertTitle = getEl('alertModalTitle');
+    const alertMsg = getEl('alertMessage');
+    if (alertModal && alertMsg) {
+        if (alertTitle) alertTitle.textContent = title;
+        alertMsg.textContent = message;
+        openModal('alertModal');
+        return;
+    }
+    console.warn(message);
+}
+
+function refreshKanbanAfterChange(groupId, boardId) {
+    saveData();
+    if (getEl('kanbanWorkspaceModal')?.classList.contains('active')) {
+        kanbanWorkspaceState.groupId = groupId;
+        if (boardId) kanbanWorkspaceState.boardId = boardId;
+        renderKanbanWorkspaceBody();
+    }
+}
+
+function ensureKanbanWorkspaceModal() {
+    let modal = getEl('kanbanWorkspaceModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal-overlay kanban-workspace-overlay';
+        modal.id = 'kanbanWorkspaceModal';
+        document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+        <div class="kanban-workspace-box">
+            <div class="kanban-workspace-head">
+                <div>
+                    <h3 id="kanbanWorkspaceTitle">📌 Kanban Workspace</h3>
+                    <p id="kanbanWorkspaceSubtitle">Boards, columns and cards</p>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('kanbanWorkspaceModal')">✕</button>
+            </div>
+            <div class="kanban-workspace-actions">
+                <button class="btn-primary" onclick="addKanbanBoard()">➕ Board</button>
+                <button class="btn-secondary" onclick="renameKanbanBoard()">📝 Rename board</button>
+                <button class="btn-real-danger" onclick="deleteKanbanBoard()">🗑️ Delete board</button>
+                <button class="btn-secondary" onclick="addKanbanColumn()">➕ Column</button>
+                <button class="btn-secondary" id="kanbanLayoutToggleBtn" onclick="toggleKanbanLayoutMode()">⇄ Row view</button>
+                <button class="btn-primary" onclick="openKanbanCardModal()">➕ Card</button>
+                <input id="kanbanWorkspaceSearch" type="search" placeholder="Search cards..." oninput="renderKanbanWorkspaceBody()">
+            </div>
+            <div class="kanban-workspace-layout">
+                <aside id="kanbanBoardList" class="kanban-board-list"></aside>
+                <main id="kanbanWorkspaceBody" class="kanban-workspace-body"></main>
+            </div>
+        </div>
+    `;
+}
+
+function renderKanbanWorkspaceBody() {
+    const group = getGroup(kanbanWorkspaceState.groupId);
+    if (!group) return;
+    const workspace = normalizeKanbanGroup(group);
+    const activeBoard = getKanbanBoard(group, kanbanWorkspaceState.boardId);
+    kanbanWorkspaceState.boardId = activeBoard.id;
+    const keyword = (getEl('kanbanWorkspaceSearch')?.value || '').trim().toLowerCase();
+    const layoutMode = kanbanLayoutMode === 'row' ? 'row' : 'column';
+    const layoutBtn = getEl('kanbanLayoutToggleBtn');
+    if (layoutBtn) layoutBtn.textContent = layoutMode === 'row' ? '▦ Column view' : '⇄ Row view';
+
+    const boardList = getEl('kanbanBoardList');
+    if (boardList) {
+        boardList.innerHTML = workspace.boards.map(board => `
+            <button class="kanban-board-tab ${board.id === activeBoard.id ? 'active' : ''}" onclick="kanbanWorkspaceState.boardId='${board.id}';renderKanbanWorkspaceBody()">
+                <span>${escapeHTML(board.title)}</span>
+                <small>${getKanbanCardCount(group, board.id)} cards · ${board.columns.length} columns</small>
+            </button>
+        `).join('') + `
+            <button class="kanban-board-tab add" onclick="addKanbanBoard()">＋ New board</button>
+        `;
+    }
+
+    const body = getEl('kanbanWorkspaceBody');
+    if (!body) return;
+    const subtitle = getEl('kanbanWorkspaceSubtitle');
+    if (subtitle) subtitle.textContent = `${workspace.boards.length} boards · ${getKanbanCardCount(group)} total cards · Active: ${activeBoard.title}`;
+
+    body.innerHTML = `
+        <div class="kanban-full-board ${layoutMode === 'row' ? 'kanban-row-mode' : 'kanban-column-mode'}" data-group-id="${group.id}" data-board-id="${activeBoard.id}">
+            ${activeBoard.columns.map(col => {
+                const filteredCards = keyword
+                    ? col.cards.filter(card => [card.title, card.content, card.priority, card.deadline].filter(Boolean).join(' ').toLowerCase().includes(keyword))
+                    : col.cards;
+                return `
+                    <section class="kanban-full-column" data-column-id="${col.id}">
+                        <div class="kanban-full-column-head">
+                            <strong>${escapeHTML(col.title)}</strong>
+                            <span>${filteredCards.length}/${col.cards.length}</span>
+                        </div>
+                        <div class="kanban-full-column-actions">
+                            <button onclick="openKanbanCardModal('${group.id}','${col.id}',null,'${activeBoard.id}')">＋ Card</button>
+                            <button onclick="renameKanbanColumn('${group.id}','${col.id}','${activeBoard.id}')">Edit</button>
+                            <button onclick="deleteKanbanColumn('${group.id}','${col.id}','${activeBoard.id}')">Delete</button>
+                        </div>
+                        <div class="kanban-workspace-card-list" data-group-id="${group.id}" data-board-id="${activeBoard.id}" data-column-id="${col.id}">
+                            ${filteredCards.map(card => renderKanbanWorkspaceCardHTML(group.id, activeBoard.id, card)).join('')}
+                        </div>
+                    </section>
+                `;
+            }).join('')}
+            <section class="kanban-full-column add-column" onclick="addKanbanColumn('${group.id}', '${activeBoard.id}')">＋ Add column</section>
+        </div>
+    `;
+    initKanbanWorkspaceDragAndDrop();
+}
+
+async function addKanbanBoard(groupId = kanbanWorkspaceState.groupId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const title = await openKanbanTextModal({
+        title: '➕ Add board',
+        label: 'Board name:',
+        value: 'New Board',
+        placeholder: 'Example: Dashboard Project',
+        confirmText: 'Create board'
+    });
+    if (!title) return;
+    const board = createDefaultKanbanBoard(title);
+    normalizeKanbanGroup(group).boards.push(board);
+    kanbanWorkspaceState = { groupId: group.id, boardId: board.id };
+    refreshKanbanAfterChange(group.id, board.id);
+}
+
+async function renameKanbanBoard(groupId = kanbanWorkspaceState.groupId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = getKanbanBoard(group, boardId);
+    const title = await openKanbanTextModal({
+        title: '📝 Rename board',
+        label: 'Board name:',
+        value: board.title,
+        placeholder: 'Example: Dashboard Project',
+        confirmText: 'Save board'
+    });
+    if (!title) return;
+    board.title = title;
+    refreshKanbanAfterChange(group.id, board.id);
+}
+
+function deleteKanbanBoard(groupId = kanbanWorkspaceState.groupId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const workspace = normalizeKanbanGroup(group);
+    if (workspace.boards.length <= 1) {
+        showKanbanNotice('Kanban workspace must have at least one board.');
+        return;
+    }
+    const board = getKanbanBoard(group, boardId);
+    customConfirm(`Delete board "${escapeHTML(board.title)}" and all cards inside?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        workspace.boards = workspace.boards.filter(item => item.id !== board.id);
+        kanbanWorkspaceState.boardId = workspace.boards[0].id;
+        refreshKanbanAfterChange(group.id, kanbanWorkspaceState.boardId);
+    });
+}
+
+async function addKanbanColumn(groupId = kanbanWorkspaceState.groupId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = getKanbanBoard(group, boardId);
+    const title = await openKanbanTextModal({
+        title: '➕ Add column',
+        label: 'Column name:',
+        value: 'New Column',
+        placeholder: 'Example: Waiting, Testing, Done...',
+        confirmText: 'Create column'
+    });
+    if (!title) return;
+    board.columns.push({ id: `col_${Date.now()}_${Math.random().toString(16).slice(2, 6)}`, title, cards: [] });
+    refreshKanbanAfterChange(group.id, board.id);
+}
+
+async function renameKanbanColumn(groupId = kanbanWorkspaceState.groupId, columnId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group || !columnId) return;
+    const col = getKanbanColumn(group, columnId, boardId);
+    if (!col) return;
+    const title = await openKanbanTextModal({
+        title: '📝 Rename column',
+        label: 'Column name:',
+        value: col.title,
+        placeholder: 'Example: Review',
+        confirmText: 'Save column'
+    });
+    if (!title) return;
+    col.title = title;
+    refreshKanbanAfterChange(group.id, boardId);
+}
+
+function deleteKanbanColumn(groupId = kanbanWorkspaceState.groupId, columnId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group || !columnId) return;
+    const board = getKanbanBoard(group, boardId);
+    const col = board.columns.find(c => c.id === columnId);
+    if (!col) return;
+    if (board.columns.length <= 1) {
+        showKanbanNotice('Kanban must have at least one column.');
+        return;
+    }
+    customConfirm(`Delete column "${escapeHTML(col.title)}" and ${col.cards.length} cards inside?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        board.columns = board.columns.filter(c => c.id !== columnId);
+        refreshKanbanAfterChange(group.id, board.id);
+    });
+}
+
+function submitKanbanCardForm() {
+    const group = getGroup(kanbanCardEditState.groupId);
+    if (!group) return;
+    const title = (getEl('kanbanCardTitleInput')?.value || '').trim();
+    if (!title) {
+        showKanbanNotice('Please enter a card title.');
+        return;
+    }
+    const data = {
+        id: kanbanCardEditState.cardId || `card_${Date.now()}_${Math.random().toString(16).slice(2, 6)}`,
+        title,
+        priority: getEl('kanbanCardPriorityInput')?.value || 'normal',
+        deadline: getEl('kanbanCardDeadlineInput')?.value || '',
+        content: getEl('kanbanCardContentInput')?.value || ''
+    };
+    if (kanbanCardEditState.cardId) {
+        const found = findKanbanCard(group, kanbanCardEditState.cardId, kanbanCardEditState.boardId);
+        if (found) found.column.cards[found.index] = data;
+    } else {
+        const column = getKanbanColumn(group, kanbanCardEditState.columnId, kanbanCardEditState.boardId);
+        column.cards.push(data);
+    }
+    closeModal('kanbanCardModal');
+    refreshKanbanAfterChange(group.id, kanbanCardEditState.boardId);
+}
+
+function deleteKanbanCard(groupId, cardId) {
+    const group = getGroup(groupId);
+    const found = findKanbanCard(group, cardId);
+    if (!found) return;
+    customConfirm(`Delete card "${escapeHTML(found.card.title || 'Untitled')}"?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        found.column.cards.splice(found.index, 1);
+        refreshKanbanAfterChange(group.id, found.board.id);
+    });
+}
+
+
+// ========================================================================== 
+// KANBAN FIX PATCH: top modal stacking + delete one card button
+// ========================================================================== 
+function openKanbanTopModal(id) {
+    const modal = getEl(id);
+    if (!modal) return;
+    modal.classList.add('active');
+    modal.classList.add('modal-on-top');
+    modal.style.zIndex = '2147483000';
+    const box = modal.querySelector('.modal-box');
+    if (box) box.style.zIndex = '2147483001';
+}
+
+function closeKanbanTopModal(id) {
+    const modal = getEl(id);
+    if (!modal) return;
+    modal.classList.remove('active');
+    modal.classList.remove('modal-on-top');
+    modal.style.zIndex = '';
+    const box = modal.querySelector('.modal-box');
+    if (box) box.style.zIndex = '';
+}
+
+// Override confirm so deletion confirm always appears above Kanban fullscreen modal.
+function customConfirm(message, title = "❓ Confirm action") {
+    return new Promise((resolve) => {
+        const confirmModal = getEl('confirmModal');
+        const confirmTitle = getEl('confirmTitle');
+        const confirmMsg = getEl('confirmMessage');
+        const confirmBtn = getEl('confirmDeleteBtn');
+        const cancelBtn = getEl('confirmCancelBtn');
+        if (!confirmModal || !confirmMsg || !confirmBtn || !cancelBtn) {
+            resolve(window.confirm(message));
+            return;
+        }
+        if (confirmTitle) confirmTitle.innerText = title;
+        confirmMsg.innerHTML = String(message).replace(/\n/g, '<br>');
+        openKanbanTopModal('confirmModal');
+        confirmBtn.onclick = function() {
+            closeKanbanTopModal('confirmModal');
+            resolve(true);
+        };
+        cancelBtn.onclick = function() {
+            closeKanbanTopModal('confirmModal');
+            resolve(false);
+        };
+    });
+}
+
+// Override card modal so Edit Card shows a Delete button and modal stays above board.
+function openKanbanCardModal(groupId = kanbanWorkspaceState.groupId, columnId = null, cardId = null, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = getKanbanBoard(group, boardId);
+    const found = cardId ? findKanbanCard(group, cardId, board.id) : null;
+    const firstColumn = board.columns[0];
+    kanbanCardEditState = {
+        groupId: group.id,
+        boardId: found?.board?.id || board.id,
+        columnId: found?.column?.id || columnId || firstColumn?.id,
+        cardId: found?.card?.id || null
+    };
+    getEl('kanbanCardModalTitle').innerText = found ? '📝 Edit Kanban Card' : '➕ Add Kanban Card';
+    getEl('kanbanCardTitleInput').value = found?.card?.title || '';
+    getEl('kanbanCardPriorityInput').value = found?.card?.priority || 'normal';
+    getEl('kanbanCardDeadlineInput').value = found?.card?.deadline || '';
+    getEl('kanbanCardContentInput').value = found?.card?.content || '';
+
+    let deleteBtn = getEl('kanbanCardDeleteBtn');
+    const footer = getEl('kanbanCardModal')?.querySelector('.modal-footer');
+    if (!deleteBtn && footer) {
+        deleteBtn = document.createElement('button');
+        deleteBtn.id = 'kanbanCardDeleteBtn';
+        deleteBtn.className = 'btn-real-danger';
+        deleteBtn.textContent = 'Delete card';
+        deleteBtn.style.marginRight = 'auto';
+        deleteBtn.onclick = deleteCurrentKanbanCard;
+        footer.prepend(deleteBtn);
+    }
+    if (deleteBtn) deleteBtn.style.display = found ? 'inline-flex' : 'none';
+
+    openKanbanTopModal('kanbanCardModal');
+}
+
+function submitKanbanCardForm() {
+    const group = getGroup(kanbanCardEditState.groupId);
+    if (!group) return;
+    const title = (getEl('kanbanCardTitleInput')?.value || '').trim();
+    if (!title) {
+        showKanbanNotice('Please enter a card title.');
+        return;
+    }
+    const data = {
+        id: kanbanCardEditState.cardId || `card_${Date.now()}_${Math.random().toString(16).slice(2, 6)}`,
+        title,
+        priority: getEl('kanbanCardPriorityInput')?.value || 'normal',
+        deadline: getEl('kanbanCardDeadlineInput')?.value || '',
+        content: getEl('kanbanCardContentInput')?.value || ''
+    };
+    if (kanbanCardEditState.cardId) {
+        const found = findKanbanCard(group, kanbanCardEditState.cardId, kanbanCardEditState.boardId);
+        if (found) found.column.cards[found.index] = data;
+    } else {
+        const column = getKanbanColumn(group, kanbanCardEditState.columnId, kanbanCardEditState.boardId);
+        if (!column) return;
+        column.cards.push(data);
+    }
+    closeKanbanTopModal('kanbanCardModal');
+    refreshKanbanAfterChange(group.id, kanbanCardEditState.boardId);
+}
+
+function deleteCurrentKanbanCard() {
+    const { groupId, cardId, boardId } = kanbanCardEditState || {};
+    if (!groupId || !cardId) return;
+    const group = getGroup(groupId);
+    const found = findKanbanCard(group, cardId, boardId);
+    if (!found) return;
+
+    closeSmartModal('kanbanCardModal');
+
+    customConfirm(`Delete card "${escapeHTML(found.card.title || 'Untitled card')}"?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) {
+            openKanbanCardModal(groupId, found.column.id, cardId, found.board.id);
+            return;
+        }
+        found.column.cards.splice(found.index, 1);
+        refreshKanbanAfterChange(group.id, found.board.id);
+    });
+}
+
+function deleteKanbanCard(groupId, cardId, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    const found = findKanbanCard(group, cardId, boardId);
+    if (!found) return;
+    customConfirm(`Delete card "${escapeHTML(found.card.title || 'Untitled card')}"?`, '⚠️ Confirm deletion').then(ok => {
+        if (!ok) return;
+        found.column.cards.splice(found.index, 1);
+        refreshKanbanAfterChange(group.id, found.board.id);
+    });
+}
+
+
+
+// ==========================================================================
+// GLOBAL MODAL MANAGER
+// Opens one modal at a time. If a modal is already open, it is hidden and pushed
+// to a stack. Closing the current modal restores the previous one.
+// ==========================================================================
+const modalStack = window.modalStack || [];
+window.modalStack = modalStack;
+
+function getActiveTopModal() {
+    const activeModals = Array.from(document.querySelectorAll('.modal-overlay.active:not(.modal-hidden-stack)'));
+    return activeModals.length ? activeModals[activeModals.length - 1] : null;
+}
+
+function openSmartModal(id) {
+    const newModal = getEl ? getEl(id) : document.getElementById(id);
+    if (!newModal) return;
+
+    const currentModal = getActiveTopModal();
+
+    if (currentModal && currentModal.id !== id) {
+        currentModal.classList.add('modal-hidden-stack');
+        currentModal.classList.remove('active');
+        if (currentModal.id && modalStack[modalStack.length - 1] !== currentModal.id) {
+            modalStack.push(currentModal.id);
+        }
+    }
+
+    newModal.classList.remove('modal-hidden-stack');
+    newModal.classList.add('active');
+    newModal.style.zIndex = '';
+    const box = newModal.querySelector('.modal-box');
+    if (box) box.style.zIndex = '';
+}
+
+function closeSmartModal(id) {
+    const modal = getEl ? getEl(id) : document.getElementById(id);
+    if (!modal) return;
+
+    modal.classList.remove('active');
+    modal.classList.remove('modal-hidden-stack');
+    modal.style.zIndex = '';
+    const box = modal.querySelector('.modal-box');
+    if (box) box.style.zIndex = '';
+
+    let previousId = modalStack.pop();
+    while (previousId) {
+        const previousModal = getEl ? getEl(previousId) : document.getElementById(previousId);
+        if (previousModal) {
+            previousModal.classList.remove('modal-hidden-stack');
+            previousModal.classList.add('active');
+            previousModal.style.zIndex = '';
+            const previousBox = previousModal.querySelector('.modal-box');
+            if (previousBox) previousBox.style.zIndex = '';
+            break;
+        }
+        previousId = modalStack.pop();
+    }
+}
+
+function closeAllSmartModals() {
+    document.querySelectorAll('.modal-overlay').forEach(modal => {
+        modal.classList.remove('active', 'modal-hidden-stack', 'modal-on-top', 'kanban-confirm-top');
+        modal.style.zIndex = '';
+        const box = modal.querySelector('.modal-box');
+        if (box) box.style.zIndex = '';
+    });
+    modalStack.length = 0;
+}
+
+// Override old modal helpers globally so existing buttons/functions use the same manager.
+openModal = openSmartModal;
+closeModal = closeSmartModal;
+
+function openKanbanTopModal(id) { openSmartModal(id); }
+function closeKanbanTopModal(id) { closeSmartModal(id); }
+function openKanbanChildModal(id) { openSmartModal(id); }
+function closeKanbanChildModal(id) { closeSmartModal(id); }

@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -50,7 +51,7 @@
         <section class="command-bar" aria-label="Quick action bar">
             <div class="search-box">
                 <span>🔎</span>
-                <input id="globalSearch" type="search" placeholder="Search groups, links, notes, schedules..." oninput="debounceDashboardSearch()">
+                <input id="globalSearch" type="search" placeholder="Search groups, links, notes, schedules..." oninput="renderDashboard()">
                 <button type="button" onclick="clearDashboardSearch()" title="Clear search">✕</button>
             </div>
             <div class="quick-actions">
@@ -152,6 +153,10 @@
                 <button class="create-type-card schedule" onclick="chooseCreateGroupType('schedule')">
                     <strong>📅 Schedule group</strong>
                     <small>Manage milestones and tasks.</small>
+                </button>
+                <button class="create-type-card kanban" onclick="chooseCreateGroupType('kanban')">
+                    <strong>📌 Kanban group</strong>
+                    <small>Drag tasks between Todo, Doing, Review, and Done.</small>
                 </button>
             </div>
         </div>
@@ -360,6 +365,30 @@
                 <button class="btn-real-danger" onclick="clearBackups()">Delete backups</button>
             </div>
             <div id="backupList" class="trash-list empty">No backups yet.</div>
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="kanbanCardModal">
+        <div class="modal-box">
+            <h3 id="kanbanCardModalTitle">📌 Kanban Card</h3>
+            <label>Card title:</label>
+            <input type="text" id="kanbanCardTitleInput" placeholder="Example: Fix dashboard performance...">
+            <label>Priority:</label>
+            <select id="kanbanCardPriorityInput">
+                <option value="normal">🟢 Normal</option>
+                <option value="important">🟠 Important</option>
+                <option value="urgent">🔴 Urgent</option>
+            </select>
+            <label>Deadline:</label>
+            <input type="date" id="kanbanCardDeadlineInput">
+            <label>Details:</label>
+            <textarea id="kanbanCardContentInput" placeholder="Checklist, notes, links..." style="height:120px"></textarea>
+            <div class="modal-footer kanban-card-footer">
+                <button class="btn-real-danger" id="kanbanCardDeleteBtn" onclick="deleteCurrentKanbanCard()" style="display:none; margin-right:auto;">Delete card</button>
+                <button class="btn-secondary" onclick="closeKanbanTopModal('kanbanCardModal')">Cancel</button>
+                <button class="btn-primary" onclick="submitKanbanCardForm()">Confirm</button>
+            </div>
         </div>
     </div>
 
