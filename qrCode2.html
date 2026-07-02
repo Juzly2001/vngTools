@@ -649,7 +649,7 @@ body.dark .highlight{
 
 <script>
     // chặn màn hình
-const isPhone = window.innerWidth <= 422 && window.matchMedia("(pointer:coarse)").matches;
+const isPhone = window.innerWidth <= 600 && window.matchMedia("(pointer:coarse)").matches;
 if (!isPhone) {
     document.body.innerHTML = `
         <div style="display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:"JetBrains Mono","Cascadia Code","Consolas","Courier New",monospace;padding:20px;background:#eef2f7;">
