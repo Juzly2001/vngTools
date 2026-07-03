@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Document Scanner</title>
+  <script async src="https://docs.opencv.org/4.9.0/opencv.js" onload="window.__opencvScriptLoaded=true"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    :root{
+      --bg:#0b1020;--card:#111832;--card2:#151f3d;--text:#f7f9ff;--muted:#9aa6c7;
+      --brand:#58d68d;--brand2:#4aa3ff;--danger:#ff5f6d;--warn:#ffd166;--border:rgba(255,255,255,.12);
+      --shadow:0 18px 55px rgba(0,0,0,.35);--radius:22px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:radial-gradient(circle at top,#18224a 0,#0b1020 45%,#060914 100%);color:var(--text);min-height:100vh;overflow-x:hidden}
+    button,input,select{font:inherit}
+    .app{width:min(1180px,100%);margin:0 auto;padding:14px;display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
+    header{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:rgba(17,24,50,.76);backdrop-filter:blur(16px);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);position:sticky;top:8px;z-index:20}
+    .title{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.2px}.logo{width:40px;height:40px;border-radius:15px;display:grid;place-items:center;background:linear-gradient(135deg,var(--brand),var(--brand2));box-shadow:0 10px 28px rgba(74,163,255,.22)}
+    .status{font-size:12px;color:var(--muted);text-align:right}.dot{display:inline-block;width:8px;height:8px;border-radius:99px;background:var(--warn);margin-right:6px}.dot.ok{background:var(--brand)}.dot.bad{background:var(--danger)}
+    .panel{background:rgba(17,24,50,.82);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}.panel-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}.panel-title{font-weight:800}.panel-body{padding:14px}
+    .camera-wrap{position:relative;border-radius:20px;overflow:hidden;background:#050711;min-height:360px;border:1px solid var(--border)}video{width:100%;height:min(68vh,680px);object-fit:cover;display:block;background:#050711}.guide{position:absolute;inset:7%;border:2px dashed rgba(88,214,141,.72);border-radius:18px;box-shadow:0 0 0 999px rgba(0,0,0,.17);pointer-events:none}.guide::after{content:'Đặt giấy lọt trong khung';position:absolute;left:50%;top:-18px;transform:translateX(-50%);font-size:11px;background:rgba(0,0,0,.55);padding:5px 10px;border-radius:99px;color:#fff;white-space:nowrap}.flash{position:absolute;inset:0;background:white;opacity:0;pointer-events:none}.flash.show{animation:flash .24s ease}@keyframes flash{0%{opacity:0}35%{opacity:.7}100%{opacity:0}}
+    .controls{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}.btn{border:0;border-radius:16px;padding:12px 10px;background:rgba(255,255,255,.08);color:var(--text);border:1px solid var(--border);cursor:pointer;transition:.15s transform,.15s background}.btn:active{transform:scale(.97)}.btn.primary{background:linear-gradient(135deg,var(--brand),#2ecc71);color:#07150d;font-weight:900}.btn.blue{background:linear-gradient(135deg,var(--brand2),#6c8cff);color:#061224;font-weight:900}.btn.danger{background:rgba(255,95,109,.15);color:#ffb6bd;border-color:rgba(255,95,109,.35)}.btn:disabled{opacity:.45;cursor:not-allowed}.capture{font-size:18px;padding:16px 10px;grid-column:1/-1}
+    .preview-box{border-radius:18px;background:#070b18;border:1px solid var(--border);min-height:280px;display:grid;place-items:center;overflow:hidden;position:relative}#previewCanvas{max-width:100%;max-height:62vh;display:none}.empty{color:var(--muted);text-align:center;padding:25px;line-height:1.6}.tools{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.tools select,.tools input{width:100%;background:rgba(255,255,255,.08);border:1px solid var(--border);border-radius:14px;padding:11px;color:var(--text);outline:none}.tools option{background:#111832}.range{grid-column:1/-1;display:grid;grid-template-columns:90px 1fr 40px;gap:8px;align-items:center;color:var(--muted);font-size:12px}.range input{padding:0}.pages{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:10px;max-height:300px;overflow:auto;padding-right:2px}.page{position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:#080c18;cursor:pointer}.page.active{outline:2px solid var(--brand)}.page img{width:100%;height:118px;object-fit:cover;display:block}.page span{position:absolute;left:6px;top:6px;background:rgba(0,0,0,.58);font-size:11px;padding:3px 7px;border-radius:99px}.page button{position:absolute;right:5px;top:5px;border:0;background:rgba(255,95,109,.9);color:white;border-radius:9px;width:24px;height:24px;cursor:pointer}.hint{font-size:12px;color:var(--muted);line-height:1.55;margin-top:10px}.hidden{display:none!important}canvas.source{display:none}
+    .toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,.78);color:#fff;padding:10px 14px;border-radius:99px;opacity:0;pointer-events:none;transition:.22s;z-index:99;border:1px solid rgba(255,255,255,.14)}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    @media(max-width:860px){.app{grid-template-columns:1fr;padding:10px}header{top:6px;border-radius:18px}.status{display:none}.camera-wrap{min-height:260px}video{height:58vh}.controls{grid-template-columns:1fr 1fr}.capture{grid-column:1/-1}.tools{grid-template-columns:1fr}.range{grid-template-columns:80px 1fr 36px}}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="title"><div class="logo">📄</div><div><div>Document Scanner</div><div style="font-size:11px;color:var(--muted);font-weight:500">Scan giấy tờ → cắt thẳng → xuất PDF</div></div></div>
+      <div class="status"><span id="cvDot" class="dot"></span><span id="cvStatus">Đang tải OpenCV...</span></div>
+    </header>
+
+    <section class="panel">
+      <div class="panel-head"><div class="panel-title">📷 Camera</div><button class="btn" id="switchBtn">🔄 Đổi camera</button></div>
+      <div class="panel-body">
+        <div class="camera-wrap">
+          <video id="video" autoplay playsinline muted></video>
+          <div class="guide"></div><div id="flash" class="flash"></div>
+        </div>
+        <div class="controls">
+          <button class="btn primary capture" id="captureBtn">📸 Chụp & scan giấy</button>
+          <button class="btn" id="manualBtn">✂️ Cắt theo khung</button>
+          <button class="btn" id="retakeBtn">🧹 Xóa preview</button>
+          <button class="btn blue" id="addPageBtn" disabled>➕ Thêm trang</button>
+        </div>
+        <div class="hint">Mẹo: đặt giấy trên nền tối, đủ sáng, để thấy rõ 4 mép giấy. Nếu tự nhận diện chưa đẹp, dùng “Cắt theo khung”.</div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <div class="panel-head"><div class="panel-title">🖼️ Preview</div><button class="btn danger" id="clearAllBtn">Xóa tất cả</button></div>
+      <div class="panel-body">
+        <div class="preview-box"><canvas id="previewCanvas"></canvas><div id="empty" class="empty">Chưa có ảnh scan.<br>Hãy chụp giấy tờ trước.</div></div>
+        <div class="tools">
+          <select id="filterSelect">
+            <option value="color">Scan màu</option>
+            <option value="gray">Xám rõ chữ</option>
+            <option value="bw">Trắng đen</option>
+            <option value="original">Gốc đã cắt</option>
+          </select>
+          <button class="btn" id="rotateBtn" disabled>↻ Xoay 90°</button>
+          <div class="range"><span>Sáng</span><input type="range" id="brightness" min="-60" max="80" value="10"><b id="bVal">10</b></div>
+          <div class="range"><span>Tương phản</span><input type="range" id="contrast" min="70" max="180" value="125"><b id="cVal">125</b></div>
+          <button class="btn blue" id="downloadImgBtn" disabled>⬇️ Tải ảnh</button>
+          <button class="btn primary" id="exportPdfBtn" disabled>📕 Xuất PDF</button>
+        </div>
+      </div>
+    </aside>
+
+    <section class="panel" style="grid-column:1/-1">
+      <div class="panel-head"><div class="panel-title">📚 Danh sách trang</div><div class="hint" style="margin:0">Bấm vào ảnh nhỏ để xem lại</div></div>
+      <div class="panel-body"><div class="pages" id="pages"></div></div>
+    </section>
+  </div>
+
+  <canvas id="sourceCanvas" class="source"></canvas>
+  <div id="toast" class="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const video=$('video'), sourceCanvas=$('sourceCanvas'), previewCanvas=$('previewCanvas'), pctx=previewCanvas.getContext('2d');
+let stream=null, facing='environment', cvReady=false, rawImage=null, pages=[], activeIndex=-1, rotation=0;
+
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
+function setCvStatus(type,msg){$('cvDot').className='dot '+(type||'');$('cvStatus').textContent=msg}
+function waitOpenCV(){
+  if(window.cv && cv.Mat){cvReady=true;setCvStatus('ok','OpenCV sẵn sàng');return}
+  let tries=0; const timer=setInterval(()=>{tries++; if(window.cv && cv.Mat){clearInterval(timer);cvReady=true;setCvStatus('ok','OpenCV sẵn sàng')} else if(tries>80){clearInterval(timer);setCvStatus('bad','Không tải được OpenCV')}} ,250)
+}
+async function startCamera(){
+  try{ if(stream) stream.getTracks().forEach(t=>t.stop());
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:facing,width:{ideal:1920},height:{ideal:1080}},audio:false});
+    video.srcObject=stream;
+  }catch(e){toast('Không mở được camera. Hãy cấp quyền camera hoặc dùng HTTPS.'); console.error(e)}
+}
+function flash(){const f=$('flash');f.classList.add('show');setTimeout(()=>f.classList.remove('show'),260)}
+function captureFrame(){
+  const w=video.videoWidth, h=video.videoHeight; if(!w||!h){toast('Camera chưa sẵn sàng');return null}
+  sourceCanvas.width=w; sourceCanvas.height=h; sourceCanvas.getContext('2d').drawImage(video,0,0,w,h); flash(); return sourceCanvas;
+}
+function orderPoints(pts){
+  const sum=p=>p.x+p.y, diff=p=>p.y-p.x;
+  return [pts.reduce((a,b)=>sum(a)<sum(b)?a:b), pts.reduce((a,b)=>diff(a)<diff(b)?a:b), pts.reduce((a,b)=>sum(a)>sum(b)?a:b), pts.reduce((a,b)=>diff(a)>diff(b)?a:b)];
+}
+function distance(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function detectAndWarp(canvas, manual=false){
+  if(!cvReady || manual) return cropByGuide(canvas);
+  let src=cv.imread(canvas), gray=new cv.Mat(), blur=new cv.Mat(), edges=new cv.Mat(), contours=new cv.MatVector(), hierarchy=new cv.Mat();
+  try{
+    cv.cvtColor(src,gray,cv.COLOR_RGBA2GRAY); cv.GaussianBlur(gray,blur,new cv.Size(5,5),0); cv.Canny(blur,edges,60,180);
+    let kernel=cv.Mat.ones(3,3,cv.CV_8U); cv.dilate(edges,edges,kernel); kernel.delete();
+    cv.findContours(edges,contours,hierarchy,cv.RETR_EXTERNAL,cv.CHAIN_APPROX_SIMPLE);
+    let best=null, bestArea=0;
+    for(let i=0;i<contours.size();i++){
+      let cnt=contours.get(i), peri=cv.arcLength(cnt,true), approx=new cv.Mat(); cv.approxPolyDP(cnt,approx,0.025*peri,true);
+      const area=cv.contourArea(approx);
+      if(approx.rows===4 && area>bestArea && area>canvas.width*canvas.height*.08){bestArea=area; if(best)best.delete(); best=approx}else approx.delete(); cnt.delete();
+    }
+    if(!best){toast('Chưa thấy rõ 4 mép giấy, dùng cắt theo khung'); return cropByGuide(canvas)}
+    const pts=[]; for(let i=0;i<4;i++) pts.push({x:best.intPtr(i,0)[0], y:best.intPtr(i,0)[1]}); best.delete();
+    const [tl,tr,br,bl]=orderPoints(pts); const width=Math.max(distance(tl,tr),distance(bl,br)); const height=Math.max(distance(tl,bl),distance(tr,br));
+    const dst=new cv.Mat(), dsize=new cv.Size(Math.round(width),Math.round(height));
+    const srcTri=cv.matFromArray(4,1,cv.CV_32FC2,[tl.x,tl.y,tr.x,tr.y,br.x,br.y,bl.x,bl.y]);
+    const dstTri=cv.matFromArray(4,1,cv.CV_32FC2,[0,0,width,0,width,height,0,height]);
+    const M=cv.getPerspectiveTransform(srcTri,dstTri); cv.warpPerspective(src,dst,M,dsize,cv.INTER_LINEAR,cv.BORDER_CONSTANT,new cv.Scalar());
+    const out=document.createElement('canvas'); out.width=dsize.width; out.height=dsize.height; cv.imshow(out,dst);
+    dst.delete(); srcTri.delete(); dstTri.delete(); M.delete(); return out;
+  }catch(e){console.error(e);toast('Scan tự động lỗi, đã cắt theo khung');return cropByGuide(canvas)}
+  finally{src.delete();gray.delete();blur.delete();edges.delete();contours.delete();hierarchy.delete()}
+}
+function cropByGuide(canvas){
+  const out=document.createElement('canvas'), sx=canvas.width*.07, sy=canvas.height*.07, sw=canvas.width*.86, sh=canvas.height*.86;
+  out.width=Math.round(sw); out.height=Math.round(sh); out.getContext('2d').drawImage(canvas,sx,sy,sw,sh,0,0,out.width,out.height); return out;
+}
+function applyFilterToPreview(){
+  if(!rawImage){updateUI();return}
+  let w=rawImage.width,h=rawImage.height;
+  const rotated=rotation%180!==0; previewCanvas.width=rotated?h:w; previewCanvas.height=rotated?w:h;
+  pctx.save(); pctx.clearRect(0,0,previewCanvas.width,previewCanvas.height); pctx.translate(previewCanvas.width/2,previewCanvas.height/2); pctx.rotate(rotation*Math.PI/180); pctx.drawImage(rawImage,-w/2,-h/2); pctx.restore();
+  let img=pctx.getImageData(0,0,previewCanvas.width,previewCanvas.height), d=img.data;
+  const mode=$('filterSelect').value, b=+$('brightness').value, c=+$('contrast').value/100;
+  if(mode!=='original'){
+    for(let i=0;i<d.length;i+=4){
+      let r=(d[i]-128)*c+128+b, g=(d[i+1]-128)*c+128+b, bl=(d[i+2]-128)*c+128+b;
+      if(mode==='gray'||mode==='bw'){let y=.299*r+.587*g+.114*bl; if(mode==='bw') y=y>150?255:0; r=g=bl=y}
+      if(mode==='color'){r=Math.min(255,r*1.04);g=Math.min(255,g*1.04);bl=Math.min(255,bl*1.04)}
+      d[i]=Math.max(0,Math.min(255,r)); d[i+1]=Math.max(0,Math.min(255,g)); d[i+2]=Math.max(0,Math.min(255,bl));
+    }
+    pctx.putImageData(img,0,0);
+  }
+  previewCanvas.style.display='block'; $('empty').style.display='none'; updateUI();
+}
+function currentDataUrl(){return previewCanvas.toDataURL('image/jpeg',0.92)}
+function setRawFromCanvas(c){rawImage=new Image(); rawImage.onload=()=>{rotation=0;applyFilterToPreview()}; rawImage.src=c.toDataURL('image/png')}
+function addPage(){
+  if(!rawImage)return; const data=currentDataUrl(); if(activeIndex>=0 && pages[activeIndex]?.editing){pages[activeIndex].data=data;pages[activeIndex].raw=rawImage.src}else{pages.push({data,raw:rawImage.src});activeIndex=pages.length-1}
+  renderPages(); toast('Đã thêm trang');
+}
+function renderPages(){
+  const box=$('pages'); box.innerHTML=''; pages.forEach((p,i)=>{const div=document.createElement('div');div.className='page '+(i===activeIndex?'active':'');div.innerHTML=`<img src="${p.data}"><span>${i+1}</span><button title="Xóa">×</button>`;div.onclick=e=>{if(e.target.tagName==='BUTTON')return;activeIndex=i;rawImage=new Image();rawImage.onload=()=>{rotation=0;applyFilterToPreview();renderPages()};rawImage.src=p.raw||p.data};div.querySelector('button').onclick=e=>{e.stopPropagation();pages.splice(i,1);if(activeIndex>=pages.length)activeIndex=pages.length-1;renderPages();updateUI()};box.appendChild(div)}); updateUI();
+}
+async function exportPdf(){
+  if(!pages.length){toast('Chưa có trang để xuất PDF');return}
+  const {jsPDF}=window.jspdf; const pdf=new jsPDF({orientation:'p',unit:'mm',format:'a4'});
+  for(let i=0;i<pages.length;i++){
+    if(i>0)pdf.addPage(); const img=pages[i].data; const props=pdf.getImageProperties(img); const pageW=210,pageH=297, margin=8; let w=pageW-margin*2,h=w*props.height/props.width; if(h>pageH-margin*2){h=pageH-margin*2;w=h*props.width/props.height} const x=(pageW-w)/2,y=(pageH-h)/2; pdf.addImage(img,'JPEG',x,y,w,h);
+  }
+  pdf.save('scan-giay-to.pdf');
+}
+function updateUI(){const has=!!rawImage, hasPages=pages.length>0;$('addPageBtn').disabled=!has;$('rotateBtn').disabled=!has;$('downloadImgBtn').disabled=!has;$('exportPdfBtn').disabled=!hasPages;$('bVal').textContent=$('brightness').value;$('cVal').textContent=$('contrast').value;if(!has){previewCanvas.style.display='none';$('empty').style.display='block'}}
+$('captureBtn').onclick=()=>{const c=captureFrame(); if(c)setRawFromCanvas(detectAndWarp(c,false))};
+$('manualBtn').onclick=()=>{const c=captureFrame(); if(c)setRawFromCanvas(detectAndWarp(c,true))};
+$('retakeBtn').onclick=()=>{rawImage=null;activeIndex=-1;updateUI();toast('Đã xóa preview')};
+$('addPageBtn').onclick=addPage;
+$('rotateBtn').onclick=()=>{rotation=(rotation+90)%360;applyFilterToPreview()};
+$('filterSelect').onchange=applyFilterToPreview; $('brightness').oninput=applyFilterToPreview; $('contrast').oninput=applyFilterToPreview;
+$('downloadImgBtn').onclick=()=>{if(!rawImage)return; const a=document.createElement('a');a.href=currentDataUrl();a.download='scan-giay-to.jpg';a.click()};
+$('exportPdfBtn').onclick=exportPdf;
+$('clearAllBtn').onclick=()=>{pages=[];activeIndex=-1;renderPages();toast('Đã xóa tất cả trang')};
+$('switchBtn').onclick=()=>{facing=facing==='environment'?'user':'environment';startCamera()};
+waitOpenCV(); startCamera(); updateUI();
+</script>
+</body>
+</html>
