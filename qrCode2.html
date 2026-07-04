@@ -181,7 +181,7 @@ select{
     border-radius:18px;
     overflow:hidden;
     width:100%;
-    height:clamp(300px,70vh,340px);
+    height:clamp(300px,70vh,300px);
     max-height:none;
     aspect-ratio:auto;
     position:relative;
@@ -402,7 +402,7 @@ body.focus-mode .scanner-card{
     margin-bottom:10px;
 }
 body.focus-mode #reader{
-    height:clamp(340px,78vh,340px);
+    height:clamp(340px,78vh,300px);
     max-height:none;
 }
 body.focus-mode #status{
@@ -863,7 +863,7 @@ body.dark .highlight{
 
 @media(max-width:450px){
     body{ padding:10px; padding-bottom:calc(22px + env(safe-area-inset-bottom)); }
-    #reader{ height:clamp(280px,62vh,430px); max-height:none; }
+    #reader{ height:clamp(280px,62vh,300px); max-height:none; }
     .brand h1{ font-size:17px; }
     .brand p{ font-size:11px; }
     .top-bar{ gap:7px; }
