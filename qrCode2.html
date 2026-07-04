@@ -181,10 +181,11 @@ select{
     border-radius:18px;
     overflow:hidden;
     width:100%;
-    height:min(70vh,320px);
+    height:clamp(300px,70vh,340px);
     max-height:none;
     aspect-ratio:auto;
     position:relative;
+    contain:layout paint;
 }
 
 #reader video{
@@ -401,7 +402,8 @@ body.focus-mode .scanner-card{
     margin-bottom:10px;
 }
 body.focus-mode #reader{
-    max-height:360px;
+    height:clamp(340px,78vh,340px);
+    max-height:none;
 }
 body.focus-mode #status{
     margin-top:0;
@@ -861,7 +863,7 @@ body.dark .highlight{
 
 @media(max-width:450px){
     body{ padding:10px; padding-bottom:calc(22px + env(safe-area-inset-bottom)); }
-    #reader{ max-height:285px; }
+    #reader{ height:clamp(280px,62vh,430px); max-height:none; }
     .brand h1{ font-size:17px; }
     .brand p{ font-size:11px; }
     .top-bar{ gap:7px; }
@@ -1371,6 +1373,61 @@ function renderItem(obj, prepend = false){
     else resultContainer.append(item);
 }
 
+
+function getSmartQrBox(viewfinderWidth, viewfinderHeight){
+    const minSide = Math.min(viewfinderWidth, viewfinderHeight);
+    const longSide = Math.max(viewfinderWidth, viewfinderHeight);
+
+    // Màn hình càng lớn thì vùng quét càng lớn, nhưng vẫn chừa mép để dễ canh mã.
+    let size = Math.floor(minSide * 0.82);
+
+    // Khi khung camera cao/dài, barcode thường nằm ngang nên cho vùng quét rộng hơn một chút.
+    const width = Math.min(Math.floor(viewfinderWidth * 0.92), Math.max(size, Math.floor(longSide * 0.52)));
+    const height = Math.min(Math.floor(viewfinderHeight * 0.72), size);
+
+    return {
+        width: Math.max(220, width),
+        height: Math.max(180, height)
+    };
+}
+
+async function applyCameraEnhancements(){
+    try{
+        const video = document.querySelector("#reader video");
+        const stream = video?.srcObject;
+        const track = stream?.getVideoTracks?.()[0];
+        if (!track?.getCapabilities || !track?.applyConstraints) return;
+
+        const caps = track.getCapabilities();
+        const advanced = [];
+
+        if (caps.focusMode?.includes("continuous")) advanced.push({ focusMode:"continuous" });
+        if (caps.exposureMode?.includes("continuous")) advanced.push({ exposureMode:"continuous" });
+        if (caps.whiteBalanceMode?.includes("continuous")) advanced.push({ whiteBalanceMode:"continuous" });
+        if (caps.torch) advanced.push({ torch:false });
+
+        if (advanced.length) {
+            await track.applyConstraints({ advanced });
+        }
+    }catch(err){
+        console.log("Camera enhancement skipped:", err);
+    }
+}
+
+async function restartCameraForResize(){
+    if (!cameraRunning) return;
+    clearTimeout(window.hbpResizeCameraTimer);
+    window.hbpResizeCameraTimer = setTimeout(async () => {
+        try{
+            await stopCamera();
+            await new Promise(resolve => setTimeout(resolve, 180));
+            await startCamera();
+        }catch(err){
+            console.log("Resize camera restart failed:", err);
+        }
+    }, 350);
+}
+
 async function startCamera(){
     if (cameraRunning) return;
     try {
@@ -1378,14 +1435,18 @@ async function startCamera(){
         await html5QrCode.start(
             { facingMode: { exact: "environment" } },
             {
-                fps: 30,
-                qrbox: { width: 180, height: 180 },
-                aspectRatio: 1.333,
+                fps: 35,
+                qrbox: getSmartQrBox,
+                aspectRatio: undefined,
                 videoConstraints: {
                     facingMode: "environment",
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    advanced: [{ focusMode: "continuous" }]
+                    width: { ideal: 1920 },
+                    height: { ideal: 1080 },
+                    advanced: [
+                        { focusMode: "continuous" },
+                        { exposureMode: "continuous" },
+                        { whiteBalanceMode: "continuous" }
+                    ]
                 },
                 rememberLastUsedCamera: true,
                 disableFlip: true,
@@ -1400,6 +1461,7 @@ async function startCamera(){
             onScanSuccess
         );
         cameraRunning = true;
+        setTimeout(applyCameraEnhancements, 350);
         resetScanState(false);
         document.querySelector(".scanner-card").classList.remove("scanner-off");
         cameraToggleBtn.textContent = "📷";
@@ -1438,6 +1500,9 @@ readerEl.addEventListener("touchend", (e) => {
 readerEl.addEventListener("dblclick", () => {
     resetScanState(true);
 });
+
+window.addEventListener("resize", restartCameraForResize);
+window.addEventListener("orientationchange", restartCameraForResize);
 
 
 copyBtn.onclick = async () => {
