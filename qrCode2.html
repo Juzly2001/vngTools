@@ -203,35 +203,34 @@ select{
     border:1px solid rgba(255,255,255,.12);
 }
 
+/* Bỏ ô xanh cố định ở giữa khung scan */
 .scan-frame::before{
-    content:"";
-    position:absolute;
-    width:135px;
-    height:135px;
-    left:50%;
-    top:50%;
-    transform:translate(-50%,-50%);
-    border-radius:24px;
-    border:3px solid rgba(0,255,136,.95);
-    box-shadow:0 0 0 999px rgba(0,0,0,.20),0 0 24px rgba(0,255,136,.25);
+    content:none;
 }
 
 .scan-line{
     pointer-events:none;
     position:absolute;
-    left:50%;
+    left:22px;
+    right:22px;
     top:50%;
-    width:124px;
-    height:2px;
+    height:3px;
     border-radius:99px;
     background:linear-gradient(90deg,transparent,#00ff88,transparent);
-    transform:translate(-50%,-50%);
-    animation:scanLine 1.65s ease-in-out infinite;
+    box-shadow:0 0 18px rgba(0,255,136,.65);
+    opacity:0;
+    transform:translateY(-50%) scaleX(.25);
 }
 
-@keyframes scanLine{
-    0%,100%{ margin-top:-56px; opacity:.45; }
-    50%{ margin-top:56px; opacity:1; }
+/* Chỉ hiện vạch xanh khi vừa quét được mã */
+.scanner-card.scan-success .scan-line{
+    animation:scanSuccessLine .42s ease-out;
+}
+
+@keyframes scanSuccessLine{
+    0%{ opacity:0; transform:translateY(-50%) scaleX(.25); }
+    22%{ opacity:1; transform:translateY(-50%) scaleX(1); }
+    100%{ opacity:0; transform:translateY(-50%) scaleX(1); }
 }
 
 .quick-stats{
@@ -672,6 +671,8 @@ let lastScanned = "";
 let lastScanTime = 0;
 let html5QrCode = null;
 let cameraRunning = false;
+let scanFlashTimer = null;
+let lastReaderTapTime = 0;
 
 const statusEl = document.getElementById("status");
 const importBtn = document.getElementById("importBtn");
@@ -716,6 +717,23 @@ function playBeep(){
 
 function vibratePhone(){
     navigator.vibrate?.(80);
+}
+
+function flashScanLine(){
+    scannerCard.classList.remove("scan-success");
+    void scannerCard.offsetWidth;
+    scannerCard.classList.add("scan-success");
+    clearTimeout(scanFlashTimer);
+    scanFlashTimer = setTimeout(() => {
+        scannerCard.classList.remove("scan-success");
+    }, 460);
+}
+
+function resetScanState(showMessage = true){
+    lastScanned = "";
+    lastScanTime = 0;
+    scannerCard.classList.remove("scan-success");
+    if (showMessage) showToast("Đã reset trạng thái quét");
 }
 
 function getCheckList(){
@@ -780,6 +798,7 @@ function onScanSuccess(decodedText){
     const now = Date.now();
     if (code === lastScanned && now - lastScanTime < 1200) return;
 
+    flashScanLine();
     lastScanned = code;
     lastScanTime = now;
 
@@ -931,6 +950,7 @@ async function startCamera(){
             onScanSuccess
         );
         cameraRunning = true;
+        resetScanState(false);
         document.querySelector(".scanner-card").classList.remove("scanner-off");
         cameraToggleBtn.textContent = "📷";
         showToast("Camera đã bật");
@@ -953,6 +973,21 @@ async function stopCamera(){
     }
 }
 
+
+const readerEl = document.getElementById("reader");
+readerEl.addEventListener("touchend", (e) => {
+    const now = Date.now();
+    if (now - lastReaderTapTime < 320) {
+        e.preventDefault();
+        resetScanState(true);
+        vibratePhone();
+    }
+    lastReaderTapTime = now;
+}, { passive:false });
+
+readerEl.addEventListener("dblclick", () => {
+    resetScanState(true);
+});
 
 
 copyBtn.onclick = async () => {
