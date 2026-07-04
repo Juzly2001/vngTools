@@ -180,8 +180,10 @@ select{
     background:#050914;
     border-radius:18px;
     overflow:hidden;
-    aspect-ratio:4/3;
-    max-height:310px;
+    width:100%;
+    height:min(70vh,320px);
+    max-height:none;
+    aspect-ratio:auto;
     position:relative;
 }
 
@@ -263,9 +265,23 @@ select{
 
 .top-bar{
     display:grid;
-    grid-template-columns:repeat(5,1fr);
+    grid-template-columns:repeat(3,1fr);
     gap:8px;
-    margin:12px 0;
+    margin:10px 0 12px;
+}
+
+.top-bar button{
+    min-height:48px;
+    padding:8px 6px;
+    border-radius:16px;
+    font-size:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.top-bar button span{
+    display:none;
 }
 
 button{
@@ -290,14 +306,136 @@ button:disabled{
 }
 
 #copyBtn{ background:linear-gradient(135deg,#16c784,#33e09d); }
+#addManualBtn{ background:linear-gradient(135deg,#ff9800,#ffb74d); color:#fff; }
+#moreMenuBtn{ background:linear-gradient(135deg,#111827,#334155); }
+.quick-action-bar{
+    display:grid;
+    grid-template-columns:1fr 1fr auto;
+    gap:8px;
+    margin:10px 0 8px;
+}
+.quick-pill{
+    min-height:42px;
+    padding:8px 10px;
+    border-radius:16px;
+    background:var(--card);
+    color:var(--text);
+    border:1px solid var(--line);
+    box-shadow:var(--shadow2);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:6px;
+    font-size:12px;
+    white-space:nowrap;
+    overflow:hidden;
+}
+.quick-pill span{
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.quick-pill.auto-on{
+    background:linear-gradient(135deg,#16c784,#33e09d);
+    color:#fff;
+    border-color:transparent;
+}
+.quick-pill.auto-off{
+    background:var(--card);
+    color:var(--muted);
+}
+.quick-picker-options{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+    max-height:58vh;
+    overflow:auto;
+    padding-bottom:4px;
+    scrollbar-width:none;
+}
+.quick-picker-options::-webkit-scrollbar{ display:none; }
+.quick-option-btn{
+    width:100%;
+    min-height:46px;
+    border-radius:16px;
+    background:var(--bg2);
+    color:var(--text);
+    border:1px solid var(--line);
+    box-shadow:none;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:11px 13px;
+    font-size:14px;
+    text-align:left;
+}
+.quick-option-btn.active{
+    background:linear-gradient(135deg,rgba(25,118,255,.16),rgba(0,184,255,.12));
+    border-color:rgba(25,118,255,.38);
+    color:var(--primary);
+}
+.quick-option-btn.clear-choice{
+    color:var(--danger);
+}
+/* Quick Action mặc định có thể ẩn/hiện bằng nút trong menu */
+.quick-action-bar.quick-hidden{
+    display:none;
+}
+
+/* Focus mode: chỉ giữ camera + số mã đã quét + danh sách mã */
+body.focus-mode .app-header,
+body.focus-mode .quick-stats,
+body.focus-mode .quick-action-bar,
+body.focus-mode .top-bar,
+body.focus-mode .tool-card,
+body.focus-mode .bottom-sheet,
+body.focus-mode .bottom-sheet-backdrop{
+    display:none !important;
+}
+body.focus-mode .focus-exit-btn{
+    display:flex !important;
+}
+body.focus-mode{
+    padding-top:10px;
+}
+body.focus-mode .scanner-card{
+    margin-bottom:10px;
+}
+body.focus-mode #reader{
+    max-height:360px;
+}
+body.focus-mode #status{
+    margin-top:0;
+    background:linear-gradient(135deg,#111827,#334155);
+    color:#fff;
+    border-color:transparent;
+}
+.focus-exit-btn{
+    display:none;
+    position:fixed;
+    right:14px;
+    top:calc(12px + env(safe-area-inset-top));
+    z-index:7000;
+    min-height:40px;
+    padding:9px 12px;
+    border-radius:999px;
+    background:linear-gradient(135deg,#111827,#334155);
+    color:#fff;
+    box-shadow:0 12px 28px rgba(0,0,0,.25);
+    align-items:center;
+    gap:6px;
+    font-size:12px;
+}
+body.focus-mode .focus-exit-btn{
+    display:flex;
+}
 #clearBtn{ background:linear-gradient(135deg,#e53935,#ff6a6a); }
 #importBtn{ background:linear-gradient(135deg,#2196f3,#42a5f5); }
-#addManualBtn{ background:linear-gradient(135deg,#ff9800,#ffb74d); color:#fff; }
 #filterToggleBtn{
     background:linear-gradient(135deg,#7c3aed,#22d3ee);
     position:relative;
 }
-#filterToggleBtn.has-filter::after{
+#filterToggleBtn.has-filter::after,
+#moreMenuBtn.has-filter::after{
     content:"";
     position:absolute;
     right:9px;
@@ -312,9 +450,103 @@ button:disabled{
     filter:brightness(1.08);
 }
 
+.bottom-sheet-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.45);
+    opacity:0;
+    pointer-events:none;
+    transition:.18s ease;
+    z-index:9000;
+}
 
+.bottom-sheet{
+    position:fixed;
+    left:10px;
+    right:10px;
+    bottom:calc(10px + env(safe-area-inset-bottom));
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:24px;
+    padding:10px;
+    box-shadow:0 24px 60px rgba(0,0,0,.28);
+    transform:translateY(calc(100% + 24px));
+    transition:.22s ease;
+    z-index:9001;
+    max-width:520px;
+    margin:auto;
+}
 
+.bottom-sheet.show{
+    transform:translateY(0);
+}
 
+.bottom-sheet-backdrop.show{
+    opacity:1;
+    pointer-events:auto;
+}
+
+.sheet-handle{
+    width:46px;
+    height:5px;
+    border-radius:99px;
+    background:var(--line);
+    margin:4px auto 10px;
+}
+
+.sheet-title{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:0 2px 10px;
+    font-size:14px;
+    font-weight:900;
+    color:var(--text);
+}
+
+.sheet-close-btn{
+    width:34px;
+    height:34px;
+    padding:0;
+    border-radius:12px;
+    background:var(--bg2);
+    color:var(--muted);
+    border:1px solid var(--line);
+    box-shadow:none;
+}
+
+.sheet-actions{
+    display:grid;
+    grid-template-columns:1fr;
+    gap:8px;
+}
+
+.sheet-actions button{
+    width:100%;
+    min-height:48px;
+    border-radius:16px;
+    display:flex;
+    align-items:center;
+    justify-content:flex-start;
+    gap:10px;
+    padding:12px 14px;
+    font-size:14px;
+    text-align:left;
+    color:#fff;
+    box-shadow:var(--shadow2);
+}
+
+.sheet-actions .danger-action{
+    margin-top:4px;
+}
+
+#filterToggleBtn{ background:linear-gradient(135deg,#7c3aed,#22d3ee); }
+#importBtn{ background:linear-gradient(135deg,#2196f3,#42a5f5); }
+#quickBarToggleBtn{ background:linear-gradient(135deg,#0f766e,#2dd4bf); }
+#focusModeBtn{ background:linear-gradient(135deg,#4f46e5,#8b5cf6); }
+#focusModeBtn.focus-on{ background:linear-gradient(135deg,#111827,#334155); }
+#clearBtn{ background:linear-gradient(135deg,#e53935,#ff6a6a); }
 
 
 .tool-card{
@@ -662,6 +894,7 @@ body.dark .highlight{
     <div class="scan-line"></div>
 </section>
 
+<button id="focusExitBtn" class="focus-exit-btn" type="button">↩ <span>Thoát Focus</span></button>
 
 <div class="quick-stats">
     <div class="stat-card"><b id="totalCount">0</b><span>Tổng mã</span></div>
@@ -669,12 +902,42 @@ body.dark .highlight{
     <div class="stat-card"><b id="matchedCount">0</b><span>Đối chiếu</span></div>
 </div>
 
+<div class="quick-action-bar" id="quickActionBar">
+    <button id="quickCodBtn" class="quick-pill" type="button">👤 <span>COD: Không</span></button>
+    <button id="quickActionBtn" class="quick-pill" type="button">⚡ <span>Thao tác: Không</span></button>
+    <button id="autoTagBtn" class="quick-pill auto-on" type="button">📌 <span>Auto</span></button>
+</div>
+
 <div class="top-bar">
-    <button id="copyBtn">📋<br>Copy hết</button>
-    <button id="clearBtn">🗑<br>Xóa hết</button>
-    <button id="importBtn">☁<br>Import</button>
-    <button id="addManualBtn">✏️<br>Nhập tay</button>
-    <button id="filterToggleBtn">🔍<br>Lọc</button>
+    <button id="copyBtn" title="Copy tất cả">📋<span>Copy</span></button>
+    <button id="clearBtn" class="danger-action" type="button">🗑️ <span>Xóa toàn bộ mã</span></button>
+    <button id="moreMenuBtn" title="Mở menu">☰<span>Menu</span></button>
+</div>
+
+<div id="bottomSheetBackdrop" class="bottom-sheet-backdrop"></div>
+<div id="bottomSheet" class="bottom-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+        <span>☰ Công cụ</span>
+        <button id="closeSheetBtn" class="sheet-close-btn" type="button">✕</button>
+    </div>
+    <div class="sheet-actions">
+        <button id="filterToggleBtn" type="button">🔍 <span>Bộ lọc / đối chiếu</span></button>
+        <button id="addManualBtn" title="Nhập tay">✏️<span>Nhập tay</span></button>
+        <button id="quickBarToggleBtn" type="button">⚡ <span>Hiện Quick Action</span></button>
+        <button id="focusModeBtn" type="button">🎯 <span>Bật Focus mode</span></button>
+        <button id="importBtn" type="button">☁ <span>Import lên Sheet</span></button>
+    </div>
+</div>
+
+<div id="quickPickerBackdrop" class="bottom-sheet-backdrop"></div>
+<div id="quickPickerSheet" class="bottom-sheet quick-picker-sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+        <span id="quickPickerTitle">Chọn nhanh</span>
+        <button id="closeQuickPickerBtn" class="sheet-close-btn" type="button">✕</button>
+    </div>
+    <div id="quickPickerOptions" class="quick-picker-options"></div>
 </div>
 
 <section class="tool-card" id="filterPanel">
@@ -700,7 +963,7 @@ body.dark .highlight{
 
 <script>
     // chặn màn hình
-const isPhone = window.innerWidth <= 600 && window.matchMedia("(pointer:coarse)").matches;
+const isPhone = window.innerWidth <= 750 && window.matchMedia("(pointer:coarse)").matches;
 if (!isPhone) {
     document.body.innerHTML = `
         <div style="display:flex;justify-content:center;align-items:center;height:100vh;text-align:center;font-family:"JetBrains Mono","Cascadia Code","Consolas","Courier New",monospace;padding:20px;background:#eef2f7;">
@@ -725,13 +988,33 @@ let html5QrCode = null;
 let cameraRunning = false;
 let scanFlashTimer = null;
 let lastReaderTapTime = 0;
+let defaultCod = "";
+let defaultActions = [];
+let autoTagEnabled = true;
+let quickBarVisible = false;
 
 const statusEl = document.getElementById("status");
 const importBtn = document.getElementById("importBtn");
 const copyBtn = document.getElementById("copyBtn");
 const clearBtn = document.getElementById("clearBtn");
 const addManualBtn = document.getElementById("addManualBtn");
+const moreMenuBtn = document.getElementById("moreMenuBtn");
+const quickCodBtn = document.getElementById("quickCodBtn");
+const quickActionBtn = document.getElementById("quickActionBtn");
+const autoTagBtn = document.getElementById("autoTagBtn");
+const quickActionBar = document.getElementById("quickActionBar");
+const bottomSheet = document.getElementById("bottomSheet");
+const bottomSheetBackdrop = document.getElementById("bottomSheetBackdrop");
+const closeSheetBtn = document.getElementById("closeSheetBtn");
+const quickPickerSheet = document.getElementById("quickPickerSheet");
+const quickPickerBackdrop = document.getElementById("quickPickerBackdrop");
+const quickPickerTitle = document.getElementById("quickPickerTitle");
+const quickPickerOptions = document.getElementById("quickPickerOptions");
+const closeQuickPickerBtn = document.getElementById("closeQuickPickerBtn");
 const filterToggleBtn = document.getElementById("filterToggleBtn");
+const focusModeBtn = document.getElementById("focusModeBtn");
+const focusExitBtn = document.getElementById("focusExitBtn");
+const quickBarToggleBtn = document.getElementById("quickBarToggleBtn");
 const filterPanel = document.getElementById("filterPanel");
 const resultContainer = document.getElementById("result-container");
 const checkListInput = document.getElementById("checkListInput");
@@ -772,6 +1055,103 @@ function setFilterPanel(open){
 function updateFilterBadge(){
     const hasFilter = checkListInput.value.trim() || searchInput.value.trim();
     filterToggleBtn.classList.toggle("has-filter", Boolean(hasFilter));
+    moreMenuBtn.classList.toggle("has-filter", Boolean(hasFilter));
+}
+
+function setBottomSheet(open){
+    bottomSheet.classList.toggle("show", open);
+    bottomSheetBackdrop.classList.toggle("show", open);
+}
+
+function setQuickPicker(open){
+    quickPickerSheet.classList.toggle("show", open);
+    quickPickerBackdrop.classList.toggle("show", open);
+}
+
+function saveQuickDefaults(){
+    localStorage.setItem("hbp_defaultCod", defaultCod);
+    localStorage.setItem("hbp_defaultActions", JSON.stringify(defaultActions));
+    localStorage.setItem("hbp_autoTag", autoTagEnabled ? "1" : "0");
+}
+
+function updateQuickBar(){
+    quickCodBtn.innerHTML = `👤 <span>COD: ${defaultCod || "Không"}</span>`;
+    quickActionBtn.innerHTML = `⚡ <span>${defaultActions.length ? defaultActions.join(", ") : "Thao tác: Không"}</span>`;
+    autoTagBtn.classList.toggle("auto-on", autoTagEnabled);
+    autoTagBtn.classList.toggle("auto-off", !autoTagEnabled);
+    autoTagBtn.innerHTML = `${autoTagEnabled ? "📌" : "📍"} <span>${autoTagEnabled ? "Auto" : "Tắt"}</span>`;
+}
+
+function updateQuickBarVisibility(){
+    quickActionBar.classList.toggle("quick-hidden", !quickBarVisible);
+    quickBarToggleBtn.innerHTML = quickBarVisible
+        ? "⚡ <span>Ẩn Quick Action</span>"
+        : "⚡ <span>Hiện Quick Action</span>";
+}
+
+function setFocusMode(open){
+    document.body.classList.toggle("focus-mode", open);
+    updateFocusButton();
+}
+
+function updateFocusButton(){
+    const focus = document.body.classList.contains("focus-mode");
+    focusModeBtn.classList.toggle("focus-on", focus);
+    focusModeBtn.innerHTML = focus
+        ? "🎯 <span>Tắt Focus mode</span>"
+        : "🎯 <span>Bật Focus mode</span>";
+}
+
+function openCodPicker(){
+    quickPickerTitle.textContent = "👤 Chọn COD mặc định";
+    quickPickerOptions.innerHTML = `
+        <button class="quick-option-btn clear-choice ${!defaultCod ? "active" : ""}" type="button" data-value="">Không gán COD <span>${!defaultCod ? "✓" : ""}</span></button>
+        ${dropdownOptions.map(x => `<button class="quick-option-btn ${defaultCod === x ? "active" : ""}" type="button" data-value="${escapeHtml(x)}"><span>${escapeHtml(x)}</span><span>${defaultCod === x ? "✓" : ""}</span></button>`).join("")}
+    `;
+    quickPickerOptions.querySelectorAll("button").forEach(btn => {
+        btn.onclick = () => {
+            defaultCod = btn.dataset.value || "";
+            saveQuickDefaults();
+            updateQuickBar();
+            setQuickPicker(false);
+            showToast(defaultCod ? `Đã ghim COD: ${defaultCod}` : "Đã tắt COD mặc định");
+        };
+    });
+    setBottomSheet(false);
+    setQuickPicker(true);
+}
+
+function openActionPicker(){
+    quickPickerTitle.textContent = "⚡ Chọn thao tác mặc định";
+    quickPickerOptions.innerHTML = `
+        <button class="quick-option-btn clear-choice ${!defaultActions.length ? "active" : ""}" type="button" data-clear="1">Bỏ tất cả thao tác <span>${!defaultActions.length ? "✓" : ""}</span></button>
+        ${actionOptions.map(x => `<button class="quick-option-btn ${defaultActions.includes(x) ? "active" : ""}" type="button" data-value="${escapeHtml(x)}"><span>${escapeHtml(x)}</span><span>${defaultActions.includes(x) ? "✓" : ""}</span></button>`).join("")}
+        <button class="quick-option-btn" type="button" data-done="1"><span>✅ Xong</span><span></span></button>
+    `;
+    quickPickerOptions.querySelectorAll("button").forEach(btn => {
+        btn.onclick = () => {
+            if (btn.dataset.done) {
+                saveQuickDefaults();
+                updateQuickBar();
+                setQuickPicker(false);
+                showToast("Đã lưu thao tác mặc định");
+                return;
+            }
+            if (btn.dataset.clear) {
+                defaultActions = [];
+            } else {
+                const value = btn.dataset.value;
+                defaultActions = defaultActions.includes(value)
+                    ? defaultActions.filter(x => x !== value)
+                    : [...defaultActions, value];
+            }
+            saveQuickDefaults();
+            updateQuickBar();
+            openActionPicker();
+        };
+    });
+    setBottomSheet(false);
+    setQuickPicker(true);
 }
 
 function playBeep(){
@@ -874,7 +1254,10 @@ function onScanSuccess(decodedText){
 
     setFilterPanel(false);
 
-    const newObj = { code, tags: [] };
+    const autoTags = autoTagEnabled
+        ? [...new Set([defaultCod, ...defaultActions].filter(Boolean))]
+        : [];
+    const newObj = { code, tags: autoTags };
     scannedCodes.push(newObj);
 
     playBeep();
@@ -930,7 +1313,7 @@ function renderItem(obj, prepend = false){
         </div>
         <div class="item-actions">
             <button class="copy-line-btn" type="button">📋</button>
-            <button class="delete-btn" type="button">🗑</button>
+            <button class="delete-btn" type="button">🗑️</button>
         </div>
         <div class="dropdown">
             <button class="drop-btn" type="button"></button>
@@ -1068,6 +1451,7 @@ copyBtn.onclick = async () => {
 };
 
 importBtn.onclick = async () => {
+    setBottomSheet(false);
     if (!scannedCodes.length) {
         alert("Chưa có dữ liệu.");
         return;
@@ -1075,7 +1459,7 @@ importBtn.onclick = async () => {
 
     try {
         importBtn.disabled = true;
-        importBtn.innerHTML = "⏳<br>Upload";
+        importBtn.innerHTML = "⏳ <span>Đang upload</span>";
         const data = scannedCodes.map(x => ({
             code: x.code,
             cod: x.tags.filter(t => dropdownOptions.includes(t)).join(", "),
@@ -1096,11 +1480,12 @@ importBtn.onclick = async () => {
         alert("❌ Import lỗi");
     } finally {
         importBtn.disabled = false;
-        importBtn.innerHTML = "☁<br>Import";
+        importBtn.innerHTML = "☁ <span>Import lên Sheet</span>";
     }
 };
 
 clearBtn.onclick = () => {
+    setBottomSheet(false);
     if (!scannedCodes.length) return;
     if (!confirm("Xóa toàn bộ mã đã quét?")) return;
     scannedCodes = [];
@@ -1119,10 +1504,51 @@ addManualBtn.onclick = () => {
 
 
 
+moreMenuBtn.onclick = (e) => {
+    e.stopPropagation();
+    setBottomSheet(true);
+};
+
+closeSheetBtn.onclick = () => setBottomSheet(false);
+bottomSheetBackdrop.onclick = () => setBottomSheet(false);
+bottomSheet.addEventListener("click", e => e.stopPropagation());
+
+closeQuickPickerBtn.onclick = () => setQuickPicker(false);
+quickPickerBackdrop.onclick = () => setQuickPicker(false);
+quickPickerSheet.addEventListener("click", e => e.stopPropagation());
+quickCodBtn.onclick = openCodPicker;
+quickActionBtn.onclick = openActionPicker;
+autoTagBtn.onclick = () => {
+    autoTagEnabled = !autoTagEnabled;
+    saveQuickDefaults();
+    updateQuickBar();
+    showToast(autoTagEnabled ? "Đã bật tự gán" : "Đã tắt tự gán");
+};
+quickBarToggleBtn.onclick = () => {
+    quickBarVisible = !quickBarVisible;
+    localStorage.setItem("hbp_quickBarVisible", quickBarVisible ? "1" : "0");
+    updateQuickBarVisibility();
+    setBottomSheet(false);
+    showToast(quickBarVisible ? "Đã hiện Quick Action" : "Đã ẩn Quick Action");
+};
+
+focusModeBtn.onclick = () => {
+    setBottomSheet(false);
+    const focus = !document.body.classList.contains("focus-mode");
+    setFocusMode(focus);
+    showToast(focus ? "Đã bật Focus mode" : "Đã tắt Focus mode");
+};
+
+focusExitBtn.onclick = () => {
+    setFocusMode(false);
+    showToast("Đã tắt Focus mode");
+};
+
 filterToggleBtn.onclick = () => {
     const willOpen = !filterPanel.classList.contains("show");
     setFilterPanel(willOpen);
-    if (willOpen) searchInput.focus();
+    setBottomSheet(false);
+    if (willOpen) setTimeout(() => searchInput.focus(), 80);
 };
 
 checkListInput.addEventListener("input", function(){
@@ -1135,16 +1561,14 @@ searchInput.addEventListener("input", function(){
     applyFilters();
 });
 
-clearCheckListBtn.onclick = (e) => {
-    e.stopPropagation();
+clearCheckListBtn.onclick = () => {
     checkListInput.value = "";
     localStorage.removeItem("hbp_checkList");
     applyFilters();
     checkListInput.focus();
 };
 
-clearSearchBtn.onclick = (e) => {
-    e.stopPropagation();
+clearSearchBtn.onclick = () => {
     searchInput.value = "";
     localStorage.removeItem("hbp_searchText");
     applyFilters();
@@ -1186,10 +1610,26 @@ function loadData(){
     const savedSearchText = localStorage.getItem("hbp_searchText");
     if (savedSearchText) searchInput.value = savedSearchText;
 
+    defaultCod = localStorage.getItem("hbp_defaultCod") || "";
+    try {
+        const savedActions = JSON.parse(localStorage.getItem("hbp_defaultActions") || "[]");
+        defaultActions = Array.isArray(savedActions) ? savedActions.filter(x => actionOptions.includes(x)) : [];
+    } catch {
+        defaultActions = [];
+    }
+    autoTagEnabled = localStorage.getItem("hbp_autoTag") !== "0";
+    quickBarVisible = localStorage.getItem("hbp_quickBarVisible") === "1";
+
     const dark = localStorage.getItem("hbp_dark") === "1";
     document.body.classList.toggle("dark", dark);
     themeBtn.textContent = dark ? "☀️" : "🌙";
 
+    localStorage.removeItem("hbp_focusMode");
+    setFocusMode(false);
+
+    updateQuickBar();
+    updateQuickBarVisibility();
+    updateFocusButton();
     renderAll();
     updateFilterBadge();
     setFilterPanel(false);
