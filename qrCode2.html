@@ -263,7 +263,7 @@ select{
 
 .top-bar{
     display:grid;
-    grid-template-columns:repeat(4,1fr);
+    grid-template-columns:repeat(5,1fr);
     gap:8px;
     margin:12px 0;
 }
@@ -293,6 +293,24 @@ button:disabled{
 #clearBtn{ background:linear-gradient(135deg,#e53935,#ff6a6a); }
 #importBtn{ background:linear-gradient(135deg,#2196f3,#42a5f5); }
 #addManualBtn{ background:linear-gradient(135deg,#ff9800,#ffb74d); color:#fff; }
+#filterToggleBtn{
+    background:linear-gradient(135deg,#7c3aed,#22d3ee);
+    position:relative;
+}
+#filterToggleBtn.has-filter::after{
+    content:"";
+    position:absolute;
+    right:9px;
+    top:8px;
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#00ff88;
+    box-shadow:0 0 0 3px rgba(0,255,136,.20),0 0 12px rgba(0,255,136,.65);
+}
+#filterToggleBtn.is-open{
+    filter:brightness(1.08);
+}
 
 
 
@@ -306,6 +324,36 @@ button:disabled{
     padding:12px;
     margin-bottom:12px;
     box-shadow:var(--shadow2);
+    display:none;
+    opacity:0;
+    transform:translateY(-8px);
+}
+.tool-card.show{
+    display:block;
+    animation:filterPanelIn .18s ease forwards;
+}
+@keyframes filterPanelIn{
+    to{ opacity:1; transform:translateY(0); }
+}
+.tool-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:10px;
+    color:var(--text);
+    font-size:13px;
+    font-weight:900;
+}
+.close-tool-btn{
+    width:32px;
+    height:32px;
+    padding:0;
+    border-radius:10px;
+    background:var(--bg2);
+    color:var(--muted);
+    box-shadow:none;
+    border:1px solid var(--line);
 }
 
 .input-row{
@@ -626,9 +674,13 @@ body.dark .highlight{
     <button id="clearBtn">🗑<br>Xóa hết</button>
     <button id="importBtn">☁<br>Import</button>
     <button id="addManualBtn">✏️<br>Nhập tay</button>
+    <button id="filterToggleBtn">🔍<br>Lọc</button>
 </div>
 
-<section class="tool-card">
+<section class="tool-card" id="filterPanel">
+    <div class="tool-head">
+        <span>🔍 Tìm kiếm & đối chiếu</span>
+    </div>
     <div class="input-row">
         <input type="text" id="checkListInput" placeholder="Mã đối chiếu: Mã1, Mã2...">
         <button id="clearCheckListBtn" class="clear-field-btn">✕</button>
@@ -679,6 +731,8 @@ const importBtn = document.getElementById("importBtn");
 const copyBtn = document.getElementById("copyBtn");
 const clearBtn = document.getElementById("clearBtn");
 const addManualBtn = document.getElementById("addManualBtn");
+const filterToggleBtn = document.getElementById("filterToggleBtn");
+const filterPanel = document.getElementById("filterPanel");
 const resultContainer = document.getElementById("result-container");
 const checkListInput = document.getElementById("checkListInput");
 const searchInput = document.getElementById("searchInput");
@@ -708,6 +762,16 @@ function showToast(message){
     toast.classList.add("show");
     clearTimeout(showToast.timer);
     showToast.timer = setTimeout(() => toast.classList.remove("show"), 1450);
+}
+
+function setFilterPanel(open){
+    filterPanel.classList.toggle("show", open);
+    filterToggleBtn.classList.toggle("is-open", open);
+}
+
+function updateFilterBadge(){
+    const hasFilter = checkListInput.value.trim() || searchInput.value.trim();
+    filterToggleBtn.classList.toggle("has-filter", Boolean(hasFilter));
 }
 
 function playBeep(){
@@ -772,6 +836,7 @@ function updateStatus(){
 }
 
 function applyFilters(){
+    updateFilterBadge();
     const checkList = getCheckList();
     const keyword = searchInput.value.trim().toLowerCase();
 
@@ -806,6 +871,8 @@ function onScanSuccess(decodedText){
         showToast("Mã này đã có trong danh sách");
         return;
     }
+
+    setFilterPanel(false);
 
     const newObj = { code, tags: [] };
     scannedCodes.push(newObj);
@@ -1052,22 +1119,34 @@ addManualBtn.onclick = () => {
 
 
 
+filterToggleBtn.onclick = () => {
+    const willOpen = !filterPanel.classList.contains("show");
+    setFilterPanel(willOpen);
+    if (willOpen) searchInput.focus();
+};
+
 checkListInput.addEventListener("input", function(){
     localStorage.setItem("hbp_checkList", this.value);
     applyFilters();
 });
 
-searchInput.addEventListener("input", applyFilters);
+searchInput.addEventListener("input", function(){
+    localStorage.setItem("hbp_searchText", this.value);
+    applyFilters();
+});
 
-clearCheckListBtn.onclick = () => {
+clearCheckListBtn.onclick = (e) => {
+    e.stopPropagation();
     checkListInput.value = "";
     localStorage.removeItem("hbp_checkList");
     applyFilters();
     checkListInput.focus();
 };
 
-clearSearchBtn.onclick = () => {
+clearSearchBtn.onclick = (e) => {
+    e.stopPropagation();
     searchInput.value = "";
+    localStorage.removeItem("hbp_searchText");
     applyFilters();
     searchInput.focus();
 };
@@ -1104,11 +1183,16 @@ function loadData(){
     const savedCheckList = localStorage.getItem("hbp_checkList");
     if (savedCheckList) checkListInput.value = savedCheckList;
 
+    const savedSearchText = localStorage.getItem("hbp_searchText");
+    if (savedSearchText) searchInput.value = savedSearchText;
+
     const dark = localStorage.getItem("hbp_dark") === "1";
     document.body.classList.toggle("dark", dark);
     themeBtn.textContent = dark ? "☀️" : "🌙";
 
     renderAll();
+    updateFilterBadge();
+    setFilterPanel(false);
 }
 
 loadData();
