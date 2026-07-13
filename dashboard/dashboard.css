@@ -4351,7 +4351,7 @@ body.light-mode .schedule-date {
 #calendarModal .calendar-cell {
     min-height: 108px !important;
     max-height: 156px !important;
-    overflow: hidden !important;
+    overflow: scroll !important;
     display: flex !important;
     flex-direction: column !important;
 }
@@ -4503,6 +4503,9 @@ body.light-mode .schedule-date {
 
 /* Mobile Calendar uses list mode but still scrolls to the end */
 @media (max-width: 640px) {
+    #calendarModal .calendar-cell {
+        min-height: 60px !important
+    }
     #calendarModal .schedule-hub-box,
     #calendarModal .calendar-box {
         width: 96vw !important;
