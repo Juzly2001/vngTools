@@ -503,8 +503,8 @@
         🌙 Dark
     </button>
 
-    <p>Nhập danh sách mã (mỗi mã một dòng):</p>
-    <textarea id="barcode-inputs" placeholder="Ví dụ:&#10;BAO00001&#10;BAO00002&#10;BAO00003"></textarea>
+    <p>Nhập danh sách mã (có thể ngăn cách bằng xuống dòng, dấu phẩy hoặc dấu cách):</p>
+    <textarea id="barcode-inputs" placeholder="Ví dụ:&#10;BAO00001&#10;BAO00002, BAO00003 BAO00004"></textarea>
 
     <div class="stats-bar">
         <div class="stat-box">
@@ -595,10 +595,11 @@
 
     function getLines() {
         const textarea = getEl("barcode-inputs");
+
         return textarea.value
-            .split(/\n+/)
-            .map(line => line.trim())
-            .filter(line => line !== "");
+            .split(/[\s,;]+/)
+            .map(code => code.trim())
+            .filter(code => code !== "");
     }
 
     function updateStats(previewCount = null) {
@@ -672,10 +673,7 @@
         const searchText = getEl("search-preview").value.trim().toLowerCase();
         const config = getCodeSizeConfig();
 
-        let lines = textarea.value
-            .split(/\n+/)
-            .map(line => line.trim())
-            .filter(line => line !== "");
+        let lines = getLines();
 
         if (autoRemoveDuplicate) {
             lines = [...new Set(lines)];

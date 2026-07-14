@@ -1510,7 +1510,7 @@ copyBtn.onclick = async () => {
         alert("Chưa có mã.");
         return;
     }
-    const text = scannedCodes.map(getFormattedText).join(",\n");
+    const text = scannedCodes.map(getFormattedText).join("\n");
     await navigator.clipboard.writeText(text);
     showToast("Đã copy tất cả");
 };
