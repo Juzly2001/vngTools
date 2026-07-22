@@ -11,12 +11,16 @@
 <style>
 :root{color-scheme:light;--page-bg:#f5f7fb;--page-soft:#eef3f8;--card:#fff;--card2:#f8fafc;--text:#182033;--muted:#667085;--line:#e6eaf0;--primary:#2563eb;--primary-soft:#eff6ff;--danger:#dc2626;--danger-soft:#fef2f2;--success:#059669;--warning:#f59e0b;--on-primary:#fff;--input-text:#182033;--option-bg:#fff;--shadow:0 10px 28px rgba(15,23,42,.08);--shadow-row:0 12px 26px rgba(15,23,42,.10);--radius-lg:20px;--radius-md:16px}
 [data-theme="dark"]{color-scheme:dark;--page-bg:#0f172a;--page-soft:#111827;--card:#182235;--card2:#121a2a;--text:#e5e7eb;--muted:#a9b4c7;--line:#2c3a50;--primary:#60a5fa;--primary-soft:#1e3a5f;--danger:#f87171;--danger-soft:#3a1f26;--success:#34d399;--warning:#fbbf24;--on-primary:#08111f;--input-text:#eef4ff;--option-bg:#182235;--shadow:0 12px 32px rgba(0,0,0,.35);--shadow-row:0 14px 28px rgba(0,0,0,.28)}
-*{box-sizing:border-box}body{min-height:100vh;margin:0;padding:20px;color:var(--text);background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 30%),linear-gradient(180deg,var(--page-bg),var(--page-soft));font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app-shell{max-width:1500px;margin:auto}.top-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.app-title{margin:0;font-size:1.75rem;font-weight:850;letter-spacing:-.03em}.app-subtitle{margin:4px 0 0;color:var(--muted);font-size:.94rem}.header-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.card,.panel-card{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--card);color:var(--text);box-shadow:var(--shadow)}.btn{min-height:42px;border-radius:14px;font-weight:750}.form-control,.form-select,textarea{min-height:44px;border-radius:14px!important;border:1px solid var(--line)!important;background:var(--card2)!important;color:var(--text)!important}.form-control::placeholder,textarea::placeholder{color:var(--muted)}[data-theme="dark"] .btn-light{background:#24314a;color:#f8fafc;border-color:#384863}[data-theme="dark"] .btn-outline-secondary{color:#d5dbea;border-color:#526078}[data-theme="dark"] .btn-outline-danger{color:#ff9aa5;border-color:#a64e5b}[data-theme="dark"] .modal-content{background:var(--card);color:var(--text);border-color:var(--line)}[data-theme="dark"] .btn-close{filter:invert(1) grayscale(100%)}
+*{box-sizing:border-box}body{min-height:100vh;margin:0;padding:20px;color:var(--text);background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 30%),linear-gradient(180deg,var(--page-bg),var(--page-soft));font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app-shell{max-width:1500px;margin:auto}.top-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.app-title{margin:0;font-size:1.75rem;font-weight:850;letter-spacing:-.03em}.app-subtitle{margin:4px 0 0;color:var(--muted);font-size:.94rem}.header-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.card,.panel-card{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--card);color:var(--text);box-shadow:var(--shadow)}.btn{min-height:42px;border-radius:14px;font-weight:750}.form-control,.form-select,textarea{min-height:44px;border:1px solid var(--line)!important;background:var(--card2)!important;color:var(--text)!important}.form-control::placeholder,textarea::placeholder{color:var(--muted)}[data-theme="dark"] .btn-light{background:#24314a;color:#f8fafc;border-color:#384863}[data-theme="dark"] .btn-outline-secondary{color:#d5dbea;border-color:#526078}[data-theme="dark"] .btn-outline-danger{color:#ff9aa5;border-color:#a64e5b}[data-theme="dark"] .modal-content{background:var(--card);color:var(--text);border-color:var(--line)}[data-theme="dark"] .btn-close{filter:invert(1) grayscale(100%)}
 html[data-theme] body,html[data-theme] .modal-content,html[data-theme] .modal-header,html[data-theme] .modal-body,html[data-theme] .modal-footer,html[data-theme] .dropdown-menu{color:var(--text);background-color:var(--card);border-color:var(--line)}
 html[data-theme] .form-control,html[data-theme] .form-select,html[data-theme] textarea,html[data-theme] input,html[data-theme] select{color:var(--input-text)!important;background-color:var(--card2)!important;border-color:var(--line)!important;-webkit-text-fill-color:var(--input-text)}
 html[data-theme] select option{color:var(--input-text);background:var(--option-bg)}
 html[data-theme] .form-control:focus,html[data-theme] .form-select:focus,html[data-theme] textarea:focus{color:var(--input-text)!important;background-color:var(--card2)!important;border-color:var(--primary)!important;box-shadow:0 0 0 .2rem color-mix(in srgb,var(--primary) 24%,transparent)!important}
 html[data-theme] .form-control::placeholder,html[data-theme] textarea::placeholder{color:var(--muted)!important;opacity:1;-webkit-text-fill-color:var(--muted)}
+html[data-theme] input[type="file"].form-control{height:44px;min-height:44px;padding:0!important;overflow:hidden;display:flex;align-items:center;line-height:42px;background:var(--card2)!important;color:var(--text)!important}
+html[data-theme] input[type="file"].form-control::file-selector-button{height:42px;margin:0 12px 0 0;padding:0 16px;border:0;border-right:1px solid var(--line);border-radius:0;background:var(--primary-soft);color:var(--primary);font-weight:800;line-height:42px;transition:background .18s ease,color .18s ease}
+html[data-theme] input[type="file"].form-control:hover::file-selector-button{background:var(--primary);color:var(--on-primary)}
+html[data-theme] input[type="file"].form-control::-webkit-file-upload-button{height:42px;margin:0 12px 0 0;padding:0 16px;border:0;border-right:1px solid var(--line);border-radius:0;background:var(--primary-soft);color:var(--primary);font-weight:800;line-height:42px}
 html[data-theme] .text-muted,html[data-theme] small,html[data-theme] .form-text{color:var(--muted)!important}
 html[data-theme] .btn-light{background:var(--card2);color:var(--text);border-color:var(--line)}
 html[data-theme] .btn-light:hover{background:var(--primary-soft);color:var(--text);border-color:var(--primary)}
@@ -34,7 +38,7 @@ html[data-theme] .table{--bs-table-color:var(--text);--bs-table-bg:transparent;-
 html[data-theme] .alert{color:var(--text);background:var(--card2);border-color:var(--line)}
 
 .workspace{display:flex;align-items:flex-start;gap:14px;width:100%;min-width:0}.sidebar{width:380px;flex:0 0 380px;min-width:0;transition:transform .34s ease,margin-right .34s ease,opacity .25s ease}.content-area{flex:1 1 auto;min-width:0}.sidebar-toggle{flex:0 0 auto;position:sticky;top:88px;z-index:60;width:38px;height:46px;margin-left:-6px;margin-right:-6px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);box-shadow:var(--shadow);display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.25rem;font-weight:900}.workspace.sidebar-collapsed .sidebar{transform:translateX(calc(-100% - 28px));margin-right:-380px;opacity:0;pointer-events:none}.workspace.sidebar-collapsed .sidebar-toggle{margin-left:0}.sidebar .panel-card{padding:14px;margin-bottom:12px}.section-title{font-weight:850;display:flex;align-items:center;gap:8px;margin-bottom:12px}.tool-stack{display:grid;gap:12px}.two-col{display:grid;grid-template-columns:1fr 1fr;gap:10px}.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}.stat{padding:12px;border-radius:16px;background:var(--card2);border:1px solid var(--line)}.stat b{font-size:1.35rem;display:block}.stat span{color:var(--muted);font-size:.76rem;font-weight:700}.loading-bar{height:8px;background:var(--line);border-radius:999px;overflow:hidden;display:none;margin-top:12px}.loading-bar span{display:block;width:45%;height:100%;background:linear-gradient(90deg,var(--primary),#06b6d4);border-radius:999px;animation:load 1s infinite alternate}@keyframes load{from{transform:translateX(-70%)}to{transform:translateX(160%)}}
-.table-card{padding:14px}.table-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.table-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.table-scroll{overflow:auto;border-radius:18px}.table-scroll::-webkit-scrollbar{height:10px;width:8px}.table-scroll::-webkit-scrollbar-thumb{background:#bfc7d5;border-radius:20px}table{min-width:900px;margin:0!important;border-collapse:separate;border-spacing:0 10px}thead th{position:sticky;top:0;z-index:2;padding:14px;border:none!important;background:linear-gradient(180deg,var(--card),var(--card2));color:var(--text);font-size:.86rem;font-weight:850}tbody td{padding:14px!important;vertical-align:middle;background:var(--card2)!important;color:var(--text)!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}tbody td:first-child{border-left:1px solid var(--line)!important;border-radius:16px 0 0 16px}tbody td:last-child{border-right:1px solid var(--line)!important;border-radius:0 16px 16px 0}.word-cell{font-weight:850;font-size:1.08rem}.muted{color:var(--muted)}.action-btn{margin:2px 0;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--primary-soft);color:var(--primary)}
+.table-card{padding:14px}.table-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.table-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.table-scroll{overflow:auto;border-radius:18px}.table-scroll::-webkit-scrollbar{height:10px;width:8px}.table-scroll::-webkit-scrollbar-thumb{background:#bfc7d5;border-radius:20px}table{min-width:900px;margin:0!important;border-collapse:separate;border-spacing:0 10px}thead th{position:sticky;top:0;z-index:2;padding:14px;border:none!important;background:linear-gradient(180deg,var(--card),var(--card2));color:var(--text);font-size:.86rem;font-weight:850}tbody td{padding:14px!important;vertical-align:middle;background:var(--card2)!important;color:var(--text)!important;border-top:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important}tbody td:first-child{border-left:1px solid var(--line)!important;border-radius:16px 0 0 16px}tbody td:last-child{border-right:1px solid var(--line)!important;border-radius:0 16px 16px 0}.word-cell{font-weight:850;font-size:1.08rem}.muted{color:var(--muted)}.action-btn{margin:2px 2px;width:38px;height:38px;border:1px solid var(--line);border-radius:50%;background:var(--primary-soft);color:var(--primary)}
 .desktop-action-cell{width:168px;min-width:168px}
 .desktop-action-group{display:inline-flex;align-items:center;gap:5px;padding:5px;border:1px solid var(--line);border-radius:14px;background:var(--card);box-shadow:0 4px 12px rgba(15,23,42,.06)}
 .desktop-row-action{height:34px;border:0;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:0 10px;font-size:.78rem;font-weight:850;white-space:nowrap;transition:transform .16s ease,background .16s ease,color .16s ease}
@@ -46,7 +50,7 @@ html[data-theme] .alert{color:var(--text);background:var(--card2);border-color:v
 .desktop-row-action .action-icon{font-size:1rem;line-height:1}
 @media(max-width:1100px) and (min-width:769px){.desktop-action-cell{width:112px;min-width:112px}.desktop-row-action.copy{width:34px;padding:0}.desktop-row-action.copy .action-label{display:none}}
 .empty{padding:38px;text-align:center;color:var(--muted)}
-.mobile-card-list{display:none}.mobile-control-toggle{display:none}.quiz-card{border:1px solid var(--line);background:var(--card2);border-radius:18px;padding:16px;margin-bottom:12px}.correct-input{border:2px solid var(--success)!important;background:rgba(22,163,74,.12)!important}.wrong-input{border:2px solid var(--danger)!important;background:rgba(239,68,68,.12)!important}.show-answer{color:var(--danger);font-size:.92rem;font-weight:800;margin-top:7px}.quiz-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}.quiz-type{display:inline-flex;padding:5px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-weight:850;font-size:12px;margin-bottom:8px}.listen-box{display:flex;align-items:center;justify-content:center;padding:18px;border:1px dashed var(--line);border-radius:16px;background:var(--primary-soft)}.listen-btn{font-size:20px;border:0;border-radius:999px;padding:10px 16px;background:var(--primary);color:var(--on-primary);font-weight:900}body.quiz-mode .top-title,body.quiz-mode #workspace{display:none!important}body.quiz-mode .app-shell{max-width:900px}#quizSection{padding:22px}
+.form-control-mobile{flex:0 0 auto!important;width:100px!important;max-width:100px!important;margin-left:5px!important}.mobile-card-list{display:none}.mobile-control-toggle{display:none}.quiz-card{border:1px solid var(--line);background:var(--card2);border-radius:18px;padding:16px;margin-bottom:12px}.correct-input{border:2px solid var(--success)!important;background:rgba(22,163,74,.12)!important}.wrong-input{border:2px solid var(--danger)!important;background:rgba(239,68,68,.12)!important}.show-answer{color:var(--danger);font-size:.92rem;font-weight:800;margin-top:7px}.quiz-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;margin-bottom:12px}.quiz-type{display:inline-flex;padding:5px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-weight:850;font-size:12px;margin-bottom:8px}.listen-box{display:flex;align-items:center;justify-content:center;padding:18px;border:1px dashed var(--line);border-radius:16px;background:var(--primary-soft)}.listen-btn{font-size:20px;border:0;border-radius:999px;padding:10px 16px;background:var(--primary);color:var(--on-primary);font-weight:900}body.quiz-mode .top-title,body.quiz-mode #workspace{display:none!important}body.quiz-mode .app-shell{max-width:900px}#quizSection{padding:22px}
 .back-to-top-btn{position:fixed;right:18px;bottom:18px;z-index:999;width:46px;height:46px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--text);box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transform:translateY(12px);transition:.22s}.back-to-top-btn.show{opacity:1;pointer-events:auto;transform:none}
 @media(max-width:768px){body{padding:8px;background:var(--page-bg)}.hiden-mobile{display: none !important;}.top-title{position:sticky;top:8px;z-index:30;padding:10px 12px;border-radius:18px;background:color-mix(in srgb,var(--card) 88%,transparent);backdrop-filter:blur(12px);border:1px solid var(--line)}.app-title{font-size:1.3rem}.app-subtitle{display:none}.header-actions .btn:not(#themeBtn){display:none}.workspace{display:block}.sidebar{width:100%!important;transform:none!important;margin:0 0 14px!important;opacity:1!important;pointer-events:auto!important}.sidebar-toggle{display:none}.mobile-control-toggle{display:flex;width:100%;align-items:center;justify-content:space-between;margin-bottom:10px;border:1px solid var(--line);background:var(--card);color:var(--text);box-shadow:var(--shadow)}#inputArea{transition:max-height .35s ease,opacity .25s ease,transform .25s ease;max-height:1400px;overflow:hidden;transform-origin:top}#inputArea.controls-collapsed{max-height:0;opacity:0;transform:scale(.98);margin-bottom:0}.stat-grid{grid-template-columns:repeat(3,1fr);gap:6px}.stat{padding:9px 6px;text-align:center}.stat b{font-size:1rem}.stat span{font-size:.66rem}.two-col{grid-template-columns:1fr}.table-card{padding:0;border:none;background:transparent;box-shadow:none}.table-head{padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--card);box-shadow:var(--shadow)}.table-actions{width:100%}.table-actions #searchInput{width:100%!important}.table-scroll{overflow:visible}#wordTable{display:none}.mobile-card-list{display:grid;gap:14px}.vocab-card{perspective:1200px;cursor:pointer}.vocab-card-inner{position:relative;height:280px;transition:transform .55s cubic-bezier(.2,.8,.2,1);transform-style:preserve-3d}.vocab-card.flipped .vocab-card-inner{transform:rotateY(180deg)}.vocab-face{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--line);border-radius:24px;background:var(--card);box-shadow:var(--shadow);padding:18px;overflow:hidden}.vocab-back{transform:rotateY(180deg);display:flex;flex-direction:column}.vocab-top{display:flex;justify-content:space-between}.vocab-index{font-size:.78rem;color:var(--muted);font-weight:800}.vocab-word{font-size:2.45rem;font-weight:850;margin-top:16px}.vocab-phonetic{display:inline-flex;margin-top:8px;padding:6px 10px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-weight:800}.vocab-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:18px}.mini-btn{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:13px;padding:8px 9px;font-weight:800;font-size:13px}.meaning-box{flex:1;display:flex;align-items:center;justify-content:center;text-align:center;border:1px dashed var(--line);background:var(--primary-soft);border-radius:18px;padding:18px;font-size:24px;font-weight:850;line-height:1.45;overflow:auto}.vocab-face:after{content:"Chạm vào thẻ để lật";position:absolute;right:14px;bottom:10px;font-size:11px;color:var(--muted);font-weight:700;opacity:.75}#quizSection{padding:16px;border-radius:22px}.back-to-top-btn{right:14px;bottom:14px}}
 
@@ -74,6 +78,12 @@ html[data-theme] .alert{color:var(--text);background:var(--card2);border-color:v
 [data-theme="coffee"]{color-scheme:light;--page-bg:#f7f1ea;--page-soft:#eee3d7;--card:#fffaf4;--card2:#f4e9dd;--text:#3c2b22;--muted:#80685a;--line:#ddcbbb;--primary:#9a6242;--primary-soft:#ead9cc;--danger:#b94343;--danger-soft:#f8e2df;--success:#4d8061;--warning:#b7791f;--on-primary:#fffaf5;--input-text:#3c2b22;--option-bg:#fffaf4;--shadow:0 14px 32px rgba(91,58,38,.13);--theme-glow:rgba(154,98,66,.13);--theme-glow-2:rgba(180,120,72,.07)}
 [data-theme="mint"]{color-scheme:light;--page-bg:#f3fffb;--page-soft:#e5f8f1;--card:#fbfffd;--card2:#edfaf5;--text:#173b31;--muted:#5c8176;--line:#cbe8dd;--primary:#159b77;--primary-soft:#d9f5eb;--danger:#cf4d62;--danger-soft:#fde7eb;--success:#158663;--warning:#c18419;--on-primary:#fff;--input-text:#173b31;--option-bg:#fbfffd;--shadow:0 14px 34px rgba(21,128,97,.10);--theme-glow:rgba(21,155,119,.13);--theme-glow-2:rgba(45,212,191,.08)}
 [data-theme="sakura-night"]{color-scheme:dark;--page-bg:#17111c;--page-soft:#211525;--card:#2a1b30;--card2:#35213b;--text:#fff1f7;--muted:#d1afc3;--line:#5c3858;--primary:#f18ab7;--primary-soft:rgba(241,138,183,.17);--danger:#ff8292;--danger-soft:#4e2431;--success:#75d9b1;--warning:#ffd178;--on-primary:#29101c;--input-text:#fff5fa;--option-bg:#35213b;--shadow:0 18px 44px rgba(0,0,0,.42);--theme-glow:rgba(241,138,183,.17);--theme-glow-2:rgba(192,132,252,.08)}
+[data-theme="sky"]{color-scheme:light;--page-bg:#f2f9ff;--page-soft:#e5f3ff;--card:#fbfdff;--card2:#eef8ff;--text:#16324a;--muted:#62809a;--line:#cbe3f3;--primary:#258ac7;--primary-soft:#dff2ff;--danger:#d84c68;--danger-soft:#fde8ee;--success:#218b6b;--warning:#c88922;--on-primary:#fff;--input-text:#16324a;--option-bg:#fbfdff;--shadow:0 14px 34px rgba(37,138,199,.11);--theme-glow:rgba(37,138,199,.14);--theme-glow-2:rgba(56,189,248,.08)}
+[data-theme="lemon"]{color-scheme:light;--page-bg:#fffdf2;--page-soft:#fff8d9;--card:#fffef8;--card2:#fff9df;--text:#403712;--muted:#817548;--line:#eadf9d;--primary:#c59b14;--primary-soft:#fff2b8;--danger:#c94c54;--danger-soft:#fde8e8;--success:#4d8b55;--warning:#d28b16;--on-primary:#211900;--input-text:#403712;--option-bg:#fffef8;--shadow:0 14px 32px rgba(197,155,20,.10);--theme-glow:rgba(245,199,47,.15);--theme-glow-2:rgba(250,204,21,.08)}
+[data-theme="peach"]{color-scheme:light;--page-bg:#fff8f3;--page-soft:#ffede2;--card:#fffaf7;--card2:#fff0e7;--text:#4a2b20;--muted:#936d5d;--line:#f0d0bf;--primary:#e6784d;--primary-soft:#ffe2d2;--danger:#d34d63;--danger-soft:#fde7ec;--success:#33866b;--warning:#c98925;--on-primary:#fff;--input-text:#4a2b20;--option-bg:#fffaf7;--shadow:0 14px 34px rgba(230,120,77,.11);--theme-glow:rgba(230,120,77,.15);--theme-glow-2:rgba(251,146,60,.08)}
+[data-theme="cyber"]{color-scheme:dark;--page-bg:#06111a;--page-soft:#071d28;--card:#0b2530;--card2:#0e303e;--text:#eaffff;--muted:#9bc9d4;--line:#285666;--primary:#39f2d0;--primary-soft:rgba(57,242,208,.15);--danger:#ff718d;--danger-soft:#43202d;--success:#59e7a8;--warning:#ffd166;--on-primary:#031714;--input-text:#efffff;--option-bg:#0e303e;--shadow:0 18px 44px rgba(0,0,0,.46);--theme-glow:rgba(57,242,208,.15);--theme-glow-2:rgba(34,211,238,.09)}
+[data-theme="grape"]{color-scheme:dark;--page-bg:#140c1d;--page-soft:#21112f;--card:#2b183b;--card2:#351d49;--text:#fff3ff;--muted:#d4b6df;--line:#5f3b72;--primary:#c084fc;--primary-soft:rgba(192,132,252,.18);--danger:#ff8099;--danger-soft:#4c2230;--success:#76ddb0;--warning:#ffd166;--on-primary:#220e33;--input-text:#fff7ff;--option-bg:#351d49;--shadow:0 18px 44px rgba(0,0,0,.43);--theme-glow:rgba(192,132,252,.17);--theme-glow-2:rgba(236,72,153,.08)}
+[data-theme="terminal"]{color-scheme:dark;--page-bg:#020705;--page-soft:#06100b;--card:#0a1710;--card2:#0e2117;--text:#dbffe9;--muted:#8fbaa0;--line:#28533a;--primary:#45e07b;--primary-soft:rgba(69,224,123,.15);--danger:#ff7b83;--danger-soft:#3c2024;--success:#45e07b;--warning:#e7d55a;--on-primary:#031309;--input-text:#eafff0;--option-bg:#0e2117;--shadow:0 18px 44px rgba(0,0,0,.52);--theme-glow:rgba(69,224,123,.14);--theme-glow-2:rgba(34,197,94,.07)}
 body{background:radial-gradient(circle at top left,var(--theme-glow),transparent 32%),radial-gradient(circle at 88% 8%,var(--theme-glow-2),transparent 25%),linear-gradient(180deg,var(--page-bg),var(--page-soft))}
 .theme-picker{grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
 .theme-choice{min-height:76px;padding:9px;border-radius:16px;display:flex;flex-direction:column;align-items:stretch;justify-content:space-between;gap:8px;text-align:left;transition:transform .16s ease,border-color .16s ease,box-shadow .16s ease}
@@ -82,6 +92,14 @@ body{background:radial-gradient(circle at top left,var(--theme-glow),transparent
 .theme-preview{height:26px;border-radius:9px;background:linear-gradient(135deg,var(--p1),var(--p1) 43%,var(--p2) 44%,var(--p2) 72%,var(--p3) 73%)}
 .theme-name{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:.76rem}
 .theme-choice.active .theme-name:after{content:'✓';font-weight:950;color:var(--primary)}
+.theme-choice.theme-extra{display:none}.theme-picker.show-all .theme-choice.theme-extra{display:flex}
+.theme-more{position:relative;overflow:hidden;border:1px solid color-mix(in srgb,var(--primary) 42%,var(--line));justify-content:center;align-items:center;text-align:left;background:linear-gradient(135deg,color-mix(in srgb,var(--primary-soft) 82%,var(--card)),var(--card2));color:var(--text);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.theme-more:before{content:'';position:absolute;width:70px;height:70px;right:-24px;top:-30px;border-radius:50%;background:color-mix(in srgb,var(--primary) 18%,transparent)}
+.theme-more:hover{border-color:var(--primary);box-shadow:0 10px 24px color-mix(in srgb,var(--primary) 14%,transparent);transform:translateY(-2px)}
+.theme-more-content{position:relative;z-index:1;width:100%;display:flex;align-items:center;gap:10px}
+.theme-more-icon{width:34px;height:34px;flex:0 0 34px;border-radius:11px;display:grid;place-items:center;background:var(--primary);color:var(--on-primary);font-size:1.1rem;font-weight:900;box-shadow:0 6px 14px color-mix(in srgb,var(--primary) 26%,transparent);transition:transform .2s ease}
+.theme-more-text{min-width:0;display:flex;flex-direction:column;line-height:1.15}.theme-more-title{font-size:.8rem;font-weight:900}.theme-more-subtitle{margin-top:4px;font-size:.64rem;color:var(--muted);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.theme-picker.show-all .theme-more-icon{transform:rotate(180deg)}.theme-more.active{outline:none;box-shadow:none}
 @media(max-width:768px){.theme-picker{grid-template-columns:repeat(2,minmax(0,1fr))}.theme-choice{min-height:72px}}
 
 </style>
@@ -93,7 +111,6 @@ body{background:radial-gradient(circle at top left,var(--theme-glow),transparent
     <div><h1 class="app-title">📚 Sổ tay từ vựng</h1><p class="app-subtitle">Tra từ, lưu từ, phát âm, Excel và luyện quiz Anh–Việt</p></div>
     <div class="header-actions">
       <button class="btn btn-light" onclick="openLearningHub('settings')" id="themeBtn">🎨 Giao diện</button>
-      <button class="btn btn-outline-primary" onclick="speakSelected()">🔊 Đọc từ đã lọc</button>
       <button class="btn btn-success" onclick="exportToExcel()">⬇ Xuất Excel</button>
     </div>
   </header>
@@ -114,9 +131,10 @@ body{background:radial-gradient(circle at top left,var(--theme-glow),transparent
       <section class="panel-card">
         <div class="section-title">⚙️ Công cụ nhanh</div>
         <div class="tool-stack">
+          <div><div class="hiden-mobile"><label class="form-label fw-bold">Nhập Excel</label><input type="file" id="excelInput" class="form-control" accept=".xlsx,.xls,.csv" onchange="importExcel(event)"></div></div>
           <div><label class="form-label fw-bold">Từ ngẫu nhiên</label><div class="input-group"><input type="number" id="randomCount" class="form-control" value="5" min="1" max="30"><button class="btn btn-info" onclick="addRandomWords(event)">Thêm</button></div></div>
-          <div><label class="form-label fw-bold">Thêm theo chủ đề</label><div class="input-group"><input type="text" id="topicInput" class="form-control" placeholder="food, travel..."><input type="number" id="topicCount" class="form-control" value="5" min="1" max="30"><button class="btn btn-primary" onclick="addByTopic(event)">Thêm</button></div></div>
-          <div class="two-col"><div><label class="form-label fw-bold hiden-mobile">Nhập Excel</label><input type="file" id="excelInput" class="form-control" accept=".xlsx,.xls,.csv" onchange="importExcel(event)"></div><div><label class="form-label fw-bold">Kiểm tra</label><div class="input-group"><select id="quizMode" class="form-select"><option value="en-vi">Anh → Việt</option><option value="vi-en">Việt → Anh</option><option value="listen">Nghe → Gõ từ</option><option value="mixed3">Trộn 3 chiều</option></select><button class="btn btn-warning" onclick="startQuiz()">Quiz</button></div></div></div>
+          <div><label class="form-label fw-bold">Thêm theo chủ đề</label><div class="input-group"><input type="text" id="topicInput" class="form-control" placeholder="food, travel..."><input type="number" id="topicCount" class="form-control form-control-mobile" value="5" min="1" max="30"><button class="btn btn-primary" onclick="addByTopic(event)">Thêm</button></div></div>
+          <div><label class="form-label fw-bold">Kiểm tra</label><div class="input-group"><select id="quizMode" class="form-select"><option value="en-vi">Anh → Việt</option><option value="vi-en">Việt → Anh</option><option value="listen">Nghe → Gõ từ</option><option value="mixed3">Trộn 3 chiều</option></select><button class="btn btn-warning" onclick="startQuiz()">Quiz</button></div></div>
         </div>
       </section>
     </aside>
@@ -142,19 +160,26 @@ body{background:radial-gradient(circle at top left,var(--theme-glow),transparent
   <section class="feature-panel" id="panel-game"><div class="d-flex justify-content-between align-items-center mb-3"><div><b>Ghép từ với nghĩa</b><div class="muted">Mở đúng hai thẻ tương ứng.</div></div><button class="btn btn-success" id="newMemoryGame">Ván mới</button></div><div id="gameStatus" class="mb-2 fw-bold"></div><div class="game-board" id="memoryBoard"></div></section>
   <section class="feature-panel" id="panel-voice"><div class="voice-box"><div class="muted">Từ cần đọc</div><div class="flash-word" id="voiceTarget">hello</div><div class="voice-status" id="voiceStatus"><span class="voice-status-dot"></span><span>Sẵn sàng</span></div><div class="voice-wave" id="voiceWave" aria-label="Mức âm thanh"></div><div class="voice-record-actions"><button class="btn btn-primary" id="voiceListen">🔊 Nghe mẫu</button><button class="btn btn-success" id="voiceStart">🎙️ Bắt đầu nói</button><button class="btn btn-danger" id="voiceStop" style="display:none">⏹ Dừng</button><button class="btn btn-outline-secondary" id="voiceNext">Từ khác</button></div><div class="voice-live" id="voiceTranscript">...</div><div id="voiceFeedback"></div><audio id="voicePlayback" class="voice-playback" controls style="display:none"></audio><div class="voice-help">Khi đang nhận diện, nút Nghe mẫu sẽ tạm khóa để tránh xung đột âm thanh trên Android. Hãy nghe mẫu trước, đợi đọc xong rồi mới bấm Bắt đầu nói.</div></div></section>
   <section class="feature-panel" id="panel-ai"><div><div class="field-label">Chọn từ</div><select id="aiWordSelect" class="form-select"></select></div><div class="d-flex gap-2 flex-wrap my-3"><button class="btn btn-primary" id="generateLocalAI">✨ Tạo nội dung thông minh</button></div><div class="ai-result" id="aiResult"><div class="muted">Chọn một từ rồi bấm “Tạo nội dung thông minh”.</div></div><div class="muted mt-2">Nội dung ưu tiên ví dụ từ từ điển; bản dịch tiếng Việt dùng dịch vụ miễn phí và có thể phụ thuộc kết nối mạng.</div></section>
-  <section class="feature-panel" id="panel-settings"><div class="section-title">🌙 Chế độ giao diện</div><div class="theme-picker">
+  <section class="feature-panel" id="panel-settings"><div class="section-title">🌙 Chế độ giao diện</div><div class="theme-picker" id="themePicker">
 <button class="theme-choice" data-theme-choice="light"><span class="theme-preview" style="--p1:#f5f7fb;--p2:#fff;--p3:#2563eb"></span><span class="theme-name">☀️ Light</span></button>
 <button class="theme-choice" data-theme-choice="dark"><span class="theme-preview" style="--p1:#0f172a;--p2:#182235;--p3:#60a5fa"></span><span class="theme-name">🌙 Dark</span></button>
 <button class="theme-choice" data-theme-choice="midnight"><span class="theme-preview" style="--p1:#050816;--p2:#121b33;--p3:#9ab0ff"></span><span class="theme-name">🌌 Midnight</span></button>
 <button class="theme-choice" data-theme-choice="oled"><span class="theme-preview" style="--p1:#000;--p2:#121212;--p3:#9ab6ff"></span><span class="theme-name">⬛ OLED</span></button>
 <button class="theme-choice" data-theme-choice="forest"><span class="theme-preview" style="--p1:#07130f;--p2:#163126;--p3:#72e3aa"></span><span class="theme-name">🌲 Forest</span></button>
-<button class="theme-choice" data-theme-choice="rose"><span class="theme-preview" style="--p1:#fff7fa;--p2:#fff1f6;--p3:#db4b83"></span><span class="theme-name">🌷 Rose</span></button>
-<button class="theme-choice" data-theme-choice="lavender"><span class="theme-preview" style="--p1:#faf8ff;--p2:#f5f1ff;--p3:#7656d8"></span><span class="theme-name">🔮 Lavender</span></button>
-<button class="theme-choice" data-theme-choice="ocean"><span class="theme-preview" style="--p1:#04151d;--p2:#0f3441;--p3:#4dd8e8"></span><span class="theme-name">🌊 Ocean</span></button>
-<button class="theme-choice" data-theme-choice="sunset"><span class="theme-preview" style="--p1:#21111a;--p2:#482432;--p3:#ff9a62"></span><span class="theme-name">🌅 Sunset</span></button>
-<button class="theme-choice" data-theme-choice="coffee"><span class="theme-preview" style="--p1:#f7f1ea;--p2:#f4e9dd;--p3:#9a6242"></span><span class="theme-name">☕ Coffee</span></button>
-<button class="theme-choice" data-theme-choice="mint"><span class="theme-preview" style="--p1:#f3fffb;--p2:#edfaf5;--p3:#159b77"></span><span class="theme-name">🍃 Mint</span></button>
-<button class="theme-choice" data-theme-choice="sakura-night"><span class="theme-preview" style="--p1:#17111c;--p2:#35213b;--p3:#f18ab7"></span><span class="theme-name">🌸 Sakura Night</span></button>
+<button class="theme-choice theme-more" id="themeMoreBtn" type="button" onclick="toggleMoreThemes()" aria-expanded="false"><span class="theme-more-content"><span class="theme-more-icon">＋</span><span class="theme-more-text"><span class="theme-more-title">Xem thêm</span><span class="theme-more-subtitle">Khám phá các giao diện khác</span></span></span></button>
+<button class="theme-choice theme-extra" data-theme-choice="rose"><span class="theme-preview" style="--p1:#fff7fa;--p2:#fff1f6;--p3:#db4b83"></span><span class="theme-name">🌷 Rose</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="lavender"><span class="theme-preview" style="--p1:#faf8ff;--p2:#f5f1ff;--p3:#7656d8"></span><span class="theme-name">🔮 Lavender</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="ocean"><span class="theme-preview" style="--p1:#04151d;--p2:#0f3441;--p3:#4dd8e8"></span><span class="theme-name">🌊 Ocean</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="sunset"><span class="theme-preview" style="--p1:#21111a;--p2:#482432;--p3:#ff9a62"></span><span class="theme-name">🌅 Sunset</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="coffee"><span class="theme-preview" style="--p1:#f7f1ea;--p2:#f4e9dd;--p3:#9a6242"></span><span class="theme-name">☕ Coffee</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="mint"><span class="theme-preview" style="--p1:#f3fffb;--p2:#edfaf5;--p3:#159b77"></span><span class="theme-name">🍃 Mint</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="sakura-night"><span class="theme-preview" style="--p1:#17111c;--p2:#35213b;--p3:#f18ab7"></span><span class="theme-name">🌸 Sakura Night</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="sky"><span class="theme-preview" style="--p1:#f2f9ff;--p2:#eef8ff;--p3:#258ac7"></span><span class="theme-name">☁️ Sky</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="lemon"><span class="theme-preview" style="--p1:#fffdf2;--p2:#fff9df;--p3:#c59b14"></span><span class="theme-name">🍋 Lemon</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="peach"><span class="theme-preview" style="--p1:#fff8f3;--p2:#fff0e7;--p3:#e6784d"></span><span class="theme-name">🍑 Peach</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="cyber"><span class="theme-preview" style="--p1:#06111a;--p2:#0e303e;--p3:#39f2d0"></span><span class="theme-name">⚡ Cyber</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="grape"><span class="theme-preview" style="--p1:#140c1d;--p2:#351d49;--p3:#c084fc"></span><span class="theme-name">🍇 Grape</span></button>
+<button class="theme-choice theme-extra" data-theme-choice="terminal"><span class="theme-preview" style="--p1:#020705;--p2:#0e2117;--p3:#45e07b"></span><span class="theme-name">💻 Terminal</span></button>
 </div><hr><div class="section-title">🔊 Giọng đọc mặc định</div><div class="settings-grid"><select id="hubVoiceAccent" class="form-select"><option value="en-US">🇺🇸 US</option><option value="en-GB">🇬🇧 UK</option><option value="en-AU">🇦🇺 AU</option></select><select id="hubVoiceRate" class="form-select"><option value="0.5">0.5×</option><option value="0.6">0.6×</option><option value="0.8">0.8×</option><option value="1">1×</option><option value="1.2">1.2×</option></select></div></section>
 </div></div></div></div>
 <script>let quizData = safeParse(localStorage.getItem('myVocab'), []);
@@ -306,7 +331,6 @@ if('speechSynthesis' in window){
   speechSynthesis.getVoices();
   speechSynthesis.addEventListener?.('voiceschanged', () => speechSynthesis.getVoices());
 }
-function speakSelected(){ const words=getFilteredData().map(i=>i.word).slice(0,30); if(!words.length)return showModal('Không có từ để đọc.'); speakWord(words.join(', ')); }
 
 let lookupRunning = false;
 let lookupController = null;
@@ -492,13 +516,72 @@ async function addRandomWords(event){
   }
 }
 async function addByTopic(event){
-  const topic=document.getElementById('topicInput').value.trim(); const count=+document.getElementById('topicCount').value || 5; if(!topic)return showModal('Vui lòng nhập chủ đề.');
-  const btn=event?.target; setLoading(true); if(btn)btn.disabled=true;
-  try{ const res=await fetch(`https://api.datamuse.com/words?ml=${encodeURIComponent(topic)}&max=150`); const data=await res.json(); let added=0;
-    for(const item of data.sort(()=>Math.random()-.5)){ if(added>=count)break; if(await addWordToTable(item.word)) added++; }
-    showModal(`Đã thêm ${added} từ về chủ đề: ${topic}`);
-  }catch(e){ showModal('Lỗi kết nối khi thêm theo chủ đề.'); }
-  setLoading(false); if(btn)btn.disabled=false;
+  const topicInput=document.getElementById('topicInput');
+  const countInput=document.getElementById('topicCount');
+  const topic=String(topicInput?.value||'').trim();
+  const count=Math.min(30,Math.max(1,Number.parseInt(countInput?.value,10)||5));
+  if(countInput) countInput.value=count;
+  if(!topic) return showModal('Vui lòng nhập chủ đề.');
+
+  const btn=event?.currentTarget || event?.target;
+  setLoading(true);
+  if(btn) btn.disabled=true;
+
+  try{
+    // Datamuse hoạt động tốt nhất với từ khóa tiếng Anh. Nếu người dùng nhập
+    // chủ đề tiếng Việt, thử dịch sang tiếng Anh trước khi tìm từ liên quan.
+    let searchTopic=topic;
+    if(/[^\x00-\x7F]/.test(topic)){
+      try{
+        const translated=await translateText(topic,'vi','en');
+        if(translated) searchTopic=String(translated).trim();
+      }catch(translateError){
+        console.warn('Không thể dịch chủ đề, dùng nguyên văn:',translateError);
+      }
+    }
+
+    const url=`https://api.datamuse.com/words?ml=${encodeURIComponent(searchTopic)}&topics=${encodeURIComponent(searchTopic)}&max=200`;
+    const res=await fetchWithTimeout(url,{timeoutMs:12000,cache:'no-store'});
+    if(!res.ok) throw new Error(`Datamuse HTTP ${res.status}`);
+
+    const data=await res.json();
+    if(!Array.isArray(data)) throw new Error('Dữ liệu chủ đề không hợp lệ');
+
+    const candidates=shuffleArray([...new Set(
+      data.map(item=>String(item?.word||'').trim().toLowerCase())
+          .filter(word=>/^[a-z][a-z-]*$/.test(word))
+          .filter(word=>!quizData.some(saved=>saved.word===word))
+    )]);
+
+    if(!candidates.length){
+      return showModal(`Không tìm thấy từ mới phù hợp với chủ đề “${topic}”. Hãy thử chủ đề cụ thể hơn, ví dụ: food, travel, technology.`);
+    }
+
+    let added=0;
+    let checked=0;
+    const maxChecks=Math.min(candidates.length,Math.max(count*6,30));
+    for(const word of candidates){
+      if(added>=count || checked>=maxChecks) break;
+      checked++;
+      try{
+        if(await addWordToTable(word)) added++;
+      }catch(wordError){
+        console.warn('Bỏ qua từ theo chủ đề:',word,wordError);
+      }
+    }
+
+    if(added){
+      showModal(`Đã thêm ${added}/${count} từ về chủ đề “${topic}”.${added<count?' Một số từ bị bỏ qua vì đã tồn tại hoặc không có dữ liệu từ điển.':''}`);
+    }else{
+      showModal(`Không thêm được từ mới cho chủ đề “${topic}”. Các từ tìm thấy có thể đã tồn tại hoặc không có dữ liệu từ điển.`);
+    }
+  }catch(e){
+    console.error('Topic word error:',e);
+    showModal('Không thể thêm từ theo chủ đề lúc này. Vui lòng kiểm tra kết nối mạng rồi thử lại.');
+  }finally{
+    setLoading(false);
+    if(btn) btn.disabled=false;
+  }
 }
 function importExcel(event){
   const file=event.target.files[0]; if(!file)return; const reader=new FileReader();
@@ -628,6 +711,26 @@ function activatePanel(name){ document.querySelectorAll('.feature-tab').forEach(
 function refreshHubData(){ const sel=document.getElementById('aiWordSelect'); if(sel)sel.innerHTML=quizData.map((x,i)=>`<option value="${i}">${escapeHtml(x.word)}</option>`).join(''); syncVoiceControls(); updateThemeChoices(); }
 document.addEventListener('click',e=>{ const t=e.target.closest('.feature-tab'); if(t)activatePanel(t.dataset.panel); const th=e.target.closest('[data-theme-choice]'); if(th)setTheme(th.dataset.themeChoice); });
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('vocabTheme',t); updateThemeChoices(); }
+function toggleMoreThemes(force){
+  const picker=document.getElementById('themePicker');
+  const btn=document.getElementById('themeMoreBtn');
+  if(!picker||!btn) return;
+  const show = typeof force==='boolean' ? force : !picker.classList.contains('show-all');
+  picker.classList.toggle('show-all',show);
+  btn.setAttribute('aria-expanded',String(show));
+  const icon=btn.querySelector('.theme-more-icon');
+  const title=btn.querySelector('.theme-more-title');
+  const subtitle=btn.querySelector('.theme-more-subtitle');
+  if(icon) icon.textContent=show?'⦿':'＋';
+  if(title) title.textContent=show?'Thu gọn':'Xem thêm';
+  if(subtitle) subtitle.textContent=show?'Ẩn bớt danh sách giao diện':'Khám phá các giao diện khác';
+  if(show){
+    picker.appendChild(btn);
+  }else{
+    const firstExtra=picker.querySelector('.theme-choice.theme-extra');
+    if(firstExtra) picker.insertBefore(btn,firstExtra);
+  }
+}
 function updateThemeChoices(){ const t=localStorage.getItem('vocabTheme')||'light'; document.querySelectorAll('[data-theme-choice]').forEach(b=>b.classList.toggle('active',b.dataset.themeChoice===t)); }
 function syncVoiceControls(){
   const accent = localStorage.getItem('voiceAccent') || 'en-US';
