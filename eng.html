@@ -27,6 +27,8 @@ html[data-theme] .btn-outline-primary:hover{background:var(--primary);color:var(
 html[data-theme] .btn-primary,html[data-theme] .bg-primary{background-color:var(--primary)!important;border-color:var(--primary)!important;color:var(--on-primary)!important}
 html[data-theme] .btn-danger{color:#fff}
 html[data-theme]:not([data-theme="light"]) .btn-close{filter:invert(1) grayscale(100%)}
+html[data-theme] .btn-close{opacity:1!important;padding:8px;border:1px solid var(--line);border-radius:50%;background-color:var(--card2);background-size:12px;box-shadow:0 2px 8px rgba(15,23,42,.12)}
+html[data-theme="light"] .btn-close,html[data-theme="rose"] .btn-close,html[data-theme="lavender"] .btn-close,html[data-theme="coffee"] .btn-close,html[data-theme="mint"] .btn-close{filter:none!important}
 html[data-theme] hr{border-color:var(--line);opacity:1}
 html[data-theme] .table{--bs-table-color:var(--text);--bs-table-bg:transparent;--bs-table-border-color:var(--line)}
 html[data-theme] .alert{color:var(--text);background:var(--card2);border-color:var(--line)}
@@ -106,7 +108,7 @@ body{background:radial-gradient(circle at top left,var(--theme-glow),transparent
       <section class="panel-card">
         <div class="section-title">➕ Thêm từ mới</div>
         <textarea id="wordInput" class="form-control" rows="4" placeholder="Nhập từ tiếng Anh, cách nhau bằng dấu phẩy hoặc xuống dòng..."></textarea>
-        <div class="d-flex gap-2 mt-3"><button class="btn btn-primary flex-grow-1" onclick="processAllWords(event)">Tra & thêm từ</button><button class="btn btn-outline-secondary" onclick="document.getElementById('wordInput').value=''">Xóa</button></div>
+        <div class="d-flex gap-2 mt-3"><button id="lookupBtn" class="btn btn-primary flex-grow-1" onclick="processAllWords(event)">🔎 Tra & thêm từ</button><button class="btn btn-outline-secondary" onclick="document.getElementById('wordInput').value=''">Xóa</button></div>
         <div class="loading-bar" id="loadingBar"><span></span></div>
       </section>
       <section class="panel-card">
@@ -306,32 +308,88 @@ if('speechSynthesis' in window){
 }
 function speakSelected(){ const words=getFilteredData().map(i=>i.word).slice(0,30); if(!words.length)return showModal('Không có từ để đọc.'); speakWord(words.join(', ')); }
 
-async function addWordToTable(inputWord){
+let lookupRunning = false;
+let lookupController = null;
+
+function setLookupButton(running){
+  const btn=document.getElementById('lookupBtn');
+  if(!btn) return;
+  btn.classList.toggle('btn-primary',!running);
+  btn.classList.toggle('btn-danger',running);
+  btn.innerHTML=running ? '⏹ Dừng tìm' : '🔎 Tra & thêm từ';
+}
+
+function stopWordLookup(){
+  if(!lookupRunning) return;
+  lookupRunning=false;
+  lookupController?.abort();
+  lookupController=null;
+  setLoading(false);
+  setLookupButton(false);
+}
+
+async function fetchWithTimeout(url,{signal,timeoutMs=8000,...options}={}){
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(new DOMException('Quá thời gian chờ','TimeoutError')),timeoutMs);
+  const abortFromParent=()=>controller.abort(signal?.reason || new DOMException('Đã dừng','AbortError'));
+  if(signal){
+    if(signal.aborted) abortFromParent();
+    else signal.addEventListener('abort',abortFromParent,{once:true});
+  }
+  try{
+    return await fetch(url,{...options,signal:controller.signal});
+  }finally{
+    clearTimeout(timer);
+    signal?.removeEventListener?.('abort',abortFromParent);
+  }
+}
+
+async function addWordToTable(inputWord, signal){
   inputWord = String(inputWord||'').trim().toLowerCase();
   if(!inputWord || quizData.some(i=>i.word===inputWord)) return false;
+  if(signal?.aborted) throw new DOMException('Đã dừng','AbortError');
+
   let phonetic='N/A', audio=null, meaning='Không tìm thấy nghĩa', type='', definition='', dictionaryExample='';
+  let dictionaryFound=false;
   try{
-    const dictRes = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(inputWord)}`);
+    const dictRes = await fetchWithTimeout(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(inputWord)}`,{signal,timeoutMs:30000,cache:'no-store'});
     if(dictRes.ok){
       const d=await dictRes.json();
       const e=d[0];
-      phonetic=e.phonetics?.find(p=>p.text)?.text || e.phonetic || 'N/A';
-      const au=e.phonetics?.find(p=>p.audio);
+      dictionaryFound=!!e;
+      phonetic=e?.phonetics?.find(p=>p.text)?.text || e?.phonetic || 'N/A';
+      const au=e?.phonetics?.find(p=>p.audio);
       audio=au?.audio || null;
-      const meaningBlock=e.meanings?.find(m=>m.partOfSpeech) || e.meanings?.[0];
+      const meaningBlock=e?.meanings?.find(m=>m.partOfSpeech) || e?.meanings?.[0];
       type=normalizePartOfSpeech(meaningBlock?.partOfSpeech || '');
       const def=meaningBlock?.definitions?.find(x=>x.example) || meaningBlock?.definitions?.[0];
       definition=def?.definition || '';
       dictionaryExample=def?.example || '';
     }
-  }catch(e){ console.warn('Dictionary lookup failed:',e); }
+  }catch(e){
+    if(e.name==='AbortError') throw e;
+    console.warn('Dictionary lookup failed:',e);
+  }
+
+  if(signal?.aborted) throw new DOMException('Đã dừng','AbortError');
   try{
-    const transData=await translateText(inputWord,'en','vi');
+    const transData=await translateText(inputWord,'en','vi',signal);
     meaning=transData || meaning;
-  }catch(e){ console.warn('Word translation failed:',e); }
+  }catch(e){
+    if(e.name==='AbortError') throw e;
+    console.warn('Word translation failed:',e);
+  }
+
+  if(!dictionaryFound && meaning==='Không tìm thấy nghĩa') return false;
+
   let exampleEn=dictionaryExample || buildContextualExample({word:inputWord,meaning,type,definition},'A1-A2');
   let exampleVi='';
-  if(exampleEn){ try{ exampleVi=await translateText(exampleEn,'en','vi'); }catch(e){} }
+  if(exampleEn){
+    try{ exampleVi=await translateText(exampleEn,'en','vi',signal); }
+    catch(e){ if(e.name==='AbortError') throw e; }
+  }
+  if(signal?.aborted) throw new DOMException('Đã dừng','AbortError');
+
   quizData.push({id:Date.now()+Math.random(),word:inputWord,meaning,audio,phonetic,type,definition,exampleEn,exampleVi,synonyms:'',antonyms:'',questionEn:'',questionVi:''});
   saveData(); renderTable(); return true;
 }
@@ -341,19 +399,54 @@ function normalizePartOfSpeech(pos=''){
   return map[String(pos).toLowerCase()] || pos || 'chưa xác định';
 }
 
-async function translateText(text,source='en',target='vi'){
+async function translateText(text,source='en',target='vi',signal){
   if(!String(text||'').trim()) return '';
-  const response=await fetch(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(text)}`);
+  const response=await fetchWithTimeout(`https://translate.googleapis.com/translate_a/single?client=gtx&sl=${source}&tl=${target}&dt=t&q=${encodeURIComponent(text)}`,{signal,timeoutMs:7000,cache:'no-store'});
   if(!response.ok) throw new Error(`Translation error: ${response.status}`);
   const data=await response.json();
   return (data?.[0]||[]).map(x=>x?.[0]||'').join('').trim();
 }
+
 async function processAllWords(event){
-  const btn=event?.target; const input=document.getElementById('wordInput'); const words=input.value.split(/[\n,]/).map(w=>w.trim()).filter(Boolean);
+  if(lookupRunning){
+    stopWordLookup();
+    return;
+  }
+
+  const input=document.getElementById('wordInput');
+  const words=input.value.split(/[\n,]/).map(w=>w.trim()).filter(Boolean);
   if(!words.length) return showModal('Bạn chưa nhập từ nào.');
-  setLoading(true); if(btn)btn.disabled=true; let added=0;
-  for(const w of words){ if(await addWordToTable(w)) added++; }
-  input.value=''; setLoading(false); if(btn)btn.disabled=false; showModal(`Đã thêm ${added}/${words.length} từ mới.`);
+
+  lookupRunning=true;
+  lookupController=new AbortController();
+  setLoading(true);
+  setLookupButton(true);
+  let added=0;
+  let checked=0;
+  let stopped=false;
+
+  try{
+    for(const w of words){
+      if(!lookupRunning || lookupController.signal.aborted){ stopped=true; break; }
+      checked++;
+      if(await addWordToTable(w,lookupController.signal)) added++;
+    }
+  }catch(e){
+    if(e.name==='AbortError') stopped=true;
+    else console.error('Lookup failed:',e);
+  }finally{
+    lookupRunning=false;
+    lookupController=null;
+    setLoading(false);
+    setLookupButton(false);
+  }
+
+  if(stopped){
+    showModal(`Đã dừng tìm. Đã kiểm tra ${checked}/${words.length} từ và thêm ${added} từ.`);
+  }else{
+    input.value='';
+    showModal(`Đã thêm ${added}/${words.length} từ mới.`);
+  }
 }
 async function fetchJsonWithTimeout(url, timeoutMs=8000){
   const controller=new AbortController();
