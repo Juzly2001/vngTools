@@ -11,7 +11,7 @@
 <style>
 :root{color-scheme:light;--page-bg:#f5f7fb;--page-soft:#eef3f8;--card:#fff;--card2:#f8fafc;--text:#182033;--muted:#667085;--line:#e6eaf0;--primary:#2563eb;--primary-soft:#eff6ff;--danger:#dc2626;--danger-soft:#fef2f2;--success:#059669;--warning:#f59e0b;--on-primary:#fff;--input-text:#182033;--option-bg:#fff;--shadow:0 10px 28px rgba(15,23,42,.08);--shadow-row:0 12px 26px rgba(15,23,42,.10);--radius-lg:20px;--radius-md:16px}
 [data-theme="dark"]{color-scheme:dark;--page-bg:#0f172a;--page-soft:#111827;--card:#182235;--card2:#121a2a;--text:#e5e7eb;--muted:#a9b4c7;--line:#2c3a50;--primary:#60a5fa;--primary-soft:#1e3a5f;--danger:#f87171;--danger-soft:#3a1f26;--success:#34d399;--warning:#fbbf24;--on-primary:#08111f;--input-text:#eef4ff;--option-bg:#182235;--shadow:0 12px 32px rgba(0,0,0,.35);--shadow-row:0 14px 28px rgba(0,0,0,.28)}
-*{box-sizing:border-box}body{min-height:100vh;margin:0;padding:20px;color:var(--text);background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 30%),linear-gradient(180deg,var(--page-bg),var(--page-soft));font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app-shell{max-width:1500px;margin:auto}.top-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.app-title{margin:0;font-size:1.75rem;font-weight:850;letter-spacing:-.03em}.app-subtitle{margin:4px 0 0;color:var(--muted);font-size:.94rem}.header-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.card,.panel-card{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--card);color:var(--text);box-shadow:var(--shadow)}.btn{min-height:42px;border-radius:14px;font-weight:750}.form-control,.form-select,textarea{min-height:44px;border-radius:14px!important;border:1px solid var(--line)!important;background:var(--card2)!important;color:var(--text)!important}.form-control::placeholder,textarea::placeholder{color:var(--muted)}[data-theme="dark"] .btn-light{background:#24314a;color:#f8fafc;border-color:#384863}[data-theme="dark"] .btn-outline-secondary{color:#d5dbea;border-color:#526078}[data-theme="dark"] .btn-outline-danger{color:#ff9aa5;border-color:#a64e5b}[data-theme="dark"] .modal-content{background:var(--card);color:var(--text);border-color:var(--line)}[data-theme="dark"] .btn-close{filter:invert(1) grayscale(100%)}
+*{box-sizing:border-box}body{min-height:100vh;margin:0;padding:20px;color:var(--text);background:radial-gradient(circle at top left,rgba(37,99,235,.08),transparent 30%),linear-gradient(180deg,var(--page-bg),var(--page-soft));font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.app-shell{max-width:1500px;margin:auto}.top-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.app-title{margin:0;font-size:1.75rem;font-weight:850;letter-spacing:-.03em}.app-subtitle{margin:4px 0 0;color:var(--muted);font-size:.94rem}.header-actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.card,.panel-card{border:1px solid var(--line);border-radius:var(--radius-lg);background:var(--card);color:var(--text);box-shadow:var(--shadow)}.btn{min-height:42px;border-radius:14px;font-weight:750}.form-control,.form-select,textarea{min-height:44px;border-radius:14px!important;border:1px solid var(--line)!important;background:var(--card2)!important;color:var(--text)!important}.form-control::placeholder,textarea::placeholder{color:var(--muted)}[data-theme="dark"] .btn-light{background:#24314a;color:#f8fafc;border-color:#384863}[data-theme="dark"] .btn-outline-secondary{color:#d5dbea;border-color:#526078}[data-theme="dark"] .btn-outline-danger{color:#ff9aa5;border-color:#a64e5b}[data-theme="dark"] .modal-content{background:var(--card);color:var(--text);border-color:var(--line)}[data-theme="dark"] .btn-close{ filter:invert(1) grayscale(100%)}
 html[data-theme] body,html[data-theme] .modal-content,html[data-theme] .modal-header,html[data-theme] .modal-body,html[data-theme] .modal-footer,html[data-theme] .dropdown-menu{color:var(--text);background-color:var(--card);border-color:var(--line)}
 html[data-theme] .form-control,html[data-theme] .form-select,html[data-theme] textarea,html[data-theme] input,html[data-theme] select{color:var(--input-text)!important;background-color:var(--card2)!important;border-color:var(--line)!important;-webkit-text-fill-color:var(--input-text)}
 html[data-theme] select option{color:var(--input-text);background:var(--option-bg)}
@@ -572,11 +572,30 @@ function renderVoiceTarget(){if(!quizData.length)return;voiceIndex=(voiceIndex+q
 document.getElementById('voiceListen')?.addEventListener('click',()=>speakWord(quizData[voiceIndex]?.word||''));
 document.getElementById('voiceNext')?.addEventListener('click',()=>{finishVoiceRecording();voiceIndex++;renderVoiceTarget()});
 document.getElementById('voiceStop')?.addEventListener('click',finishVoiceRecording);
+function startVoiceListeningAnimation(){
+  buildVoiceWave();
+  const wave=document.getElementById('voiceWave');
+  const bars=[...document.querySelectorAll('#voiceWave span')];
+  wave?.classList.add('active');
+  let tick=0;
+  const draw=()=>{
+    if(!voiceSession.active)return;
+    tick+=0.22;
+    bars.forEach((bar,i)=>{
+      const pulse=(Math.sin(tick+i*.72)+1)/2;
+      const random=Math.random()*.35;
+      bar.style.height=`${Math.round(7+(pulse*.65+random)*34)}px`;
+    });
+    voiceSession.raf=requestAnimationFrame(draw);
+  };
+  draw();
+}
+
 document.getElementById('voiceStart')?.addEventListener('click',async()=>{
   if(voiceSession.active)return;
-  if(!navigator.mediaDevices?.getUserMedia)return showModal('Trình duyệt này không cho phép truy cập micro. Hãy mở trang bằng HTTPS và dùng Chrome hoặc Edge mới nhất.');
   const startBtn=document.getElementById('voiceStart'),stopBtn=document.getElementById('voiceStop'),transcript=document.getElementById('voiceTranscript'),feedback=document.getElementById('voiceFeedback'),playback=document.getElementById('voicePlayback');
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
   const finishRecognition=(message='')=>{
     if(voiceSession.finished)return;
     voiceSession.finished=true;
@@ -597,64 +616,132 @@ document.getElementById('voiceStart')?.addEventListener('click',async()=>{
     }
     setTimeout(finishVoiceRecording,350);
   };
+
   try{
     if(!window.isSecureContext && location.protocol!=='file:'){
       feedback.innerHTML='<b class="text-danger">⚠️ Nhận diện giọng nói trên mobile cần mở bằng HTTPS.</b>';
       return;
     }
-    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
-    voiceSession.stream=stream;voiceSession.active=true;voiceSession.finished=false;voiceSession.retryCount=0;voiceSession.lastTranscript='';voiceSession.chunks=[];
-    startBtn.style.display='none';stopBtn.style.display='';transcript.textContent='Đang nghe...';feedback.textContent='';setVoiceStatus('Đang nghe – hãy nói một từ',true);startVoiceVisualizer(stream);
 
-    if(!SR){
-      if(window.MediaRecorder){
-        const recorder=new MediaRecorder(stream);voiceSession.recorder=recorder;
-        recorder.ondataavailable=e=>{if(e.data?.size)voiceSession.chunks.push(e.data)};
-        recorder.onstop=()=>{if(!voiceSession.chunks.length)return;const blob=new Blob(voiceSession.chunks,{type:recorder.mimeType||'audio/webm'});if(voiceSession.objectUrl)URL.revokeObjectURL(voiceSession.objectUrl);voiceSession.objectUrl=URL.createObjectURL(blob);playback.src=voiceSession.objectUrl;playback.style.display='block'};
-        recorder.start();
-      }
-      feedback.innerHTML='<b>ℹ️ Trình duyệt này không hỗ trợ chuyển giọng nói thành chữ. Bạn vẫn có thể ghi âm rồi bấm Dừng để nghe lại.</b>';
+    voiceSession.active=true;
+    voiceSession.finished=false;
+    voiceSession.retryCount=0;
+    voiceSession.lastTranscript='';
+    voiceSession.chunks=[];
+    startBtn.style.display='none';
+    stopBtn.style.display='';
+    transcript.textContent='Đang nghe...';
+    feedback.textContent='';
+    setVoiceStatus('Đang nghe – hãy nói một từ',true);
+
+    // Khi có SpeechRecognition, không mở getUserMedia song song.
+    // Nhiều điện thoại chỉ cho một dịch vụ dùng micro tại một thời điểm.
+    if(SR){
+      startVoiceListeningAnimation();
+      const beginRecognition=()=>{
+        if(!voiceSession.active||voiceSession.finished)return;
+        const r=new SR();
+        voiceSession.recognition=r;
+        r.lang=getVoiceSettings().accent||'en-US';
+        r.interimResults=true;
+        r.continuous=false;
+        r.maxAlternatives=5;
+
+        r.onstart=()=>{
+          setVoiceStatus('Đang nghe – hãy nói ngay',true);
+          clearTimeout(voiceSession.speechTimer);
+          voiceSession.speechTimer=setTimeout(()=>{
+            try{r.stop()}catch{}
+            finishRecognition('Đã chờ quá lâu nhưng dịch vụ không trả về kết quả. Hãy mở trang bằng Chrome Android qua HTTPS.');
+          },8000);
+        };
+        r.onaudiostart=()=>setVoiceStatus('Micro đã được kích hoạt',true);
+        r.onsoundstart=()=>setVoiceStatus('Đã phát hiện âm thanh',true);
+        r.onspeechstart=()=>setVoiceStatus('Đã phát hiện giọng nói',true);
+        r.onresult=e=>{
+          let best='';
+          let bestConfidence=-1;
+          for(let i=0;i<e.results.length;i++){
+            const result=e.results[i];
+            for(let j=0;j<result.length;j++){
+              const candidate=(result[j]?.transcript||'').trim();
+              const confidence=Number(result[j]?.confidence||0);
+              if(candidate && (confidence>bestConfidence || (confidence===bestConfidence && candidate.length>best.length))){
+                best=candidate;
+                bestConfidence=confidence;
+              }
+            }
+          }
+          if(best){
+            voiceSession.lastTranscript=best;
+            transcript.textContent=best;
+            setVoiceStatus('Đã nghe: '+best,true);
+          }
+          const last=e.results[e.results.length-1];
+          if(last?.isFinal&&voiceSession.lastTranscript)finishRecognition();
+        };
+        r.onspeechend=()=>{setVoiceStatus('Đang xử lý kết quả…',true);setTimeout(()=>{try{r.stop()}catch{}},250)};
+        r.onerror=e=>{
+          const messages={
+            'not-allowed':'Bạn chưa cấp quyền nhận diện giọng nói.',
+            'service-not-allowed':'Dịch vụ nhận diện bị trình duyệt hoặc hệ điều hành chặn.',
+            'no-speech':'Không nghe thấy giọng nói.',
+            'audio-capture':'Không thể truy cập micro.',
+            'network':'Dịch vụ nhận diện cần kết nối Internet.',
+            'aborted':'Phiên nhận diện đã bị dừng.',
+            'language-not-supported':'Ngôn ngữ nhận diện hiện tại không được hỗ trợ.'
+          };
+          if(e.error==='no-speech'&&voiceSession.retryCount<1){
+            voiceSession.retryCount++;
+            setVoiceStatus('Chưa nghe rõ – đang thử lại',true);
+            setTimeout(beginRecognition,350);
+            return;
+          }
+          if(e.error!=='aborted')finishRecognition(messages[e.error]||`Không thể nhận diện giọng nói (${e.error||'unknown'}).`);
+        };
+        r.onend=()=>{
+          if(!voiceSession.active||voiceSession.finished)return;
+          if(voiceSession.lastTranscript)finishRecognition();
+          else if(voiceSession.retryCount<1){
+            voiceSession.retryCount++;
+            setVoiceStatus('Đang thử nghe lại lần nữa',true);
+            setTimeout(beginRecognition,350);
+          }else finishRecognition('Trình duyệt đã mở micro nhưng không trả về văn bản. Hãy dùng Chrome Android, bật Internet và chạy trang qua HTTPS thay vì mở file HTML trực tiếp.');
+        };
+        try{r.start()}catch(err){finishRecognition('Không khởi động được nhận diện. Hãy đóng các ứng dụng đang dùng micro, tải lại trang rồi thử lại.');}
+      };
+      beginRecognition();
       return;
     }
 
-    const beginRecognition=()=>{
-      if(!voiceSession.active||voiceSession.finished)return;
-      const r=new SR();voiceSession.recognition=r;
-      r.lang=getVoiceSettings().accent||'en-US';
-      r.interimResults=true;
-      r.continuous=false;
-      r.maxAlternatives=3;
-      r.onstart=()=>{setVoiceStatus('Đang nghe – hãy nói ngay',true);clearTimeout(voiceSession.speechTimer);voiceSession.speechTimer=setTimeout(()=>finishRecognition('Đã chờ quá lâu nhưng không nhận được từ nào.'),10000)};
-      r.onspeechstart=()=>setVoiceStatus('Đã phát hiện giọng nói',true);
-      r.onresult=e=>{
-        let best='';
-        for(let i=e.resultIndex;i<e.results.length;i++){
-          const result=e.results[i];
-          for(let j=0;j<result.length;j++){
-            const candidate=(result[j]?.transcript||'').trim();
-            if(candidate.length>best.length)best=candidate;
-          }
-        }
-        if(best){voiceSession.lastTranscript=best;transcript.textContent=best;setVoiceStatus('Đang nhận diện: '+best,true)}
-        const last=e.results[e.results.length-1];
-        if(last?.isFinal&&voiceSession.lastTranscript)finishRecognition();
+    // Trình duyệt không có SpeechRecognition: dùng ghi âm nghe lại.
+    if(!navigator.mediaDevices?.getUserMedia){
+      finishRecognition('Trình duyệt này không hỗ trợ nhận diện hoặc ghi âm.');
+      return;
+    }
+    const stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+    voiceSession.stream=stream;
+    startVoiceVisualizer(stream);
+    if(window.MediaRecorder){
+      const recorder=new MediaRecorder(stream);
+      voiceSession.recorder=recorder;
+      recorder.ondataavailable=e=>{if(e.data?.size)voiceSession.chunks.push(e.data)};
+      recorder.onstop=()=>{
+        if(!voiceSession.chunks.length)return;
+        const blob=new Blob(voiceSession.chunks,{type:recorder.mimeType||'audio/webm'});
+        if(voiceSession.objectUrl)URL.revokeObjectURL(voiceSession.objectUrl);
+        voiceSession.objectUrl=URL.createObjectURL(blob);
+        playback.src=voiceSession.objectUrl;
+        playback.style.display='block';
       };
-      r.onspeechend=()=>{try{r.stop()}catch{}};
-      r.onerror=e=>{
-        const messages={'not-allowed':'Bạn chưa cấp quyền nhận diện giọng nói.','service-not-allowed':'Dịch vụ nhận diện bị trình duyệt chặn.','no-speech':'Không nghe thấy giọng nói.','audio-capture':'Không tìm thấy micro.','network':'Dịch vụ nhận diện cần kết nối mạng.','aborted':'Phiên nhận diện đã bị dừng.'};
-        if(e.error==='no-speech'&&voiceSession.retryCount<1){voiceSession.retryCount++;setVoiceStatus('Chưa nghe rõ – đang thử lại',true);setTimeout(beginRecognition,300);return}
-        if(e.error!=='aborted')finishRecognition(messages[e.error]||'Không thể nhận diện giọng nói trên trình duyệt này.');
-      };
-      r.onend=()=>{
-        if(!voiceSession.active||voiceSession.finished)return;
-        if(voiceSession.lastTranscript)finishRecognition();
-        else if(voiceSession.retryCount<1){voiceSession.retryCount++;setVoiceStatus('Đang thử nghe lại lần nữa',true);setTimeout(beginRecognition,300)}
-        else finishRecognition('Không nhận được kết quả. Hãy kiểm tra mạng, quyền micro hoặc thử bằng Chrome Android.');
-      };
-      try{r.start()}catch(err){finishRecognition('Không khởi động được nhận diện giọng nói. Hãy tải lại trang và thử lại.')} 
-    };
-    beginRecognition();
-  }catch(e){cleanupVoiceSession();setVoiceStatus('Không thể mở micro');feedback.textContent=e?.name==='NotAllowedError'?'Bạn đã từ chối quyền micro. Hãy mở cài đặt trang và cho phép Microphone.':'Không thể mở micro. Trang cần chạy bằng HTTPS hoặc localhost.'}
+      recorder.start();
+    }
+    feedback.innerHTML='<b>ℹ️ Trình duyệt này không hỗ trợ chuyển giọng nói thành chữ. Bạn có thể ghi âm rồi bấm Dừng để nghe lại.</b>';
+  }catch(e){
+    cleanupVoiceSession();
+    setVoiceStatus('Không thể mở micro');
+    feedback.textContent=e?.name==='NotAllowedError'?'Bạn đã từ chối quyền micro. Hãy mở cài đặt trang và cho phép Microphone.':'Không thể mở micro. Trang cần chạy bằng HTTPS hoặc localhost.';
+  }
 });
 buildVoiceWave();
 const synonymBank={good:['great','fine','excellent'],bad:['poor','awful','negative'],big:['large','huge','great'],small:['little','tiny','minor'],happy:['glad','pleased','cheerful'],sad:['unhappy','sorrowful','down'],fast:['quick','rapid','swift'],slow:['unhurried','gradual','sluggish'],smart:['clever','bright','intelligent'],beautiful:['pretty','lovely','attractive']};
