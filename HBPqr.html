@@ -299,8 +299,24 @@
                 padding: 14px;
             }
 
-            .stats-bar {
-                grid-template-columns: repeat(2, 1fr);
+            .stats-bar{
+                display:flex !important;
+                gap:4px;
+            }
+
+            .stat-box{
+                flex:1;
+                min-width:0;
+                padding:6px 2px;
+            }
+
+            .stat-box b{
+                font-size:15px;
+            }
+
+            .stat-box span{
+                font-size:10px;
+                white-space:nowrap;
             }
 
             button {
@@ -493,12 +509,34 @@
             height: auto;
         }
 
+        @media (max-width:700px){
+
+            #toggleControls{
+                display:block !important;
+            }
+
+            .mobileControls{
+                display:none;
+            }
+
+            body.mobile-controls-open .mobileControls{
+                display:block;
+            }
+
+        }
+
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>🏷️ QrCode</h2>
+    <button id="toggleControls"
+            class="btn-soft"
+            onclick="toggleMobileControls()"
+            style="display:none;margin:10px 0;">
+        ⚙️ Hiện điều khiển
+    </button>
     <button id="themeBtn" class="theme-toggle" onclick="toggleDarkMode()">
         🌙 Dark
     </button>
@@ -506,7 +544,7 @@
     <p>Nhập danh sách mã (có thể ngăn cách bằng xuống dòng, dấu phẩy hoặc dấu cách):</p>
     <textarea id="barcode-inputs" placeholder="Ví dụ:&#10;BAO00001&#10;BAO00002, BAO00003 BAO00004"></textarea>
 
-    <div class="stats-bar">
+    <div class="stats-bar mobileControls">
         <div class="stat-box">
             <b id="count-total">0</b>
             <span>Tổng mã</span>
@@ -530,7 +568,7 @@
         <label><input type="radio" name="code-type" value="barcode" checked> Mã vạch (Barcode)</label>
         <label><input type="radio" name="code-type" value="qrcode"> Mã QR (QR Code)</label>
 
-        <div class="mini-setting">
+        <div class="mini-setting mobileControls">
             <label><input type="checkbox" id="show-label" checked> Hiện chữ dưới mã</label>
             <label><input type="checkbox" id="auto-remove-duplicate"> Tự bỏ mã trùng khi tạo</label>
             <label>
@@ -544,7 +582,7 @@
         </div>
     </div>
 
-    <div class="options-group">
+    <div class="options-group mobileControls">
         <span>Cấu hình khổ giấy in (mm): </span>
         <label>Rộng: <input type="number" id="paper-width" class="input-size" value="40" oninput="updatePaperSize(); saveData();"></label>
         <label>Cao: <input type="number" id="paper-height" class="input-size" value="40" oninput="updatePaperSize(); saveData();"></label>
@@ -561,13 +599,13 @@
 
     <div class="actions-group">
         <button class="btn-generate" onclick="generateCodes()">Tạo mã</button>
-        <button class="btn-print" onclick="window.print()">In mã</button>
-        <button class="btn-warning" onclick="removeDuplicateCodes()">Lọc trùng</button>
+        <button class="btn-print mobileControls" onclick="window.print()">In mã</button>
+        <button class="btn-warning mobileControls" onclick="removeDuplicateCodes()">Lọc trùng</button>
         <!-- <button class="btn-soft" onclick="copyAllCodes()">Copy danh sách</button> -->
-        <button class="btn-danger" onclick="clearCodes()">Xóa</button>
+        <button class="btn-danger mobileControls" onclick="clearCodes()">Xóa</button>
     </div>
 
-    <div class="preview-toolbar">
+    <div class="preview-toolbar mobileControls">
         <h3>Bản xem trước:</h3>
         <input id="search-preview" type="text" placeholder="Tìm mã trong preview..." oninput="generateCodes(false)">
     </div>
@@ -908,8 +946,21 @@
     }
 
     function closeCodeModal(event) {
-        if (event && event.target.id !== "codeModal") return;
-        getEl("codeModal").classList.remove("show");
+            if (event && event.target.id !== "codeModal") return;
+            getEl("codeModal").classList.remove("show");
+        }
+
+        function toggleMobileControls(){
+
+        document.body.classList.toggle("mobile-controls-open");
+
+        const btn = document.getElementById("toggleControls");
+
+        btn.innerHTML =
+            document.body.classList.contains("mobile-controls-open")
+            ? "⬆️ Ẩn điều khiển"
+            : "⚙️ Hiện điều khiển";
+
     }
 
     loadData();
