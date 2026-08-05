@@ -474,7 +474,7 @@
             background: #fff;
             color: #111;
             border-radius: 20px;
-            padding: 36px 20px 22px 20px; /* Tăng padding-top để chừa khoảng trống cho nút X */
+            padding: 38px 20px 22px 20px;
             text-align: center;
             position: relative;
             box-shadow: 0 20px 60px rgba(0,0,0,.35);
@@ -486,8 +486,8 @@
 
         .code-modal-close {
             position: absolute;
-            top: 12px;
-            right: 12px;
+            top: 10px;
+            right: 10px;
             width: 36px;
             height: 36px;
             padding: 0;
@@ -545,8 +545,8 @@
 
         #modalCodePreview {
             width: 100%;
-            overflow: auto;
-            max-height: 75vh; /* Nới rộng chiều cao vùng chứa mã */
+            overflow: hidden;
+            max-height: 75vh;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -571,10 +571,6 @@
 
             body.mobile-controls-open .mobileControls{
                 display:block;
-            }
-            
-            .modal-nav-btn {
-                display: none;
             }
         }
 
@@ -945,6 +941,7 @@
         currentModalIndex = index;
         renderModalContent();
         getEl("codeModal").classList.add("show");
+        document.body.style.overflow = "hidden";
     }
 
     function renderModalContent() {
@@ -997,31 +994,7 @@
     function closeCodeModal(event) {
         if (event && event.target.id !== "codeModal" && !event.target.classList.contains("code-modal-close")) return;
         getEl("codeModal").classList.remove("show");
-    }
-
-    let touchStartX = 0;
-    let touchEndX = 0;
-
-    const modalEl = document.getElementById("codeModal");
-    if (modalEl) {
-        modalEl.addEventListener('touchstart', e => {
-            touchStartX = e.changedTouches[0].screenX;
-        }, {passive: true});
-
-        modalEl.addEventListener('touchend', e => {
-            touchEndX = e.changedTouches[0].screenX;
-            handleSwipe();
-        }, {passive: true});
-    }
-
-    function handleSwipe() {
-        const threshold = 40;
-        if (touchEndX < touchStartX - threshold) {
-            nextModalCode();
-        }
-        if (touchEndX > touchStartX + threshold) {
-            prevModalCode();
-        }
+        document.body.style.overflow = "";
     }
 
     function toggleMobileControls(){
