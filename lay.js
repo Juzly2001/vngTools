@@ -642,12 +642,34 @@
         dropdown
       );
 
-      const dateText = setTomorrow(dateInput);
+    const dateText = setTomorrow(dateInput);
 
-      setStatus(
-        `Đã chọn Sáng, ngày ${dateText}`,
-        "success"
-      );
+    setStatus(
+      `Đã chọn Sáng, ngày ${dateText}. Đang lưu...`
+    );
+
+    // Tìm đúng nút Lưu của dropdown/đơn đang xử lý
+    const saveButton = await waitFor(
+      'input.delay-picking-reasons-save-button[tmp-picked-package-status="6"]',
+      dropdown
+    );
+
+    if (!isVisible(saveButton)) {
+      throw new Error("Tìm thấy nút Lưu nhưng nút đang bị ẩn");
+    }
+
+    await sleep(300);
+
+    setStatus("Đang bấm Lưu...");
+
+    saveButton.click();
+
+    await sleep(500);
+
+    setStatus(
+      `Đã chọn Sáng, ngày ${dateText} và đã Lưu`,
+      "success"
+    );
 
     } catch (error) {
       console.error(
@@ -678,9 +700,9 @@
 
   function handleShortcut(event) {
     const isCtrlX =
-      event.ctrlKey &&
       !event.shiftKey &&
       !event.altKey &&
+      event.key.toLowerCase() === "x" ||  !event.altKey &&
       event.key.toLowerCase() === "x";
 
     if (!isCtrlX) {
