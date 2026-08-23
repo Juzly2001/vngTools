@@ -1,7 +1,7 @@
 (() => {
     'use strict';
 
-    const STORAGE_KEY = '__shortcut_console_data_v16__';
+    const STORAGE_KEY = '__shortcut_console_data_v17__';
     let shortcuts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     let editingId = null;
     let isEnabled = true;
@@ -25,6 +25,7 @@
             --sc-accent-hover: #0ea5e9;
             --sc-success: #22c55e;
             --sc-danger: #ef4444;
+            --sc-macro: #c084fc;
             --sc-text-main: #f8fafc;
             --sc-text-muted: #94a3b8;
             --sc-radius: 14px;
@@ -243,7 +244,7 @@
             align-items: center;
             gap: 4px;
         }
-        .sc-shortcut-key.macro { color: #c084fc; }
+        .sc-shortcut-key.macro { color: var(--sc-macro); }
 
         .sc-actions { display: flex; gap: 4px; flex-shrink: 0; }
         .sc-action-btn {
@@ -303,6 +304,10 @@
             font-weight: 700;
             transition: all 0.15s ease;
             white-space: nowrap;
+        }
+        .sc-floating-button.sc-macro-step-btn {
+            color: var(--sc-macro);
+            border-color: var(--sc-macro);
         }
         .sc-floating-button:hover {
             transform: scale(1.05);
@@ -516,6 +521,39 @@
             align-items: center; justify-content: center;
             box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
         }
+
+        /* Opacity Control */
+        .sc-opacity-control {
+            margin-bottom: 10px;
+            padding: 9px 10px;
+            background: var(--sc-card-bg);
+            border: 1px solid var(--sc-border);
+            border-radius: 8px;
+        }
+
+        .sc-opacity-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 7px;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--sc-text-muted);
+        }
+
+        #sc-opacity-value {
+            color: var(--sc-accent);
+            font-weight: 700;
+        }
+
+        #sc-opacity-slider {
+            width: 100%;
+            height: 4px;
+            margin: 0;
+            padding: 0;
+            cursor: pointer;
+            accent-color: var(--sc-accent);
+        }
     `;
     document.head.appendChild(style);
 
@@ -544,20 +582,36 @@
                 </label>
             </div>
             <button class="sc-stop-btn" id="sc-stop-btn">⏹ DỪNG MACRO (ESC)</button>
+            
+            <div class="sc-opacity-control">
+                <div class="sc-opacity-header">
+                    <span>🎚️ Độ mờ nút</span>
+                    <span id="sc-opacity-value">100%</span>
+                </div>
+                <input
+                    type="range"
+                    id="sc-opacity-slider"
+                    min="20"
+                    max="100"
+                    value="100"
+                    step="5"
+                >
+            </div>
+
             <button class="sc-add-btn" id="sc-add">＋ Thêm phím tắt mới</button>
             <div class="sc-shortcut-list" id="sc-list"></div>
         </div>
     `;
     document.body.appendChild(consoleEl);
 
-    // Bổ sung logic kéo thả cho khung bảng (Console) chính
+    // Kéo thả console chính
     const consoleHeader = consoleEl.querySelector('#shortcut-console-header');
     let isConsoleDragging = false;
     let consoleStartX = 0, consoleStartY = 0;
     let consoleStartLeft = 0, consoleStartTop = 0;
 
     consoleHeader.addEventListener('mousedown', (e) => {
-        if (e.target.closest('.sc-header-controls')) return; // Tránh bấm nhầm nút thu nhỏ/đóng
+        if (e.target.closest('.sc-header-controls')) return;
         isConsoleDragging = true;
         consoleStartX = e.clientX;
         consoleStartY = e.clientY;
@@ -566,7 +620,6 @@
         consoleStartLeft = rect.left;
         consoleStartTop = rect.top;
 
-        // Chuyển sang dùng thuộc tính left/top thay vì right/top cũ để dễ di chuyển tự do
         consoleEl.style.right = 'auto';
         consoleEl.style.left = consoleStartLeft + 'px';
         consoleEl.style.top = consoleStartTop + 'px';
@@ -576,13 +629,9 @@
 
     document.addEventListener('mousemove', (e) => {
         if (!isConsoleDragging) return;
-        const dx = e.clientX - consoleStartX;
-        const dy = e.clientY - consoleStartY;
+        let newLeft = consoleStartLeft + (e.clientX - consoleStartX);
+        let newTop = consoleStartTop + (e.clientY - consoleStartY);
 
-        let newLeft = consoleStartLeft + dx;
-        let newTop = consoleStartTop + dy;
-
-        // Giới hạn trong màn hình
         newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - consoleEl.offsetWidth));
         newTop = Math.max(0, Math.min(newTop, window.innerHeight - 40));
 
@@ -590,11 +639,8 @@
         consoleEl.style.top = newTop + 'px';
     });
 
-    document.addEventListener('mouseup', () => {
-        isConsoleDragging = false;
-    });
+    document.addEventListener('mouseup', () => { isConsoleDragging = false; });
 
-    // Overlay chặn thao tác web và Banner ghi hình
     const globalRecOverlay = document.createElement('div');
     globalRecOverlay.id = 'sc-global-rec-overlay';
     document.body.appendChild(globalRecOverlay);
@@ -619,6 +665,19 @@
     const stopBtn = consoleEl.querySelector('#sc-stop-btn');
     const consoleBody = consoleEl.querySelector('#shortcut-console-body');
     const collapseBtn = consoleEl.querySelector('#sc-collapse-btn');
+
+    const opacitySlider = consoleEl.querySelector('#sc-opacity-slider');
+    const opacityValue = consoleEl.querySelector('#sc-opacity-value');
+
+    opacitySlider.addEventListener('input', () => {
+        const opacity = parseInt(opacitySlider.value, 10);
+
+        opacityValue.textContent = `${opacity}%`;
+
+        document.querySelectorAll('.sc-floating-button').forEach(button => {
+            button.style.opacity = opacity / 100;
+        });
+    });
 
     collapseBtn.onclick = () => {
         const isCollapsed = consoleBody.classList.toggle('collapsed');
@@ -966,6 +1025,14 @@
                     } else {
                         macroError.style.display = 'none';
                     }
+                    // Gán mặc định tọa độ cho các bước trong macro nếu chưa có sẵn vị trí nổi
+                    macroSteps.forEach((step, idx) => {
+                        if (step.x === undefined || step.y === undefined) {
+                            step.x = window.innerWidth / 2 + (idx * 20);
+                            step.y = window.innerHeight / 2 + (idx * 20);
+                        }
+                    });
+
                     const inputDelay = parseFloat(modal.querySelector('#sc-loop-delay')?.value);
                     loopDelayVal = isNaN(inputDelay) ? 2 : inputDelay;
                 }
@@ -1125,46 +1192,90 @@
         document.querySelectorAll('.sc-target-wrapper').forEach(el => el.remove());
 
         shortcuts.forEach(shortcut => {
-            if (shortcut.isMacro || shortcut.x === undefined || shortcut.y === undefined) return;
+            // 1. Render nút cho Click đơn
+            if (!shortcut.isMacro && shortcut.x !== undefined && shortcut.y !== undefined) {
+                createFloatingElement({
+                    x: shortcut.x,
+                    y: shortcut.y,
+                    label: shortcut.name ? `${shortcut.name} (${shortcut.key})` : shortcut.key,
+                    title: shortcut.name || shortcut.key,
+                    isMacroStep: false,
+                    onUpdatePosition: (newX, newY) => {
+                        shortcut.x = newX;
+                        shortcut.y = newY;
+                        saveData();
+                    },
+                    onClick: () => {
+                        if (isEnabled) executeShortcut(shortcut);
+                    }
+                });
+            }
 
-            const wrapper = document.createElement('div');
-            wrapper.className = `sc-target-wrapper ${!isEnabled ? 'disabled' : ''}`;
-            wrapper.style.left = shortcut.x + 'px';
-            wrapper.style.top = shortcut.y + 'px';
+            // 2. Render nút nổi riêng biệt cho từng bước của Macro
+            if (shortcut.isMacro && Array.isArray(shortcut.steps)) {
+                shortcut.steps.forEach((step, index) => {
+                    if (step.x === undefined || step.y === undefined) {
+                        step.x = window.innerWidth / 2 + (index * 15);
+                        step.y = window.innerHeight / 2 + (index * 15);
+                    }
+                    const stepName = shortcut.name ? shortcut.name : shortcut.key;
+                    createFloatingElement({
+                        x: step.x,
+                        y: step.y,
+                        label: `B${index + 1}: ${stepName}`,
+                        title: `Macro: ${stepName} - Bước ${index + 1}`,
+                        isMacroStep: true,
+                        onUpdatePosition: (newX, newY) => {
+                            step.x = newX;
+                            step.y = newY;
+                            saveData();
+                        },
+                        onClick: () => {
+                            if (isEnabled) {
+                                executePointClick(step.x, step.y, step.clickType);
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    }
 
-            const crosshair = document.createElement('div');
-            crosshair.className = 'sc-target-crosshair';
+    function createFloatingElement({ x, y, label, title, isMacroStep, onUpdatePosition, onClick }) {
+        const wrapper = document.createElement('div');
+        wrapper.className = `sc-target-wrapper ${!isEnabled ? 'disabled' : ''}`;
+        wrapper.style.left = x + 'px';
+        wrapper.style.top = y + 'px';
 
-            const button = document.createElement('div');
-            button.className = `sc-floating-button`;
-            
-            const hasName = shortcut.name && shortcut.name.trim() !== '';
-            button.innerText = hasName ? `${shortcut.name} (${shortcut.key})` : shortcut.key;
-            button.dataset.shortcutId = shortcut.id;
-            if (hasName) button.title = shortcut.name;
+        const crosshair = document.createElement('div');
+        crosshair.className = 'sc-target-crosshair';
 
-            wrapper.appendChild(crosshair);
-            wrapper.appendChild(button);
-            document.body.appendChild(wrapper);
+        const button = document.createElement('div');
+        button.className = `sc-floating-button ${isMacroStep ? 'sc-macro-step-btn' : ''}`;
+        button.innerText = label;
+        if (title) button.title = title;
 
-            makeDraggable(wrapper, button, crosshair, shortcut);
+        wrapper.appendChild(crosshair);
+        wrapper.appendChild(button);
+        document.body.appendChild(wrapper);
 
-            button.addEventListener('click', () => {
-                if (button.dataset.dragged === 'true') {
-                    button.dataset.dragged = 'false';
-                    return;
-                }
-                if (isEnabled) {
-                    executeShortcut(shortcut);
-                }
-            });
+        makeDraggable(wrapper, button, crosshair, (newX, newY) => {
+            onUpdatePosition(newX, newY);
+        });
+
+        button.addEventListener('click', () => {
+            if (button.dataset.dragged === 'true') {
+                button.dataset.dragged = 'false';
+                return;
+            }
+            onClick();
         });
     }
 
     /* =========================================================
         DRAG LOGIC FOR TARGETS
     ========================================================= */
-    function makeDraggable(wrapper, button, crosshair, shortcut) {
+    function makeDraggable(wrapper, button, crosshair, onDragEnd) {
         let dragging = false;
         let startX = 0, startY = 0;
         let startLeft = 0, startTop = 0;
@@ -1199,8 +1310,7 @@
             wrapper.style.left = newX + 'px';
             wrapper.style.top = newY + 'px';
 
-            shortcut.x = newX;
-            shortcut.y = newY;
+            onDragEnd(newX, newY);
         });
 
         document.addEventListener('mouseup', () => {
@@ -1208,28 +1318,19 @@
             dragging = false;
             button.style.cursor = 'move';
             crosshair.style.display = 'none';
-            saveData();
         });
     }
 
     /* =========================================================
         VISUAL FEEDBACK HELPERS
     ========================================================= */
-    function triggerVisualFeedback(x, y, shortcutId = null) {
+    function triggerVisualFeedback(x, y) {
         const ripple = document.createElement('div');
         ripple.className = 'sc-click-ripple';
         ripple.style.left = x + 'px';
         ripple.style.top = y + 'px';
         document.body.appendChild(ripple);
         setTimeout(() => ripple.remove(), 400);
-
-        if (shortcutId) {
-            const floatingBtn = document.querySelector(`.sc-floating-button[data-shortcut-id="${shortcutId}"]`);
-            if (floatingBtn) {
-                floatingBtn.classList.add('clicked');
-                setTimeout(() => floatingBtn.classList.remove('clicked'), 300);
-            }
-        }
     }
 
     /* =========================================================
