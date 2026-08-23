@@ -13,7 +13,7 @@
     let tempRecordedSteps = [];
 
     /* =========================================================
-        STYLE & DESIGN (Hiện đại, tối giản, bo tròn mượt mà)
+        STYLE & DESIGN
     ========================================================= */
     const style = document.createElement('style');
     style.textContent = `
@@ -45,7 +45,7 @@
             z-index: 2147483646;
             font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
-            transition: transform 0.2s ease, opacity 0.2s ease;
+            transition: transform 0.05s linear, opacity 0.2s ease;
         }
 
         #shortcut-console * { box-sizing: border-box; }
@@ -438,7 +438,7 @@
         #sc-global-rec-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.15); /* Làm tối nhẹ hoặc để transparent: transparent hoàn toàn */
+            background: rgba(0, 0, 0, 0.15);
             z-index: 2147483646;
             cursor: crosshair;
             display: none;
@@ -549,6 +549,50 @@
         </div>
     `;
     document.body.appendChild(consoleEl);
+
+    // Bổ sung logic kéo thả cho khung bảng (Console) chính
+    const consoleHeader = consoleEl.querySelector('#shortcut-console-header');
+    let isConsoleDragging = false;
+    let consoleStartX = 0, consoleStartY = 0;
+    let consoleStartLeft = 0, consoleStartTop = 0;
+
+    consoleHeader.addEventListener('mousedown', (e) => {
+        if (e.target.closest('.sc-header-controls')) return; // Tránh bấm nhầm nút thu nhỏ/đóng
+        isConsoleDragging = true;
+        consoleStartX = e.clientX;
+        consoleStartY = e.clientY;
+
+        const rect = consoleEl.getBoundingClientRect();
+        consoleStartLeft = rect.left;
+        consoleStartTop = rect.top;
+
+        // Chuyển sang dùng thuộc tính left/top thay vì right/top cũ để dễ di chuyển tự do
+        consoleEl.style.right = 'auto';
+        consoleEl.style.left = consoleStartLeft + 'px';
+        consoleEl.style.top = consoleStartTop + 'px';
+        
+        e.preventDefault();
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (!isConsoleDragging) return;
+        const dx = e.clientX - consoleStartX;
+        const dy = e.clientY - consoleStartY;
+
+        let newLeft = consoleStartLeft + dx;
+        let newTop = consoleStartTop + dy;
+
+        // Giới hạn trong màn hình
+        newLeft = Math.max(0, Math.min(newLeft, window.innerWidth - consoleEl.offsetWidth));
+        newTop = Math.max(0, Math.min(newTop, window.innerHeight - 40));
+
+        consoleEl.style.left = newLeft + 'px';
+        consoleEl.style.top = newTop + 'px';
+    });
+
+    document.addEventListener('mouseup', () => {
+        isConsoleDragging = false;
+    });
 
     // Overlay chặn thao tác web và Banner ghi hình
     const globalRecOverlay = document.createElement('div');
@@ -869,7 +913,7 @@
                     tempRecordedSteps = macroSteps;
                     isRecording = true;
                     modal.style.display = 'none'; 
-                    globalRecOverlay.style.display = 'block'; // Hiển thị lớp phủ chặn web
+                    globalRecOverlay.style.display = 'block';
                     globalRecBanner.style.display = 'flex'; 
                 };
             }
@@ -1043,7 +1087,7 @@
                 desc = shortcut.isLoop ? `Macro lặp (${shortcut.steps.length} bước)` : `Macro chuỗi (${shortcut.steps.length} bước)`;
             } else {
                 icon = '⚡';
-                desc = `${clickTypeLabels[shortcut.clickType || 'left']} tại [${Math.round(shortcut.x || 0)}, ${Math.round(shortcut.y || 0)}]`;
+                desc = `${clickTypeLabels[shortcut.clickType || 'left']}`;
             }
 
             const hasName = shortcut.name && shortcut.name.trim() !== '';
@@ -1118,7 +1162,7 @@
     }
 
     /* =========================================================
-        DRAG LOGIC
+        DRAG LOGIC FOR TARGETS
     ========================================================= */
     function makeDraggable(wrapper, button, crosshair, shortcut) {
         let dragging = false;
