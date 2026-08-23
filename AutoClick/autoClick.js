@@ -969,8 +969,14 @@
 
                 modal.querySelector('#sc-toggle-record').onclick = () => {
                     syncStepsFromDOM();
+
                     tempRecordedSteps = macroSteps;
+
+                    // Reset thời gian mỗi lần bắt đầu Record
+                    lastRecordTime = 0;
+
                     isRecording = true;
+
                     modal.style.display = 'none'; 
                     globalRecOverlay.style.display = 'block';
                     globalRecBanner.style.display = 'flex'; 
@@ -1083,6 +1089,7 @@
 
     function stopRecordingAndRestoreModal() {
         isRecording = false;
+        lastRecordTime = 0;
         globalRecOverlay.style.display = 'none';
         globalRecBanner.style.display = 'none';
         if (currentActiveModal) {
