@@ -11,6 +11,10 @@
     let isRecording = false;
     let lastRecordTime = 0;
     let tempRecordedSteps = [];
+    let buttonOpacity = parseInt(
+        localStorage.getItem('__shortcut_console_opacity__') || '100',
+        10
+    );
 
     /* =========================================================
         STYLE & DESIGN
@@ -585,7 +589,7 @@
             
             <div class="sc-opacity-control">
                 <div class="sc-opacity-header">
-                    <span>🎚️ Độ mờ nút</span>
+                    <span>❉ Độ mờ nút</span>
                     <span id="sc-opacity-value">100%</span>
                 </div>
                 <input
@@ -669,13 +673,21 @@
     const opacitySlider = consoleEl.querySelector('#sc-opacity-slider');
     const opacityValue = consoleEl.querySelector('#sc-opacity-value');
 
-    opacitySlider.addEventListener('input', () => {
-        const opacity = parseInt(opacitySlider.value, 10);
+    opacitySlider.value = buttonOpacity;
+    opacityValue.textContent = `${buttonOpacity}%`;
 
-        opacityValue.textContent = `${opacity}%`;
+    opacitySlider.addEventListener('input', () => {
+        buttonOpacity = parseInt(opacitySlider.value, 10);
+
+        localStorage.setItem(
+            '__shortcut_console_opacity__',
+            buttonOpacity
+        );
+
+        opacityValue.textContent = `${buttonOpacity}%`;
 
         document.querySelectorAll('.sc-floating-button').forEach(button => {
-            button.style.opacity = opacity / 100;
+            button.style.opacity = buttonOpacity / 100;
         });
     });
 
@@ -1259,6 +1271,7 @@
 
         const button = document.createElement('div');
         button.className = `sc-floating-button ${isMacroStep ? 'sc-macro-step-btn' : ''}`;
+        button.style.opacity = buttonOpacity / 100;
         button.innerText = label;
         if (title) button.title = title;
 
