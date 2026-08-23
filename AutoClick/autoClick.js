@@ -1,115 +1,168 @@
 (() => {
     'use strict';
 
-    const STORAGE_KEY = '__shortcut_console_data_v4__';
+    const STORAGE_KEY = '__shortcut_console_data_v16__';
     let shortcuts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
     let editingId = null;
     let isEnabled = true;
-    let isExecuting = false; // Khóa chống trùng lặp khi đang chạy
-    let activeLoopId = null;  // ID của macro đang chạy lặp lại
+    let isExecuting = false;
+    let activeLoopId = null;
+    let countdownTimer = null;
+    let isRecording = false;
+    let lastRecordTime = 0;
+    let tempRecordedSteps = [];
 
     /* =========================================================
-        STYLE
+        STYLE & DESIGN (Hiện đại, tối giản, bo tròn mượt mà)
     ========================================================= */
     const style = document.createElement('style');
     style.textContent = `
+        :root {
+            --sc-bg: rgba(15, 23, 42, 0.94);
+            --sc-card-bg: rgba(30, 41, 59, 0.75);
+            --sc-border: rgba(255, 255, 255, 0.1);
+            --sc-accent: #38bdf8;
+            --sc-accent-hover: #0ea5e9;
+            --sc-success: #22c55e;
+            --sc-danger: #ef4444;
+            --sc-text-main: #f8fafc;
+            --sc-text-muted: #94a3b8;
+            --sc-radius: 14px;
+        }
+
         #shortcut-console {
             position: fixed;
-            top: 80px;
-            right: 30px;
-            width: 330px;
-            background: rgba(24, 24, 27, 0.95);
-            backdrop-filter: blur(12px);
-            color: #f4f4f5;
-            border: 1px solid rgba(63, 63, 70, 0.6);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            top: 60px;
+            right: 24px;
+            width: 340px;
+            background: var(--sc-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: var(--sc-text-main);
+            border: 1px solid var(--sc-border);
+            border-radius: var(--sc-radius);
+            box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(56, 189, 248, 0.15);
             z-index: 2147483646;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             overflow: hidden;
-            display: block;
+            transition: transform 0.2s ease, opacity 0.2s ease;
         }
+
         #shortcut-console * { box-sizing: border-box; }
-        
+
         #shortcut-console-header {
-            height: 48px;
+            height: 44px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 16px;
-            background: rgba(39, 39, 42, 0.8);
-            border-bottom: 1px solid rgba(63, 63, 70, 0.4);
+            padding: 0 14px;
+            background: rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid var(--sc-border);
             cursor: move;
             user-select: none;
         }
-        #shortcut-console-title { 
-            font-size: 13px; 
-            font-weight: 700; 
-            display: flex; 
-            align-items: center; 
-            gap: 8px; 
-            color: #f4f4f5;
+
+        #shortcut-console-title {
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--sc-text-main);
+            letter-spacing: 0.3px;
         }
-        .sc-header-controls { display: flex; gap: 6px; }
+
+        .sc-header-controls { display: flex; gap: 4px; }
         .sc-header-btn {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             border: 0;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, 0.05);
-            color: #a1a1aa;
+            border-radius: 6px;
+            background: transparent;
+            color: var(--sc-text-muted);
             cursor: pointer;
-            font-size: 14px;
+            font-size: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s;
+            transition: all 0.15s ease;
         }
-        .sc-header-btn:hover { 
-            background: rgba(255, 255, 255, 0.15); 
+        .sc-header-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
             color: #fff;
         }
 
-        #shortcut-console-body { padding: 16px; transition: all 0.2s ease; }
+        #shortcut-console-body { padding: 14px; transition: all 0.2s ease; }
         #shortcut-console-body.collapsed { display: none; }
         
-        .sc-toggle-status {
-            width: 100%;
-            height: 38px;
-            border: 1px solid transparent;
-            border-radius: 10px;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-bottom: 8px;
+        /* Status Banner */
+        .sc-status-banner {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: var(--sc-card-bg);
+            border: 1px solid var(--sc-border);
+            border-radius: 10px;
+            margin-bottom: 10px;
+            font-size: 12px;
+            font-weight: 500;
         }
-        .sc-toggle-status.active { 
-            background: rgba(22, 163, 74, 0.15); 
-            color: #4ade80; 
-            border-color: rgba(34, 197, 94, 0.3);
+        .sc-status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
-        .sc-toggle-status.disabled { 
-            background: rgba(220, 38, 38, 0.15); 
-            color: #f87171; 
-            border-color: rgba(239, 68, 68, 0.3);
+        .sc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--sc-text-muted);
         }
+        .active .sc-dot { background: var(--sc-success); box-shadow: 0 0 8px var(--sc-success); }
+        .disabled .sc-dot { background: var(--sc-danger); }
 
+        .sc-switch {
+            position: relative;
+            display: inline-block;
+            width: 36px;
+            height: 20px;
+        }
+        .sc-switch input { opacity: 0; width: 0; height: 0; }
+        .sc-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: #475569;
+            transition: .2s;
+            border-radius: 20px;
+        }
+        .sc-slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+        input:checked + .sc-slider { background-color: var(--sc-success); }
+        input:checked + .sc-slider:before { transform: translateX(16px); }
+
+        /* Stop Button & Countdown */
         .sc-stop-btn {
             width: 100%;
-            height: 34px;
-            border: 1px solid rgba(239, 68, 68, 0.5);
-            border-radius: 10px;
-            background: rgba(220, 38, 38, 0.25);
+            height: 38px;
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 8px;
+            background: rgba(239, 68, 68, 0.15);
             color: #fca5a5;
-            font-size: 12px;
-            font-weight: 700;
+            font-size: 11px;
+            font-weight: 600;
             cursor: pointer;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             display: none;
             align-items: center;
             justify-content: center;
@@ -118,158 +171,170 @@
         }
         @keyframes sc-pulse {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4); }
-            70% { box-shadow: 0 0 0 8px rgba(239, 68, 68, 0); }
+            70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
             100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
         }
 
+        /* Action Controls */
         .sc-add-btn {
             width: 100%;
-            height: 38px;
+            height: 36px;
             border: 0;
-            border-radius: 10px;
-            background: #2563eb;
-            color: white;
+            border-radius: 8px;
+            background: var(--sc-accent);
+            color: #0f172a;
             cursor: pointer;
-            font-size: 13px;
-            font-weight: 600;
+            font-size: 12px;
+            font-weight: 700;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 6px;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-            transition: all 0.2s ease;
+            transition: all 0.15s ease;
         }
-        .sc-add-btn:hover { background: #1d4ed8; }
+        .sc-add-btn:hover { background: #7dd3fc; transform: translateY(-1px); }
 
+        /* List UI */
         .sc-shortcut-list {
-            margin-top: 12px;
+            margin-top: 10px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
-            max-height: 252px;
+            gap: 6px;
+            max-height: 220px;
             overflow-y: auto;
-            padding-right: 4px;
+            padding-right: 2px;
         }
-        .sc-shortcut-list::-webkit-scrollbar { width: 5px; }
-        .sc-shortcut-list::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 10px; }
+        .sc-shortcut-list::-webkit-scrollbar { width: 4px; }
+        .sc-shortcut-list::-webkit-scrollbar-thumb { background: #475569; border-radius: 4px; }
 
         .sc-shortcut-item {
-            height: 36px;
-            min-height: 36px;
+            min-height: 48px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 0 12px;
-            background: rgba(39, 39, 42, 0.6);
-            border: 1px solid rgba(63, 63, 70, 0.4);
+            padding: 8px 10px;
+            background: var(--sc-card-bg);
+            border: 1px solid var(--sc-border);
             border-radius: 8px;
+            transition: border-color 0.15s ease;
         }
-        .sc-shortcut-key {
+        .sc-shortcut-item:hover { border-color: rgba(255, 255, 255, 0.2); }
+
+        .sc-shortcut-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            overflow: hidden;
+            padding-right: 6px;
+        }
+        .sc-shortcut-title-row {
             font-size: 12px;
             font-weight: 700;
-            color: #60a5fa;
-            background: rgba(37, 99, 235, 0.15);
-            padding: 3px 8px;
-            border-radius: 6px;
-            border: 1px solid rgba(96, 165, 250, 0.2);
+            color: var(--sc-text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .sc-shortcut-key {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--sc-accent);
             display: flex;
             align-items: center;
             gap: 4px;
         }
-        .sc-shortcut-key.macro {
-            color: #a855f7;
-            background: rgba(168, 85, 247, 0.15);
-            border-color: rgba(168, 85, 247, 0.3);
-        }
-        .sc-actions { display: flex; gap: 6px; }
+        .sc-shortcut-key.macro { color: #c084fc; }
+
+        .sc-actions { display: flex; gap: 4px; flex-shrink: 0; }
         .sc-action-btn {
-            width: 26px;
-            height: 26px;
+            width: 24px;
+            height: 24px;
             border: 0;
             border-radius: 6px;
             cursor: pointer;
-            color: #a1a1aa;
-            background: rgba(255, 255, 255, 0.05);
+            color: var(--sc-text-muted);
+            background: transparent;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 12px;
+            font-size: 11px;
+            transition: all 0.15s ease;
         }
-        .sc-action-btn:hover { background: #3f3f46; color: #fff; }
-        .sc-delete:hover { background: rgba(220, 38, 38, 0.2); color: #f87171; }
+        .sc-action-btn:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+        .sc-delete:hover { background: rgba(239, 68, 68, 0.2); color: #f87171; }
 
+        /* Target Floating Pointer */
         .sc-target-wrapper {
             position: fixed;
             z-index: 2147483645;
             pointer-events: none;
-            transition: opacity 0.25s ease;
+            transition: opacity 0.2s ease;
         }
-        .sc-target-wrapper.disabled { opacity: 0.35; }
+        .sc-target-wrapper.disabled { opacity: 0.3; }
 
         .sc-target-crosshair {
             position: absolute;
             left: 0; top: 0;
-            width: 20px; height: 20px;
+            width: 18px; height: 18px;
             transform: translate(-50%, -50%);
             border: 2px dashed #f43f5e;
             border-radius: 50%;
-            background: rgba(244, 63, 94, 0.15);
+            background: rgba(244, 63, 94, 0.1);
             display: none;
-            animation: sc-spin 6s linear infinite;
-        }
-        .sc-target-crosshair::before {
-            content: '';
-            position: absolute;
-            top: 50%; left: 50%;
-            width: 6px; height: 6px;
-            background: #f43f5e;
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            box-shadow: 0 0 8px #f43f5e;
-        }
-
-        @keyframes sc-spin {
-            100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
 
         .sc-floating-button {
             pointer-events: auto;
             position: absolute;
-            left: -42px; top: -19px;
-            min-width: 60px;
-            height: 38px;
-            padding: 0 14px;
+            left: -30px; top: -16px;
+            padding: 4px 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
-            background: rgba(15, 23, 42, 0.85);
+            background: rgba(15, 23, 42, 0.9);
             backdrop-filter: blur(8px);
-            color: #38bdf8;
+            color: var(--sc-accent);
             border-radius: 20px;
-            border: 1px solid rgba(56, 189, 248, 0.4);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), 0 0 12px rgba(56, 189, 248, 0.2);
+            border: 1px solid var(--sc-accent);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
             cursor: move;
             user-select: none;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
-            letter-spacing: 0.5px;
-            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            transition: all 0.15s ease;
+            white-space: nowrap;
         }
-        .sc-floating-button.disabled { 
-            background: rgba(39, 39, 42, 0.85) !important;
-            color: #71717a !important;
-            border-color: rgba(63, 63, 70, 0.5) !important;
-            box-shadow: none !important;
+        .sc-floating-button:hover {
+            transform: scale(1.05);
+            background: #1e293b;
+            color: #fff;
         }
-        .sc-floating-button:hover { 
-            background: rgba(30, 41, 59, 0.95);
-            border-color: #38bdf8;
-            color: #ffffff;
-            transform: translateY(-2px) scale(1.03);
-            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.5), 0 0 18px rgba(56, 189, 248, 0.4);
+        .sc-floating-button.clicked {
+            background: var(--sc-success) !important;
+            color: #0f172a !important;
+            border-color: #fff !important;
+            transform: scale(0.92);
         }
 
+        /* Click Ripple Effect */
+        .sc-click-ripple {
+            position: fixed;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(56, 189, 248, 0.7);
+            border: 2px solid #ffffff;
+            transform: translate(-50%, -50%) scale(0.3);
+            pointer-events: none;
+            z-index: 2147483647;
+            animation: sc-ripple-anim 0.4s ease-out forwards;
+        }
+        @keyframes sc-ripple-anim {
+            0% { transform: translate(-50%, -50%) scale(0.3); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2.2); opacity: 0; }
+        }
+
+        /* Modal UI */
         .sc-modal {
             position: fixed;
             inset: 0;
@@ -277,156 +342,236 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.65);
+            background: rgba(0, 0, 0, 0.6);
             backdrop-filter: blur(4px);
         }
         .sc-modal-box {
-            width: 400px;
-            background: #18181b;
-            border: 1px solid #3f3f46;
+            width: 440px;
+            background: #0f172a;
+            border: 1px solid var(--sc-border);
             border-radius: 16px;
-            padding: 20px;
-            color: white;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
-            max-height: 85vh;
+            padding: 18px;
+            color: var(--sc-text-main);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            max-height: 90vh;
             overflow-y: auto;
         }
-        .sc-modal-title { font-size: 15px; font-weight: 700; margin-bottom: 14px; }
-        .sc-tab-group { display: flex; gap: 8px; margin-bottom: 14px; }
+        .sc-modal-title { font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+        .sc-tab-group { display: flex; gap: 6px; margin-bottom: 12px; background: #1e293b; padding: 3px; border-radius: 8px; }
         .sc-tab-btn {
             flex: 1;
-            height: 32px;
-            background: #27272a;
-            border: 1px solid #3f3f46;
-            color: #a1a1aa;
-            border-radius: 8px;
-            font-size: 12px;
+            height: 28px;
+            background: transparent;
+            border: 0;
+            color: var(--sc-text-muted);
+            border-radius: 6px;
+            font-size: 11px;
             font-weight: 600;
             cursor: pointer;
+            transition: all 0.15s ease;
         }
-        .sc-tab-btn.active {
-            background: #2563eb;
-            color: white;
-            border-color: #3b82f6;
-        }
-        .sc-field { margin-bottom: 12px; }
-        .sc-field label { display: block; font-size: 11px; color: #a1a1aa; margin-bottom: 6px; font-weight: 600; }
+        .sc-tab-btn.active { background: var(--sc-accent); color: #0f172a; }
+
+        .sc-field { margin-bottom: 10px; }
+        .sc-field label { display: block; font-size: 11px; color: var(--sc-text-muted); margin-bottom: 4px; }
         .sc-field input, .sc-field select {
             width: 100%;
-            height: 38px;
+            height: 34px;
+            padding: 0 10px;
+            font-size: 12px;
+            border: 1px solid var(--sc-border);
+            border-radius: 6px;
+            outline: none;
+            background: #1e293b;
+            color: #fff;
+        }
+        
+        #sc-key-input {
             text-align: center;
             font-weight: 700;
             font-size: 13px;
-            border: 1px solid #3f3f46;
-            border-radius: 8px;
-            outline: none;
-            background: #27272a;
-            color: #60a5fa;
+            color: var(--sc-accent);
+            background: rgba(56, 189, 248, 0.08);
+            border-color: rgba(56, 189, 248, 0.3);
+            letter-spacing: 0.5px;
         }
-        .sc-checkbox-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-top: 10px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 600;
-            color: #e4e4e7;
+        #sc-key-input::placeholder {
+            font-weight: 400;
+            color: var(--sc-text-muted);
+            letter-spacing: normal;
         }
-        .sc-checkbox-group input[type="checkbox"] {
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
+
+        .sc-field input.error, .sc-field select.error {
+            border-color: var(--sc-danger) !important;
+            background: rgba(239, 68, 68, 0.08) !important;
         }
-        .sc-macro-step {
+        .sc-error-msg {
+            font-size: 11px;
+            color: var(--sc-danger);
+            margin-top: 4px;
+            display: none;
+        }
+
+        .sc-macro-toolbar {
             display: flex;
             gap: 6px;
             margin-bottom: 8px;
-            align-items: center;
         }
-        .sc-macro-step select { flex: 2; text-align: left; padding: 0 8px; }
-        .sc-macro-step input { flex: 1; text-align: center; }
-        .sc-btn-del-step {
-            width: 32px;
-            height: 38px;
-            background: rgba(220, 38, 38, 0.2);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            border-radius: 8px;
+        .sc-btn-record {
+            flex: 1;
+            height: 34px;
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.5);
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
             cursor: pointer;
-        }
-        .sc-btn-add-step {
-            width: 100%;
-            height: 32px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px dashed #3f3f46;
-            color: #a1a1aa;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-        .sc-btn-add-step:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
-        .sc-help { margin-top: 6px; font-size: 11px; color: #a1a1aa; text-align: center; line-height: 1.4; }
-        .sc-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 18px; }
-        .sc-btn { height: 36px; padding: 0 14px; border: 0; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 12px; }
-        .sc-cancel { background: #3f3f46; color: white; }
-        .sc-save { background: #2563eb; color: white; }
-        .sc-empty { padding: 20px; text-align: center; color: #71717a; font-size: 12px; }
-
-        #sc-toggle {
-            position: fixed;
-            right: 24px;
-            bottom: 24px;
-            width: 48px;
-            height: 48px;
-            border: 0;
-            border-radius: 50%;
-            background: #2563eb;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 2147483644;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4);
-            transition: all 0.2s ease;
+            gap: 6px;
         }
-        #sc-toggle:hover { background: #1d4ed8; transform: scale(1.08); }
+        .sc-btn-record:hover { background: rgba(239, 68, 68, 0.3); color: #fff; }
+
+        /* Top Global Recording Floating Banner & Overlay */
+        #sc-global-rec-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.15); /* Làm tối nhẹ hoặc để transparent: transparent hoàn toàn */
+            z-index: 2147483646;
+            cursor: crosshair;
+            display: none;
+        }
+
+        #sc-global-rec-banner {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2147483647;
+            background: #ef4444;
+            color: #fff;
+            padding: 8px 18px;
+            border-radius: 24px;
+            box-shadow: 0 10px 25px rgba(239, 68, 68, 0.5);
+            display: none;
+            align-items: center;
+            gap: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            font-family: system-ui, sans-serif;
+            animation: sc-pulse 1.5s infinite;
+            user-select: none;
+        }
+        #sc-global-rec-stop {
+            background: #fff;
+            color: #ef4444;
+            border: 0;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        #sc-global-rec-stop:hover { transform: scale(1.05); }
+
+        .sc-macro-step { display: flex; gap: 6px; margin-bottom: 6px; align-items: center; background: rgba(255,255,255,0.02); padding: 4px; border-radius: 6px; border: 1px solid var(--sc-border); }
+        .sc-macro-step input { flex: 1; text-align: center; }
+        .sc-step-info { flex: 2; font-size: 11px; color: var(--sc-text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 6px; }
+        .sc-btn-del-step {
+            width: 30px; height: 30px;
+            background: rgba(239, 68, 68, 0.1);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .sc-btn-add-step {
+            width: 100%; height: 30px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px dashed var(--sc-border);
+            color: var(--sc-text-muted);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+        }
+        .sc-btn-add-step:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+
+        .sc-modal-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+        .sc-btn { height: 32px; padding: 0 12px; border: 0; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 11px; }
+        .sc-cancel { background: #334155; color: white; }
+        .sc-save { background: var(--sc-accent); color: #0f172a; }
+        .sc-empty { padding: 16px; text-align: center; color: var(--sc-text-muted); font-size: 11px; }
+
+        #sc-toggle {
+            position: fixed; right: 20px; bottom: 20px;
+            width: 42px; height: 42px; border: 0; border-radius: 50%;
+            background: var(--sc-accent); color: #0f172a; font-size: 18px;
+            cursor: pointer; z-index: 2147483644; display: none;
+            align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.4);
+        }
     `;
     document.head.appendChild(style);
 
     /* =========================================================
-        CONSOLE & TOGGLE
+        CONSOLE INITIALIZATION
     ========================================================= */
     const consoleEl = document.createElement('div');
     consoleEl.id = 'shortcut-console';
     consoleEl.innerHTML = `
         <div id="shortcut-console-header">
-            <div id="shortcut-console-title">⚡ Phím Tắt Tự Động Click</div>
+            <div id="shortcut-console-title">⚡ Auto Clicker Console</div>
             <div class="sc-header-controls">
-                <button class="sc-header-btn" id="sc-collapse-btn" title="Thu nhỏ/Phóng to nội dung">─</button>
-                <button class="sc-header-btn" id="shortcut-console-minimize" title="Ẩn bảng điều khiển">✕</button>
+                <button class="sc-header-btn" id="sc-collapse-btn" title="Thu nhỏ">─</button>
+                <button class="sc-header-btn" id="shortcut-console-minimize" title="Ẩn">✕</button>
             </div>
         </div>
         <div id="shortcut-console-body">
-            <button class="sc-toggle-status active" id="sc-status-btn">🟢 ĐANG BẬT (Bấm ESC để Tắt)</button>
-            <button class="sc-stop-btn" id="sc-stop-btn">⏹ DỪNG MACRO LẶP LAI (ESC)</button>
+            <div class="sc-status-banner active" id="sc-status-banner">
+                <div class="sc-status-indicator">
+                    <span class="sc-dot"></span>
+                    <span id="sc-status-text">Đang hoạt động</span>
+                </div>
+                <label class="sc-switch">
+                    <input type="checkbox" id="sc-status-toggle" checked>
+                    <span class="sc-slider"></span>
+                </label>
+            </div>
+            <button class="sc-stop-btn" id="sc-stop-btn">⏹ DỪNG MACRO (ESC)</button>
             <button class="sc-add-btn" id="sc-add">＋ Thêm phím tắt mới</button>
             <div class="sc-shortcut-list" id="sc-list"></div>
         </div>
     `;
     document.body.appendChild(consoleEl);
 
+    // Overlay chặn thao tác web và Banner ghi hình
+    const globalRecOverlay = document.createElement('div');
+    globalRecOverlay.id = 'sc-global-rec-overlay';
+    document.body.appendChild(globalRecOverlay);
+
+    const globalRecBanner = document.createElement('div');
+    globalRecBanner.id = 'sc-global-rec-banner';
+    globalRecBanner.innerHTML = `
+        <span>🔴 Đang khóa web & ghi thao tác macro...</span>
+        <button id="sc-global-rec-stop">⏹ Xong & Trở lại</button>
+    `;
+    document.body.appendChild(globalRecBanner);
+
     const toggleBtn = document.createElement('button');
     toggleBtn.id = 'sc-toggle';
     toggleBtn.innerHTML = '⚡';
-    toggleBtn.title = 'Mở lại bảng phím tắt';
+    toggleBtn.title = 'Mở lại Console';
     document.body.appendChild(toggleBtn);
 
-    const statusBtn = consoleEl.querySelector('#sc-status-btn');
+    const statusBanner = consoleEl.querySelector('#sc-status-banner');
+    const statusToggle = consoleEl.querySelector('#sc-status-toggle');
+    const statusText = consoleEl.querySelector('#sc-status-text');
     const stopBtn = consoleEl.querySelector('#sc-stop-btn');
     const consoleBody = consoleEl.querySelector('#shortcut-console-body');
     const collapseBtn = consoleEl.querySelector('#sc-collapse-btn');
@@ -439,24 +584,29 @@
     function stopActiveLoop() {
         if (activeLoopId) {
             activeLoopId = null;
+            if (countdownTimer) {
+                clearInterval(countdownTimer);
+                countdownTimer = null;
+            }
             stopBtn.style.display = 'none';
         }
     }
 
     function updateSystemStatus(state) {
         isEnabled = state !== undefined ? state : !isEnabled;
+        statusToggle.checked = isEnabled;
         if (isEnabled) {
-            statusBtn.className = 'sc-toggle-status active';
-            statusBtn.innerHTML = '🟢 ĐANG BẬT (Bấm ESC để Tắt)';
+            statusBanner.className = 'sc-status-banner active';
+            statusText.innerText = 'Đang hoạt động';
         } else {
-            statusBtn.className = 'sc-toggle-status disabled';
-            statusBtn.innerHTML = '🔴 ĐÃ TẮT (Bấm ESC để Bật)';
+            statusBanner.className = 'sc-status-banner disabled';
+            statusText.innerText = 'Đã tạm dừng';
             stopActiveLoop();
         }
         renderFloatingButtons();
     }
 
-    statusBtn.onclick = () => updateSystemStatus();
+    statusToggle.onchange = (e) => updateSystemStatus(e.target.checked);
     stopBtn.onclick = () => stopActiveLoop();
 
     document.querySelector('#shortcut-console-minimize').onclick = () => {
@@ -490,103 +640,202 @@
     }
 
     /* =========================================================
-        MODAL CẤU HÌNH
+        MODAL DIALOG & RECORDING
     ========================================================= */
+    let currentActiveModal = null;
+
     function openModal(shortcut = null) {
         editingId = shortcut ? shortcut.id : null;
         let isMacro = shortcut ? !!shortcut.isMacro : false;
         let isLoop = shortcut ? !!shortcut.isLoop : false;
+        let clickType = shortcut && shortcut.clickType ? shortcut.clickType : 'left';
         let loopDelay = shortcut && shortcut.loopDelay !== undefined ? shortcut.loopDelay : 2;
         let macroSteps = shortcut && shortcut.steps ? JSON.parse(JSON.stringify(shortcut.steps)) : [];
+        let shortcutName = shortcut && shortcut.name ? shortcut.name : '';
+        let posX = shortcut && shortcut.x !== undefined ? shortcut.x : window.innerWidth / 2;
+        let posY = shortcut && shortcut.y !== undefined ? shortcut.y : window.innerHeight / 2;
 
         const modal = document.createElement('div');
         modal.className = 'sc-modal';
-        
+        currentActiveModal = modal;
+
+        function syncStepsFromDOM() {
+            if (!isMacro) return;
+            const rows = modal.querySelectorAll('.sc-macro-step');
+            const currentSteps = [];
+            rows.forEach(row => {
+                const delayInput = row.querySelector('.sc-step-delay');
+                const x = parseFloat(row.dataset.x);
+                const y = parseFloat(row.dataset.y);
+                const cType = row.dataset.clickType || 'left';
+                if (!isNaN(x) && !isNaN(y)) {
+                    const delayVal = parseFloat(delayInput?.value);
+                    currentSteps.push({
+                        x: x,
+                        y: y,
+                        clickType: cType,
+                        delay: isNaN(delayVal) ? 0 : delayVal
+                    });
+                }
+            });
+            macroSteps = currentSteps;
+        }
+
         function renderModalBody() {
+            if (!isMacro) {
+                const selectType = modal.querySelector('#sc-click-type');
+                if (selectType) clickType = selectType.value;
+                const inputX = modal.querySelector('#sc-single-x');
+                const inputY = modal.querySelector('#sc-single-y');
+                if (inputX) posX = parseFloat(inputX.value) || posX;
+                if (inputY) posY = parseFloat(inputY.value) || posY;
+            }
+            const nameInputEl = modal.querySelector('#sc-name-input');
+            if (nameInputEl) shortcutName = nameInputEl.value;
+
+            const singleClickShortcuts = shortcuts.filter(s => !s.isMacro && s.x !== undefined && s.y !== undefined);
+
             modal.innerHTML = `
                 <div class="sc-modal-box">
-                    <div class="sc-modal-title">${shortcut ? '✏️ Cấu hình phím tắt' : '＋ Thêm phím tắt mới'}</div>
+                    <div class="sc-modal-title">${shortcut ? '✏️ Cấu hình' : '＋ Thêm phím tắt / Macro'}</div>
                     <div class="sc-tab-group">
-                        <button class="sc-tab-btn ${!isMacro ? 'active' : ''}" id="sc-tab-single">Click Đơn Nút</button>
-                        <button class="sc-tab-btn ${isMacro ? 'active' : ''}" id="sc-tab-macro">🔗 Chuỗi Liên Nút (Macro)</button>
+                        <button class="sc-tab-btn ${!isMacro ? 'active' : ''}" id="sc-tab-single">Click Đơn</button>
+                        <button class="sc-tab-btn ${isMacro ? 'active' : ''}" id="sc-tab-macro">Chuỗi Macro (Nhiều bước)</button>
+                    </div>
+                
+                    <div class="sc-field">
+                        <label>Tên Gợi Nhớ (Tùy chọn)</label>
+                        <input id="sc-name-input" type="text" placeholder="VD: Đăng nhập tự động..." value="${shortcutName}">
                     </div>
 
                     <div class="sc-field">
                         <label>Phím Tắt Kích Hoạt</label>
-                        <input id="sc-key-input" type="text" placeholder="Gõ phím tắt tại đây..." readonly value="${shortcut ? shortcut.key : ''}">
+                        <input id="sc-key-input" type="text" placeholder="Bấm phím để gán..." readonly value="${shortcut ? shortcut.key : ''}">
+                        <div class="sc-error-msg" id="sc-key-error">Vui lòng nhập phím tắt.</div>
                     </div>
 
                     ${!isMacro ? `
-                        <div class="sc-help">Ấn phím bất kỳ (VD: 1, 2, Q, Ctrl+1) để gán phím tắt.</div>
+                        <div class="sc-field">
+                            <label>Kiểu Click Chuột</label>
+                            <select id="sc-click-type">
+                                <option value="left" ${clickType === 'left' ? 'selected' : ''}>Click Trái Chuẩn (Left Click)</option>
+                                <option value="double" ${clickType === 'double' ? 'selected' : ''}>Click Đúp (Double Click)</option>
+                                <option value="right" ${clickType === 'right' ? 'selected' : ''}>Click Phải (Right Click)</option>
+                                <option value="ctrl" ${clickType === 'ctrl' ? 'selected' : ''}>Ctrl + Click</option>
+                                <option value="shift" ${clickType === 'shift' ? 'selected' : ''}>Shift + Click</option>
+                                <option value="alt" ${clickType === 'alt' ? 'selected' : ''}>Alt + Click</option>
+                            </select>
+                        </div>
+                        <div style="display: flex; gap: 8px;">
+                            <div class="sc-field" style="flex: 1;">
+                                <label>Tọa độ X</label>
+                                <input id="sc-single-x" type="number" value="${Math.round(posX)}">
+                            </div>
+                            <div class="sc-field" style="flex: 1;">
+                                <label>Tọa độ Y</label>
+                                <input id="sc-single-y" type="number" value="${Math.round(posY)}">
+                            </div>
+                        </div>
                     ` : `
                         <div class="sc-field">
-                            <label>Chuỗi Các Bước & Thời Gian Chờ Sau Khi Click (Giây)</label>
-                            <div id="sc-macro-container"></div>
-                            <button class="sc-btn-add-step" id="sc-add-step">＋ Thêm bước tiếp theo</button>
+                            <label>Các bước Click trong Macro</label>
+                            <div class="sc-macro-toolbar">
+                                <button class="sc-btn-record" id="sc-toggle-record">
+                                    🔴 Record thao tác trực tiếp trên web
+                                </button>
+                            </div>
+
+                            ${singleClickShortcuts.length > 0 ? `
+                                <div style="display: flex; gap: 6px; margin-bottom: 8px; align-items: center; background: rgba(255,255,255,0.03); padding: 6px; border-radius: 6px; border: 1px solid var(--sc-border);">
+                                    <select id="sc-select-existing-single" style="flex: 1; height: 30px; font-size: 11px;">
+                                        ${singleClickShortcuts.map(s => `<option value="${s.id}">${s.name || s.key} ([${Math.round(s.x)}, ${Math.round(s.y)}])</option>`).join('')}
+                                    </select>
+                                    <button type="button" id="sc-btn-add-existing" class="sc-btn" style="background: var(--sc-accent); color: #0f172a; height: 30px; padding: 0 8px; font-size: 11px;">➕ Thêm bước này</button>
+                                </div>
+                            ` : ''}
+
+                            <div id="sc-macro-container" style="max-height: 150px; overflow-y: auto;"></div>
+                            <div class="sc-error-msg" id="sc-macro-error"></div>
                         </div>
 
-                        <label class="sc-checkbox-group">
+                        <div style="display:flex; align-items:center; gap:8px; margin: 10px 0;">
                             <input type="checkbox" id="sc-loop-check" ${isLoop ? 'checked' : ''}>
-                            🔄 Lặp lại toàn bộ Chuỗi Macro
-                        </label>
+                            <label for="sc-loop-check" style="font-size:11px; cursor:pointer;">🔄 Lặp lại chuỗi liên tục</label>
+                        </div>
 
                         <div class="sc-field" id="sc-loop-delay-group" style="display: ${isLoop ? 'block' : 'none'};">
-                            <label>Thời Gian Chờ Giữa Các Vòng Lặp (Giây)</label>
+                            <label>Thời Gian Nghỉ Giữa Mỗi Vòng (Giây)</label>
                             <input type="number" step="0.1" min="0" id="sc-loop-delay" value="${loopDelay}">
                         </div>
                     `}
 
                     <div class="sc-modal-actions">
                         <button class="sc-btn sc-cancel" id="sc-cancel">Hủy</button>
-                        <button class="sc-btn sc-save" id="sc-save">💾 Lưu thay đổi</button>
+                        <button class="sc-btn sc-save" id="sc-save">Lưu cấu hình</button>
                     </div>
                 </div>
             `;
 
-            modal.querySelector('#sc-tab-single').onclick = () => { isMacro = false; renderModalBody(); };
-            modal.querySelector('#sc-tab-macro').onclick = () => { isMacro = true; renderModalBody(); };
+            modal.querySelector('#sc-tab-single').onclick = () => { 
+                syncStepsFromDOM();
+                isMacro = false; 
+                renderModalBody(); 
+            };
+            modal.querySelector('#sc-tab-macro').onclick = () => { 
+                syncStepsFromDOM(); 
+                isMacro = true; 
+                renderModalBody(); 
+            };
 
             const keyInput = modal.querySelector('#sc-key-input');
+            const keyError = modal.querySelector('#sc-key-error');
+
             keyInput.addEventListener('keydown', event => {
                 event.preventDefault();
                 event.stopPropagation();
                 const key = normalizeKey(event);
                 if (key && !['Ctrl', 'Alt', 'Shift', 'Meta', 'Escape'].includes(key)) {
                     keyInput.value = key;
+                    keyInput.classList.remove('error');
+                    keyError.style.display = 'none';
                 }
             });
 
             if (isMacro) {
                 const loopCheck = modal.querySelector('#sc-loop-check');
                 const loopDelayGroup = modal.querySelector('#sc-loop-delay-group');
-
                 loopCheck.onchange = () => {
                     isLoop = loopCheck.checked;
                     loopDelayGroup.style.display = isLoop ? 'block' : 'none';
                 };
 
                 const container = modal.querySelector('#sc-macro-container');
+                const macroError = modal.querySelector('#sc-macro-error');
+
                 const renderSteps = () => {
                     container.innerHTML = '';
-                    const availableShortcuts = shortcuts.filter(s => !s.isMacro && s.id !== editingId);
-
-                    if (availableShortcuts.length === 0) {
-                        container.innerHTML = `<div class="sc-help" style="color:#f87171;">Tạo ít nhất 1 nút bấm đơn lẻ trước khi tạo chuỗi!</div>`;
+                    if (macroSteps.length === 0) {
+                        container.innerHTML = `<div style="font-size:11px; color:var(--sc-text-muted); padding: 8px; text-align:center;">Chưa có bước nào. Bấm record hoặc thêm nhanh từ Click đơn có sẵn!</div>`;
                         return;
                     }
 
                     macroSteps.forEach((step, index) => {
                         const row = document.createElement('div');
                         row.className = 'sc-macro-step';
+                        row.dataset.x = step.x;
+                        row.dataset.y = step.y;
+                        row.dataset.clickType = step.clickType || 'left';
+
                         row.innerHTML = `
-                            <select class="sc-step-target">
-                                ${availableShortcuts.map(s => `<option value="${s.id}" ${step.targetId === s.id ? 'selected' : ''}>Bấm nút: ${s.key}</option>`).join('')}
-                            </select>
-                            <input type="number" step="0.1" min="0" class="sc-step-delay" value="${step.delay !== undefined ? step.delay : 1}" placeholder="giây" title="Thời gian chờ sang bước kế tiếp (giây)">
-                            <button class="sc-btn-del-step">✕</button>
+                            <input type="number" step="0.1" min="0" class="sc-step-delay" value="${step.delay !== undefined ? step.delay : 0}" title="Độ trễ trước bước này (giây)">
+                            <div class="sc-step-info" title="Tọa độ: X:${Math.round(step.x)}, Y:${Math.round(step.y)} (${step.clickType || 'left'})">
+                                📍 [${Math.round(step.x)}, ${Math.round(step.y)}] (${step.clickType || 'left'})
+                            </div>
+                            <button class="sc-btn-del-step" title="Xóa bước này">✕</button>
                         `;
 
                         row.querySelector('.sc-btn-del-step').onclick = () => {
+                            syncStepsFromDOM();
                             macroSteps.splice(index, 1);
                             renderSteps();
                         };
@@ -596,73 +845,121 @@
 
                 renderSteps();
 
-                modal.querySelector('#sc-add-step').onclick = () => {
-                    const available = shortcuts.filter(s => !s.isMacro && s.id !== editingId);
-                    if (available.length > 0) {
-                        macroSteps.push({ targetId: available[0].id, delay: 1 });
-                        renderSteps();
-                    } else {
-                        alert('Bạn cần tạo phím tắt đơn nút trước khi xếp chuỗi.');
-                    }
+                const btnAddExisting = modal.querySelector('#sc-btn-add-existing');
+                if (btnAddExisting) {
+                    btnAddExisting.onclick = () => {
+                        syncStepsFromDOM();
+                        const selectEl = modal.querySelector('#sc-select-existing-single');
+                        const selectedId = selectEl.value;
+                        const found = shortcuts.find(s => s.id === selectedId);
+                        if (found) {
+                            macroSteps.push({
+                                x: found.x,
+                                y: found.y,
+                                clickType: found.clickType || 'left',
+                                delay: 0.5
+                            });
+                            renderSteps();
+                        }
+                    };
+                }
+
+                modal.querySelector('#sc-toggle-record').onclick = () => {
+                    syncStepsFromDOM();
+                    tempRecordedSteps = macroSteps;
+                    isRecording = true;
+                    modal.style.display = 'none'; 
+                    globalRecOverlay.style.display = 'block'; // Hiển thị lớp phủ chặn web
+                    globalRecBanner.style.display = 'flex'; 
                 };
             }
 
-            modal.querySelector('#sc-cancel').onclick = () => modal.remove();
+            modal.querySelector('#sc-cancel').onclick = () => {
+                isRecording = false;
+                globalRecOverlay.style.display = 'none';
+                globalRecBanner.style.display = 'none';
+                currentActiveModal = null;
+                modal.remove();
+            };
+
             modal.querySelector('#sc-save').onclick = () => {
+                isRecording = false;
+                globalRecOverlay.style.display = 'none';
+                globalRecBanner.style.display = 'none';
+                if (isMacro) {
+                    syncStepsFromDOM();
+                } else {
+                    const inputX = modal.querySelector('#sc-single-x');
+                    const inputY = modal.querySelector('#sc-single-y');
+                    if (inputX) posX = parseFloat(inputX.value) || posX;
+                    if (inputY) posY = parseFloat(inputY.value) || posY;
+                }
+                
+                const nameVal = modal.querySelector('#sc-name-input').value.trim();
                 const key = keyInput.value.trim();
+                let hasError = false;
+
                 if (!key) {
-                    alert('Vui lòng nhập phím tắt.');
-                    return;
+                    keyInput.classList.add('error');
+                    keyError.style.display = 'block';
+                    hasError = true;
+                } else {
+                    keyInput.classList.remove('error');
+                    keyError.style.display = 'none';
                 }
 
-                let finalSteps = [];
+                let clickTypeVal = 'left';
                 let loopDelayVal = 2;
 
-                if (isMacro) {
-                    const rows = modal.querySelectorAll('.sc-macro-step');
-                    rows.forEach(row => {
-                        const targetId = row.querySelector('.sc-step-target').value;
-                        const delayVal = parseFloat(row.querySelector('.sc-step-delay').value);
-                        finalSteps.push({
-                            targetId: targetId,
-                            delay: isNaN(delayVal) ? 1 : delayVal
-                        });
-                    });
-
-                    if (finalSteps.length === 0) {
-                        alert('Chuỗi liên nút phải chứa ít nhất 1 bước tự động.');
-                        return;
+                if (!isMacro) {
+                    clickTypeVal = modal.querySelector('#sc-click-type').value;
+                } else {
+                    const macroError = modal.querySelector('#sc-macro-error');
+                    if (macroSteps.length === 0) {
+                        macroError.innerText = 'Chuỗi Macro phải chứa ít nhất 1 bước click.';
+                        macroError.style.display = 'block';
+                        hasError = true;
+                    } else {
+                        macroError.style.display = 'none';
                     }
-
                     const inputDelay = parseFloat(modal.querySelector('#sc-loop-delay')?.value);
                     loopDelayVal = isNaN(inputDelay) ? 2 : inputDelay;
                 }
 
+                if (hasError) return;
+
                 if (editingId) {
                     const item = shortcuts.find(x => x.id === editingId);
                     if (item) {
+                        item.name = nameVal;
                         item.key = key;
                         item.isMacro = isMacro;
+                        item.clickType = !isMacro ? clickTypeVal : undefined;
+                        item.x = !isMacro ? posX : undefined;
+                        item.y = !isMacro ? posY : undefined;
                         item.isLoop = isMacro ? isLoop : false;
                         item.loopDelay = isMacro ? loopDelayVal : undefined;
-                        item.steps = isMacro ? finalSteps : undefined;
+                        item.steps = isMacro ? macroSteps : undefined;
                     }
                 } else {
                     shortcuts.push({
                         id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+                        name: nameVal,
                         key,
                         isMacro,
+                        clickType: !isMacro ? clickTypeVal : undefined,
+                        x: !isMacro ? posX : undefined,
+                        y: !isMacro ? posY : undefined,
                         isLoop: isMacro ? isLoop : false,
                         loopDelay: isMacro ? loopDelayVal : undefined,
-                        steps: isMacro ? finalSteps : undefined,
-                        x: Math.round(window.innerWidth / 2),
-                        y: Math.round(window.innerHeight / 2)
+                        steps: isMacro ? macroSteps : undefined
                     });
                 }
 
                 saveData();
                 renderList();
                 renderFloatingButtons();
+                currentActiveModal = null;
                 modal.remove();
             };
         }
@@ -671,28 +968,97 @@
         renderModalBody();
     }
 
+    document.querySelector('#sc-add').onclick = () => openModal();
+
+    function stopRecordingAndRestoreModal() {
+        isRecording = false;
+        globalRecOverlay.style.display = 'none';
+        globalRecBanner.style.display = 'none';
+        if (currentActiveModal) {
+            currentActiveModal.style.display = 'flex';
+            const container = currentActiveModal.querySelector('#sc-macro-container');
+            if (container) {
+                const macroSteps = tempRecordedSteps;
+                container.innerHTML = '';
+                if (macroSteps.length === 0) {
+                    container.innerHTML = `<div style="font-size:11px; color:var(--sc-text-muted); padding: 8px; text-align:center;">Chưa có bước nào. Bấm record hoặc thêm nhanh từ Click đơn có sẵn!</div>`;
+                    return;
+                }
+                macroSteps.forEach((step, index) => {
+                    const row = document.createElement('div');
+                    row.className = 'sc-macro-step';
+                    row.dataset.x = step.x;
+                    row.dataset.y = step.y;
+                    row.dataset.clickType = step.clickType || 'left';
+
+                    row.innerHTML = `
+                        <input type="number" step="0.1" min="0" class="sc-step-delay" value="${step.delay !== undefined ? step.delay : 0}">
+                        <div class="sc-step-info">📍 [${Math.round(step.x)}, ${Math.round(step.y)}] (${step.clickType || 'left'})</div>
+                        <button class="sc-btn-del-step" title="Xóa">✕</button>
+                    `;
+                    row.querySelector('.sc-btn-del-step').onclick = () => {
+                        tempRecordedSteps.splice(index, 1);
+                        row.remove();
+                    };
+                    container.appendChild(row);
+                });
+            }
+        }
+    }
+
+    document.querySelector('#sc-global-rec-stop').onclick = () => {
+        stopRecordingAndRestoreModal();
+    };
+
     /* =========================================================
         RENDER LIST
     ========================================================= */
+    const clickTypeLabels = {
+        left: 'Click Trái',
+        double: 'Click Đúp',
+        right: 'Click Phải',
+        ctrl: 'Ctrl + Click',
+        shift: 'Shift + Click',
+        alt: 'Alt + Click'
+    };
+
     function renderList() {
         const list = document.querySelector('#sc-list');
         list.innerHTML = '';
 
         if (!shortcuts.length) {
-            list.innerHTML = `<div class="sc-empty">Chưa có phím tắt nào được tạo.</div>`;
+            list.innerHTML = `<div class="sc-empty">Chưa có phím tắt hoặc macro nào được tạo.</div>`;
             return;
         }
 
         shortcuts.forEach(shortcut => {
             const item = document.createElement('div');
             item.className = 'sc-shortcut-item';
+            
+            let icon = '⚡';
+            let desc = '';
+
+            if (shortcut.isMacro) {
+                icon = shortcut.isLoop ? '🔄' : '🔗';
+                desc = shortcut.isLoop ? `Macro lặp (${shortcut.steps.length} bước)` : `Macro chuỗi (${shortcut.steps.length} bước)`;
+            } else {
+                icon = '⚡';
+                desc = `${clickTypeLabels[shortcut.clickType || 'left']} tại [${Math.round(shortcut.x || 0)}, ${Math.round(shortcut.y || 0)}]`;
+            }
+
+            const hasName = shortcut.name && shortcut.name.trim() !== '';
+            const displayName = hasName ? shortcut.name : shortcut.key;
+
             item.innerHTML = `
-                <div class="sc-shortcut-key ${shortcut.isMacro ? 'macro' : ''}">
-                    ${shortcut.isMacro ? (shortcut.isLoop ? '🔄' : '🔗') : '⚡'} ${shortcut.key}
+                <div class="sc-shortcut-info">
+                    <div class="sc-shortcut-title-row" style="${hasName ? '' : 'display: none'}" title="${displayName}">${displayName}</div>
+                    <div class="sc-shortcut-key ${shortcut.isMacro ? 'macro' : ''}">
+                        ${icon} ${shortcut.key} - <span style="font-weight:400; color:var(--sc-text-muted);">${desc}</span>
+                    </div>
                 </div>
                 <div class="sc-actions">
-                    <button class="sc-action-btn sc-edit" title="Chỉnh sửa">✏️</button>
-                    <button class="sc-action-btn sc-delete" title="Xóa phím tắt">🗑️</button>
+                    <button class="sc-action-btn sc-edit" title="Sửa">✏️</button>
+                    <button class="sc-action-btn sc-delete" title="Xóa">🗑️</button>
                 </div>
             `;
 
@@ -715,7 +1081,7 @@
         document.querySelectorAll('.sc-target-wrapper').forEach(el => el.remove());
 
         shortcuts.forEach(shortcut => {
-            if (shortcut.isMacro) return;
+            if (shortcut.isMacro || shortcut.x === undefined || shortcut.y === undefined) return;
 
             const wrapper = document.createElement('div');
             wrapper.className = `sc-target-wrapper ${!isEnabled ? 'disabled' : ''}`;
@@ -726,8 +1092,12 @@
             crosshair.className = 'sc-target-crosshair';
 
             const button = document.createElement('div');
-            button.className = `sc-floating-button ${!isEnabled ? 'disabled' : ''}`;
-            button.innerText = shortcut.key;
+            button.className = `sc-floating-button`;
+            
+            const hasName = shortcut.name && shortcut.name.trim() !== '';
+            button.innerText = hasName ? `${shortcut.name} (${shortcut.key})` : shortcut.key;
+            button.dataset.shortcutId = shortcut.id;
+            if (hasName) button.title = shortcut.name;
 
             wrapper.appendChild(crosshair);
             wrapper.appendChild(button);
@@ -748,7 +1118,7 @@
     }
 
     /* =========================================================
-        DRAG FLOATING BUTTONS
+        DRAG LOGIC
     ========================================================= */
     function makeDraggable(wrapper, button, crosshair, shortcut) {
         let dragging = false;
@@ -799,175 +1169,226 @@
     }
 
     /* =========================================================
-        EXECUTE SHORTCUT & MACRO (HỖ TRỢ VÒNG LẶP + DỪNG KHẨN CẤP)
+        VISUAL FEEDBACK HELPERS
+    ========================================================= */
+    function triggerVisualFeedback(x, y, shortcutId = null) {
+        const ripple = document.createElement('div');
+        ripple.className = 'sc-click-ripple';
+        ripple.style.left = x + 'px';
+        ripple.style.top = y + 'px';
+        document.body.appendChild(ripple);
+        setTimeout(() => ripple.remove(), 400);
+
+        if (shortcutId) {
+            const floatingBtn = document.querySelector(`.sc-floating-button[data-shortcut-id="${shortcutId}"]`);
+            if (floatingBtn) {
+                floatingBtn.classList.add('clicked');
+                setTimeout(() => floatingBtn.classList.remove('clicked'), 300);
+            }
+        }
+    }
+
+    /* =========================================================
+        EXECUTION LOGIC WITH COUNTDOWN
     ========================================================= */
     function sleep(ms) {
         return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    async function sleepWithCountdown(seconds, currentLoopId) {
+        if (seconds <= 0) return;
+        let remaining = seconds;
+        stopBtn.innerText = `⏳ Đợi vòng tiếp: ${remaining.toFixed(1)}s (ESC để dừng)`;
+
+        return new Promise(resolve => {
+            countdownTimer = setInterval(() => {
+                remaining -= 0.1;
+                if (activeLoopId !== currentLoopId || remaining <= 0 || !isEnabled) {
+                    clearInterval(countdownTimer);
+                    countdownTimer = null;
+                    resolve();
+                } else {
+                    stopBtn.innerText = `⏳ Đợi vòng tiếp: ${remaining.toFixed(1)}s (ESC để dừng)`;
+                }
+            }, 100);
+        });
+    }
+
+    function executePointClick(x, y, clickType = 'left') {
+        if (x === undefined || y === undefined) return;
+
+        triggerVisualFeedback(x, y);
+
+        const elements = document.elementsFromPoint(x, y);
+        const targetEl = elements.find(el => !el.closest('#shortcut-console') && !el.closest('.sc-target-wrapper') && !el.closest('.sc-modal') && !el.closest('#sc-global-rec-banner') && !el.closest('#sc-global-rec-overlay'));
+
+        if (targetEl) {
+            const type = clickType || 'left';
+
+            if (type === 'right') {
+                ['mousedown', 'mouseup', 'contextmenu'].forEach(eventType => {
+                    targetEl.dispatchEvent(new MouseEvent(eventType, {
+                        view: window, bubbles: true, cancelable: true, button: 2, buttons: 2, clientX: x, clientY: y
+                    }));
+                });
+            } else if (type === 'double') {
+                for (let i = 0; i < 2; i++) {
+                    ['mousedown', 'mouseup', 'click'].forEach(eventType => {
+                        targetEl.dispatchEvent(new MouseEvent(eventType, {
+                            view: window, bubbles: true, cancelable: true, detail: i + 1, clientX: x, clientY: y
+                        }));
+                    });
+                }
+                targetEl.dispatchEvent(new MouseEvent('dblclick', {
+                    view: window, bubbles: true, cancelable: true, clientX: x, clientY: y
+                }));
+            } else if (['ctrl', 'shift', 'alt'].includes(type)) {
+                const modKeyMap = {
+                    ctrl: { key: 'Control', code: 'ControlLeft', ctrlKey: true, name: 'ctrlKey' },
+                    shift: { key: 'Shift', code: 'ShiftLeft', shiftKey: true, name: 'shiftKey' },
+                    alt: { key: 'Alt', code: 'AltLeft', altKey: true, name: 'altKey' }
+                };
+                const m = modKeyMap[type];
+
+                targetEl.dispatchEvent(new KeyboardEvent('keydown', { key: m.key, code: m.code, bubbles: true, cancelable: true, [m.name]: true }));
+                ['mousedown', 'mouseup', 'click'].forEach(eventType => {
+                    targetEl.dispatchEvent(new MouseEvent(eventType, { view: window, bubbles: true, cancelable: true, clientX: x, clientY: y, ctrlKey: m.ctrlKey || false, shiftKey: m.shiftKey || false, altKey: m.altKey || false }));
+                });
+                targetEl.dispatchEvent(new KeyboardEvent('keyup', { key: m.key, code: m.code, bubbles: true, cancelable: true }));
+            } else {
+                ['mousedown', 'mouseup', 'click'].forEach(eventType => {
+                    targetEl.dispatchEvent(new MouseEvent(eventType, {
+                        view: window, bubbles: true, cancelable: true, clientX: x, clientY: y
+                    }));
+                });
+            }
+        }
+    }
+
     async function executeShortcut(shortcut) {
         if (!shortcut || isExecuting) return;
+        isExecuting = true;
 
-        // Nếu bấm đúng macro đang chạy lặp lại -> Dừng lại
-        if (activeLoopId && activeLoopId === shortcut.id) {
-            stopActiveLoop();
+        if (!shortcut.isMacro) {
+            executePointClick(shortcut.x, shortcut.y, shortcut.clickType);
+            isExecuting = false;
             return;
         }
 
-        isExecuting = true;
+        if (shortcut.isLoop) {
+            const currentLoopId = Date.now().toString();
+            activeLoopId = currentLoopId;
+            stopBtn.style.display = 'flex';
+            stopBtn.innerText = `⏹ DỪNG MACRO (ESC)`;
 
-        try {
-            if (shortcut.isMacro && shortcut.steps) {
-                // Nếu bật Lặp lại, thiết lập ID theo dõi vòng lặp
-                if (shortcut.isLoop) {
-                    activeLoopId = shortcut.id;
-                    stopBtn.style.display = 'flex';
+            while (activeLoopId === currentLoopId && isEnabled) {
+                for (let i = 0; i < shortcut.steps.length; i++) {
+                    if (activeLoopId !== currentLoopId || !isEnabled) break;
+                    const step = shortcut.steps[i];
+
+                    if (step.delay > 0) {
+                        stopBtn.innerText = `⏳ Bước ${i + 1}/${shortcut.steps.length} (Đợi ${step.delay}s)...`;
+                        await sleep(step.delay * 1000);
+                    }
+                    if (activeLoopId !== currentLoopId || !isEnabled) break;
+
+                    executePointClick(step.x, step.y, step.clickType);
                 }
 
-                do {
-                    for (let i = 0; i < shortcut.steps.length; i++) {
-                        // Kiểm tra nếu vòng lặp đã bị ngắt
-                        if (shortcut.isLoop && activeLoopId !== shortcut.id) break;
-
-                        const step = shortcut.steps[i];
-                        const targetShortcut = shortcuts.find(s => s.id === step.targetId);
-                        
-                        if (targetShortcut) {
-                            executeSingleClick(targetShortcut);
-                        }
-
-                        const delaySec = Number(step.delay) || 0;
-                        if (delaySec > 0) {
-                            await sleep(Math.round(delaySec * 1000));
-                        }
-                    }
-
-                    // Nếu có cài lặp lại, chờ hết khoảng thời gian cài đặt giữa các vòng lặp
-                    if (shortcut.isLoop && activeLoopId === shortcut.id) {
-                        const loopDelaySec = Number(shortcut.loopDelay) || 0;
-                        if (loopDelaySec > 0) {
-                            await sleep(Math.round(loopDelaySec * 1000));
-                        }
-                    }
-
-                } while (shortcut.isLoop && activeLoopId === shortcut.id && isEnabled);
-
-            } else {
-                executeSingleClick(shortcut);
+                if (activeLoopId !== currentLoopId || !isEnabled) break;
+                if (shortcut.loopDelay > 0) {
+                    await sleepWithCountdown(shortcut.loopDelay, currentLoopId);
+                }
             }
-        } finally {
-            isExecuting = false;
-            if (!activeLoopId) {
-                stopBtn.style.display = 'none';
+
+            if (activeLoopId === currentLoopId) {
+                stopActiveLoop();
+            }
+        } else {
+            for (let i = 0; i < shortcut.steps.length; i++) {
+                if (!isEnabled) break;
+                const step = shortcut.steps[i];
+                if (step.delay > 0) await sleep(step.delay * 1000);
+                if (!isEnabled) break;
+
+                executePointClick(step.x, step.y, step.clickType);
             }
         }
-    }
 
-    function executeSingleClick(shortcut) {
-        setTimeout(() => {
-            const wrappers = document.querySelectorAll('.sc-target-wrapper');
-            wrappers.forEach(w => w.style.display = 'none');
-
-            const element = document.elementFromPoint(shortcut.x, shortcut.y);
-
-            wrappers.forEach(w => w.style.display = 'block');
-
-            if (element) {
-                element.click();
-
-                const flash = document.createElement('div');
-                flash.style.cssText = `
-                    position: fixed;
-                    left: ${shortcut.x}px;
-                    top: ${shortcut.y}px;
-                    width: 10px;
-                    height: 10px;
-                    transform: translate(-50%, -50%);
-                    background: radial-gradient(circle, rgba(56, 189, 248, 0.9) 0%, rgba(37, 99, 235, 0.4) 60%, rgba(0,0,0,0) 100%);
-                    border-radius: 50%;
-                    border: 2px solid #38bdf8;
-                    box-shadow: 0 0 15px #38bdf8;
-                    z-index: 2147483647;
-                    pointer-events: none;
-                    transition: transform 0.35s cubic-bezier(0, 0, 0.2, 1), opacity 0.35s ease;
-                `;
-                document.body.appendChild(flash);
-                requestAnimationFrame(() => {
-                    flash.style.transform = 'translate(-50%, -50%) scale(4)';
-                    flash.style.opacity = '0';
-                });
-                setTimeout(() => flash.remove(), 350);
-            }
-        }, 0);
+        isExecuting = false;
     }
 
     /* =========================================================
-        GLOBAL KEYBOARD LISTENER
+        GLOBAL EVENT LISTENERS (RECORD MACRO)
     ========================================================= */
-    document.addEventListener('keydown', async event => {
+    globalRecOverlay.addEventListener('click', event => {
+        if (!isRecording) return;
+        
+        event.preventDefault();
+        event.stopPropagation();
+
+        const now = Date.now();
+        const delayMs = lastRecordTime === 0 ? 0 : (now - lastRecordTime);
+        lastRecordTime = now;
+        const delaySec = Math.max(0, parseFloat((delayMs / 1000).toFixed(1)));
+
+        const x = event.clientX;
+        const y = event.clientY;
+
+        let detectedClickType = 'left';
+        if (event.button === 2) {
+            detectedClickType = 'right';
+        } else if (event.ctrlKey) {
+            detectedClickType = 'ctrl';
+        } else if (event.shiftKey) {
+            detectedClickType = 'shift';
+        } else if (event.altKey) {
+            detectedClickType = 'alt';
+        }
+
+        triggerVisualFeedback(x, y);
+
+        tempRecordedSteps.push({
+            x: x,
+            y: y,
+            clickType: detectedClickType,
+            delay: delaySec
+        });
+
+    }, true);
+
+    document.addEventListener('keydown', event => {
         if (event.key === 'Escape') {
+            if (isRecording) {
+                stopRecordingAndRestoreModal();
+                return;
+            }
             if (activeLoopId) {
                 stopActiveLoop();
                 return;
             }
-            if (!document.querySelector('.sc-modal')) {
-                updateSystemStatus();
-                return;
-            }
+            updateSystemStatus(!isEnabled);
+            return;
         }
 
-        if (!isEnabled || document.querySelector('.sc-modal') || isExecuting) return;
+        if (isRecording) return;
 
-        const key = normalizeKey(event);
-        if (!key) return;
+        const activeEl = document.activeElement;
+        if (activeEl && (activeEl.tagName === 'INPUT' || activeEl.tagName === 'TEXTAREA' || activeEl.isContentEditable)) {
+            return;
+        }
 
-        const shortcut = shortcuts.find(x => x.key === key);
-        if (shortcut) {
+        if (!isEnabled || isExecuting) return;
+
+        const pressedKey = normalizeKey(event);
+        const matched = shortcuts.find(s => s.key === pressedKey);
+        if (matched) {
             event.preventDefault();
-            event.stopPropagation();
-            await executeShortcut(shortcut);
+            executeShortcut(matched);
         }
     }, true);
 
-    document.querySelector('#sc-add').onclick = () => openModal();
-
-    /* =========================================================
-        DRAG CONSOLE PANEL
-    ========================================================= */
-    const header = document.querySelector('#shortcut-console-header');
-    let consoleDragging = false;
-    let consoleStartX = 0, consoleStartY = 0;
-    let consoleStartLeft = 0, consoleStartTop = 0;
-
-    header.addEventListener('mousedown', event => {
-        if (event.target.closest('button')) return;
-        consoleDragging = true;
-        const rect = consoleEl.getBoundingClientRect();
-        consoleStartX = event.clientX;
-        consoleStartY = event.clientY;
-        consoleStartLeft = rect.left;
-        consoleStartTop = rect.top;
-        event.preventDefault();
-    });
-
-    document.addEventListener('mousemove', event => {
-        if (!consoleDragging) return;
-        const dx = event.clientX - consoleStartX;
-        const dy = event.clientY - consoleStartY;
-
-        let x = Math.max(0, Math.min(consoleStartLeft + dx, window.innerWidth - consoleEl.offsetWidth));
-        let y = Math.max(0, Math.min(consoleStartTop + dy, window.innerHeight - consoleEl.offsetHeight));
-
-        consoleEl.style.left = x + 'px';
-        consoleEl.style.top = y + 'px';
-        consoleEl.style.right = 'auto';
-    });
-
-    document.addEventListener('mouseup', () => {
-        consoleDragging = false;
-    });
-
-    // Khởi tạo hiển thị ban đầu
+    // Initial Render
     renderList();
     renderFloatingButtons();
 })();
