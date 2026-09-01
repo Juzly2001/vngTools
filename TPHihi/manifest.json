@@ -1,0 +1,13 @@
+{
+  "manifest_version": 3,
+  "name": "TP Muon Muaaaaaa",
+  "version": "1.0",
+  "description": "Tự động nhận thông báo báo động khi Google Sheet có dữ liệu mới",
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["pusher.min.js", "TP.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
