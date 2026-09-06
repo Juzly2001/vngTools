@@ -5691,440 +5691,715 @@ body.light-mode .admin-console-v3 .admin-console-footer {
 }
 
 
-/* ===== NOTE V3 integrated rich editor ===== */
-.note-rich-modal{width:min(1180px,96vw);max-width:1180px;max-height:92vh;overflow:hidden}
-.note-rich-head{margin-bottom:14px}
-.note-rich-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;max-height:calc(92vh - 100px);overflow:auto;padding-right:2px}
-.note-rich-main{min-width:0}
-.note-title-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:9px}
-.note-rich-title{width:100%;box-sizing:border-box;border:1px solid var(--border-color);border-radius:12px;background:var(--inner-bg);color:var(--text-main);padding:12px 14px;font-size:17px;font-weight:800;outline:none}
-.note-rich-title:focus{border-color:var(--accent-color)}
-.note-pin-toggle{width:46px;border:1px solid var(--border-color);border-radius:12px;background:var(--inner-bg);cursor:pointer;filter:grayscale(1);opacity:.65}
-.note-pin-toggle.active{filter:none;opacity:1;border-color:#f59e0b;background:rgba(245,158,11,.10)}
-.note-rich-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:7px;border:1px solid var(--border-color);border-bottom:0;border-radius:12px 12px 0 0;background:var(--modal-bg)}
-.note-rich-toolbar button{min-width:32px;height:32px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text-main);cursor:pointer;padding:0 8px}
-.note-rich-toolbar button:hover{background:var(--inner-bg);border-color:var(--border-color)}
-.note-toolbar-sep{width:1px;height:22px;background:var(--border-color);margin:0 2px}
-.note-rich-editor{min-height:300px;max-height:48vh;overflow:auto;border:1px solid var(--border-color);border-radius:0 0 12px 12px;background:var(--inner-bg);color:var(--text-main);padding:15px;outline:none;line-height:1.6;word-break:break-word}
-.note-rich-editor:empty::before{content:attr(data-placeholder);color:var(--text-sub);pointer-events:none}
-.note-rich-editor h2{font-size:1.45em;margin:.5em 0 .25em}.note-rich-editor h3{font-size:1.18em;margin:.5em 0 .25em}
-.note-rich-editor ul,.note-rich-editor ol{padding-left:24px}.note-rich-editor a{color:var(--accent-color);text-decoration:underline}
-.note-rich-editor table,.view-note-content.rich-note-content table{width:100%;border-collapse:collapse;margin:10px 0;table-layout:fixed}
-.note-rich-editor th,.note-rich-editor td,.view-note-content.rich-note-content th,.view-note-content.rich-note-content td{border:1px solid var(--border-color);padding:8px 9px;vertical-align:top;min-width:60px}
-.note-rich-editor th,.view-note-content.rich-note-content th{background:rgba(127,127,127,.08);font-weight:800}
-.note-check-section{margin-top:12px;padding:12px;border:1px solid var(--border-color);border-radius:12px;background:var(--inner-bg)}
-.note-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
-.note-section-head>div{display:flex;flex-direction:column;gap:2px}.note-section-head small{color:var(--text-sub);font-size:10px}
-.note-checklist-editor{display:grid;gap:7px;max-height:300px;overflow:auto}
-.note-checklist-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
-.note-checklist-row input[type=text]{width:100%;box-sizing:border-box;border:1px solid var(--border-color);border-radius:9px;background:var(--modal-bg);color:var(--text-main);padding:8px 10px}
-.note-checklist-row input[type=checkbox]{width:16px;height:16px}.note-checklist-remove{border:0;background:transparent;color:var(--danger-color);font-size:18px;cursor:pointer}
-.note-rich-side{display:grid;align-content:start;gap:12px;position:sticky;top:0}
-.note-rich-side label,.note-link-label{display:grid;gap:6px;color:var(--text-sub);font-size:11px;font-weight:800}
-.note-rich-select,.note-rich-date,.note-link-label input{width:100%;box-sizing:border-box;border:1px solid var(--border-color);border-radius:10px;background:var(--inner-bg);color:var(--text-main);padding:9px 10px}
-.note-emoji-wrap{max-height:130px;overflow:auto}.note-rich-side-actions{display:grid;gap:7px}.note-editor-status{color:var(--text-sub);font-size:10px;line-height:1.5}
-.danger-soft{color:var(--danger-color)!important}.btn-compact{padding:6px 9px!important;min-height:unset!important}
-.note-table-modal{width:min(430px,92vw)}.note-table-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.note-table-form label{display:grid;gap:6px;color:var(--text-sub);font-size:11px;font-weight:800}.note-table-form input{border:1px solid var(--border-color);background:var(--inner-bg);color:var(--text-main);border-radius:10px;padding:10px}
-.app-notice-modal{width:min(420px,92vw);text-align:center}.app-notice-icon{font-size:42px;margin-bottom:8px}.app-notice-message{color:var(--text-sub);line-height:1.6;white-space:pre-wrap}
-.note-detail-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.note-detail-chip{border:1px solid var(--border-color);border-radius:999px;padding:4px 8px;color:var(--text-sub);font-size:10px;background:var(--inner-bg)}
-.note-detail-checklist{margin-top:14px;padding:12px;border:1px solid var(--border-color);border-radius:12px;background:var(--inner-bg)}.note-detail-checklist h4{margin:0 0 8px}
-.note-detail-check-row{display:flex;gap:8px;align-items:flex-start;padding:5px 0;color:var(--text-main)}.note-detail-check-row.done span:last-child{text-decoration:line-through;color:var(--text-sub)}
-
-html[data-theme=dark] .note-rich-select,html[data-theme=dark] .note-rich-date,html[data-theme=dark] .note-table-form input,html[data-theme=dark] .note-link-label input,
-body.dark-theme .note-rich-select,body.dark-theme .note-rich-date,body.dark-theme .note-table-form input,body.dark-theme .note-link-label input{background:#111827!important;color:#f8fafc!important;color-scheme:dark}
-html[data-theme=dark] .note-rich-select option,body.dark-theme .note-rich-select option{background:#111827!important;color:#f8fafc!important}
-html[data-theme=light] .note-rich-modal,html[data-theme=light] .note-table-modal,html[data-theme=light] .app-notice-modal,
-body.light-theme .note-rich-modal,body.light-theme .note-table-modal,body.light-theme .app-notice-modal{background:#fff!important}
-html[data-theme=light] .note-rich-title,html[data-theme=light] .note-rich-editor,html[data-theme=light] .note-check-section,html[data-theme=light] .note-rich-select,html[data-theme=light] .note-rich-date,html[data-theme=light] .note-checklist-row input[type=text],html[data-theme=light] .note-link-label input,
-body.light-theme .note-rich-title,body.light-theme .note-rich-editor,body.light-theme .note-check-section,body.light-theme .note-rich-select,body.light-theme .note-rich-date,body.light-theme .note-checklist-row input[type=text],body.light-theme .note-link-label input{background:#fff!important;color:#111827!important;border-color:#d7dde7!important}
-html[data-theme=light] .note-rich-toolbar,body.light-theme .note-rich-toolbar{background:#f8fafc!important;border-color:#d7dde7!important}
-html[data-theme=light] .note-rich-toolbar button,body.light-theme .note-rich-toolbar button{color:#111827!important}
-@media(max-width:800px){.note-rich-layout{grid-template-columns:1fr}.note-rich-side{position:static;grid-template-columns:1fr 1fr}.note-rich-side-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}}
-@media(max-width:560px){.note-rich-modal{width:97vw;max-height:95vh}.note-rich-layout{max-height:calc(95vh - 90px)}.note-rich-side{grid-template-columns:1fr}.note-rich-side-actions{grid-column:auto;grid-template-columns:1fr}.note-rich-toolbar{gap:3px}.note-rich-toolbar button{padding:0 6px}}
-
-
 /* ==========================================================================
-   NOTE V3.1 — interactive checklist + cleaner detail modal + bigger emoji picker
+   NOTE V4 — CLEAN, SINGLE-SOURCE STYLES
    ========================================================================== */
 
-/* Make note detail modal feel like a proper document viewer */
-#contentDetailModal .modal-box,
-.content-detail-modal-box {
-    width: min(760px, 94vw);
-    max-width: 760px;
-    max-height: 88vh;
+.note-v4-modal {
+    width: min(980px, 96vw);
+    max-width: 980px;
+    height: min(820px, 92vh);
+    max-height: 92vh;
+    padding: 0 !important;
     overflow: hidden;
-    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
 }
-#contentDetailModal .modal-body,
-#contentDetailBody {
-    max-height: 68vh;
-    overflow: auto;
+
+.note-v4-header {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--modal-bg);
 }
-.view-note-content.rich-note-content {
-    padding: 16px;
+
+.note-v4-heading {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.note-v4-heading-icon {
+    width: 42px;
+    height: 42px;
+    flex: 0 0 42px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: var(--inner-bg);
     border: 1px solid var(--border-color);
-    border-radius: 14px;
+    font-size: 22px;
+}
+.note-v4-heading h2 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 18px;
+    line-height: 1.25;
+}
+.note-v4-heading p {
+    margin: 3px 0 0;
+    color: var(--text-sub);
+    font-size: 11px;
+}
+
+.note-v4-scroll {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 18px 20px;
+}
+
+.note-v4-title-row {
+    margin-bottom: 10px;
+}
+.note-v4-title {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    outline: none;
     background: var(--inner-bg);
     color: var(--text-main);
-    line-height: 1.7;
+    font-size: 18px;
+    font-weight: 800;
+}
+.note-v4-title:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 16%, transparent);
+}
+
+.note-v4-meta {
+    display: grid;
+    grid-template-columns: 110px minmax(150px, 1fr) minmax(200px, 1fr) 110px;
+    gap: 9px;
+    margin-bottom: 12px;
+}
+.note-v4-meta-btn,
+.note-v4-meta-field select,
+.note-v4-meta-field input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 42px;
+    border: 1px solid var(--border-color);
+    border-radius: 11px;
+    background: var(--inner-bg);
+    color: var(--text-main);
+}
+.note-v4-meta-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    cursor: pointer;
+    font-weight: 700;
+}
+.note-v4-meta-btn:hover {
+    border-color: var(--accent-color);
+}
+.note-pin-button.active {
+    border-color: #f59e0b;
+    background: color-mix(in srgb, #f59e0b 12%, var(--inner-bg));
+}
+.note-v4-meta-field {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 8px;
+    min-height: 42px;
+    padding-left: 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 11px;
+    background: var(--inner-bg);
+}
+.note-v4-meta-field > span {
+    color: var(--text-sub);
+    font-size: 10px;
+    font-weight: 800;
+}
+.note-v4-meta-field select,
+.note-v4-meta-field input {
+    min-height: 40px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 0 10px 10px 0;
+    outline: none;
+}
+
+.note-v4-editor-card {
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--inner-bg);
+}
+.note-v4-toolbar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px;
+    padding: 7px 9px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--modal-bg);
+}
+.note-v4-toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+.note-v4-toolbar button {
+    height: 32px;
+    min-width: 32px;
+    padding: 0 8px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 12px;
+}
+.note-v4-toolbar button:hover {
+    border-color: var(--border-color);
+    background: var(--inner-bg);
+}
+.note-v4-toolbar-separator {
+    width: 1px;
+    height: 21px;
+    margin: 0 2px;
+    background: var(--border-color);
+}
+
+.note-v4-editor {
+    min-height: 320px;
+    max-height: 430px;
+    overflow-y: auto;
+    padding: 16px;
+    outline: none;
+    color: var(--text-main);
+    background: var(--inner-bg);
     font-size: 13px;
+    line-height: 1.7;
+    word-break: break-word;
 }
-.view-note-content.rich-note-content:empty {
-    display: none;
+.note-v4-editor:empty::before {
+    content: attr(data-placeholder);
+    color: var(--text-sub);
+    pointer-events: none;
 }
-.view-note-content.rich-note-content h2 {
-    margin: .2em 0 .5em;
-    font-size: 1.45em;
+.note-v4-editor h2,
+.note-v4-view-content h2 {
+    margin: .55em 0 .25em;
+    font-size: 1.5em;
 }
-.view-note-content.rich-note-content h3 {
-    margin: .2em 0 .45em;
-    font-size: 1.18em;
+.note-v4-editor h3,
+.note-v4-view-content h3 {
+    margin: .5em 0 .22em;
+    font-size: 1.2em;
 }
-.view-note-content.rich-note-content p {
+.note-v4-editor p,
+.note-v4-view-content p {
     margin: .45em 0;
 }
-.view-note-content.rich-note-content ul,
-.view-note-content.rich-note-content ol {
+.note-v4-editor ul,
+.note-v4-editor ol,
+.note-v4-view-content ul,
+.note-v4-view-content ol {
     padding-left: 24px;
 }
-.view-note-content.rich-note-content a {
+.note-v4-editor a,
+.note-v4-view-content a {
     color: var(--accent-color);
     text-decoration: underline;
 }
+.note-v4-editor table,
+.note-v4-view-content table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 12px 0;
+}
+.note-v4-editor th,
+.note-v4-editor td,
+.note-v4-view-content th,
+.note-v4-view-content td {
+    border: 1px solid var(--border-color);
+    padding: 8px 9px;
+    min-width: 60px;
+    vertical-align: top;
+}
+.note-v4-editor th,
+.note-v4-view-content th {
+    background: color-mix(in srgb, var(--text-main) 6%, transparent);
+    font-weight: 800;
+}
 
-/* Interactive checklist */
-.note-detail-checklist {
+.note-v4-checklist {
     margin-top: 12px;
-    padding: 14px;
+    padding: 13px;
     border: 1px solid var(--border-color);
     border-radius: 14px;
     background: var(--inner-bg);
 }
-.note-detail-checklist-head {
+.note-v4-section-head {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 10px;
-    margin-bottom: 8px;
 }
-.note-detail-checklist-head h4 {
+.note-v4-section-head h3 {
     margin: 0;
+    color: var(--text-main);
     font-size: 13px;
 }
-.note-detail-progress {
+.note-v4-section-head span {
+    display: block;
+    margin-top: 2px;
     color: var(--text-sub);
     font-size: 10px;
-    font-weight: 700;
 }
-.note-detail-check-row {
+.note-v4-checklist-list {
     display: grid;
-    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 7px;
+    margin-top: 10px;
+}
+.note-v4-checklist-row {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr) 30px;
     gap: 9px;
-    align-items: start;
-    padding: 8px 6px;
-    border-radius: 9px;
-    transition: background .15s ease;
-    cursor: pointer;
+    align-items: center;
 }
-.note-detail-check-row:hover {
-    background: rgba(127,127,127,.07);
-}
-.note-detail-check-row input[type="checkbox"] {
+.note-v4-checklist-row input[type="checkbox"] {
     width: 17px;
     height: 17px;
-    margin: 1px 0 0;
-    cursor: pointer;
+    margin: 0;
     accent-color: var(--accent-color);
+    cursor: pointer;
 }
-.note-detail-check-text {
+.note-v4-checklist-row input[type="text"] {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    outline: none;
+    background: var(--modal-bg);
     color: var(--text-main);
-    font-size: 12px;
-    line-height: 1.45;
-    word-break: break-word;
 }
-.note-detail-check-row.done .note-detail-check-text {
-    text-decoration: line-through;
+.note-v4-checklist-row input[type="text"]:focus {
+    border-color: var(--accent-color);
+}
+.note-v4-checklist-remove {
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--danger-color);
+    cursor: pointer;
+    font-size: 17px;
+}
+.note-v4-checklist-remove:hover {
+    background: color-mix(in srgb, var(--danger-color) 10%, transparent);
+}
+.note-v4-empty-checklist {
+    padding: 13px 4px 2px;
     color: var(--text-sub);
-}
-.note-detail-check-row.done {
-    opacity: .78;
+    font-size: 10px;
 }
 
-/* Larger, usable emoji picker inside Note editor */
-.note-emoji-label {
-    gap: 7px !important;
-}
-.note-emoji-picker-shell {
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    background: var(--inner-bg);
-    overflow: hidden;
-}
-.note-emoji-picker-top {
+.note-v4-footer {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 8px;
-    padding: 8px 10px;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-main);
+    gap: 12px;
+    padding: 13px 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--modal-bg);
 }
-.note-emoji-picker-top span {
+.note-v4-status {
+    color: var(--text-sub);
+    font-size: 10px;
+}
+.note-v4-footer-actions,
+.note-v4-dialog-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+.note-v4-primary-btn,
+.note-v4-secondary-btn,
+.note-v4-danger-btn {
+    min-height: 36px;
+    padding: 0 12px;
+    border-radius: 9px;
+    cursor: pointer;
     font-size: 11px;
     font-weight: 800;
 }
-.note-emoji-picker-top small {
+.note-v4-primary-btn {
+    border: 1px solid var(--accent-color);
+    background: var(--accent-color);
+    color: #fff;
+}
+.note-v4-secondary-btn {
+    border: 1px solid var(--border-color);
+    background: var(--inner-bg);
+    color: var(--text-main);
+}
+.note-v4-danger-btn {
+    border: 1px solid color-mix(in srgb, var(--danger-color) 35%, var(--border-color));
+    background: color-mix(in srgb, var(--danger-color) 8%, var(--inner-bg));
+    color: var(--danger-color);
+}
+
+.note-v4-icon-modal {
+    width: min(560px, 94vw);
+    max-width: 560px;
+}
+.note-v4-dialog-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.note-v4-dialog-head h3 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 16px;
+}
+.note-v4-dialog-head p {
+    margin: 3px 0 0;
     color: var(--text-sub);
-    font-size: 9px;
+    font-size: 10px;
 }
-.note-emoji-wrap {
-    max-height: 250px !important;
-    min-height: 190px;
-    overflow: auto !important;
-    padding: 9px !important;
-    background: transparent !important;
+.note-v4-icon-search {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 40px;
+    padding: 0 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--inner-bg);
 }
-.note-emoji-wrap .emoji-grid,
-#noteEmojiGrid {
-    display: grid !important;
-    grid-template-columns: repeat(6, minmax(32px, 1fr)) !important;
-    gap: 7px !important;
-    width: 100% !important;
+.note-v4-icon-search input {
+    width: 100%;
+    border: 0;
+    outline: none;
+    background: transparent;
+    color: var(--text-main);
 }
-.note-emoji-wrap .emoji-option,
-.note-emoji-wrap .emoji-item,
-.note-emoji-wrap button,
-#noteEmojiGrid > * {
-    min-width: 34px !important;
-    min-height: 34px !important;
-    width: 100% !important;
-    border-radius: 9px !important;
-    font-size: 18px !important;
+.note-v4-icon-grid {
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 7px;
+    max-height: 340px;
+    overflow-y: auto;
+    margin-top: 12px;
+    padding-right: 2px;
 }
-.note-emoji-wrap .emoji-option:hover,
-.note-emoji-wrap .emoji-item:hover,
-#noteEmojiGrid > *:hover {
-    transform: scale(1.05);
-}
-.note-emoji-wrap .emoji-search,
-.note-emoji-wrap input[type="search"],
-.note-emoji-wrap input[type="text"] {
-    min-height: 34px !important;
-    font-size: 11px !important;
-}
-
-/* Give the side panel enough width now that Emoji is larger */
-.note-rich-layout {
-    grid-template-columns: minmax(0, 1fr) 320px;
-}
-.note-rich-side {
+.note-v4-icon-item {
+    aspect-ratio: 1;
     min-width: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--inner-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 20px;
+}
+.note-v4-icon-item:hover,
+.note-v4-icon-item.selected {
+    border-color: var(--accent-color);
+    background: color-mix(in srgb, var(--accent-color) 11%, var(--inner-bg));
+}
+.note-v4-icon-none {
+    font-size: 11px;
+    font-weight: 800;
 }
 
-/* Light mode polish */
-html[data-theme="light"] #contentDetailModal .modal-box,
-body.light-theme #contentDetailModal .modal-box,
-html[data-theme="light"] .note-emoji-picker-shell,
-body.light-theme .note-emoji-picker-shell {
-    background: #ffffff !important;
+.note-v4-small-modal {
+    width: min(440px, 92vw);
+    max-width: 440px;
 }
-html[data-theme="light"] .view-note-content.rich-note-content,
-html[data-theme="light"] .note-detail-checklist,
-body.light-theme .view-note-content.rich-note-content,
-body.light-theme .note-detail-checklist {
-    background: #ffffff !important;
-    border-color: #d7dde7 !important;
-    color: #111827 !important;
+.note-v4-table-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
 }
-html[data-theme="light"] .note-detail-check-text,
-body.light-theme .note-detail-check-text {
-    color: #111827 !important;
+.note-v4-table-fields label,
+.note-v4-dialog-field {
+    display: grid;
+    gap: 6px;
+    color: var(--text-sub);
+    font-size: 10px;
+    font-weight: 800;
 }
-
-/* Dark mode */
-html[data-theme="dark"] .note-emoji-picker-shell,
-body.dark-theme .note-emoji-picker-shell {
-    background: #0f172a !important;
+.note-v4-table-fields input,
+.note-v4-dialog-field input {
+    min-height: 40px;
+    padding: 0 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    outline: none;
+    background: var(--inner-bg);
+    color: var(--text-main);
 }
-html[data-theme="dark"] .view-note-content.rich-note-content,
-html[data-theme="dark"] .note-detail-checklist,
-body.dark-theme .view-note-content.rich-note-content,
-body.dark-theme .note-detail-checklist {
-    background: #0b1220 !important;
-    color: #f8fafc !important;
-}
-html[data-theme="dark"] .note-detail-check-text,
-body.dark-theme .note-detail-check-text {
-    color: #f8fafc !important;
+.note-v4-dialog-actions {
+    margin-top: 14px;
 }
 
-@media (max-width: 900px) {
-    .note-rich-layout {
-        grid-template-columns: 1fr;
-    }
-    .note-rich-side {
-        position: static;
-    }
-    .note-emoji-wrap {
-        min-height: 150px;
-        max-height: 210px !important;
-    }
+.note-v4-notice-modal {
+    width: min(410px, 92vw);
+    max-width: 410px;
+    text-align: center;
+}
+.note-v4-notice-icon {
+    font-size: 38px;
+}
+.note-v4-notice-modal h3 {
+    margin: 8px 0 5px;
+    color: var(--text-main);
+}
+.note-v4-notice-message {
+    margin-bottom: 16px;
+    color: var(--text-sub);
+    line-height: 1.55;
+    white-space: pre-wrap;
 }
 
-
-/* ==========================================================================
-   NOTE V3.2 HOTFIX — undo V3.1 layout conflicts
-   ========================================================================== */
-
-/* The emoji builder already creates .emoji-picker-shell.
-   Do NOT turn #noteEmojiGrid itself into a grid, otherwise its single shell
-   becomes a narrow first-column child (the issue visible in the screenshot). */
-#noteEmojiGrid {
-    display: block !important;
-    width: 100% !important;
-}
-.note-emoji-wrap {
-    min-height: 0 !important;
-    max-height: none !important;
-    overflow: visible !important;
+/* Note reader */
+#readModal.note-v4-reader .modal-box {
+    width: min(820px, 94vw) !important;
+    max-width: 820px !important;
+    max-height: 88vh;
     padding: 0 !important;
+    overflow: hidden;
+    border-radius: 18px;
+}
+#readModal.note-v4-reader #readModalTitle {
     margin: 0 !important;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--modal-bg);
+    color: var(--text-main) !important;
 }
-#noteEmojiGrid > .emoji-picker-shell {
-    width: 100% !important;
-    box-sizing: border-box !important;
-    padding: 10px !important;
-    border-radius: 12px !important;
+#readModal.note-v4-reader #readModalBody {
+    max-height: 67vh;
+    overflow-y: auto;
+    padding: 18px;
 }
-#noteEmojiGrid .emoji-items {
-    display: grid !important;
-    grid-template-columns: repeat(6, minmax(36px, 1fr)) !important;
-    gap: 7px !important;
-    max-height: 210px !important;
-    overflow-y: auto !important;
-    padding: 4px 2px 2px !important;
+#readModal.note-v4-reader .modal-footer {
+    margin: 0 !important;
+    padding: 12px 18px;
+    border-top: 1px solid var(--border-color);
+    background: var(--modal-bg);
 }
-#noteEmojiGrid .emoji-item {
-    width: 100% !important;
-    min-width: 36px !important;
-    min-height: 36px !important;
-    font-size: 20px !important;
+.note-v4-reader-title {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 9px;
 }
-#noteEmojiGrid .emoji-tabs {
-    overflow-x: auto !important;
-    flex-wrap: nowrap !important;
+.note-v4-reader-title > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-#noteEmojiGrid .emoji-search-wrap {
-    width: auto !important;
+.note-v4-reader-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 6px;
+}
+.note-v4-reader-action {
+    min-height: 30px;
+    padding: 0 9px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--inner-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+}
+.note-v4-reader-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.note-v4-reader-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    padding: 0 9px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--inner-bg);
+    color: var(--text-sub);
+    font-size: 10px;
+}
+.note-v4-view-content {
+    color: var(--text-main);
+    font-size: 13px;
+    line-height: 1.7;
+    word-break: break-word;
+}
+.note-v4-view-content:not(:empty) {
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 13px;
+    background: var(--inner-bg);
+}
+.note-v4-view-checklist {
+    margin-top: 12px;
+    padding: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: 13px;
+    background: var(--inner-bg);
+}
+.note-v4-view-checklist-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 7px;
+}
+.note-v4-view-checklist-head h4 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 12px;
+}
+.note-v4-view-progress {
+    color: var(--text-sub);
+    font-size: 10px;
+}
+.note-v4-view-check-row {
+    display: grid;
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 9px;
+    align-items: start;
+    padding: 7px 5px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.note-v4-view-check-row:hover {
+    background: color-mix(in srgb, var(--text-main) 5%, transparent);
+}
+.note-v4-view-check-row input {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--accent-color);
+    cursor: pointer;
+}
+.note-v4-view-check-text {
+    color: var(--text-main);
+    font-size: 12px;
+    line-height: 1.45;
+}
+.note-v4-view-check-row.done .note-v4-view-check-text {
+    color: var(--text-sub);
+    text-decoration: line-through;
 }
 
-/* Note editor: less cramped. */
-.note-rich-layout {
-    grid-template-columns: minmax(0, 1fr) 300px !important;
+/* Explicit native control colors */
+html[data-theme="dark"] .note-v4-meta-field select,
+html[data-theme="dark"] .note-v4-meta-field input,
+body.dark-theme .note-v4-meta-field select,
+body.dark-theme .note-v4-meta-field input {
+    color-scheme: dark;
+    background: #111827 !important;
+    color: #f8fafc !important;
 }
-.note-rich-side {
-    min-width: 0 !important;
+html[data-theme="dark"] .note-v4-meta-field select option,
+body.dark-theme .note-v4-meta-field select option {
+    background: #111827 !important;
+    color: #f8fafc !important;
 }
-
-/* Actual viewer modal is #readModal, not #contentDetailModal. */
-#readModal .modal-box {
-    width: min(760px, 94vw) !important;
-    max-width: 760px !important;
-    max-height: 88vh !important;
-    overflow: hidden !important;
-    border-radius: 18px !important;
+html[data-theme="light"] .note-v4-modal,
+html[data-theme="light"] .note-v4-icon-modal,
+html[data-theme="light"] .note-v4-small-modal,
+html[data-theme="light"] .note-v4-notice-modal,
+body.light-theme .note-v4-modal,
+body.light-theme .note-v4-icon-modal,
+body.light-theme .note-v4-small-modal,
+body.light-theme .note-v4-notice-modal {
+    background: #fff !important;
 }
-#readModal #readModalTitle {
-    padding-bottom: 10px !important;
-    margin-bottom: 10px !important;
-    border-bottom: 1px solid var(--border-color) !important;
+html[data-theme="light"] .note-v4-title,
+html[data-theme="light"] .note-v4-editor-card,
+html[data-theme="light"] .note-v4-editor,
+html[data-theme="light"] .note-v4-checklist,
+html[data-theme="light"] .note-v4-meta-field,
+html[data-theme="light"] .note-v4-meta-btn,
+body.light-theme .note-v4-title,
+body.light-theme .note-v4-editor-card,
+body.light-theme .note-v4-editor,
+body.light-theme .note-v4-checklist,
+body.light-theme .note-v4-meta-field,
+body.light-theme .note-v4-meta-btn {
+    background: #fff !important;
+    color: #111827 !important;
+    border-color: #d8dee8 !important;
 }
-#readModal #readModalBody {
-    max-height: 66vh !important;
-    overflow-y: auto !important;
-    padding-right: 2px !important;
-}
-#readModal .modal-footer {
-    margin-top: 12px !important;
-    padding-top: 10px !important;
-    border-top: 1px solid var(--border-color) !important;
-}
-
-/* Cleaner document body: don't force a giant empty rectangle. */
-#readModal .view-note-content.rich-note-content {
-    min-height: 0 !important;
-    max-height: none !important;
-    padding: 14px !important;
-    margin-bottom: 10px !important;
-}
-#readModal .view-note-content.rich-note-content:empty {
-    display: none !important;
-}
-
-/* Checklist rows should be clearly interactive. */
-#readModal .note-detail-check-row {
-    grid-template-columns: 22px minmax(0, 1fr) !important;
-    padding: 8px 7px !important;
-    cursor: pointer !important;
-}
-#readModal .note-detail-check-row input[type="checkbox"] {
-    appearance: auto !important;
-    -webkit-appearance: checkbox !important;
-    width: 17px !important;
-    height: 17px !important;
-    margin: 1px 0 0 !important;
-    cursor: pointer !important;
-    pointer-events: auto !important;
-    opacity: 1 !important;
-}
-#readModal .note-detail-check-row.done .note-detail-check-text {
-    text-decoration: line-through !important;
-    opacity: .68 !important;
-}
-
-/* Theme-safe native controls and emoji picker. */
-body.light-mode #noteEmojiGrid > .emoji-picker-shell,
-html[data-theme="light"] #noteEmojiGrid > .emoji-picker-shell,
-body.light-theme #noteEmojiGrid > .emoji-picker-shell {
-    background: #ffffff !important;
-    border-color: #d7dde7 !important;
-}
-body.light-mode #noteEmojiGrid .emoji-search-wrap,
-html[data-theme="light"] #noteEmojiGrid .emoji-search-wrap,
-body.light-theme #noteEmojiGrid .emoji-search-wrap {
+html[data-theme="light"] .note-v4-toolbar,
+body.light-theme .note-v4-toolbar {
     background: #f8fafc !important;
 }
-body.light-mode #noteEmojiGrid .emoji-item,
-html[data-theme="light"] #noteEmojiGrid .emoji-item,
-body.light-theme #noteEmojiGrid .emoji-item {
+html[data-theme="light"] .note-v4-toolbar button,
+body.light-theme .note-v4-toolbar button {
     color: #111827 !important;
 }
-body.dark-mode #noteEmojiGrid > .emoji-picker-shell,
-html[data-theme="dark"] #noteEmojiGrid > .emoji-picker-shell,
-body.dark-theme #noteEmojiGrid > .emoji-picker-shell {
-    background: #0b1220 !important;
-}
-body.dark-mode #noteEmojiGrid .emoji-item,
-html[data-theme="dark"] #noteEmojiGrid .emoji-item,
-body.dark-theme #noteEmojiGrid .emoji-item {
-    color: #f8fafc !important;
-}
 
-@media (max-width: 900px) {
-    .note-rich-layout {
-        grid-template-columns: 1fr !important;
+@media (max-width: 780px) {
+    .note-v4-modal {
+        width: 97vw;
+        height: 94vh;
+        max-height: 94vh;
     }
-    #noteEmojiGrid .emoji-items {
-        grid-template-columns: repeat(7, minmax(36px, 1fr)) !important;
+    .note-v4-meta {
+        grid-template-columns: 1fr 1fr;
+    }
+    .note-v4-editor {
+        min-height: 260px;
+    }
+    .note-v4-icon-grid {
+        grid-template-columns: repeat(7, minmax(0, 1fr));
     }
 }
-@media (max-width: 560px) {
-    #readModal .modal-box {
-        width: 96vw !important;
+@media (max-width: 520px) {
+    .note-v4-header,
+    .note-v4-scroll,
+    .note-v4-footer {
+        padding-left: 12px;
+        padding-right: 12px;
     }
-    #noteEmojiGrid .emoji-items {
-        grid-template-columns: repeat(6, minmax(34px, 1fr)) !important;
+    .note-v4-meta {
+        grid-template-columns: 1fr;
+    }
+    .note-v4-footer {
+        align-items: flex-end;
+    }
+    .note-v4-status {
+        display: none;
+    }
+    .note-v4-footer-actions {
+        width: 100%;
+    }
+    .note-v4-footer-actions > button {
+        flex: 1;
+    }
+    .note-v4-icon-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
     }
 }

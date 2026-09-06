@@ -199,54 +199,33 @@
     </div>
 
     <div class="modal-overlay" id="noteModal">
-        <div class="modal-box note-rich-modal">
-            <div class="command-head redesigned-head note-rich-head">
-                <div>
-                    <span id="noteModalTitle">📝 New Note</span>
-                    <small id="noteModalSubtitle">Rich text, tables and unlimited checklist items. Saved with your dashboard data.</small>
+        <div class="modal-box note-v4-modal">
+            <div class="note-v4-header">
+                <div class="note-v4-heading">
+                    <div class="note-v4-heading-icon" id="noteHeaderIcon">📝</div>
+                    <div>
+                        <h2 id="noteModalTitle">New note</h2>
+                        <p id="noteModalSubtitle">Create a clear, structured note.</p>
+                    </div>
                 </div>
-                <button class="modal-close-soft" onclick="closeModal('noteModal')">✕</button>
+                <button class="modal-close-soft" type="button" onclick="closeModal('noteModal')" aria-label="Close">✕</button>
             </div>
 
-            <div class="note-rich-layout">
-                <div class="note-rich-main">
-                    <div class="note-title-row">
-                        <input id="noteTitleInput" class="note-rich-title" type="text" placeholder="Note title...">
-                        <button id="notePinBtn" class="note-pin-toggle" type="button" onclick="toggleRichNotePin()" title="Pin note">📌</button>
-                    </div>
-
-                    <div class="note-rich-toolbar">
-                        <button type="button" onclick="noteFormat('bold')" title="Bold"><b>B</b></button>
-                        <button type="button" onclick="noteFormat('italic')" title="Italic"><i>I</i></button>
-                        <button type="button" onclick="noteFormat('underline')" title="Underline"><u>U</u></button>
-                        <button type="button" onclick="noteFormat('strikeThrough')" title="Strikethrough"><s>S</s></button>
-                        <span class="note-toolbar-sep"></span>
-                        <button type="button" onclick="noteBlock('h2')">H2</button>
-                        <button type="button" onclick="noteBlock('h3')">H3</button>
-                        <button type="button" onclick="noteBlock('p')">P</button>
-                        <span class="note-toolbar-sep"></span>
-                        <button type="button" onclick="noteFormat('insertUnorderedList')">• List</button>
-                        <button type="button" onclick="noteFormat('insertOrderedList')">1. List</button>
-                        <button type="button" onclick="openNoteLinkModal()">🔗 Link</button>
-                        <button type="button" onclick="openNoteTablePicker()">▦ Table</button>
-                        <button type="button" onclick="noteFormat('removeFormat')">Tx</button>
-                    </div>
-
-                    <div id="noteRichEditor" class="note-rich-editor" contenteditable="true" data-placeholder="Write your note here..."></div>
-
-                    <div class="note-check-section">
-                        <div class="note-section-head">
-                            <div><strong>☑ Checklist</strong><small id="noteChecklistCount">0 items</small></div>
-                            <button class="btn-secondary btn-compact" type="button" onclick="addRichNoteChecklistItem()">＋ Add item</button>
-                        </div>
-                        <div id="noteChecklistEditor" class="note-checklist-editor"></div>
-                    </div>
+            <div class="note-v4-scroll">
+                <div class="note-v4-title-row">
+                    <input id="noteTitleInput" class="note-v4-title" type="text" placeholder="Note title">
                 </div>
 
-                <aside class="note-rich-side">
-                    <label>Category
-                        <select id="noteCategoryInput" class="note-rich-select">
-                            <option value="">No category</option>
+                <div class="note-v4-meta">
+                    <button id="noteIconButton" class="note-v4-meta-btn note-icon-button" type="button" onclick="openNoteIconPicker()">
+                        <span id="noteIconButtonEmoji">📝</span>
+                        <span>Icon</span>
+                    </button>
+
+                    <label class="note-v4-meta-field">
+                        <span>Category</span>
+                        <select id="noteCategoryInput">
+                            <option value="">None</option>
                             <option value="work">💼 Work</option>
                             <option value="personal">👤 Personal</option>
                             <option value="urgent">🔥 Urgent</option>
@@ -254,67 +233,137 @@
                         </select>
                     </label>
 
-                    <label>Deadline
-                        <input id="noteDeadlineInput" type="datetime-local" class="note-rich-date">
+                    <label class="note-v4-meta-field note-v4-deadline-field">
+                        <span>Deadline</span>
+                        <input id="noteDeadlineInput" type="datetime-local">
                     </label>
 
-                    <label class="note-emoji-label">Emoji
-                        <div class="emoji-picker-container note-emoji-wrap">
-                            <div class="emoji-grid" id="noteEmojiGrid"></div>
+                    <button id="notePinBtn" class="note-v4-meta-btn note-pin-button" type="button" onclick="toggleRichNotePin()">
+                        <span>📌</span>
+                        <span id="notePinLabel">Pin</span>
+                    </button>
+                </div>
+
+                <section class="note-v4-editor-card">
+                    <div class="note-v4-toolbar" id="noteRichToolbar">
+                        <div class="note-v4-toolbar-group">
+                            <button type="button" onclick="noteFormat('undo')" title="Undo">↶</button>
+                            <button type="button" onclick="noteFormat('redo')" title="Redo">↷</button>
                         </div>
-                    </label>
-
-                    <div class="note-rich-side-actions">
-                        <button class="btn-primary" type="button" onclick="submitNoteForm()">💾 Save note</button>
-                        <button class="btn-secondary" type="button" onclick="duplicateNoteFromEditor()">⧉ Duplicate</button>
-                        <button class="btn-secondary" type="button" onclick="copyRichNoteFromEditor()">📋 Copy</button>
-                        <button class="btn-secondary danger-soft" id="noteDeleteFromEditorBtn" type="button" onclick="deleteNoteFromEditor()">🗑 Delete</button>
+                        <span class="note-v4-toolbar-separator"></span>
+                        <div class="note-v4-toolbar-group">
+                            <button type="button" onclick="noteFormat('bold')" title="Bold"><strong>B</strong></button>
+                            <button type="button" onclick="noteFormat('italic')" title="Italic"><em>I</em></button>
+                            <button type="button" onclick="noteFormat('underline')" title="Underline"><u>U</u></button>
+                            <button type="button" onclick="noteFormat('strikeThrough')" title="Strikethrough"><s>S</s></button>
+                        </div>
+                        <span class="note-v4-toolbar-separator"></span>
+                        <div class="note-v4-toolbar-group">
+                            <button type="button" onclick="noteBlock('p')" title="Paragraph">P</button>
+                            <button type="button" onclick="noteBlock('h2')" title="Heading 2">H2</button>
+                            <button type="button" onclick="noteBlock('h3')" title="Heading 3">H3</button>
+                        </div>
+                        <span class="note-v4-toolbar-separator"></span>
+                        <div class="note-v4-toolbar-group">
+                            <button type="button" onclick="noteFormat('insertUnorderedList')" title="Bullet list">• List</button>
+                            <button type="button" onclick="noteFormat('insertOrderedList')" title="Numbered list">1. List</button>
+                            <button type="button" onclick="openNoteLinkModal()" title="Insert link">🔗 Link</button>
+                            <button type="button" onclick="openNoteTablePicker()" title="Insert table">▦ Table</button>
+                            <button type="button" onclick="noteFormat('removeFormat')" title="Clear formatting">Tx</button>
+                        </div>
                     </div>
-                    <div id="noteEditorStatus" class="note-editor-status">Ready</div>
-                </aside>
+
+                    <div id="noteRichEditor" class="note-v4-editor" contenteditable="true"
+                         data-placeholder="Write your note here..."></div>
+                </section>
+
+                <section class="note-v4-checklist">
+                    <div class="note-v4-section-head">
+                        <div>
+                            <h3>Checklist</h3>
+                            <span id="noteChecklistCount">0 items</span>
+                        </div>
+                        <button class="note-v4-secondary-btn" type="button" onclick="addRichNoteChecklistItem()">＋ Add item</button>
+                    </div>
+                    <div id="noteChecklistEditor" class="note-v4-checklist-list"></div>
+                    <div id="noteChecklistEmpty" class="note-v4-empty-checklist">
+                        Add checklist items when this note includes things you need to complete.
+                    </div>
+                </section>
+            </div>
+
+            <div class="note-v4-footer">
+                <div class="note-v4-status" id="noteEditorStatus">Not saved yet</div>
+                <div class="note-v4-footer-actions">
+                    <button class="note-v4-danger-btn" id="noteDeleteFromEditorBtn" type="button"
+                            onclick="deleteNoteFromEditor()" style="display:none;">Delete</button>
+                    <button class="note-v4-secondary-btn" type="button" onclick="closeModal('noteModal')">Cancel</button>
+                    <button class="note-v4-primary-btn" type="button" onclick="submitNoteForm()">Save note</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="modal-overlay" id="noteTableModal">
-        <div class="modal-box note-table-modal">
-            <div class="command-head redesigned-head">
-                <div><span>▦ Insert table</span><small>Choose rows and columns.</small></div>
-                <button class="modal-close-soft" onclick="closeModal('noteTableModal')">✕</button>
+    <div class="modal-overlay" id="noteIconModal">
+        <div class="modal-box note-v4-icon-modal">
+            <div class="note-v4-dialog-head">
+                <div>
+                    <h3>Choose an icon</h3>
+                    <p>Pick one icon for this note.</p>
+                </div>
+                <button class="modal-close-soft" type="button" onclick="closeModal('noteIconModal')">✕</button>
             </div>
-            <div class="note-table-form">
+            <div class="note-v4-icon-search">
+                <span>🔎</span>
+                <input id="noteIconSearch" type="search" placeholder="Search icon..." oninput="renderNoteIconPicker()">
+            </div>
+            <div id="noteIconGrid" class="note-v4-icon-grid"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="noteTableModal">
+        <div class="modal-box note-v4-small-modal">
+            <div class="note-v4-dialog-head">
+                <div><h3>Insert table</h3><p>Create a table in the current cursor position.</p></div>
+                <button class="modal-close-soft" type="button" onclick="closeModal('noteTableModal')">✕</button>
+            </div>
+            <div class="note-v4-table-fields">
                 <label>Rows<input id="noteTableRows" type="number" min="1" max="20" value="3"></label>
                 <label>Columns<input id="noteTableCols" type="number" min="1" max="10" value="3"></label>
             </div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('noteTableModal')">Cancel</button>
-                <button class="btn-primary" onclick="insertNoteTable()">Insert table</button>
+            <div class="note-v4-dialog-actions">
+                <button class="note-v4-secondary-btn" onclick="closeModal('noteTableModal')">Cancel</button>
+                <button class="note-v4-primary-btn" onclick="insertNoteTable()">Insert</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="noteLinkModal">
-        <div class="modal-box note-table-modal">
-            <div class="command-head redesigned-head">
-                <div><span>🔗 Insert link</span><small>Add a URL to selected text.</small></div>
-                <button class="modal-close-soft" onclick="closeModal('noteLinkModal')">✕</button>
+        <div class="modal-box note-v4-small-modal">
+            <div class="note-v4-dialog-head">
+                <div><h3>Insert link</h3><p>Add a URL to the selected text.</p></div>
+                <button class="modal-close-soft" type="button" onclick="closeModal('noteLinkModal')">✕</button>
             </div>
-            <label class="note-link-label">URL<input id="noteLinkUrlInput" type="text" placeholder="https://example.com"></label>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('noteLinkModal')">Cancel</button>
-                <button class="btn-primary" onclick="insertNoteLink()">Insert link</button>
+            <label class="note-v4-dialog-field">URL
+                <input id="noteLinkUrlInput" type="text" placeholder="https://example.com">
+            </label>
+            <div class="note-v4-dialog-actions">
+                <button class="note-v4-secondary-btn" onclick="closeModal('noteLinkModal')">Cancel</button>
+                <button class="note-v4-primary-btn" onclick="insertNoteLink()">Insert</button>
             </div>
         </div>
     </div>
 
     <div class="modal-overlay" id="appNoticeModal">
-        <div class="modal-box app-notice-modal">
-            <div class="app-notice-icon" id="appNoticeIcon">ℹ️</div>
+        <div class="modal-box note-v4-notice-modal">
+            <div class="note-v4-notice-icon" id="appNoticeIcon">ℹ️</div>
             <h3 id="appNoticeTitle">Notice</h3>
-            <div id="appNoticeMessage" class="app-notice-message"></div>
-            <div class="modal-footer"><button class="btn-primary" onclick="closeModal('appNoticeModal')">OK</button></div>
+            <div id="appNoticeMessage" class="note-v4-notice-message"></div>
+            <button class="note-v4-primary-btn" onclick="closeModal('appNoticeModal')">OK</button>
         </div>
     </div>
+
+
 
 
 
