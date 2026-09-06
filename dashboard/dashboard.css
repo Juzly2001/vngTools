@@ -7292,3 +7292,104 @@ body[data-theme="rose"] .group-card,body[data-theme="lavender"] .group-card,body
 .theme-choice:hover{transform:translateY(-2px) scale(1.01)}
 @media(max-width:768px){body[data-theme] .group-card,body[data-theme] .toolbar,body[data-theme] .command-bar,body[data-theme] .dashboard-overview .overview-card{backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}#bgCanvas{filter:saturate(1.02)}}
 @media(prefers-reduced-motion:reduce){#bgCanvas{filter:none}.theme-choice,.group-card,button{transition-duration:.01ms!important}}
+
+
+/* ==========================================================================
+   SCENE V4 — LAYERING + TRUE OFF STATE + SMOOTHER COMPOSITING
+   ========================================================================== */
+
+/* The old desktop patch forced display:block!important.
+   These rules intentionally come LAST and are more specific. */
+html {
+    min-height: 100%;
+    background: #0b1220;
+}
+
+body {
+    isolation: isolate;
+}
+
+/* Visuals ON: the scene is the page background. */
+body.visuals-on {
+    background: transparent !important;
+}
+
+body.visuals-on #bgCanvas {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: -1 !important;
+    pointer-events: none !important;
+}
+
+/* Visuals OFF: absolutely no leftover canvas, even against old !important rules. */
+body.visuals-off #bgCanvas {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+@media (min-width: 769px) {
+    body.visuals-off #bgCanvas {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+}
+
+body.visuals-off {
+    background: var(--bg-gradient) !important;
+}
+
+/* Softer glass: scene remains visible without making cards look transparent/cheap. */
+body.visuals-on .toolbar,
+body.visuals-on .command-bar,
+body.visuals-on .tag-filter-bar,
+body.visuals-on .overview-card,
+body.visuals-on .group-card {
+    backdrop-filter: blur(16px) saturate(1.06) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.06) !important;
+}
+
+/* Avoid the over-crisp/cartoon feeling from V3. */
+body.visuals-on #bgCanvas {
+    filter: saturate(.92) contrast(.98) brightness(.96) !important;
+}
+
+/* Light scenic themes need slightly denser cards for readability. */
+body.visuals-on.light-mode .toolbar,
+body.visuals-on.light-mode .command-bar,
+body.visuals-on.light-mode .tag-filter-bar,
+body.visuals-on.light-mode .overview-card,
+body.visuals-on.light-mode .group-card {
+    background: rgba(255,255,255,.80) !important;
+    border-color: rgba(255,255,255,.72) !important;
+}
+
+/* Dark scenic themes keep depth without black opaque blocks. */
+body.visuals-on:not(.light-mode) .toolbar,
+body.visuals-on:not(.light-mode) .command-bar,
+body.visuals-on:not(.light-mode) .tag-filter-bar,
+body.visuals-on:not(.light-mode) .overview-card,
+body.visuals-on:not(.light-mode) .group-card {
+    background: color-mix(in srgb, var(--panel-bg) 90%, transparent) !important;
+}
+
+/* Mobile: keep compositing inexpensive. */
+@media (max-width: 768px) {
+    body.visuals-on #bgCanvas {
+        filter: saturate(.90) contrast(.98) !important;
+    }
+    body.visuals-on .toolbar,
+    body.visuals-on .command-bar,
+    body.visuals-on .tag-filter-bar,
+    body.visuals-on .overview-card,
+    body.visuals-on .group-card {
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+    }
+}
