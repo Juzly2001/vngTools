@@ -1137,8 +1137,10 @@ function toggleNoteChecklistItem(groupId, noteIndex, checklistIndex, checked) {
     saveData();
 
     // Refresh only the visible checklist UI instead of closing/reopening the modal.
-    const row = document.querySelector(
-        `.note-detail-check-row[data-note-group="${CSS.escape(String(groupId))}"][data-note-index="${noteIndex}"][data-check-index="${checklistIndex}"]`
+    const row = [...document.querySelectorAll('.note-detail-check-row')].find(el =>
+        el.dataset.noteGroup === String(groupId) &&
+        el.dataset.noteIndex === String(noteIndex) &&
+        el.dataset.checkIndex === String(checklistIndex)
     );
     if (row) {
         row.classList.toggle('done', !!checked);
@@ -1182,11 +1184,11 @@ function showContentDetail(groupId, index, type) {
                 <span class="note-detail-progress" id="noteDetailChecklistProgress">${checklist.filter(i=>i.done).length}/${checklist.length} done</span>
             </div>
             ${checklist.map((i, checkIdx)=>`<label class="note-detail-check-row ${i.done?'done':''}"
-                data-note-group="${escapeHTML(String(index))}"
-                data-note-index="${type}"
+                data-note-group="${escapeHTML(String(groupId))}"
+                data-note-index="${index}"
                 data-check-index="${checkIdx}">
                 <input type="checkbox" ${i.done?'checked':''}
-                    onchange="toggleNoteChecklistItem('${escapeHTML(String(index))}', ${type}, ${checkIdx}, this.checked)">
+                    onchange="toggleNoteChecklistItem('${escapeHTML(String(groupId))}', ${index}, ${checkIdx}, this.checked)">
                 <span class="note-detail-check-text">${escapeHTML(i.text||'')}</span>
             </label>`).join('')}
         </div>` : '';
