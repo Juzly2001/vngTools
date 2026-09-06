@@ -6344,3 +6344,166 @@ function openKanbanTopModal(id) { openSmartModal(id); }
 function closeKanbanTopModal(id) { closeSmartModal(id); }
 function openKanbanChildModal(id) { openSmartModal(id); }
 function closeKanbanChildModal(id) { closeSmartModal(id); }
+// ============================================================================
+// MULTI THEME + THEME-AWARE CANVAS EFFECTS
+// ============================================================================
+const DASHBOARD_THEMES = [
+    {id:'dark', name:'Dark', icon:'🌙', effect:'stars'},
+    {id:'light', name:'Light', icon:'☀️', effect:'clouds'},
+    {id:'midnight', name:'Midnight', icon:'🌌', effect:'stars'},
+    {id:'oled', name:'OLED', icon:'⚫', effect:'stars'},
+    {id:'forest', name:'Forest', icon:'🌲', effect:'fireflies'},
+    {id:'rose', name:'Rose', icon:'🌹', effect:'petals'},
+    {id:'lavender', name:'Lavender', icon:'💜', effect:'petals'},
+    {id:'ocean', name:'Ocean', icon:'🌊', effect:'bubbles'},
+    {id:'sunset', name:'Sunset', icon:'🌇', effect:'embers'},
+    {id:'coffee', name:'Coffee', icon:'☕', effect:'steam'},
+    {id:'mint', name:'Mint', icon:'🌿', effect:'leaves'},
+    {id:'sakura-night', name:'Sakura Night', icon:'🌸', effect:'petals'},
+    {id:'sky', name:'Sky', icon:'☁️', effect:'clouds'},
+    {id:'lemon', name:'Lemon', icon:'🍋', effect:'sparkles'},
+    {id:'peach', name:'Peach', icon:'🍑', effect:'petals'},
+    {id:'cyber', name:'Cyber', icon:'⚡', effect:'matrix'},
+    {id:'grape', name:'Grape', icon:'🍇', effect:'nebula'},
+    {id:'terminal', name:'Terminal', icon:'💻', effect:'matrix'}
+];
+const LIGHT_COMPAT_THEMES = new Set(['light','rose','lavender','mint','sky','lemon','peach']);
+let themeFxParticles = [];
+let themeFxTick = 0;
+
+function getCurrentTheme() {
+    const saved = localStorage.getItem(THEME_KEY) || 'dark';
+    return DASHBOARD_THEMES.some(t => t.id === saved) ? saved : 'dark';
+}
+function getThemeMeta(id = getCurrentTheme()) {
+    return DASHBOARD_THEMES.find(t => t.id === id) || DASHBOARD_THEMES[0];
+}
+function applyDashboardTheme(themeId, save = true) {
+    const meta = getThemeMeta(themeId);
+    document.body.dataset.theme = meta.id;
+    document.body.classList.toggle('light-mode', LIGHT_COMPAT_THEMES.has(meta.id));
+    if (save) localStorage.setItem(THEME_KEY, meta.id);
+    const btn = getEl('themeBtn');
+    if (btn) btn.innerHTML = `<span class="sidebar-menu-icon" aria-hidden="true">${meta.icon}</span><span>Theme</span>`;
+    document.querySelectorAll('.theme-choice').forEach(el => {
+        const active = el.dataset.theme === meta.id;
+        el.classList.toggle('active', active);
+        const mark = el.querySelector('.theme-check');
+        if (mark) mark.textContent = active ? '✓' : '';
+    });
+    if (isCanvasEnabled) {
+        initBackgroundObjects();
+        if (!animationFrameId) animationFrameId = requestAnimationFrame(drawBackground);
+    }
+}
+
+// Backward-compatible name: old callers now open the picker instead of binary switching.
+function toggleTheme() { openThemePicker(); }
+
+function ensureThemePicker() {
+    if (document.getElementById('themePickerOverlay')) return;
+    const overlay = document.createElement('div');
+    overlay.id = 'themePickerOverlay';
+    overlay.className = 'theme-picker-overlay';
+    overlay.innerHTML = `
+      <div class="theme-picker-panel" role="dialog" aria-modal="true" aria-label="Choose theme">
+        <div class="theme-picker-head">
+          <div><h3>🎨 Choose theme</h3><small style="color:var(--text-sub)">Visuals automatically match the selected theme.</small></div>
+          <button class="theme-picker-close" type="button" aria-label="Close">✕</button>
+        </div>
+        <div class="theme-picker-grid">
+          ${DASHBOARD_THEMES.map(t => `<button class="theme-choice" type="button" data-theme="${t.id}"><span class="theme-check"></span><strong>${t.icon} ${t.name}</strong><small>${effectLabel(t.effect)}</small></button>`).join('')}
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    overlay.addEventListener('click', e => { if (e.target === overlay) closeThemePicker(); });
+    overlay.querySelector('.theme-picker-close')?.addEventListener('click', closeThemePicker);
+    overlay.querySelectorAll('.theme-choice').forEach(btn => btn.addEventListener('click', () => {
+        applyDashboardTheme(btn.dataset.theme);
+        closeThemePicker();
+    }));
+}
+function effectLabel(effect) {
+    return ({stars:'Stars',clouds:'Clouds',fireflies:'Fireflies',petals:'Petals',bubbles:'Bubbles',embers:'Glow',steam:'Steam',leaves:'Leaves',sparkles:'Sparkles',matrix:'Digital rain',nebula:'Nebula'})[effect] || effect;
+}
+function openThemePicker() { ensureThemePicker(); document.getElementById('themePickerOverlay')?.classList.add('active'); applyDashboardTheme(getCurrentTheme(), false); }
+function closeThemePicker() { document.getElementById('themePickerOverlay')?.classList.remove('active'); }
+
+function initBackgroundObjects() {
+    if (!canvas || !ctx) return;
+    themeFxParticles = [];
+    stars = []; backgroundStars = []; clouds = [];
+    const { effect } = getThemeMeta();
+    const w = canvas.width || innerWidth, h = canvas.height || innerHeight;
+    const add = (n, maker) => { for (let i=0;i<n;i++) themeFxParticles.push(maker(i,w,h)); };
+    if (effect === 'stars') add(105,()=>({x:Math.random()*w,y:Math.random()*h,r:.3+Math.random()*1.3,a:.18+Math.random()*.7,da:.002+Math.random()*.012,vx:-.03-Math.random()*.12,vy:.02+Math.random()*.12,shoot:Math.random()<.08,len:20+Math.random()*50}));
+    if (effect === 'clouds') add(9,()=>({x:Math.random()*(w+300)-150,y:25+Math.random()*h*.42,r:22+Math.random()*34,a:.28+Math.random()*.34,vx:.05+Math.random()*.18}));
+    if (effect === 'fireflies') add(55,()=>({x:Math.random()*w,y:Math.random()*h,r:1+Math.random()*2.4,a:.2+Math.random()*.8,phase:Math.random()*6.28,vx:(Math.random()-.5)*.16,vy:(Math.random()-.5)*.16}));
+    if (effect === 'petals') add(44,()=>({x:Math.random()*w,y:Math.random()*h,r:2.5+Math.random()*4,a:.3+Math.random()*.55,vx:-.15+Math.random()*.45,vy:.18+Math.random()*.55,rot:Math.random()*6.28,vr:(Math.random()-.5)*.035}));
+    if (effect === 'bubbles') add(52,()=>({x:Math.random()*w,y:Math.random()*h,r:2+Math.random()*9,a:.12+Math.random()*.28,vx:(Math.random()-.5)*.12,vy:-.08-Math.random()*.35}));
+    if (effect === 'embers') add(48,()=>({x:Math.random()*w,y:Math.random()*h,r:1+Math.random()*3.5,a:.14+Math.random()*.42,vx:(Math.random()-.5)*.18,vy:-.05-Math.random()*.28}));
+    if (effect === 'steam') add(26,()=>({x:Math.random()*w,y:Math.random()*h,r:8+Math.random()*20,a:.03+Math.random()*.10,vx:(Math.random()-.5)*.1,vy:-.05-Math.random()*.2}));
+    if (effect === 'leaves') add(40,()=>({x:Math.random()*w,y:Math.random()*h,r:3+Math.random()*5,a:.2+Math.random()*.38,vx:-.08+Math.random()*.25,vy:.10+Math.random()*.36,rot:Math.random()*6.28,vr:(Math.random()-.5)*.025}));
+    if (effect === 'sparkles') add(52,()=>({x:Math.random()*w,y:Math.random()*h,r:.7+Math.random()*2.2,a:.15+Math.random()*.5,phase:Math.random()*6.28}));
+    if (effect === 'matrix') add(Math.max(28,Math.floor(w/24)),(_,ww)=>({x:Math.random()*ww,y:Math.random()*h,s:10+Math.random()*8,vy:.55+Math.random()*1.5,a:.10+Math.random()*.28,char:String.fromCharCode(0x30A0+Math.random()*80)}));
+    if (effect === 'nebula') add(65,()=>({x:Math.random()*w,y:Math.random()*h,r:1+Math.random()*4,a:.08+Math.random()*.28,vx:(Math.random()-.5)*.12,vy:(Math.random()-.5)*.12,phase:Math.random()*6.28}));
+}
+
+function drawBackground() {
+    if (!canvas || !ctx || !isCanvasEnabled) { animationFrameId = null; return; }
+    const w=canvas.width,h=canvas.height, meta=getThemeMeta(), effect=meta.effect;
+    ctx.clearRect(0,0,w,h); themeFxTick += .016;
+    const resetBottom=p=>{ if(p.y>h+40){p.y=-30;p.x=Math.random()*w;} };
+    const resetTop=p=>{ if(p.y<-40){p.y=h+30;p.x=Math.random()*w;} };
+
+    if (effect==='clouds') {
+        const sky = ctx.createLinearGradient(0,0,0,h);
+        if(meta.id==='light'){sky.addColorStop(0,'rgba(179,225,255,.75)');sky.addColorStop(1,'rgba(255,255,255,.28)');}
+        else {sky.addColorStop(0,'rgba(125,211,252,.24)');sky.addColorStop(1,'rgba(255,255,255,.05)');}
+        ctx.fillStyle=sky;ctx.fillRect(0,0,w,h);
+        themeFxParticles.forEach(p=>{ctx.save();ctx.globalAlpha=p.a;ctx.fillStyle='rgba(255,255,255,.92)';ctx.shadowColor='rgba(56,189,248,.15)';ctx.shadowBlur=14;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.arc(p.x+p.r*.75,p.y+p.r*.1,p.r*.72,0,6.28);ctx.arc(p.x-p.r*.72,p.y+p.r*.18,p.r*.58,0,6.28);ctx.arc(p.x+p.r*.18,p.y-p.r*.45,p.r*.68,0,6.28);ctx.fill();ctx.restore();p.x+=p.vx;if(p.x-p.r*3>w)p.x=-p.r*3;});
+    } else if (effect==='stars') {
+        themeFxParticles.forEach(p=>{p.a+=p.da;if(p.a>.9||p.a<.1)p.da*=-1;ctx.globalAlpha=p.a;ctx.strokeStyle=ctx.fillStyle=meta.id==='midnight'?'#93c5fd':meta.id==='oled'?'#d4ffff':'#fff';if(p.shoot){ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-p.len*.65,p.y+p.len);ctx.stroke();p.x-=.7;p.y+=1.1;resetBottom(p);}else{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=w;resetBottom(p);}});ctx.globalAlpha=1;
+    } else if (effect==='petals' || effect==='leaves') {
+        const petal = effect==='leaves' ? (meta.id==='mint'?'#34d399':'#86efac') : (meta.id==='lavender'?'#c4b5fd':meta.id==='peach'?'#fdba74':'#fda4af');
+        themeFxParticles.forEach(p=>{ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.rot);ctx.globalAlpha=p.a;ctx.fillStyle=petal;ctx.beginPath();ctx.ellipse(0,0,p.r*.65,p.r*1.25,0,0,6.28);ctx.fill();ctx.restore();p.x+=p.vx+Math.sin(themeFxTick+p.y*.01)*.08;p.y+=p.vy;p.rot+=p.vr;resetBottom(p);if(p.x>w+20)p.x=-20;});
+    } else if (effect==='bubbles') {
+        themeFxParticles.forEach(p=>{ctx.globalAlpha=p.a;ctx.strokeStyle='#a5f3fc';ctx.lineWidth=1;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.stroke();p.x+=p.vx+Math.sin(themeFxTick+p.y*.02)*.08;p.y+=p.vy;resetTop(p);});ctx.globalAlpha=1;
+    } else if (effect==='fireflies') {
+        themeFxParticles.forEach(p=>{const a=.18+.55*(.5+.5*Math.sin(themeFxTick*2+p.phase));ctx.globalAlpha=a;ctx.fillStyle='#bef264';ctx.shadowColor='#84cc16';ctx.shadowBlur=12;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill();p.x+=p.vx+Math.sin(themeFxTick+p.phase)*.08;p.y+=p.vy+Math.cos(themeFxTick*.8+p.phase)*.06;if(p.x<0)p.x=w;if(p.x>w)p.x=0;if(p.y<0)p.y=h;if(p.y>h)p.y=0;});ctx.shadowBlur=0;ctx.globalAlpha=1;
+    } else if (effect==='embers') {
+        themeFxParticles.forEach(p=>{ctx.globalAlpha=p.a;ctx.fillStyle=Math.random()>.5?'#fb7185':'#fdba74';ctx.shadowColor='#fb923c';ctx.shadowBlur=10;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill();p.x+=p.vx+Math.sin(themeFxTick+p.y*.01)*.05;p.y+=p.vy;resetTop(p);});ctx.shadowBlur=0;ctx.globalAlpha=1;
+    } else if (effect==='steam') {
+        themeFxParticles.forEach(p=>{ctx.globalAlpha=p.a;ctx.fillStyle='#f5e6d3';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill();p.x+=p.vx+Math.sin(themeFxTick+p.y*.01)*.12;p.y+=p.vy;resetTop(p);});ctx.globalAlpha=1;
+    } else if (effect==='sparkles') {
+        themeFxParticles.forEach(p=>{const a=.08+.42*(.5+.5*Math.sin(themeFxTick*2+p.phase));ctx.globalAlpha=a;ctx.strokeStyle='#facc15';ctx.beginPath();ctx.moveTo(p.x-p.r*2,p.y);ctx.lineTo(p.x+p.r*2,p.y);ctx.moveTo(p.x,p.y-p.r*2);ctx.lineTo(p.x,p.y+p.r*2);ctx.stroke();});ctx.globalAlpha=1;
+    } else if (effect==='matrix') {
+        const cyber=meta.id==='cyber';themeFxParticles.forEach(p=>{ctx.globalAlpha=p.a;ctx.fillStyle=cyber?(Math.random()>.5?'#22d3ee':'#d946ef'):'#22c55e';ctx.font=`${p.s}px monospace`;ctx.fillText(p.char,p.x,p.y);p.y+=p.vy;if(Math.random()<.012)p.char=String.fromCharCode(0x30A0+Math.random()*80);resetBottom(p);});ctx.globalAlpha=1;
+    } else if (effect==='nebula') {
+        themeFxParticles.forEach(p=>{const a=p.a*(.55+.45*Math.sin(themeFxTick+p.phase));ctx.globalAlpha=Math.max(.03,a);ctx.fillStyle=Math.random()>.5?'#c084fc':'#f0abfc';ctx.shadowColor='#a855f7';ctx.shadowBlur=12;ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.28);ctx.fill();p.x+=p.vx;p.y+=p.vy;if(p.x<0)p.x=w;if(p.x>w)p.x=0;if(p.y<0)p.y=h;if(p.y>h)p.y=0;});ctx.shadowBlur=0;ctx.globalAlpha=1;
+    }
+    animationFrameId=requestAnimationFrame(drawBackground);
+}
+
+// Strengthen the existing canvas toggle so it always restarts with the current theme.
+function applyCanvasState() {
+    const btn = getEl('themeBtnCanvas');
+    if (!canvas) return;
+    if (isCanvasEnabled) {
+        canvas.style.display='block'; resizeCanvas(); initBackgroundObjects();
+        if (!animationFrameId) animationFrameId=requestAnimationFrame(drawBackground);
+        if (btn) btn.innerHTML='<span class="sidebar-menu-icon" aria-hidden="true">✨</span><span>Visuals</span>';
+    } else {
+        canvas.style.display='none';
+        if(animationFrameId){cancelAnimationFrame(animationFrameId);animationFrameId=null;}
+        ctx?.clearRect(0,0,canvas.width,canvas.height);
+        if (btn) btn.innerHTML='<span class="sidebar-menu-icon" aria-hidden="true">🌟</span><span>Visuals</span>';
+    }
+}
+
+window.addEventListener('load',()=>{
+    ensureThemePicker();
+    applyDashboardTheme(getCurrentTheme(), false);
+    applyCanvasState();
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeThemePicker();});
