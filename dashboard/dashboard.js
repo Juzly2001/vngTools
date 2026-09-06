@@ -7895,3 +7895,36 @@ Object.assign(THEME_SCENE_LABELS,{
     }
     window.addEventListener('load', refreshWorkspaceHero, {once:true});
 })();
+
+
+// ============================================================================
+// V12.1 UI META — lightweight visual metadata only.
+// ============================================================================
+(function initWorkspaceUIV12_1(){
+    function updateWorkspaceSectionMeta(){
+        const grid = document.getElementById('groupsGrid');
+        const countEl = document.getElementById('workspaceSectionCount');
+        const titleEl = document.getElementById('workspaceSectionTitle');
+        if (!grid || !countEl) return;
+
+        const cards = Array.from(grid.children).filter(el => el.classList && el.classList.contains('group-card'));
+        countEl.textContent = `${cards.length} group${cards.length === 1 ? '' : 's'}`;
+
+        const activeChip = document.querySelector('.tag-chip.active');
+        if (titleEl) {
+            const label = activeChip?.textContent?.trim();
+            titleEl.textContent = label && !/^all$/i.test(label) ? label : 'Your groups';
+        }
+    }
+
+    window.addEventListener('load', () => {
+        updateWorkspaceSectionMeta();
+        const grid = document.getElementById('groupsGrid');
+        if (grid && 'MutationObserver' in window) {
+            new MutationObserver(updateWorkspaceSectionMeta).observe(grid,{childList:true});
+        }
+        document.addEventListener('click', (e) => {
+            if (e.target.closest?.('.tag-chip')) setTimeout(updateWorkspaceSectionMeta,0);
+        });
+    }, {once:true});
+})();

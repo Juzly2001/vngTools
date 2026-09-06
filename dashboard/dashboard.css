@@ -7884,3 +7884,306 @@ body { padding-top: 24px; }
     .groups-grid { column-count:2; }
     .command-bar { align-items:stretch; }
 }
+
+
+/* ==========================================================================
+   V12.1 — PERSONAL WORKSPACE POLISH
+   - separated overview cards
+   - left accent rail
+   - tighter hero
+   - quieter inner items
+   - sticky command bar
+   - smaller mobile dock
+   ========================================================================== */
+
+body { padding-top: 18px; }
+
+.hero-header.workspace-hero-v12 {
+    min-height: 86px;
+    padding: 14px 18px 15px;
+    margin-bottom: 12px;
+    align-items:center;
+}
+.workspace-hero-v12 h1 {
+    margin: 4px 0 3px;
+    font-size: clamp(1.8rem,3vw,2.7rem);
+}
+.workspace-hero-v12 .hero-subtitle {
+    font-size:12px;
+    opacity:.86;
+}
+.hero-meta-v12 {
+    gap:8px;
+}
+.hero-command-v12 {
+    min-height:34px;
+    padding:0 10px;
+}
+
+/* Dashboard overview — independent cards instead of a fused segmented rail */
+.dashboard-overview {
+    display:grid !important;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    gap:10px !important;
+    margin:0 0 14px !important;
+    overflow:visible !important;
+    border:0 !important;
+    border-radius:0 !important;
+    background:transparent !important;
+    box-shadow:none !important;
+}
+.dashboard-overview .overview-card {
+    position:relative;
+    min-height:74px !important;
+    padding:14px 15px !important;
+    border:1px solid var(--v12-hairline) !important;
+    border-radius:15px !important;
+    background:var(--v12-surface) !important;
+    box-shadow:0 8px 24px rgba(0,0,0,.045) !important;
+    backdrop-filter:blur(8px) !important;
+    overflow:hidden;
+}
+.dashboard-overview .overview-card::before {
+    content:"";
+    position:absolute;
+    left:0;
+    top:12px;
+    bottom:12px;
+    width:3px;
+    border-radius:0 4px 4px 0;
+    background:color-mix(in srgb,var(--accent-color) 82%,white 18%);
+    opacity:.85;
+}
+.dashboard-overview .overview-card:hover {
+    border-color:color-mix(in srgb,var(--accent-color) 22%,var(--border-color)) !important;
+    box-shadow:0 10px 28px rgba(0,0,0,.07) !important;
+}
+.dashboard-overview .overview-card span {
+    font-size:11px !important;
+    font-weight:700;
+    opacity:.78;
+}
+.dashboard-overview .overview-card strong {
+    font-size:1.45rem !important;
+    letter-spacing:-.04em;
+}
+
+/* Sticky command bar only, not the whole header */
+.command-bar {
+    position:sticky;
+    top:10px;
+    z-index:120;
+    margin-bottom:10px;
+    box-shadow:0 10px 30px rgba(0,0,0,.07) !important;
+}
+.command-bar::after {
+    content:"";
+    position:absolute;
+    left:12px;
+    right:12px;
+    bottom:-7px;
+    height:7px;
+    pointer-events:none;
+    background:linear-gradient(to bottom,rgba(0,0,0,.05),transparent);
+    opacity:.18;
+}
+
+/* Tag bar remains visually secondary */
+.tag-filter-bar {
+    margin-bottom:8px !important;
+}
+
+/* Toolbar reduced further */
+.toolbar {
+    min-height:50px;
+    margin-bottom:12px;
+}
+
+/* Section divider before groups */
+.workspace-section-v12 {
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:16px;
+    margin:6px 2px 10px;
+    padding:0 2px 9px;
+    border-bottom:1px solid var(--v12-hairline);
+}
+.workspace-section-copy-v12 {
+    display:flex;
+    align-items:baseline;
+    gap:9px;
+    min-width:0;
+}
+.workspace-section-kicker-v12 {
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.1em;
+    text-transform:uppercase;
+    color:var(--text-sub);
+    opacity:.64;
+}
+.workspace-section-v12 h2 {
+    margin:0;
+    font-size:15px;
+    font-weight:800;
+    letter-spacing:-.015em;
+    color:var(--text-main);
+}
+.workspace-section-meta-v12 {
+    color:var(--text-sub);
+    font-size:11px;
+    font-weight:700;
+}
+
+/* Group cards — restore left accent rail */
+.group-card {
+    position:relative;
+    padding:18px 18px 18px 20px !important;
+    border-left:1px solid var(--v12-hairline) !important;
+    overflow:hidden;
+}
+.group-card::before {
+    content:"";
+    position:absolute;
+    left:0;
+    top:14px;
+    bottom:14px;
+    width:3px;
+    border-radius:0 5px 5px 0;
+    background:var(--accent-color);
+    opacity:.78;
+}
+.group-card.type-link::after,
+.group-card.type-note::after,
+.group-card.type-schedule::after,
+.group-card.type-kanban::after {
+    display:none !important;
+}
+.group-card.type-link::before { background:var(--accent-color); }
+.group-card.type-note::before { background:var(--note-accent); }
+.group-card.type-schedule::before { background:var(--schedule-accent); }
+.group-card.type-kanban::before { background:#f97316; }
+
+/* Header controls quieter */
+.group-header {
+    margin-bottom:11px;
+    padding-bottom:10px;
+}
+.group-title {
+    font-size:1rem;
+}
+.group-tag {
+    opacity:.54 !important;
+}
+.favorite-btn {
+    opacity:.35 !important;
+}
+.group-card:hover .favorite-btn,
+.favorite-btn.active {
+    opacity:1 !important;
+}
+
+/* Reduce the card-in-card feeling for common inner rows */
+.group-card .link-item,
+.group-card .note-item,
+.group-card .schedule-item {
+    box-shadow:none !important;
+}
+.group-card .link-item {
+    border-radius:10px !important;
+    border:1px solid transparent !important;
+    background:transparent !important;
+}
+.group-card .link-item:hover {
+    background:var(--v12-surface-soft) !important;
+    border-color:var(--v12-hairline) !important;
+}
+.group-card .note-item {
+    border-color:color-mix(in srgb,var(--border-color) 72%,transparent) !important;
+    background:color-mix(in srgb,var(--inner-bg) 68%,transparent) !important;
+}
+.group-card .schedule-item {
+    border-color:color-mix(in srgb,var(--border-color) 66%,transparent) !important;
+    background:color-mix(in srgb,var(--inner-bg) 56%,transparent) !important;
+}
+
+/* More intentional grid spacing */
+.groups-grid {
+    column-gap:16px;
+}
+
+/* Mobile dock smaller and lighter */
+@media (max-width:768px) {
+    body { padding-bottom:80px; }
+    .workspace-hero-v12 {
+        min-height:76px !important;
+        padding:10px 6px 10px !important;
+    }
+    .workspace-hero-v12 h1 { font-size:1.9rem; }
+
+    .dashboard-overview {
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+        gap:8px !important;
+    }
+    .dashboard-overview .overview-card {
+        min-height:60px !important;
+        padding:10px 12px !important;
+        border-radius:13px !important;
+    }
+    .dashboard-overview .overview-card:last-child {
+        grid-column:1/-1;
+    }
+    .dashboard-overview .overview-card::before {
+        top:9px;
+        bottom:9px;
+        width:3px;
+    }
+
+    .command-bar {
+        top:7px;
+        border-radius:15px;
+    }
+
+    .workspace-section-v12 {
+        margin-top:4px;
+        padding-bottom:8px;
+    }
+    .workspace-section-kicker-v12 { display:none; }
+
+    .group-card {
+        padding:15px 14px 15px 17px !important;
+    }
+    .group-card::before {
+        top:12px;
+        bottom:12px;
+    }
+
+    .mobile-bottom-nav-v12 {
+        min-height:56px;
+        padding:5px 7px 4px;
+        border-radius:17px;
+    }
+    .mobile-bottom-nav-v12 button {
+        min-height:42px;
+    }
+    .mobile-bottom-nav-v12 button > span {
+        font-size:18px;
+    }
+    .mobile-bottom-nav-v12 small {
+        font-size:8px;
+    }
+    .mobile-bottom-nav-v12 .mobile-add-v12 > span {
+        width:38px;
+        height:38px;
+        margin-top:-17px;
+        border-radius:13px;
+        font-size:23px;
+    }
+}
+
+@media (min-width:769px) and (max-width:1100px) {
+    .dashboard-overview {
+        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    }
+}
