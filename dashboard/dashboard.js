@@ -6474,3 +6474,59 @@ window.addEventListener('resize',()=>{clearTimeout(window.__sceneResizeTimer);wi
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(animationFrameId){cancelAnimationFrame(animationFrameId);animationFrameId=null}}else if(isCanvasEnabled&&!animationFrameId){fxLastFrame=0;animationFrameId=requestAnimationFrame(drawBackground)}});
 window.addEventListener('load',()=>{ensureThemePicker();applyDashboardTheme(getCurrentTheme(),false);applyCanvasState();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeThemePicker()});
+
+
+// ==========================================================================
+// SCENE V6 — LIVE DEPTH PARALLAX CONTROLLER
+// ==========================================================================
+(function initLiveDepthScene(){
+    const root = document.documentElement;
+    const finePointer = window.matchMedia('(pointer:fine)');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+    let raf = 0;
+
+    const render = () => {
+        raf = 0;
+        currentX += (targetX - currentX) * 0.065;
+        currentY += (targetY - currentY) * 0.065;
+        root.style.setProperty('--scene-x', currentX.toFixed(2) + 'px');
+        root.style.setProperty('--scene-y', currentY.toFixed(2) + 'px');
+
+        if (Math.abs(targetX-currentX) > .05 || Math.abs(targetY-currentY) > .05) {
+            raf = requestAnimationFrame(render);
+        }
+    };
+
+    const wake = () => {
+        if (!raf) raf = requestAnimationFrame(render);
+    };
+
+    const onPointerMove = (e) => {
+        if (!finePointer.matches || reduceMotion.matches || !isCanvasEnabled) return;
+        const nx = (e.clientX / Math.max(1, innerWidth) - .5);
+        const ny = (e.clientY / Math.max(1, innerHeight) - .5);
+        // Very small movement is more realistic than dramatic parallax.
+        targetX = nx * -18;
+        targetY = ny * -11;
+        wake();
+    };
+
+    const reset = () => {
+        targetX = 0;
+        targetY = 0;
+        wake();
+    };
+
+    window.addEventListener('pointermove', onPointerMove, {passive:true});
+    document.addEventListener('mouseleave', reset);
+    window.addEventListener('blur', reset);
+
+    // If visuals are turned off, immediately return scene to neutral position.
+    const oldToggleThemeCanvasV6 = window.toggleThemeCanvas || toggleThemeCanvas;
+    window.toggleThemeCanvas = toggleThemeCanvas = function(){
+        oldToggleThemeCanvasV6();
+        if (!isCanvasEnabled) reset();
+    };
+})();

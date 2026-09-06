@@ -7556,3 +7556,239 @@ body.visuals-on[data-theme="cyber"] #bgCanvas { opacity: .34 !important; }
         background-attachment: scroll !important;
     }
 }
+
+
+/* ==========================================================================
+   SCENE V6 — LIVE DEPTH WALLPAPER
+   Real photography + 3 depth planes + camera drift + pointer parallax.
+   Canvas remains ONLY for tiny atmospheric particles.
+   ========================================================================== */
+
+:root {
+    --scene-x: 0px;
+    --scene-y: 0px;
+    --scene-photo: none;
+    --scene-photo-position: center center;
+    --scene-scale-back: 1.035;
+    --scene-scale-mid: 1.065;
+    --scene-scale-front: 1.105;
+}
+
+/* Stop V5 from using the photograph as a normal body background. */
+body.visuals-on[data-theme="forest"],
+body.visuals-on[data-theme="rose"],
+body.visuals-on[data-theme="lavender"],
+body.visuals-on[data-theme="ocean"],
+body.visuals-on[data-theme="sunset"],
+body.visuals-on[data-theme="sakura-night"],
+body.visuals-on[data-theme="cyber"] {
+    background-image: none !important;
+    background: transparent !important;
+}
+
+.live-scene {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: -2;
+    opacity: 0;
+    visibility: hidden;
+    background: #071018;
+    transition: opacity .45s ease;
+    contain: strict;
+}
+
+body.visuals-on .live-scene {
+    opacity: 1;
+    visibility: visible;
+}
+
+body.visuals-off .live-scene {
+    opacity: 0 !important;
+    visibility: hidden !important;
+}
+
+/* Each layer uses the SAME real photograph but a different crop/mask/scale.
+   This simulates optical depth without downloading 3 large images. */
+.live-scene-photo {
+    position: absolute;
+    inset: -5%;
+    background-image: var(--scene-photo);
+    background-size: cover;
+    background-position: var(--scene-photo-position);
+    background-repeat: no-repeat;
+    will-change: transform;
+    transform-origin: 50% 50%;
+    backface-visibility: hidden;
+}
+
+.live-scene-photo-back {
+    filter: saturate(.88) contrast(.94) brightness(.89);
+    transform:
+        translate3d(calc(var(--scene-x) * .18), calc(var(--scene-y) * .14), 0)
+        scale(var(--scene-scale-back));
+    animation: sceneCameraBack 24s ease-in-out infinite alternate;
+}
+
+.live-scene-photo-mid {
+    opacity: .72;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 30%, rgba(0,0,0,.15) 43%, #000 64%, #000 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, transparent 30%, rgba(0,0,0,.15) 43%, #000 64%, #000 100%);
+    filter: saturate(.96) contrast(.98) brightness(.96);
+    transform:
+        translate3d(calc(var(--scene-x) * .48), calc(var(--scene-y) * .34), 0)
+        scale(var(--scene-scale-mid));
+    animation: sceneCameraMid 18s ease-in-out infinite alternate;
+}
+
+.live-scene-photo-front {
+    opacity: .48;
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, transparent 58%, rgba(0,0,0,.12) 70%, #000 89%, #000 100%);
+    mask-image: linear-gradient(to bottom, transparent 0%, transparent 58%, rgba(0,0,0,.12) 70%, #000 89%, #000 100%);
+    filter: saturate(1.02) contrast(1.02) brightness(.91) blur(.35px);
+    transform:
+        translate3d(calc(var(--scene-x) * .82), calc(var(--scene-y) * .60), 0)
+        scale(var(--scene-scale-front));
+    animation: sceneCameraFront 14s ease-in-out infinite alternate;
+}
+
+@keyframes sceneCameraBack {
+    from { margin-left:-0.5%; margin-top:-0.3%; }
+    to   { margin-left: 0.7%; margin-top: 0.4%; }
+}
+@keyframes sceneCameraMid {
+    from { margin-left: 0.3%; margin-top: 0.2%; }
+    to   { margin-left:-0.6%; margin-top:-0.25%; }
+}
+@keyframes sceneCameraFront {
+    from { margin-left:-0.25%; margin-top: 0.3%; }
+    to   { margin-left: 0.45%; margin-top:-0.3%; }
+}
+
+/* Volumetric-looking light. */
+.live-scene-light {
+    position:absolute;
+    inset:-10%;
+    opacity:.23;
+    mix-blend-mode: screen;
+    background:
+        radial-gradient(ellipse at 68% 6%, rgba(255,250,220,.52) 0 4%, rgba(255,246,216,.16) 12%, transparent 35%),
+        linear-gradient(112deg, transparent 28%, rgba(255,247,217,.09) 39%, transparent 50%);
+    transform: translate3d(calc(var(--scene-x) * .10), calc(var(--scene-y) * .08),0);
+    animation: breatheLight 8s ease-in-out infinite alternate;
+}
+@keyframes breatheLight { from{opacity:.15} to{opacity:.29} }
+
+/* Two very cheap fog sheets moving at different speeds. */
+.live-scene-fog {
+    position:absolute;
+    left:-25%;
+    width:150%;
+    height:30%;
+    border-radius:50%;
+    filter: blur(28px);
+    opacity:.14;
+    background:
+        radial-gradient(ellipse at 20% 50%, rgba(235,244,241,.72), transparent 35%),
+        radial-gradient(ellipse at 55% 44%, rgba(235,244,241,.55), transparent 32%),
+        radial-gradient(ellipse at 85% 55%, rgba(235,244,241,.60), transparent 34%);
+    will-change: transform;
+}
+.live-scene-fog-a {
+    top:45%;
+    animation:fogDriftA 22s ease-in-out infinite alternate;
+}
+.live-scene-fog-b {
+    top:62%;
+    opacity:.09;
+    transform:scale(1.2);
+    animation:fogDriftB 30s ease-in-out infinite alternate;
+}
+@keyframes fogDriftA { from{translate:-4% 0} to{translate:5% 1.5%} }
+@keyframes fogDriftB { from{translate:5% 0} to{translate:-4% -1%} }
+
+.live-scene-vignette {
+    position:absolute;
+    inset:0;
+    background:
+        linear-gradient(to bottom, rgba(6,12,18,.10), transparent 25%, transparent 72%, rgba(5,10,15,.20)),
+        radial-gradient(ellipse at center, transparent 48%, rgba(4,8,12,.25) 100%);
+}
+
+/* Theme tuning — same engine, different atmosphere. */
+body[data-theme="forest"] .live-scene-photo-back { filter:saturate(.86) contrast(.96) brightness(.80); }
+body[data-theme="forest"] .live-scene-photo-front { opacity:.58; filter:saturate(.90) contrast(1.03) brightness(.72) blur(.45px); }
+body[data-theme="forest"] .live-scene-fog { opacity:.12; }
+
+body[data-theme="rose"] .live-scene-photo-back,
+body[data-theme="lavender"] .live-scene-photo-back { filter:saturate(.82) contrast(.93) brightness(1.02); }
+body[data-theme="rose"] .live-scene-photo-mid,
+body[data-theme="lavender"] .live-scene-photo-mid { opacity:.68; }
+body[data-theme="rose"] .live-scene-photo-front,
+body[data-theme="lavender"] .live-scene-photo-front { opacity:.58; filter:saturate(.94) contrast(.98) brightness(.98) blur(.25px); }
+body[data-theme="rose"] .live-scene-light,
+body[data-theme="lavender"] .live-scene-light { opacity:.16; }
+body[data-theme="rose"] .live-scene-fog,
+body[data-theme="lavender"] .live-scene-fog { opacity:.06; }
+
+body[data-theme="ocean"] .live-scene-photo-back { filter:saturate(.95) contrast(1.02) brightness(.72); }
+body[data-theme="ocean"] .live-scene-light {
+    opacity:.28;
+    background:
+        linear-gradient(105deg, transparent 18%, rgba(171,232,255,.13) 30%, transparent 42%),
+        linear-gradient(94deg, transparent 42%, rgba(193,241,255,.09) 49%, transparent 58%);
+}
+body[data-theme="ocean"] .live-scene-fog { opacity:.05; }
+
+body[data-theme="sunset"] .live-scene-fog { opacity:.045; }
+body[data-theme="sunset"] .live-scene-light { opacity:.18; }
+
+body[data-theme="sakura-night"] .live-scene-photo-back { filter:saturate(.84) contrast(1.03) brightness(.68); }
+body[data-theme="sakura-night"] .live-scene-fog { opacity:.07; }
+
+body[data-theme="cyber"] .live-scene-photo-back { filter:saturate(.92) contrast(1.10) brightness(.58); }
+body[data-theme="cyber"] .live-scene-photo-mid { opacity:.60; }
+body[data-theme="cyber"] .live-scene-photo-front { opacity:.34; }
+body[data-theme="cyber"] .live-scene-fog { opacity:.025; }
+body[data-theme="cyber"] .live-scene-light {
+    background:
+      radial-gradient(circle at 18% 25%, rgba(0,235,255,.16), transparent 25%),
+      radial-gradient(circle at 82% 35%, rgba(255,0,188,.13), transparent 28%);
+}
+
+/* Canvas is now an atmosphere plane ABOVE the live photograph, BELOW UI. */
+body.visuals-on #bgCanvas {
+    z-index:-1 !important;
+    opacity:.58 !important;
+    background:transparent !important;
+}
+
+/* Dashboard UI must remain above both scene systems. */
+body > .container,
+body > .app-shell,
+body > main {
+    position:relative !important;
+    z-index:1 !important;
+}
+
+/* Turn off expensive visual effects automatically when user asks for less motion. */
+@media (prefers-reduced-motion: reduce) {
+    .live-scene-photo,
+    .live-scene-light,
+    .live-scene-fog {
+        animation:none !important;
+    }
+}
+
+/* Mobile: keep just two visual layers and much less movement. */
+@media (max-width: 900px), (pointer:coarse) {
+    .live-scene-photo-front { display:none; }
+    .live-scene-fog-b { display:none; }
+    .live-scene-photo-back,
+    .live-scene-photo-mid,
+    .live-scene-light,
+    .live-scene-fog-a {
+        animation-duration:32s !important;
+    }
+}

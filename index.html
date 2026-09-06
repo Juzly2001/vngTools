@@ -16,6 +16,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 </head>
 <body>
+    <div id="liveScene" class="live-scene" aria-hidden="true">
+        <div class="live-scene-photo live-scene-photo-back"></div>
+        <div class="live-scene-photo live-scene-photo-mid"></div>
+        <div class="live-scene-photo live-scene-photo-front"></div>
+        <div class="live-scene-light"></div>
+        <div class="live-scene-fog live-scene-fog-a"></div>
+        <div class="live-scene-fog live-scene-fog-b"></div>
+        <div class="live-scene-vignette"></div>
+    </div>
 
     <canvas id="bgCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
     <button id="backToTop" onclick="scrollToTop()">▲</button>
