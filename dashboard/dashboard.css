@@ -6403,3 +6403,90 @@ body.light-theme .note-v4-toolbar button {
         grid-template-columns: repeat(6, minmax(0, 1fr));
     }
 }
+
+
+/* ==========================================================================
+   NOTE V4.1 — ICON GRID ALIGNMENT FIX
+   ========================================================================== */
+
+/* Keep every icon in a true square cell so rows/columns line up perfectly. */
+.note-v4-icon-grid {
+    grid-template-columns: repeat(auto-fill, 42px) !important;
+    grid-auto-rows: 42px !important;
+    justify-content: start !important;
+    align-content: start !important;
+    column-gap: 7px !important;
+    row-gap: 7px !important;
+    padding: 1px 10px 8px 1px !important;
+    box-sizing: border-box !important;
+}
+
+/* Prevent text/emoji metrics from changing each button's dimensions. */
+.note-v4-icon-item {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    max-width: 42px !important;
+    max-height: 42px !important;
+    aspect-ratio: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    line-height: 1 !important;
+    font-size: 20px !important;
+    text-align: center !important;
+    vertical-align: middle !important;
+    box-sizing: border-box !important;
+}
+
+/* "None" uses the exact same square as the emoji buttons. */
+.note-v4-icon-item.note-v4-icon-none {
+    font-size: 10px !important;
+    font-weight: 800 !important;
+    letter-spacing: 0 !important;
+}
+
+/* Keep the scrollbar from visually squeezing the last column. */
+.note-v4-icon-grid {
+    scrollbar-gutter: stable;
+}
+
+/* Responsive: preserve aligned fixed-size cells rather than stretching them. */
+@media (max-width: 780px) {
+    .note-v4-icon-grid {
+        grid-template-columns: repeat(auto-fill, 40px) !important;
+        grid-auto-rows: 40px !important;
+        gap: 6px !important;
+    }
+
+    .note-v4-icon-item {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        max-width: 40px !important;
+        max-height: 40px !important;
+    }
+}
+
+@media (max-width: 520px) {
+    .note-v4-icon-grid {
+        grid-template-columns: repeat(auto-fill, 38px) !important;
+        grid-auto-rows: 38px !important;
+    }
+
+    .note-v4-icon-item {
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        max-width: 38px !important;
+        max-height: 38px !important;
+        font-size: 18px !important;
+    }
+}
