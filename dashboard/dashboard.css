@@ -5485,3 +5485,207 @@ body.light-mode .kanban-full-column .kanban-card { background: #fff; }
 .google-permission-gate.is-blocked .google-permission-gate-message { color:var(--danger-color); font-weight:700; }
 @media (max-width:900px) { .admin-summary-grid-v3 { grid-template-columns:repeat(2,minmax(0,1fr)); } .admin-audit-item { grid-template-columns:1fr; gap:4px; } }
 @media (max-width:560px) { .admin-summary-grid-v3 { grid-template-columns:1fr 1fr; } .admin-filter-select { width:100%; } .admin-console-footer { flex-direction:column; } }
+
+/* ========================================================================== 
+   ADMIN CONSOLE V3.1 — THEME POLISH + NATIVE SELECT FIX
+   ========================================================================== */
+
+/* Desktop toolbar: keep search + filters on one clean row. */
+.admin-console-v3 .admin-toolbar-v3 {
+    display: grid;
+    grid-template-columns: minmax(280px, 1fr) 150px 150px auto;
+    gap: 10px;
+    align-items: center;
+}
+.admin-console-v3 .admin-toolbar-v3 .admin-search-box,
+.admin-console-v3 .admin-toolbar-v3 .admin-filter-select,
+.admin-console-v3 .admin-toolbar-v3 > button {
+    width: auto;
+    min-width: 0;
+    margin: 0;
+}
+.admin-console-v3 .admin-toolbar-v3 .admin-search-box { width: 100%; }
+.admin-console-v3 .admin-toolbar-v3 .admin-filter-select { width: 100%; }
+
+/* Native select popup text can otherwise become white-on-white on Windows/Chrome. */
+.admin-console-v3 select,
+.admin-console-v3 select option {
+    color-scheme: dark;
+}
+.admin-console-v3 select option {
+    background: #111827;
+    color: #f8fafc;
+}
+body.light-mode .admin-console-v3 select,
+body.light-mode .admin-console-v3 select option {
+    color-scheme: light;
+}
+body.light-mode .admin-console-v3 select option {
+    background: #ffffff;
+    color: #0f172a;
+}
+
+/* Dark-mode controls: stronger contrast and clearer selected state. */
+:not(.light-mode) .admin-console-v3 .admin-filter-select,
+:not(.light-mode) .admin-console-v3 .admin-role-select {
+    background: #111827;
+    border-color: #334155;
+    color: #f8fafc;
+}
+:not(.light-mode) .admin-console-v3 .admin-filter-select:focus,
+:not(.light-mode) .admin-console-v3 .admin-role-select:focus {
+    outline: none;
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.16);
+}
+
+/* Light-mode admin console: cleaner white surface, less muddy grey. */
+body.light-mode #adminConsoleModal.modal-overlay,
+body.light-mode #adminUserDetailModal.modal-overlay {
+    background: rgba(15, 23, 42, .32);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+body.light-mode .admin-console-v3,
+body.light-mode .admin-user-detail-box {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    box-shadow: 0 28px 70px rgba(15, 23, 42, .22) !important;
+}
+body.light-mode .admin-console-v3 .admin-console-head {
+    background: #f8fafc !important;
+    border-bottom: 1px solid #e2e8f0;
+}
+body.light-mode .admin-console-v3 .admin-summary-card {
+    background: #ffffff;
+    border-color: #dbe3ee;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+}
+body.light-mode .admin-console-v3 .admin-tabbar {
+    background: #eef2f7;
+    border-color: #d7dee9;
+}
+body.light-mode .admin-console-v3 .admin-tab {
+    color: #475569;
+}
+body.light-mode .admin-console-v3 .admin-tab.active {
+    background: #4f46e5;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(79,70,229,.20);
+}
+body.light-mode .admin-console-v3 .admin-search-box,
+body.light-mode .admin-console-v3 .admin-filter-select,
+body.light-mode .admin-console-v3 .admin-role-select {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+    box-shadow: 0 1px 2px rgba(15,23,42,.03);
+}
+body.light-mode .admin-console-v3 .admin-search-box:focus-within,
+body.light-mode .admin-console-v3 .admin-filter-select:focus,
+body.light-mode .admin-console-v3 .admin-role-select:focus {
+    outline: none;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.12);
+}
+body.light-mode .admin-console-v3 .admin-search-box input {
+    background: transparent !important;
+    color: #0f172a !important;
+}
+body.light-mode .admin-console-v3 .admin-search-box input::placeholder {
+    color: #94a3b8 !important;
+}
+body.light-mode .admin-console-v3 .admin-table-wrap {
+    background: #ffffff;
+    border-color: #d7dee9;
+    box-shadow: 0 1px 3px rgba(15,23,42,.04);
+}
+body.light-mode .admin-console-v3 .admin-users-table th {
+    background: #f8fafc !important;
+    color: #64748b;
+    border-bottom-color: #d7dee9;
+}
+body.light-mode .admin-console-v3 .admin-users-table td {
+    background: #ffffff;
+    border-bottom-color: #e7edf4;
+}
+body.light-mode .admin-console-v3 .admin-users-table tbody tr:hover td {
+    background: #f8fafc;
+}
+body.light-mode .admin-console-v3 .admin-mini-btn {
+    background: #ffffff;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+body.light-mode .admin-console-v3 .admin-mini-btn:hover {
+    background: #f8fafc;
+    border-color: #818cf8;
+}
+body.light-mode .admin-console-v3 .admin-mini-btn.danger {
+    color: #dc2626;
+    border-color: #fecaca;
+    background: #fff7f7;
+}
+body.light-mode .admin-console-v3 .admin-status-pill.offline {
+    background: #f1f5f9;
+    border-color: #d7dee9;
+    color: #64748b;
+}
+body.light-mode .admin-console-v3 .admin-status-pill.online {
+    background: #ecfdf5;
+    border-color: #a7f3d0;
+    color: #047857;
+}
+body.light-mode .admin-console-v3 .admin-role-pill.owner {
+    background: #fff7ed;
+    border-color: #fed7aa;
+    color: #c2410c;
+}
+body.light-mode .admin-console-v3 .admin-role-pill.admin {
+    background: #f5f3ff;
+    border-color: #ddd6fe;
+    color: #6d28d9;
+}
+body.light-mode .admin-console-v3 .admin-role-pill.user {
+    background: #f1f5f9;
+    border-color: #d7dee9;
+    color: #475569;
+}
+body.light-mode .admin-console-v3 .admin-role-pill.blocked {
+    background: #fef2f2;
+    border-color: #fecaca;
+    color: #dc2626;
+}
+body.light-mode .admin-console-v3 .admin-audit-item,
+body.light-mode .admin-user-detail-box .admin-detail-profile,
+body.light-mode .admin-user-detail-box .admin-session-card {
+    background: #ffffff;
+    border-color: #d7dee9;
+}
+body.light-mode .admin-console-v3 .admin-footnote,
+body.light-mode .admin-console-v3 .admin-console-footer {
+    color: #64748b;
+}
+
+/* Slightly more breathing room and consistent rounding. */
+.admin-console-v3 .admin-summary-grid-v3 { gap: 12px; }
+.admin-console-v3 .admin-summary-card { border-radius: 12px; min-height: 78px; }
+.admin-console-v3 .admin-table-wrap { border-radius: 12px; }
+.admin-console-v3 .admin-users-table td { transition: background .15s ease; }
+
+@media (max-width: 860px) {
+    .admin-console-v3 .admin-toolbar-v3 {
+        grid-template-columns: 1fr 1fr;
+    }
+    .admin-console-v3 .admin-toolbar-v3 .admin-search-box {
+        grid-column: 1 / -1;
+    }
+}
+@media (max-width: 560px) {
+    .admin-console-v3 .admin-toolbar-v3 {
+        grid-template-columns: 1fr;
+    }
+    .admin-console-v3 .admin-toolbar-v3 .admin-search-box {
+        grid-column: auto;
+    }
+}
