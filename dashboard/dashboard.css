@@ -8036,8 +8036,8 @@ body { padding-top: 18px; }
     content:"";
     position:absolute;
     left:0;
-    top:14px;
-    bottom:14px;
+    top:0px;
+    bottom:0px;
     width:3px;
     border-radius:0 5px 5px 0;
     background:var(--accent-color);
