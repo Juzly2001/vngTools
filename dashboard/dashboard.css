@@ -7057,3 +7057,123 @@ body.light-mode .note-calendar-selected {
         padding: 14px !important;
     }
 }
+
+
+/* ==========================================================================
+   NOTE V4.4 — BALANCED META ROW
+   Icon / Category / Deadline / Pin
+   ========================================================================== */
+
+/* Icon and Pin are compact actions.
+   Category and Deadline receive the useful horizontal space. */
+.note-v4-meta {
+    grid-template-columns:
+        92px
+        minmax(190px, 1.05fr)
+        minmax(245px, 1.35fr)
+        92px !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+}
+
+/* Keep all four controls visually the same height. */
+.note-v4-meta-btn,
+.note-v4-meta-field {
+    min-height: 54px !important;
+    height: 54px !important;
+}
+
+/* Compact Icon / Pin buttons */
+.note-v4-meta-btn {
+    padding: 0 10px !important;
+    gap: 7px !important;
+    white-space: nowrap !important;
+}
+
+/* Category + Deadline: label on top, value below.
+   This uses the height much more naturally than putting both on one line. */
+.note-v4-meta-field {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 18px minmax(0, 1fr) !important;
+    gap: 0 !important;
+    padding: 5px 10px 4px !important;
+    box-sizing: border-box !important;
+}
+
+.note-v4-meta-field > span {
+    display: flex !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    letter-spacing: .01em !important;
+}
+
+/* Remove the inner "second box" feeling. */
+.note-v4-meta-field select,
+.note-v4-meta-field input {
+    width: 100% !important;
+    min-height: 27px !important;
+    height: 27px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 11px !important;
+}
+
+/* Deadline is a clean value row rather than a stretched button. */
+.note-deadline-button {
+    min-height: 27px !important;
+    height: 27px !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 11px !important;
+}
+
+.note-deadline-calendar-icon {
+    margin-left: auto !important;
+    padding-left: 8px !important;
+}
+
+/* Light theme — preserve the clean single-card appearance. */
+body.light-mode .note-v4-meta-field select,
+body.light-mode .note-v4-meta-field input,
+body.light-mode .note-deadline-button {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Tablet: still keep Category/Deadline larger than action buttons. */
+@media (max-width: 900px) {
+    .note-v4-meta {
+        grid-template-columns:
+            82px
+            minmax(160px, 1fr)
+            minmax(205px, 1.2fr)
+            82px !important;
+        gap: 8px !important;
+    }
+}
+
+/* Once space is genuinely tight, use a balanced 2 × 2 layout. */
+@media (max-width: 700px) {
+    .note-v4-meta {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .note-v4-meta-btn,
+    .note-v4-meta-field {
+        width: 100% !important;
+    }
+}
+
+/* Mobile: one control per row for comfortable tapping. */
+@media (max-width: 430px) {
+    .note-v4-meta {
+        grid-template-columns: 1fr !important;
+    }
+}
