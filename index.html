@@ -25,6 +25,8 @@
         <div class="sidebar-logo">🌟</div>
         <button class="sidebar-close" onclick="toggleMobileSidebar(false)" aria-label="Close menu">×</button>
         <button onclick="scrollToSection('top'); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">🏠</span><span>Home</span></button>
+        <button id="sidebarAccountBtn" onclick="openAccountPanel(); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">👤</span><span>Account</span></button>
+        <button id="sidebarAdminBtn" onclick="openAdminConsole(); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">🛡️</span><span>Admin</span></button>
         <button onclick="openSidebarPanel('favorites')"><span class="sidebar-menu-icon" aria-hidden="true">⭐</span><span>Favorites</span></button>
         <button onclick="openSidebarPanel('recent')"><span class="sidebar-menu-icon" aria-hidden="true">🕘</span><span>Recent</span></button>
         <button onclick="openScheduleHub('calendar'); toggleMobileSidebar(false)"><span class="sidebar-menu-icon" aria-hidden="true">📆</span><span>Schedule</span></button>
@@ -78,7 +80,7 @@
             </div>
 
             <div class="toolbar-right">
-                <button id="btn-login-google" class="btn-secondary" onclick="handleAuthClick()">🔑 Google</button>
+                <button id="btn-login-google" class="btn-secondary account-toolbar-btn" onclick="openAccountPanel()">👤 Account</button>
                 <button id="btn-sync-google" class="btn-success" onclick="syncToGoogleDrive()" style="display:none;">🔄 Sync</button>
                 <button class="btn-secondary" onclick="exportData()">📥 Export</button>
                 <button class="btn-secondary" onclick="document.getElementById('uploadFile').click()">📤 Import</button>
@@ -251,6 +253,114 @@
     </div>
 
 
+
+
+    <div class="modal-overlay" id="adminConsoleModal">
+        <div class="modal-box admin-console-box">
+            <div class="command-head redesigned-head">
+                <div>
+                    <span>🛡️ Admin Console</span>
+                    <small>View accounts that have used this dashboard.</small>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('adminConsoleModal')">✕</button>
+            </div>
+
+            <div id="adminLockedView" class="admin-locked-view">
+                <div class="admin-key-icon">🔐</div>
+                <h3>Admin key required</h3>
+                <p>Enter the admin key to view user activity, last seen time, and online status.</p>
+                <label for="adminKeyInput">Admin key</label>
+                <div class="admin-key-row">
+                    <input type="password" id="adminKeyInput" placeholder="Enter admin key..." autocomplete="off" onkeydown="if(event.key==='Enter') unlockAdminConsole()">
+                    <button class="btn-primary" onclick="unlockAdminConsole()">Unlock</button>
+                </div>
+                <div id="adminKeyError" class="admin-key-error"></div>
+                <p class="admin-config-hint" id="adminConfigHint"></p>
+            </div>
+
+            <div id="adminUnlockedView" style="display:none;">
+                <div class="admin-summary-grid">
+                    <div class="admin-summary-card"><span>Total accounts</span><strong id="adminTotalAccounts">0</strong></div>
+                    <div class="admin-summary-card online"><span>Online now</span><strong id="adminOnlineAccounts">0</strong></div>
+                    <div class="admin-summary-card"><span>Updated</span><strong id="adminLastRefresh">—</strong></div>
+                </div>
+
+                <div class="admin-toolbar-row">
+                    <div class="search-box admin-search-box">
+                        <span>🔎</span>
+                        <input id="adminUserSearch" type="search" placeholder="Search name or email..." oninput="renderAdminAccounts()">
+                    </div>
+                    <button class="btn-secondary" onclick="refreshAdminAccounts(true)">🔄 Refresh</button>
+                    <button class="btn-secondary" onclick="lockAdminConsole()">🔒 Lock</button>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-users-table">
+                        <thead>
+                            <tr>
+                                <th>Account</th>
+                                <th>Status</th>
+                                <th>Last seen</th>
+                                <th>Visits</th>
+                                <th>Browser</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersTableBody">
+                            <tr><td colspan="5" class="admin-empty-cell">No data.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="admin-footnote">Online = heartbeat received within the last 90 seconds.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="accountModal">
+        <div class="modal-box account-modal-box">
+            <div class="command-head redesigned-head">
+                <div>
+                    <span>👤 Current account</span>
+                    <small>Manage the Google account used for sync on this browser.</small>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('accountModal')">✕</button>
+            </div>
+
+            <div class="account-profile-card">
+                <div class="account-avatar-wrap">
+                    <img id="accountAvatar" class="account-avatar" alt="Account avatar" style="display:none;">
+                    <div id="accountAvatarFallback" class="account-avatar-fallback">👤</div>
+                    <span id="accountOnlineDot" class="account-online-dot offline"></span>
+                </div>
+                <div class="account-profile-copy">
+                    <strong id="accountDisplayName">Not connected</strong>
+                    <span id="accountEmail">Connect Google to identify the account being used.</span>
+                    <small id="accountConnectionText">● Offline</small>
+                </div>
+            </div>
+
+            <div class="account-info-grid">
+                <div class="account-info-item">
+                    <span>☁️ Drive sync</span>
+                    <strong id="accountDriveStatus">Not connected</strong>
+                </div>
+                <div class="account-info-item">
+                    <span>💻 Browser</span>
+                    <strong>This device</strong>
+                </div>
+            </div>
+
+            <p class="account-privacy-note">
+                Only basic profile information is shown here. Dashboard data continues to sync to the app's private Google Drive app-data folder.
+            </p>
+
+            <div class="account-actions">
+                <button class="btn-primary" id="accountConnectBtn" onclick="handleAuthClick()">🔑 Connect Google</button>
+                <button class="btn-secondary" id="accountSwitchBtn" onclick="switchGoogleAccount()" style="display:none;">🔄 Switch account</button>
+                <button class="btn-real-danger" id="accountLogoutBtn" onclick="disconnectGoogleAccount()" style="display:none;">↪ Sign out</button>
+                <button class="btn-secondary" onclick="closeModal('accountModal'); openAdminConsole();">🛡️ Admin console</button>
+            </div>
+        </div>
+    </div>
 
     <div class="modal-overlay" id="sidebarPanelModal">
         <div class="modal-box sidebar-panel-box">

@@ -3,8 +3,16 @@
 // ==========================================================================
 const CLIENT_ID = '109577502358-ifqvdpaumccs5sv6vtr5rphfnq815up0.apps.googleusercontent.com';
 const API_KEY = 'AIzaSyAc5DuR0oxr7yEdTQnvIIS-PRKGtIfWrro';
-const SCOPES = 'https://www.googleapis.com/auth/drive.appdata';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata openid email profile';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
+
+// Shared account registry (Supabase). Fill these 2 values after running supabase-admin-setup.txt.
+const SUPABASE_URL = ''; // Example: https://YOUR_PROJECT.supabase.co
+const SUPABASE_ANON_KEY = ''; // Project Settings > API > anon public key
+const ACCOUNT_HEARTBEAT_MS = 30000;
+const ADMIN_SESSION_KEY = 'dashboardAdminSessionKey';
+const WEB_SESSION_ID_KEY = 'dashboardWebSessionId';
+
 
 const EMOJI_GROUPS = [
     { name: "Recent", key: "recent", icons: [] },
@@ -59,6 +67,22 @@ let gisInited = false;
 let tokenClient;
 let googleFileId = null;
 let pressTimer;
+
+const GOOGLE_ACCOUNT_PROFILE_KEY = 'dashboardGoogleAccountProfile';
+let googleAccountProfile = (() => {
+    try { return JSON.parse(localStorage.getItem(GOOGLE_ACCOUNT_PROFILE_KEY)) || null; }
+    catch (_) { return null; }
+})();
+
+let adminAccountsCache = [];
+let accountHeartbeatTimer = null;
+let hasTrackedCurrentSession = false;
+let dashboardWebSessionId = sessionStorage.getItem(WEB_SESSION_ID_KEY) || (() => {
+    const id = (crypto.randomUUID ? crypto.randomUUID() : `session-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+    sessionStorage.setItem(WEB_SESSION_ID_KEY, id);
+    return id;
+})();
+
 
 // Utilities tối ưu tốc độ truy vấn DOM
 const getEl = id => document.getElementById(id);
@@ -1596,26 +1620,396 @@ function gisLoaded() {
     tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: '' }); gisInited = true; checkAuthStates();
 }
 
+
+function isAccountRegistryConfigured() {
+    return /^https:\/\/.+\.supabase\.co$/i.test(SUPABASE_URL.trim()) && SUPABASE_ANON_KEY.trim().length > 20;
+}
+
+async function supabaseRpc(functionName, payload = {}) {
+    if (!isAccountRegistryConfigured()) {
+        throw new Error('Account registry is not configured. Fill SUPABASE_URL and SUPABASE_ANON_KEY in dashboard.js.');
+    }
+
+    const response = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/${functionName}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const text = await response.text();
+    let data = null;
+    try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
+
+    if (!response.ok) {
+        const message = data?.message || data?.error || data?.hint || `Request failed (${response.status})`;
+        throw new Error(message);
+    }
+    return data;
+}
+
+function getBrowserLabel() {
+    const ua = navigator.userAgent || '';
+    if (/Edg\//.test(ua)) return 'Edge';
+    if (/OPR\//.test(ua)) return 'Opera';
+    if (/Chrome\//.test(ua)) return 'Chrome';
+    if (/Firefox\//.test(ua)) return 'Firefox';
+    if (/Safari\//.test(ua) && !/Chrome\//.test(ua)) return 'Safari';
+    return 'Browser';
+}
+
+async function trackCurrentWebAccount(forceNewSession = false) {
+    if (!isAccountRegistryConfigured() || !isGoogleConnected() || !googleAccountProfile?.id) return;
+
+    const isNewSession = forceNewSession || !hasTrackedCurrentSession;
+    try {
+        await supabaseRpc('track_web_account', {
+            p_user_id: String(googleAccountProfile.id),
+            p_email: googleAccountProfile.email || '',
+            p_name: googleAccountProfile.name || '',
+            p_picture: googleAccountProfile.picture || '',
+            p_session_id: dashboardWebSessionId,
+            p_browser: getBrowserLabel(),
+            p_user_agent: (navigator.userAgent || '').slice(0, 500),
+            p_page: `${location.pathname}${location.search}`.slice(0, 500),
+            p_is_new_session: isNewSession
+        });
+        hasTrackedCurrentSession = true;
+    } catch (error) {
+        console.warn('Account heartbeat failed:', error);
+    }
+}
+
+function startAccountHeartbeat() {
+    stopAccountHeartbeat();
+    if (!isGoogleConnected() || !googleAccountProfile?.id || !isAccountRegistryConfigured()) return;
+    trackCurrentWebAccount(true);
+    accountHeartbeatTimer = setInterval(() => {
+        if (document.visibilityState === 'visible') trackCurrentWebAccount(false);
+    }, ACCOUNT_HEARTBEAT_MS);
+}
+
+function stopAccountHeartbeat() {
+    if (accountHeartbeatTimer) {
+        clearInterval(accountHeartbeatTimer);
+        accountHeartbeatTimer = null;
+    }
+}
+
+function formatAdminLastSeen(value) {
+    if (!value) return '—';
+    const d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '—';
+    const diff = Date.now() - d.getTime();
+    if (diff < 60000) return 'Just now';
+    if (diff < 3600000) return `${Math.floor(diff / 60000)} min ago`;
+    if (diff < 86400000) return `${Math.floor(diff / 3600000)} hr ago`;
+    return d.toLocaleString();
+}
+
+function openAdminConsole() {
+    const configured = isAccountRegistryConfigured();
+    const hint = getEl('adminConfigHint');
+    if (hint) hint.textContent = configured
+        ? 'Admin key is validated on the database function; it is not stored in this source code.'
+        : 'Account registry is not configured yet. Fill SUPABASE_URL and SUPABASE_ANON_KEY in dashboard.js.';
+
+    openModal('adminConsoleModal');
+    const savedKey = sessionStorage.getItem(ADMIN_SESSION_KEY);
+    if (savedKey && configured) {
+        getEl('adminKeyInput').value = savedKey;
+        unlockAdminConsole(true);
+    } else {
+        lockAdminConsole(false);
+    }
+}
+
+async function unlockAdminConsole(silent = false) {
+    const keyInput = getEl('adminKeyInput');
+    const errorEl = getEl('adminKeyError');
+    const key = (keyInput?.value || sessionStorage.getItem(ADMIN_SESSION_KEY) || '').trim();
+    if (errorEl) errorEl.textContent = '';
+
+    if (!isAccountRegistryConfigured()) {
+        if (errorEl) errorEl.textContent = 'Supabase registry is not configured.';
+        return;
+    }
+    if (!key) {
+        if (errorEl) errorEl.textContent = 'Please enter the admin key.';
+        return;
+    }
+
+    try {
+        const data = await supabaseRpc('admin_list_web_accounts', { p_admin_key: key });
+        sessionStorage.setItem(ADMIN_SESSION_KEY, key);
+        adminAccountsCache = Array.isArray(data) ? data : [];
+        getEl('adminLockedView').style.display = 'none';
+        getEl('adminUnlockedView').style.display = 'block';
+        renderAdminAccounts();
+        updateAdminSummary();
+    } catch (error) {
+        sessionStorage.removeItem(ADMIN_SESSION_KEY);
+        if (errorEl) errorEl.textContent = /admin/i.test(error.message) ? 'Admin key is incorrect.' : error.message;
+        if (!silent) console.warn('Admin unlock failed:', error);
+    }
+}
+
+function lockAdminConsole(clearInput = true) {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    adminAccountsCache = [];
+    const locked = getEl('adminLockedView');
+    const unlocked = getEl('adminUnlockedView');
+    if (locked) locked.style.display = 'block';
+    if (unlocked) unlocked.style.display = 'none';
+    if (clearInput && getEl('adminKeyInput')) getEl('adminKeyInput').value = '';
+    if (getEl('adminKeyError')) getEl('adminKeyError').textContent = '';
+}
+
+async function refreshAdminAccounts(showError = false) {
+    const key = sessionStorage.getItem(ADMIN_SESSION_KEY);
+    if (!key) return lockAdminConsole();
+    try {
+        const data = await supabaseRpc('admin_list_web_accounts', { p_admin_key: key });
+        adminAccountsCache = Array.isArray(data) ? data : [];
+        renderAdminAccounts();
+        updateAdminSummary();
+    } catch (error) {
+        if (showError) alert(error.message, 'Admin refresh failed');
+        if (/admin/i.test(error.message)) lockAdminConsole();
+    }
+}
+
+function updateAdminSummary() {
+    const onlineCount = adminAccountsCache.filter(a => a.is_online).length;
+    if (getEl('adminTotalAccounts')) getEl('adminTotalAccounts').textContent = adminAccountsCache.length;
+    if (getEl('adminOnlineAccounts')) getEl('adminOnlineAccounts').textContent = onlineCount;
+    if (getEl('adminLastRefresh')) getEl('adminLastRefresh').textContent = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+}
+
+function renderAdminAccounts() {
+    const tbody = getEl('adminUsersTableBody');
+    if (!tbody) return;
+    const q = (getEl('adminUserSearch')?.value || '').trim().toLowerCase();
+    const rows = adminAccountsCache.filter(a => !q || `${a.name || ''} ${a.email || ''}`.toLowerCase().includes(q));
+
+    if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="admin-empty-cell">No matching accounts.</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = rows.map(a => {
+        const avatar = a.picture
+            ? `<img class="admin-user-avatar" src="${escapeHTML(a.picture)}" alt="">`
+            : `<div class="admin-user-avatar admin-user-avatar-fallback">${escapeHTML((a.name || a.email || '?').charAt(0).toUpperCase())}</div>`;
+        return `<tr>
+            <td><div class="admin-user-cell">${avatar}<div><strong>${escapeHTML(a.name || 'Google account')}</strong><span>${escapeHTML(a.email || '—')}</span></div></div></td>
+            <td><span class="admin-status-pill ${a.is_online ? 'online' : 'offline'}">${a.is_online ? '● Online' : '● Offline'}</span></td>
+            <td><strong>${escapeHTML(formatAdminLastSeen(a.last_seen))}</strong><small>${a.last_seen ? escapeHTML(new Date(a.last_seen).toLocaleString()) : '—'}</small></td>
+            <td>${Number(a.visit_count || 0)}</td>
+            <td><strong>${escapeHTML(a.browser || '—')}</strong><small title="${escapeHTML(a.user_agent || '')}">${escapeHTML(a.last_page || '')}</small></td>
+        </tr>`;
+    }).join('');
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') trackCurrentWebAccount(false);
+});
+
+function isGoogleConnected() {
+    return !!(gapiInited && gisInited && gapi.client.getToken()?.access_token);
+}
+
+function getAccountInitial(profile = googleAccountProfile) {
+    const source = (profile?.name || profile?.email || '?').trim();
+    return source ? source.charAt(0).toUpperCase() : '?';
+}
+
+function updateGoogleAccountUI() {
+    const connected = isGoogleConnected();
+    const profile = googleAccountProfile;
+
+    const toolbarBtn = getEl('btn-login-google');
+    if (toolbarBtn) {
+        toolbarBtn.innerHTML = connected
+            ? `👤 ${escapeHTML(profile?.name || profile?.email || 'Google connected')}`
+            : '👤 Account';
+        toolbarBtn.setAttribute('data-tooltip', connected
+            ? `Using ${profile?.email || 'Google account'}`
+            : 'Manage account');
+    }
+
+    const sidebarBtn = getEl('sidebarAccountBtn');
+    if (sidebarBtn) {
+        sidebarBtn.title = connected && profile?.email ? `Account: ${profile.email}` : 'Account';
+    }
+
+    const displayName = getEl('accountDisplayName');
+    const email = getEl('accountEmail');
+    const connectionText = getEl('accountConnectionText');
+    const driveStatus = getEl('accountDriveStatus');
+    const avatar = getEl('accountAvatar');
+    const fallback = getEl('accountAvatarFallback');
+    const dot = getEl('accountOnlineDot');
+    const connectBtn = getEl('accountConnectBtn');
+    const switchBtn = getEl('accountSwitchBtn');
+    const logoutBtn = getEl('accountLogoutBtn');
+
+    if (displayName) displayName.textContent = connected ? (profile?.name || 'Google account') : 'Not connected';
+    if (email) email.textContent = connected ? (profile?.email || 'Profile information is loading…') : 'Connect Google to identify the account being used.';
+    if (connectionText) {
+        connectionText.textContent = connected ? '● Connected' : '● Offline';
+        connectionText.classList.toggle('connected', connected);
+    }
+    if (driveStatus) driveStatus.textContent = connected ? 'Connected' : 'Not connected';
+    if (dot) dot.classList.toggle('offline', !connected);
+
+    if (avatar && fallback) {
+        if (connected && profile?.picture) {
+            avatar.src = profile.picture;
+            avatar.style.display = 'block';
+            fallback.style.display = 'none';
+        } else {
+            avatar.removeAttribute('src');
+            avatar.style.display = 'none';
+            fallback.style.display = 'grid';
+            fallback.textContent = connected ? getAccountInitial(profile) : '👤';
+        }
+    }
+
+    if (connectBtn) connectBtn.style.display = connected ? 'none' : 'inline-flex';
+    if (switchBtn) switchBtn.style.display = connected ? 'inline-flex' : 'none';
+    if (logoutBtn) logoutBtn.style.display = connected ? 'inline-flex' : 'none';
+
+    const syncBtn = getEl('btn-sync-google');
+    if (syncBtn) syncBtn.style.display = connected ? 'inline-flex' : 'none';
+}
+
+async function fetchGoogleAccountProfile() {
+    const accessToken = gapi.client.getToken()?.access_token;
+    if (!accessToken) {
+        googleAccountProfile = null;
+        localStorage.removeItem(GOOGLE_ACCOUNT_PROFILE_KEY);
+        updateGoogleAccountUI();
+        return null;
+    }
+
+    try {
+        const response = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+        });
+
+        if (!response.ok) throw new Error(`Google profile request failed: ${response.status}`);
+
+        const data = await response.json();
+        googleAccountProfile = {
+            id: data.id || '',
+            name: data.name || '',
+            email: data.email || '',
+            picture: data.picture || ''
+        };
+        localStorage.setItem(GOOGLE_ACCOUNT_PROFILE_KEY, JSON.stringify(googleAccountProfile));
+        updateGoogleAccountUI();
+        startAccountHeartbeat();
+        return googleAccountProfile;
+    } catch (error) {
+        console.warn('Could not load Google profile:', error);
+        updateGoogleAccountUI();
+        return googleAccountProfile;
+    }
+}
+
+function openAccountPanel() {
+    updateGoogleAccountUI();
+    openModal('accountModal');
+    if (isGoogleConnected()) fetchGoogleAccountProfile();
+}
+
 function checkAuthStates() {
     if (gapiInited && gisInited && !gapi.client.getToken()) {
         const t = localStorage.getItem('google_oauth_token');
-        if (t) { try { gapi.client.setToken(JSON.parse(t)); } catch (e) { localStorage.removeItem('google_oauth_token'); } }
+        if (t) {
+            try { gapi.client.setToken(JSON.parse(t)); }
+            catch (e) { localStorage.removeItem('google_oauth_token'); }
+        }
     }
-    const hasToken = gapiInited && gisInited && gapi.client.getToken();
-    const btn = getEl('btn-login-google');
-    if (btn && hasToken) { btn.innerHTML = "🟢 Google connected"; btn.setAttribute('data-tooltip', 'Google account connected'); }
-    const syncBtn = getEl('btn-sync-google'); if (syncBtn) syncBtn.style.display = hasToken ? "inline-flex" : "none";
+
+    updateGoogleAccountUI();
+
+    if (isGoogleConnected()) {
+        fetchGoogleAccountProfile();
+    }
 }
 
-function handleAuthClick() {
+function handleAuthClick(forceAccountChooser = false) {
+    if (!gapiInited || !gisInited || !tokenClient) {
+        alert('Google services are still initializing. Please try again.');
+        return;
+    }
+
     tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) throw (resp);
-        const btn = getEl('btn-login-google'); if (btn) { btn.innerHTML = "🟢 Google connected"; }
-        getEl('btn-sync-google').style.display = "inline-flex";
-        const token = gapi.client.getToken(); if (token) localStorage.setItem('google_oauth_token', JSON.stringify(token));
+        if (resp.error !== undefined) {
+            console.error(resp);
+            alert('Google sign-in was not completed.');
+            return;
+        }
+
+        const token = gapi.client.getToken();
+        if (token) localStorage.setItem('google_oauth_token', JSON.stringify(token));
+
+        await fetchGoogleAccountProfile();
+        updateGoogleAccountUI();
         await fetchFileFromGoogleDrive();
     };
-    tokenClient.requestAccessToken({ prompt: gapi.client.getToken() === null ? 'consent' : '' });
+
+    tokenClient.requestAccessToken({
+        prompt: forceAccountChooser ? 'select_account' : (gapi.client.getToken() === null ? 'consent' : '')
+    });
+}
+
+function disconnectGoogleAccount({ revoke = true } = {}) {
+    const accessToken = gapi.client.getToken()?.access_token;
+
+    const finish = () => {
+        if (gapiInited) gapi.client.setToken(null);
+        localStorage.removeItem('google_oauth_token');
+        localStorage.removeItem(GOOGLE_ACCOUNT_PROFILE_KEY);
+        googleAccountProfile = null;
+        googleFileId = null;
+        stopAccountHeartbeat();
+        hasTrackedCurrentSession = false;
+        updateGoogleAccountUI();
+    };
+
+    if (revoke && accessToken && window.google?.accounts?.oauth2?.revoke) {
+        google.accounts.oauth2.revoke(accessToken, finish);
+    } else {
+        finish();
+    }
+}
+
+function switchGoogleAccount() {
+    const accessToken = gapi.client.getToken()?.access_token;
+
+    const reconnect = () => {
+        if (gapiInited) gapi.client.setToken(null);
+        localStorage.removeItem('google_oauth_token');
+        localStorage.removeItem(GOOGLE_ACCOUNT_PROFILE_KEY);
+        googleAccountProfile = null;
+        googleFileId = null;
+        stopAccountHeartbeat();
+        hasTrackedCurrentSession = false;
+        updateGoogleAccountUI();
+        handleAuthClick(true);
+    };
+
+    if (accessToken && window.google?.accounts?.oauth2?.revoke) {
+        google.accounts.oauth2.revoke(accessToken, reconnect);
+    } else {
+        reconnect();
+    }
 }
 
 async function fetchFileFromGoogleDrive() {
