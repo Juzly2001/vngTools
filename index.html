@@ -504,6 +504,57 @@
         </div>
     </div>
 
+
+    <!-- GOOGLE REQUIRED PERMISSIONS GATE -->
+    <div id="googlePermissionGate" class="google-permission-gate" role="dialog" aria-modal="true" aria-labelledby="googlePermissionGateTitle">
+        <div class="google-permission-gate-card">
+            <div class="google-permission-gate-brand">
+                <div class="google-permission-gate-icon">🔐</div>
+                <div>
+                    <span class="google-permission-gate-kicker">Workspace Dashboard</span>
+                    <h2 id="googlePermissionGateTitle">Google access required</h2>
+                </div>
+            </div>
+
+            <p class="google-permission-gate-copy">
+                Sign in with Google and grant all required permissions before using this dashboard.
+                If a required permission is left unchecked on Google's consent screen, the dashboard will remain locked.
+            </p>
+
+            <div class="google-permission-scope-list">
+                <div class="google-permission-scope-row" data-scope-check="profile">
+                    <span class="google-permission-scope-status">○</span>
+                    <div><strong>Google profile</strong><small>Name and avatar</small></div>
+                </div>
+                <div class="google-permission-scope-row" data-scope-check="email">
+                    <span class="google-permission-scope-status">○</span>
+                    <div><strong>Email address</strong><small>Identify the account using the website</small></div>
+                </div>
+                <div class="google-permission-scope-row" data-scope-check="drive">
+                    <span class="google-permission-scope-status">○</span>
+                    <div><strong>Google Drive</strong><small>Access the shared web_accounts.json registry</small></div>
+                </div>
+                <div class="google-permission-scope-row" data-scope-check="appdata">
+                    <span class="google-permission-scope-status">○</span>
+                    <div><strong>Drive App Data</strong><small>Keep dashboard sync data in the private app-data area</small></div>
+                </div>
+            </div>
+
+            <div id="googlePermissionGateMessage" class="google-permission-gate-message">
+                Initializing Google sign-in…
+            </div>
+
+            <button id="googlePermissionGateButton" class="btn-primary google-permission-gate-button"
+                    type="button" onclick="handlePermissionGateConnect()" disabled>
+                ⏳ Loading Google…
+            </button>
+
+            <small class="google-permission-gate-footnote">
+                The website checks the OAuth token returned by Google. Partial permission grants cannot unlock the dashboard.
+            </small>
+        </div>
+    </div>
+
     <script src="./dashboard/dashboard.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>

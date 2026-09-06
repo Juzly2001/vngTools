@@ -4,6 +4,15 @@
 const CLIENT_ID = '109577502358-ifqvdpaumccs5sv6vtr5rphfnq815up0.apps.googleusercontent.com';
 const API_KEY = 'AIzaSyAc5DuR0oxr7yEdTQnvIIS-PRKGtIfWrro';
 const SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive openid email profile';
+
+const REQUIRED_GOOGLE_SCOPE_GROUPS = {
+    profile: ['https://www.googleapis.com/auth/userinfo.profile', 'profile'],
+    email: ['https://www.googleapis.com/auth/userinfo.email', 'email'],
+    drive: ['https://www.googleapis.com/auth/drive'],
+    appdata: ['https://www.googleapis.com/auth/drive.appdata'],
+    openid: ['openid']
+};
+
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
 // Shared account registry stored in one Google Drive JSON file.
@@ -1612,12 +1621,148 @@ function importData(event) {
 // ==========================================
 // 10. ĐỒNG BỘ ĐÁM MÂY GOOGLE DRIVE (GAPI)
 // ==========================================
+
+function getGrantedGoogleScopes() {
+    const scopeText = String(gapiInited ? (gapi.client.getToken()?.scope || '') : '');
+    return new Set(scopeText.split(/\s+/).filter(Boolean));
+}
+
+function getGooglePermissionState() {
+    const granted = getGrantedGoogleScopes();
+    const hasAny = aliases => aliases.some(scope => granted.has(scope));
+    return {
+        profile: hasAny(REQUIRED_GOOGLE_SCOPE_GROUPS.profile),
+        email: hasAny(REQUIRED_GOOGLE_SCOPE_GROUPS.email),
+        drive: hasAny(REQUIRED_GOOGLE_SCOPE_GROUPS.drive),
+        appdata: hasAny(REQUIRED_GOOGLE_SCOPE_GROUPS.appdata),
+        openid: hasAny(REQUIRED_GOOGLE_SCOPE_GROUPS.openid)
+    };
+}
+
+function hasRequiredGoogleScopes() {
+    if (!isGoogleConnected()) return false;
+    const s = getGooglePermissionState();
+    return s.profile && s.email && s.drive && s.appdata && s.openid;
+}
+
+function setGooglePermissionGateMessage(message, type = '') {
+    const el = getEl('googlePermissionGateMessage');
+    if (!el) return;
+    el.textContent = message || '';
+    el.classList.toggle('is-error', type === 'error');
+    el.classList.toggle('is-ok', type === 'ok');
+}
+
+function updateGooglePermissionGate() {
+    const gate = getEl('googlePermissionGate');
+    const button = getEl('googlePermissionGateButton');
+    if (!gate) return false;
+
+    const ready = gapiInited && gisInited && !!tokenClient;
+    const connected = isGoogleConnected();
+    const p = connected ? getGooglePermissionState() : {
+        profile:false, email:false, drive:false, appdata:false, openid:false
+    };
+
+    gate.querySelectorAll('[data-scope-check]').forEach(row => {
+        const granted = !!p[row.dataset.scopeCheck];
+        row.classList.toggle('is-granted', granted);
+        row.classList.toggle('is-missing', connected && !granted);
+        const mark = row.querySelector('.google-permission-scope-status');
+        if (mark) mark.textContent = granted ? '✓' : (connected ? '!' : '○');
+    });
+
+    if (!ready) {
+        gate.classList.remove('is-hidden');
+        if (button) {
+            button.disabled = true;
+            button.textContent = '⏳ Loading Google…';
+        }
+        setGooglePermissionGateMessage('Initializing Google sign-in…');
+        return false;
+    }
+
+    if (connected && hasRequiredGoogleScopes()) {
+        gate.classList.add('is-hidden');
+        if (button) {
+            button.disabled = false;
+            button.textContent = '✓ Access granted';
+        }
+        setGooglePermissionGateMessage('All required permissions are granted.', 'ok');
+        return true;
+    }
+
+    gate.classList.remove('is-hidden');
+    if (button) {
+        button.disabled = false;
+        button.textContent = connected ? '🔑 Grant missing permissions' : '🔑 Sign in with Google & grant permissions';
+    }
+
+    if (connected) {
+        const missing = [];
+        if (!p.profile) missing.push('Profile');
+        if (!p.email) missing.push('Email');
+        if (!p.drive) missing.push('Google Drive');
+        if (!p.appdata) missing.push('Drive App Data');
+        if (!p.openid) missing.push('OpenID');
+        setGooglePermissionGateMessage(
+            `Missing required permission${missing.length === 1 ? '' : 's'}: ${missing.join(', ')}. Sign in again and select every requested permission.`,
+            'error'
+        );
+    } else {
+        setGooglePermissionGateMessage('Sign in and select all requested permissions on Google’s consent screen.');
+    }
+    return false;
+}
+
+function clearStoredGoogleOAuthState() {
+    if (gapiInited) gapi.client.setToken(null);
+    localStorage.removeItem('google_oauth_token');
+    localStorage.removeItem(GOOGLE_ACCOUNT_PROFILE_KEY);
+    googleAccountProfile = null;
+    googleFileId = null;
+    stopAccountHeartbeat();
+    hasTrackedCurrentSession = false;
+    updateGoogleAccountUI();
+}
+
+function rejectPartialGooglePermissionGrant() {
+    console.warn('Google permission gate blocked a partial grant. Granted scopes:', gapi.client.getToken()?.scope || '');
+    clearStoredGoogleOAuthState();
+    updateGooglePermissionGate();
+    setGooglePermissionGateMessage(
+        'You did not grant all required permissions. Try again and select every requested permission on Google’s screen.',
+        'error'
+    );
+}
+
+function handlePermissionGateConnect() {
+    if (!gapiInited || !gisInited || !tokenClient) {
+        updateGooglePermissionGate();
+        return;
+    }
+    if (isGoogleConnected() && !hasRequiredGoogleScopes()) {
+        clearStoredGoogleOAuthState();
+    }
+    handleAuthClick(false, true);
+}
+
+function enforceGooglePermissions() {
+    return updateGooglePermissionGate();
+}
+
 function gapiLoaded() { gapi.load('client', intializeGapiClient); }
 async function intializeGapiClient() {
-    await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] }); gapiInited = true; checkAuthStates();
+    await gapi.client.init({ apiKey: API_KEY, discoveryDocs: [DISCOVERY_DOC] });
+    gapiInited = true;
+    checkAuthStates();
+    updateGooglePermissionGate();
 }
 function gisLoaded() {
-    tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: '' }); gisInited = true; checkAuthStates();
+    tokenClient = google.accounts.oauth2.initTokenClient({ client_id: CLIENT_ID, scope: SCOPES, callback: '' });
+    gisInited = true;
+    checkAuthStates();
+    updateGooglePermissionGate();
 }
 
 
@@ -2007,34 +2152,50 @@ function checkAuthStates() {
 
     updateGoogleAccountUI();
 
-    if (isGoogleConnected()) {
+    if (isGoogleConnected() && hasRequiredGoogleScopes()) {
         fetchGoogleAccountProfile();
     }
+
+    updateGooglePermissionGate();
 }
 
-function handleAuthClick(forceAccountChooser = false) {
+function handleAuthClick(forceAccountChooser = false, forceConsent = false) {
     if (!gapiInited || !gisInited || !tokenClient) {
-        alert('Google services are still initializing. Please try again.');
+        alert('Google APIs are still loading. Please try again in a moment.');
+        updateGooglePermissionGate();
         return;
     }
 
     tokenClient.callback = async (resp) => {
-        if (resp.error !== undefined) {
-            console.error(resp);
-            alert('Google sign-in was not completed.');
+        if (resp.error) {
+            console.warn('Google sign-in error:', resp);
+            setGooglePermissionGateMessage('Google sign-in was not completed. Please try again.', 'error');
+            updateGooglePermissionGate();
             return;
         }
 
         const token = gapi.client.getToken();
-        if (token) localStorage.setItem('google_oauth_token', JSON.stringify(token));
+
+        if (!token || !hasRequiredGoogleScopes()) {
+            rejectPartialGooglePermissionGrant();
+            return;
+        }
+
+        localStorage.setItem('google_oauth_token', JSON.stringify(token));
 
         await fetchGoogleAccountProfile();
         updateGoogleAccountUI();
-        await fetchFileFromGoogleDrive();
+        updateGooglePermissionGate();
+
+        try {
+            await fetchFileFromGoogleDrive();
+        } catch (error) {
+            console.warn('Initial Google Drive sync failed:', error);
+        }
     };
 
     tokenClient.requestAccessToken({
-        prompt: forceAccountChooser ? 'select_account' : (gapi.client.getToken() === null ? 'consent' : '')
+        prompt: forceConsent || forceAccountChooser || gapi.client.getToken() === null ? 'consent' : ''
     });
 }
 
@@ -2050,6 +2211,7 @@ function disconnectGoogleAccount({ revoke = true } = {}) {
         stopAccountHeartbeat();
         hasTrackedCurrentSession = false;
         updateGoogleAccountUI();
+        updateGooglePermissionGate();
     };
 
     if (revoke && accessToken && window.google?.accounts?.oauth2?.revoke) {
@@ -2071,7 +2233,8 @@ function switchGoogleAccount() {
         stopAccountHeartbeat();
         hasTrackedCurrentSession = false;
         updateGoogleAccountUI();
-        handleAuthClick(true);
+        updateGooglePermissionGate();
+        handleAuthClick(true, true);
     };
 
     if (accessToken && window.google?.accounts?.oauth2?.revoke) {
@@ -2999,7 +3162,8 @@ window.addEventListener('load', () => {
     
     if (Notification.permission !== "granted" && Notification.permission !== "denied") Notification.requestPermission();
     setInterval(updateScheduleUI, 30000);
-    setTimeout(() => { checkAuthStates(); }, 500);
+    updateGooglePermissionGate();
+    setTimeout(() => { checkAuthStates(); enforceGooglePermissions(); }, 500);
     setTimeout(showTodayImportantTasks, 300);
 });
 

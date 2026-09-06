@@ -5353,3 +5353,72 @@ body.light-mode .kanban-full-column .kanban-card { background: #fff; }
 .admin-empty-cell { text-align:center; color:var(--text-sub); padding:28px !important; }
 .admin-footnote { margin:10px 2px 0; color:var(--text-sub); font-size:12px; }
 @media (max-width:700px) { .admin-summary-grid { grid-template-columns:1fr; } .admin-toolbar-row { align-items:stretch; flex-direction:column; } .admin-toolbar-row > * { width:100%; } .admin-key-row { flex-direction:column; } }
+
+
+/* ==========================================================================
+   GOOGLE REQUIRED-PERMISSIONS GATE
+   ========================================================================== */
+.google-permission-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 22px;
+    background: rgba(5, 8, 20, 0.94);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+}
+.google-permission-gate.is-hidden { display: none !important; }
+.google-permission-gate-card {
+    width: min(500px, 100%);
+    max-height: calc(100vh - 44px);
+    overflow: auto;
+    padding: 26px;
+    border: 1px solid var(--border-color);
+    border-radius: 22px;
+    background: var(--modal-bg);
+    box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    color: var(--text-main);
+}
+.google-permission-gate-brand { display:flex; align-items:center; gap:14px; }
+.google-permission-gate-icon {
+    width:54px; height:54px; display:grid; place-items:center; flex:0 0 54px;
+    border:1px solid var(--border-color); border-radius:16px; background:var(--inner-bg); font-size:28px;
+}
+.google-permission-gate-kicker {
+    display:block; margin-bottom:3px; color:var(--text-sub); font-size:11px; font-weight:800;
+    letter-spacing:.08em; text-transform:uppercase;
+}
+.google-permission-gate-card h2 { margin:0; font-size:22px; line-height:1.2; }
+.google-permission-gate-copy { margin:18px 0 14px; color:var(--text-sub); font-size:13px; line-height:1.65; }
+.google-permission-scope-list { display:grid; gap:8px; margin:14px 0; }
+.google-permission-scope-row {
+    display:flex; align-items:center; gap:11px; padding:11px 12px; border:1px solid var(--border-color);
+    border-radius:13px; background:var(--inner-bg);
+}
+.google-permission-scope-status {
+    width:24px; height:24px; display:grid; place-items:center; flex:0 0 24px;
+    border-radius:50%; color:var(--text-sub); font-weight:900;
+}
+.google-permission-scope-row.is-granted .google-permission-scope-status { color:var(--schedule-accent); }
+.google-permission-scope-row.is-missing .google-permission-scope-status { color:var(--danger-color); }
+.google-permission-scope-row > div { min-width:0; display:flex; flex-direction:column; gap:2px; }
+.google-permission-scope-row strong { color:var(--text-main); font-size:13px; }
+.google-permission-scope-row small { color:var(--text-sub); font-size:11px; line-height:1.4; }
+.google-permission-gate-message {
+    min-height:20px; margin:14px 0 10px; color:var(--text-sub); font-size:12px; line-height:1.5;
+}
+.google-permission-gate-message.is-error { color:var(--danger-color); }
+.google-permission-gate-message.is-ok { color:var(--schedule-accent); }
+.google-permission-gate-button { width:100%; min-height:44px; justify-content:center; }
+.google-permission-gate-button:disabled { cursor:wait; opacity:.65; }
+.google-permission-gate-footnote {
+    display:block; margin-top:12px; color:var(--text-sub); font-size:10px; line-height:1.5; text-align:center;
+}
+@media (max-width:560px) {
+    .google-permission-gate { padding:12px; }
+    .google-permission-gate-card { max-height:calc(100vh - 24px); padding:20px; border-radius:18px; }
+    .google-permission-gate-card h2 { font-size:19px; }
+}
