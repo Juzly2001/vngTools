@@ -6361,7 +6361,6 @@ const DASHBOARD_THEMES = [
   {id:'grape',name:'Grape',icon:'🍇',scene:'grape'}, {id:'terminal',name:'Terminal',icon:'💻',scene:'terminal'}
 ];
 const LIGHT_COMPAT_THEMES = new Set(['light','rose','lavender','mint','sky','lemon','peach']);
-const PHOTO_SCENES = new Set(['forest','rose','lavender','ocean','sunset','sakura','cyber']);
 const THEME_SCENE_LABELS={night:'Starry night',day:'Soft daylight',midnight:'Moonlit mountains',oled:'Pure black sky',forest:'Forest · mist · fireflies',rose:'Rose meadow · wind · clouds',lavender:'Lavender valley',ocean:'Underwater reef',sunset:'Golden valley',coffee:'Warm café window',meadow:'Fresh meadow',sakura:'Moonlit sakura',sky:'Open blue sky',lemon:'Lemon orchard',peach:'Peach orchard',cyber:'Neon skyline',grape:'Purple nebula',terminal:'Terminal city'};
 let themeFxParticles=[], themeFxTick=0, sceneCache=null, sceneCacheCtx=null, sceneCacheKey='', fxLastFrame=0;
 const prefersReducedMotion = matchMedia?.('(prefers-reduced-motion: reduce)')?.matches || false;
@@ -6378,7 +6377,7 @@ function applyDashboardTheme(themeId,save=true){
   invalidateScene(); if(isCanvasEnabled){initBackgroundObjects(); if(!animationFrameId)animationFrameId=requestAnimationFrame(drawBackground);}
 }
 function toggleTheme(){openThemePicker();}
-function ensureThemePicker(){if(document.getElementById('themePickerOverlay'))return;const o=document.createElement('div');o.id='themePickerOverlay';o.className='theme-picker-overlay';o.innerHTML=`<div class="theme-picker-panel" role="dialog" aria-modal="true"><div class="theme-picker-head"><div><h3>🎨 Choose theme</h3><small style="color:var(--text-sub)">Real photo scenes + lightweight live effects.</small></div><button class="theme-picker-close" type="button">✕</button></div><div class="theme-picker-grid">${DASHBOARD_THEMES.map(t=>`<button class="theme-choice" type="button" data-theme="${t.id}"><span class="theme-check"></span><strong>${t.icon} ${t.name}</strong><small>${sceneLabel(t.scene)}</small></button>`).join('')}</div></div>`;document.body.appendChild(o);o.addEventListener('click',e=>{if(e.target===o)closeThemePicker()});o.querySelector('.theme-picker-close')?.addEventListener('click',closeThemePicker);o.querySelectorAll('.theme-choice').forEach(b=>b.addEventListener('click',()=>{applyDashboardTheme(b.dataset.theme);closeThemePicker();}));}
+function ensureThemePicker(){if(document.getElementById('themePickerOverlay'))return;const o=document.createElement('div');o.id='themePickerOverlay';o.className='theme-picker-overlay';o.innerHTML=`<div class="theme-picker-panel" role="dialog" aria-modal="true"><div class="theme-picker-head"><div><h3>🎨 Choose theme</h3><small style="color:var(--text-sub)">Cinematic adaptive scenes — optimized for smoothness.</small></div><button class="theme-picker-close" type="button">✕</button></div><div class="theme-picker-grid">${DASHBOARD_THEMES.map(t=>`<button class="theme-choice" type="button" data-theme="${t.id}"><span class="theme-check"></span><strong>${t.icon} ${t.name}</strong><small>${sceneLabel(t.scene)}</small></button>`).join('')}</div></div>`;document.body.appendChild(o);o.addEventListener('click',e=>{if(e.target===o)closeThemePicker()});o.querySelector('.theme-picker-close')?.addEventListener('click',closeThemePicker);o.querySelectorAll('.theme-choice').forEach(b=>b.addEventListener('click',()=>{applyDashboardTheme(b.dataset.theme);closeThemePicker();}));}
 function openThemePicker(){ensureThemePicker();document.getElementById('themePickerOverlay')?.classList.add('active');applyDashboardTheme(getCurrentTheme(),false)}
 function closeThemePicker(){document.getElementById('themePickerOverlay')?.classList.remove('active')}
 function invalidateScene(){sceneCacheKey='';sceneCache=null;sceneCacheCtx=null;}
@@ -6418,7 +6417,7 @@ function drawStaticScene(g,w,h,meta){const s=meta.scene;
 }
 function getSceneCache(meta,w,h){const key=`${meta.id}:${w}x${h}`;if(sceneCacheKey===key&&sceneCache)return sceneCache;sceneCache=mkOffscreen(w,h);sceneCacheCtx=sceneCache.getContext('2d',{alpha:false});drawStaticScene(sceneCacheCtx,w,h,meta);sceneCacheKey=key;return sceneCache;}
 function drawCloudDynamic(p,w){cloud(ctx,p.x,p.y,p.s,p.a);p.x+=p.v;if(p.x> w+120)p.x=-120;}
-function drawBackground(ts=0){if(!canvas||!ctx||!isCanvasEnabled||document.hidden){animationFrameId=null;return;}const minDelta=1000/FX_TARGET_FPS;if(ts-fxLastFrame<minDelta){animationFrameId=requestAnimationFrame(drawBackground);return;}fxLastFrame=ts;const w=canvas._cssW||innerWidth,h=canvas._cssH||innerHeight,meta=getThemeMeta(),s=meta.scene;themeFxTick+=minDelta/1000;ctx.clearRect(0,0,w,h);if(!PHOTO_SCENES.has(s))ctx.drawImage(getSceneCache(meta,w,h),0,0,w,h);
+function drawBackground(ts=0){if(!canvas||!ctx||!isCanvasEnabled||document.hidden){animationFrameId=null;return;}const minDelta=1000/FX_TARGET_FPS;if(ts-fxLastFrame<minDelta){animationFrameId=requestAnimationFrame(drawBackground);return;}fxLastFrame=ts;const w=canvas._cssW||innerWidth,h=canvas._cssH||innerHeight,meta=getThemeMeta(),s=meta.scene;themeFxTick+=minDelta/1000;ctx.clearRect(0,0,w,h);ctx.drawImage(getSceneCache(meta,w,h),0,0,w,h);
   if(['day','sky','rose','lavender','meadow','lemon','peach','sunset'].includes(s))themeFxParticles.forEach(p=>drawCloudDynamic(p,w));
   else if(['night','midnight','oled'].includes(s)){themeFxParticles.forEach(p=>{const a=.3+.7*(.5+.5*Math.sin(themeFxTick*p.tw+p.p));ctx.globalAlpha=a;ctx.fillStyle=s==='midnight'?'#b8d8ff':'#fff';if(p.shoot){ctx.strokeStyle=ctx.fillStyle;ctx.beginPath();ctx.moveTo(p.x,p.y);ctx.lineTo(p.x-28,p.y+40);ctx.stroke();p.x-=p.v*.6;p.y+=p.v;if(p.y>h+30){p.y=-20;p.x=Math.random()*w}}else{ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill()}});ctx.globalAlpha=1;}
   else if(s==='forest'){themeFxParticles.forEach(p=>{const a=.22+.7*(.5+.5*Math.sin(themeFxTick*1.8+p.p));ctx.globalAlpha=a;ctx.shadowColor='#d9f99d';ctx.shadowBlur=10;ctx.fillStyle='#eaffb2';ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,6.283);ctx.fill();p.x+=p.vx+Math.sin(themeFxTick+p.p)*.035;p.y+=p.vy+Math.cos(themeFxTick*.8+p.p)*.025;if(p.x<0)p.x=w;if(p.x>w)p.x=0});ctx.shadowBlur=0;ctx.globalAlpha=1;}
@@ -6477,56 +6476,331 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeThemePicker()})
 
 
 // ==========================================================================
-// SCENE V6 — LIVE DEPTH PARALLAX CONTROLLER
+// SCENE V7 — POLISHED CANVAS LANDSCAPES
+// Natural density, atmospheric perspective, cached static scenery.
+// No photographic backgrounds.
 // ==========================================================================
-(function initLiveDepthScene(){
-    const root = document.documentElement;
-    const finePointer = window.matchMedia('(pointer:fine)');
-    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-    let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
-    let raf = 0;
+function v7rng(seed){
+  let t = seed >>> 0;
+  return function(){
+    t += 0x6D2B79F5;
+    let x = t;
+    x = Math.imul(x ^ (x >>> 15), x | 1);
+    x ^= x + Math.imul(x ^ (x >>> 7), x | 61);
+    return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function v7seedFor(scene,w,h){
+  let s=2166136261;
+  const text=scene+'|'+Math.round(w/20)+'|'+Math.round(h/20);
+  for(let i=0;i<text.length;i++){ s^=text.charCodeAt(i); s=Math.imul(s,16777619); }
+  return s>>>0;
+}
+function v7lerp(a,b,t){return a+(b-a)*t;}
+function v7mixAlpha(hex,a){
+  if(hex.startsWith('#')){
+    const h=hex.slice(1); const n=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16);
+    return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;
+  }
+  return hex;
+}
+function v7softBlob(g,x,y,rx,ry,color,a=1,parts=9,rng=Math.random){
+  g.save(); g.globalAlpha=a; g.fillStyle=color;
+  for(let i=0;i<parts;i++){
+    const ang=rng()*Math.PI*2, rr=.25+rng()*.75;
+    const px=x+Math.cos(ang)*rx*.42*rr, py=y+Math.sin(ang)*ry*.35*rr;
+    const sx=rx*(.38+rng()*.34), sy=ry*(.34+rng()*.32);
+    g.beginPath(); g.ellipse(px,py,sx,sy,rng()*.4,0,Math.PI*2); g.fill();
+  }
+  g.restore();
+}
+function v7branch(g,x1,y1,x2,y2,w,color,a=1){
+  g.save(); g.globalAlpha=a; g.strokeStyle=color; g.lineWidth=w; g.lineCap='round';
+  g.beginPath(); g.moveTo(x1,y1); g.quadraticCurveTo(v7lerp(x1,x2,.52)+(y2-y1)*.08,v7lerp(y1,y2,.52),x2,y2); g.stroke();
+  g.restore();
+}
+function v7leaf(g,x,y,s,color,a=1,rot=0){
+  g.save(); g.translate(x,y); g.rotate(rot); g.globalAlpha=a; g.fillStyle=color;
+  g.beginPath(); g.ellipse(0,0,s*1.7,s*.72,0,0,Math.PI*2); g.fill(); g.restore();
+}
+function v7flower(g,x,y,s,petal,center='#f8d9a0',a=1,rot=0){
+  g.save(); g.translate(x,y); g.rotate(rot); g.globalAlpha=a;
+  for(let i=0;i<7;i++){
+    const ang=i*Math.PI*2/7;
+    g.fillStyle=petal; g.beginPath(); g.ellipse(Math.cos(ang)*s*.52,Math.sin(ang)*s*.40,s*.50,s*.30,ang,0,Math.PI*2); g.fill();
+  }
+  g.fillStyle=center; g.beginPath(); g.arc(0,0,s*.28,0,Math.PI*2); g.fill(); g.restore();
+}
+function v7cloudBank(g,w,h,rng,alpha=.12){
+  g.save(); g.filter='blur(9px)'; g.globalAlpha=alpha; g.fillStyle='#fff';
+  for(let i=0;i<7;i++){
+    const x=(i/6)*w + (rng()-.5)*w*.10;
+    const y=h*(.12+rng()*.22);
+    v7softBlob(g,x,y,70+rng()*85,24+rng()*26,'#fff',1,6,rng);
+  }
+  g.restore();
+}
+function v7mistBand(g,w,y,hgt,a=.08){
+  const gr=g.createLinearGradient(0,y-hgt,0,y+hgt);
+  gr.addColorStop(0,'rgba(255,255,255,0)');
+  gr.addColorStop(.5,`rgba(235,244,240,${a})`);
+  gr.addColorStop(1,'rgba(255,255,255,0)');
+  g.fillStyle=gr; g.fillRect(0,y-hgt,w,hgt*2);
+}
+function v7hill(g,w,h,base,amp,color,phase=0,alpha=1){
+  g.save(); g.globalAlpha=alpha; g.fillStyle=color; g.beginPath(); g.moveTo(0,h);
+  for(let x=0;x<=w+30;x+=24){
+    const y=base+Math.sin(x*.006+phase)*amp+Math.sin(x*.014+phase*.7)*amp*.38+Math.sin(x*.027+phase)*amp*.12;
+    g.lineTo(x,y);
+  }
+  g.lineTo(w,h); g.closePath(); g.fill(); g.restore();
+}
+function v7drawForest(g,w,h,rng){
+  sceneGradient(g,w,h,[[0,'#183231'],[.38,'#2d4d3c'],[.66,'#39583f'],[1,'#12251b']]);
 
-    const render = () => {
-        raf = 0;
-        currentX += (targetX - currentX) * 0.065;
-        currentY += (targetY - currentY) * 0.065;
-        root.style.setProperty('--scene-x', currentX.toFixed(2) + 'px');
-        root.style.setProperty('--scene-y', currentY.toFixed(2) + 'px');
+  // distant canopy and haze
+  v7mistBand(g,w,h*.40,h*.13,.065);
+  for(let i=0;i<24;i++){
+    const x=(i+.2)*w/23 + (rng()-.5)*25;
+    const y=h*(.39+rng()*.11);
+    v7softBlob(g,x,y,48+rng()*42,28+rng()*28,i%3===0?'#42644a':'#365741',.36,8,rng);
+  }
 
-        if (Math.abs(targetX-currentX) > .05 || Math.abs(targetY-currentY) > .05) {
-            raf = requestAnimationFrame(render);
+  // distant trunks: thin, pale, softened by atmosphere
+  for(let i=0;i<38;i++){
+    const x=rng()*w, base=h*(.78+rng()*.08), top=h*(.20+rng()*.22);
+    const col=i%3===0?'#324637':'#263a31';
+    v7branch(g,x,base,x+(rng()-.5)*24,top,1.2+rng()*2.2,col,.34);
+  }
+
+  // mid trunks + dense crown
+  for(let i=0;i<18;i++){
+    const x=(i+.15)*w/17+(rng()-.5)*36, base=h*(.91+rng()*.04), top=h*(.28+rng()*.20);
+    const thick=4+rng()*7;
+    v7branch(g,x,base,x+(rng()-.5)*36,top,thick,'#1a2c22',.82);
+    for(let b=0;b<3;b++){
+      const yy=v7lerp(base,top,.35+b*.17);
+      const side=(b%2?1:-1);
+      v7branch(g,x+(rng()-.5)*8,yy,x+side*(34+rng()*65),yy-(22+rng()*38),Math.max(1.2,thick*.28),'#20352a',.65);
+    }
+    const crownY=top+30+rng()*30;
+    const crownC=i%3===0?'#1f432e':i%3===1?'#28503a':'#244833';
+    v7softBlob(g,x,crownY,78+rng()*55,60+rng()*48,crownC,.90,11,rng);
+  }
+
+  // mid-ground foliage belt
+  for(let i=0;i<30;i++){
+    const x=rng()*w, y=h*(.67+rng()*.17);
+    v7softBlob(g,x,y,38+rng()*46,26+rng()*34,rng()>.5?'#244d31':'#1c422d',.90,8,rng);
+  }
+
+  // forest floor
+  const floor=g.createLinearGradient(0,h*.72,0,h);
+  floor.addColorStop(0,'rgba(18,45,28,.12)'); floor.addColorStop(1,'#0b2015');
+  g.fillStyle=floor; g.fillRect(0,h*.72,w,h*.28);
+
+  // grasses, ferns, low shrubs
+  g.lineCap='round';
+  for(let i=0;i<150;i++){
+    const x=rng()*w, y=h*(.80+rng()*.20), len=7+rng()*28;
+    g.strokeStyle=rng()>.5?'rgba(61,111,69,.42)':'rgba(40,88,56,.50)';
+    g.lineWidth=.6+rng()*1.2;
+    g.beginPath(); g.moveTo(x,y); g.quadraticCurveTo(x+(rng()-.5)*12,y-len*.55,x+(rng()-.5)*15,y-len); g.stroke();
+  }
+
+  // foreground framing trunks/canopy: dark, cropped, gives "inside forest" feeling
+  for(let i=0;i<5;i++){
+    const left=i<3;
+    const x=left ? (-22+i*34) : (w+22-(i-2)*40);
+    const base=h*1.04, top=h*(.03+rng()*.25), thick=18+rng()*30;
+    v7branch(g,x,base,x+(left?25:-25)+(rng()-.5)*20,top,thick,'#09170f',.93);
+    v7softBlob(g,x+(left?45:-45),h*(.15+rng()*.25),110+rng()*85,80+rng()*65,'#0c2516',.92,12,rng);
+  }
+
+  // subtle shafts through gaps
+  g.save(); g.globalCompositeOperation='screen';
+  for(let i=0;i<4;i++){
+    const x=w*(.15+rng()*.7);
+    const gr=g.createLinearGradient(x,h*.05,x+80,h*.72);
+    gr.addColorStop(0,'rgba(242,255,215,.08)'); gr.addColorStop(1,'rgba(242,255,215,0)');
+    g.fillStyle=gr; g.beginPath(); g.moveTo(x-25,0); g.lineTo(x+18,0); g.lineTo(x+135,h*.78); g.lineTo(x+40,h*.78); g.closePath(); g.fill();
+  }
+  g.restore();
+  v7mistBand(g,w,h*.61,h*.09,.04);
+}
+function v7drawFlowerField(g,w,h,rng,kind='rose'){
+  const isLav=kind==='lavender';
+  sceneGradient(g,w,h,isLav
+    ? [[0,'#cfd0e7'],[.38,'#e5ddea'],[.60,'#c8cfba'],[1,'#53684d']]
+    : [[0,'#d8d4d2'],[.36,'#efe5e4'],[.59,'#c9d0b5'],[1,'#58694d']]);
+  v7cloudBank(g,w,h,rng,isLav?.07:.08);
+  v7hill(g,w,h,h*.55,h*.025,isLav?'#a8aa9d':'#aeb29d',.4,.65);
+  v7hill(g,w,h,h*.61,h*.035,isLav?'#7c8b77':'#83916f',2.2,.82);
+  v7mistBand(g,w,h*.58,h*.055,.075);
+
+  // field base
+  const field=g.createLinearGradient(0,h*.58,0,h);
+  field.addColorStop(0,isLav?'#7c866f':'#819067');
+  field.addColorStop(1,isLav?'#42523e':'#3f5238');
+  g.fillStyle=field; g.fillRect(0,h*.58,w,h*.42);
+
+  // Perspective rows: many tiny plants near horizon, larger near viewer.
+  const rows=14;
+  for(let r=0;r<rows;r++){
+    const t=r/(rows-1);
+    const depth=t*t;
+    const y=v7lerp(h*.595,h*.99,depth);
+    const scale=v7lerp(.12,1.15,depth);
+    const alpha=v7lerp(.38,.98,depth);
+    const spacing=v7lerp(12,42,depth);
+    const offset=(r%2)*spacing*.48;
+    for(let x=-spacing;x<w+spacing;x+=spacing){
+      const px=x+offset+(rng()-.5)*spacing*.45;
+      const py=y+(rng()-.5)*v7lerp(2,9,depth);
+      const stemH=(isLav?16:13)*scale*(.75+rng()*.55);
+      g.strokeStyle=isLav?`rgba(55,88,58,${alpha*.72})`:`rgba(44,91,47,${alpha*.78})`;
+      g.lineWidth=Math.max(.45,scale*.95);
+      g.beginPath(); g.moveTo(px,py+stemH*.8); g.lineTo(px+(rng()-.5)*2*scale,py-stemH*.45); g.stroke();
+      if(isLav){
+        const col=rng()>.55?'#7059a8':'#8770ba';
+        for(let k=0;k<4;k++){
+          const yy=py-stemH*.38+k*3*scale;
+          v7leaf(g,px+(k%2?1:-1)*1.5*scale,yy,1.3*scale,col,alpha,.2*(k%2?1:-1));
         }
-    };
+      }else{
+        const cols=['#b83d55','#c54b62','#a8344d','#d05a6d','#9f3348'];
+        const col=cols[Math.floor(rng()*cols.length)];
+        v7flower(g,px,py-stemH*.5,2.2*scale,col,'#e9c5a0',alpha,rng()*Math.PI);
+        if(depth>.35 && rng()>.45){
+          v7leaf(g,px-3*scale,py+1*scale,2.1*scale,'#396443',alpha*.75,-.6);
+          v7leaf(g,px+3*scale,py+3*scale,2.0*scale,'#426c49',alpha*.70,.6);
+        }
+      }
+    }
+  }
 
-    const wake = () => {
-        if (!raf) raf = requestAnimationFrame(render);
-    };
+  // foreground grasses break the overly neat rows
+  for(let i=0;i<90;i++){
+    const x=rng()*w,y=h*(.82+rng()*.18),len=10+rng()*34;
+    g.strokeStyle=isLav?'rgba(58,75,53,.38)':'rgba(47,77,44,.42)';
+    g.lineWidth=.5+rng()*1.2; g.beginPath(); g.moveTo(x,y); g.quadraticCurveTo(x+(rng()-.5)*8,y-len*.55,x+(rng()-.5)*14,y-len); g.stroke();
+  }
+}
+function v7drawOcean(g,w,h,rng){
+  sceneGradient(g,w,h,[[0,'#16647a'],[.34,'#0c5369'],[.72,'#073b51'],[1,'#062b3d']]);
+  // soft overhead glow
+  const rg=g.createRadialGradient(w*.54,-20,0,w*.54,-20,w*.58);
+  rg.addColorStop(0,'rgba(195,243,247,.25)'); rg.addColorStop(1,'rgba(195,243,247,0)');
+  g.fillStyle=rg; g.fillRect(0,0,w,h*.75);
 
-    const onPointerMove = (e) => {
-        if (!finePointer.matches || reduceMotion.matches || !isCanvasEnabled) return;
-        const nx = (e.clientX / Math.max(1, innerWidth) - .5);
-        const ny = (e.clientY / Math.max(1, innerHeight) - .5);
-        // Very small movement is more realistic than dramatic parallax.
-        targetX = nx * -18;
-        targetY = ny * -11;
-        wake();
-    };
+  // light rays
+  g.save(); g.globalCompositeOperation='screen'; g.filter='blur(8px)';
+  for(let i=0;i<7;i++){
+    const x=w*(.05+i*.14)+rng()*30;
+    g.fillStyle=`rgba(186,235,241,${.025+rng()*.035})`;
+    g.beginPath(); g.moveTo(x,0); g.lineTo(x+45+rng()*80,0); g.lineTo(x+210+rng()*100,h*.88); g.lineTo(x+90+rng()*60,h*.88); g.closePath(); g.fill();
+  }
+  g.restore();
 
-    const reset = () => {
-        targetX = 0;
-        targetY = 0;
-        wake();
-    };
+  // rocky seabed
+  g.fillStyle='#082e36'; g.fillRect(0,h*.89,w,h*.11);
+  for(let i=0;i<26;i++){
+    const x=rng()*w,y=h*(.88+rng()*.13),rx=12+rng()*32,ry=5+rng()*12;
+    ellipse(g,x,y,rx,ry,rng()>.5?'#183f42':'#244c4a',.72,rng()*.4);
+  }
 
-    window.addEventListener('pointermove', onPointerMove, {passive:true});
-    document.addEventListener('mouseleave', reset);
-    window.addEventListener('blur', reset);
+  // kelp with many overlapping ribbons
+  for(let i=0;i<32;i++){
+    const x=rng()*w, base=h*(.94+rng()*.06), len=45+rng()*135, sway=(rng()-.5)*45;
+    g.strokeStyle=rng()>.5?'rgba(31,111,81,.56)':'rgba(27,91,72,.62)';
+    g.lineWidth=2+rng()*5; g.lineCap='round';
+    g.beginPath(); g.moveTo(x,base); g.bezierCurveTo(x+sway*.2,base-len*.3,x+sway*.9,base-len*.7,x+sway,base-len); g.stroke();
+  }
+  v7mistBand(g,w,h*.66,h*.13,.025);
+}
+function v7drawCyber(g,w,h,rng,terminal=false){
+  sceneGradient(g,w,h,terminal?[[0,'#010905'],[.68,'#03160b'],[1,'#010604']]:[[0,'#070b19'],[.44,'#13152b'],[.76,'#16122a'],[1,'#070914']]);
+  const horizon=h*.72;
 
-    // If visuals are turned off, immediately return scene to neutral position.
-    const oldToggleThemeCanvasV6 = window.toggleThemeCanvas || toggleThemeCanvas;
-    window.toggleThemeCanvas = toggleThemeCanvas = function(){
-        oldToggleThemeCanvasV6();
-        if (!isCanvasEnabled) reset();
-    };
+  // atmospheric neon haze instead of loud blocks
+  const haze=g.createRadialGradient(w*.50,horizon,0,w*.50,horizon,w*.55);
+  haze.addColorStop(0,terminal?'rgba(34,197,94,.075)':'rgba(81,193,230,.105)');
+  haze.addColorStop(1,'rgba(0,0,0,0)');
+  g.fillStyle=haze; g.fillRect(0,h*.25,w,h*.60);
+
+  // distant skyline, irregular + antennae
+  for(let i=0,x=-10;x<w+30;i++){
+    const bw=18+rng()*42,bh=45+rng()*150,base=horizon+rng()*10;
+    const col=terminal?'#03170b':(rng()>.5?'#10162a':'#16162d');
+    g.fillStyle=col; g.fillRect(x,base-bh,bw,bh);
+    if(rng()>.72){
+      g.strokeStyle=terminal?'rgba(62,212,115,.20)':'rgba(114,202,238,.18)';
+      g.lineWidth=1; g.beginPath(); g.moveTo(x+bw*.5,base-bh); g.lineTo(x+bw*.5,base-bh-18-rng()*28); g.stroke();
+    }
+    // sparse windows
+    const win=terminal?'rgba(69,226,126,.18)':(rng()>.5?'rgba(80,220,235,.22)':'rgba(214,87,214,.18)');
+    g.fillStyle=win;
+    for(let yy=base-bh+10;yy<base-8;yy+=10+rng()*5){
+      if(rng()>.45) g.fillRect(x+5+rng()*Math.max(2,bw-12),yy,1.5+rng()*2.5,2);
+    }
+    x += bw+3+rng()*8;
+  }
+
+  // wet ground / faint perspective lines
+  const ground=g.createLinearGradient(0,horizon,0,h);
+  ground.addColorStop(0,terminal?'rgba(2,24,11,.60)':'rgba(9,13,25,.55)');
+  ground.addColorStop(1,terminal?'#010503':'#04060d');
+  g.fillStyle=ground; g.fillRect(0,horizon,w,h-horizon);
+  g.save(); g.globalAlpha=.10; g.strokeStyle=terminal?'#3bd77a':'#5ccfe8'; g.lineWidth=1;
+  for(let i=1;i<8;i++){const yy=horizon+(h-horizon)*Math.pow(i/8,1.7);g.beginPath();g.moveTo(0,yy);g.lineTo(w,yy);g.stroke();}
+  for(let i=-8;i<=8;i++){g.beginPath();g.moveTo(w*.5,horizon);g.lineTo(w*.5+i*w*.11,h);g.stroke();}
+  g.restore();
+}
+function v7drawStaticScene(g,w,h,meta){
+  const rng=v7rng(v7seedFor(meta.scene,w,h));
+  switch(meta.scene){
+    case 'forest': v7drawForest(g,w,h,rng); break;
+    case 'rose': v7drawFlowerField(g,w,h,rng,'rose'); break;
+    case 'lavender': v7drawFlowerField(g,w,h,rng,'lavender'); break;
+    case 'ocean': v7drawOcean(g,w,h,rng); break;
+    case 'cyber': v7drawCyber(g,w,h,rng,false); break;
+    case 'terminal': v7drawCyber(g,w,h,rng,true); break;
+    default: drawStaticScene(g,w,h,meta);
+  }
+
+  // universal soft atmospheric finish
+  const top=g.createLinearGradient(0,0,0,h);
+  top.addColorStop(0,'rgba(255,255,255,.018)');
+  top.addColorStop(.65,'rgba(255,255,255,0)');
+  top.addColorStop(1,'rgba(0,0,0,.07)');
+  g.fillStyle=top; g.fillRect(0,0,w,h);
+}
+function getSceneCache(meta,w,h){
+  const key=`v7:${meta.id}:${w}x${h}`;
+  if(sceneCacheKey===key&&sceneCache)return sceneCache;
+  sceneCache=mkOffscreen(w,h);
+  sceneCacheCtx=sceneCache.getContext('2d',{alpha:false});
+  v7drawStaticScene(sceneCacheCtx,w,h,meta);
+  sceneCacheKey=key;
+  return sceneCache;
+}
+
+// Reduce moving objects. Dense realism comes from the cached scenery, not noisy particles.
+const __v7InitBackgroundObjects = initBackgroundObjects;
+initBackgroundObjects = function(){
+  __v7InitBackgroundObjects();
+  const s=getThemeMeta().scene;
+  const limits={forest:26,rose:16,lavender:14,ocean:22,cyber:16,terminal:18,sakura:18,peach:15};
+  if(limits[s] && themeFxParticles.length>limits[s]) themeFxParticles.length=limits[s];
+};
+
+// Make theme picker describe the new approach.
+(function(){
+  const oldEnsure=ensureThemePicker;
+  ensureThemePicker=function(){
+    oldEnsure();
+    const small=document.querySelector('#themePickerOverlay .theme-picker-head small');
+    if(small)small.textContent='Layered canvas landscapes · subtle motion · optimized cache';
+  };
 })();
