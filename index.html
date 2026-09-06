@@ -260,7 +260,7 @@
             <div class="command-head redesigned-head">
                 <div>
                     <span>🛡️ Admin Console</span>
-                    <small>View accounts that have used this dashboard.</small>
+                    <small>View accounts tracked in the shared Google Drive registry.</small>
                 </div>
                 <button class="modal-close-soft" onclick="closeModal('adminConsoleModal')">✕</button>
             </div>
@@ -268,7 +268,7 @@
             <div id="adminLockedView" class="admin-locked-view">
                 <div class="admin-key-icon">🔐</div>
                 <h3>Admin key required</h3>
-                <p>Enter the admin key to view user activity, last seen time, and online status.</p>
+                <p>Connect Google, then enter the admin key to view activity stored in web_accounts.json.</p>
                 <label for="adminKeyInput">Admin key</label>
                 <div class="admin-key-row">
                     <input type="password" id="adminKeyInput" placeholder="Enter admin key..." autocomplete="off" onkeydown="if(event.key==='Enter') unlockAdminConsole()">
@@ -310,7 +310,7 @@
                         </tbody>
                     </table>
                 </div>
-                <p class="admin-footnote">Online = heartbeat received within the last 90 seconds.</p>
+                <p class="admin-footnote">Online = Google Drive heartbeat received within the last 90 seconds.</p>
             </div>
         </div>
     </div>

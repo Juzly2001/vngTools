@@ -3,13 +3,13 @@
 // ==========================================================================
 const CLIENT_ID = '109577502358-ifqvdpaumccs5sv6vtr5rphfnq815up0.apps.googleusercontent.com';
 const API_KEY = 'AIzaSyAc5DuR0oxr7yEdTQnvIIS-PRKGtIfWrro';
-const SCOPES = 'https://www.googleapis.com/auth/drive.appdata openid email profile';
+const SCOPES = 'https://www.googleapis.com/auth/drive.appdata https://www.googleapis.com/auth/drive openid email profile';
 const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/rest';
 
-// Shared account registry (Supabase). Fill these 2 values after running supabase-admin-setup.txt.
-const SUPABASE_URL = ''; // Example: https://YOUR_PROJECT.supabase.co
-const SUPABASE_ANON_KEY = ''; // Project Settings > API > anon public key
+// Shared account registry stored in one Google Drive JSON file.
+const ACCOUNT_REGISTRY_FILE_ID = '1RALrPeij_phHv0xXJ7EYSOdwS4CdbcHp';
 const ACCOUNT_HEARTBEAT_MS = 30000;
+const ADMIN_KEY_SHA256 = 'c36cca105d056398bd76290c5895cadd66443212f5dbdcafd74bf4c31442b665';
 const ADMIN_SESSION_KEY = 'dashboardAdminSessionKey';
 const WEB_SESSION_ID_KEY = 'dashboardWebSessionId';
 
@@ -1622,33 +1622,62 @@ function gisLoaded() {
 
 
 function isAccountRegistryConfigured() {
-    return /^https:\/\/.+\.supabase\.co$/i.test(SUPABASE_URL.trim()) && SUPABASE_ANON_KEY.trim().length > 20;
+    return /^[A-Za-z0-9_-]{10,}$/.test(String(ACCOUNT_REGISTRY_FILE_ID || '').trim());
 }
 
-async function supabaseRpc(functionName, payload = {}) {
-    if (!isAccountRegistryConfigured()) {
-        throw new Error('Account registry is not configured. Fill SUPABASE_URL and SUPABASE_ANON_KEY in dashboard.js.');
+async function sha256Hex(value) {
+    const data = new TextEncoder().encode(String(value || ''));
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function readAccountRegistry() {
+    if (!isAccountRegistryConfigured()) throw new Error('Google Drive registry file ID is not configured.');
+    if (!isGoogleConnected()) throw new Error('Please connect Google first.');
+
+    try {
+        const response = await gapi.client.drive.files.get({
+            fileId: ACCOUNT_REGISTRY_FILE_ID,
+            alt: 'media'
+        });
+        const raw = response.result;
+        if (raw && typeof raw === 'object') {
+            return Array.isArray(raw) ? { accounts: raw } : { accounts: Array.isArray(raw.accounts) ? raw.accounts : [] };
+        }
+        const parsed = JSON.parse(String(raw || '{"accounts":[]}'));
+        return { accounts: Array.isArray(parsed?.accounts) ? parsed.accounts : [] };
+    } catch (error) {
+        const status = error?.status || error?.result?.error?.code;
+        if (status === 403) {
+            throw new Error('No permission to access web_accounts.json. Share the file with this Google account as Editor and reconnect Google.');
+        }
+        if (status === 404) {
+            throw new Error('web_accounts.json was not found. Check ACCOUNT_REGISTRY_FILE_ID.');
+        }
+        throw error;
     }
+}
 
-    const response = await fetch(`${SUPABASE_URL.replace(/\/$/, '')}/rest/v1/rpc/${functionName}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-        },
-        body: JSON.stringify(payload)
-    });
+async function writeAccountRegistry(registry) {
+    if (!isAccountRegistryConfigured()) throw new Error('Google Drive registry file ID is not configured.');
+    if (!isGoogleConnected()) throw new Error('Please connect Google first.');
 
-    const text = await response.text();
-    let data = null;
-    try { data = text ? JSON.parse(text) : null; } catch (_) { data = text; }
-
-    if (!response.ok) {
-        const message = data?.message || data?.error || data?.hint || `Request failed (${response.status})`;
-        throw new Error(message);
+    const payload = JSON.stringify({ accounts: Array.isArray(registry?.accounts) ? registry.accounts : [] }, null, 2);
+    try {
+        await gapi.client.request({
+            path: `/upload/drive/v3/files/${encodeURIComponent(ACCOUNT_REGISTRY_FILE_ID)}`,
+            method: 'PATCH',
+            params: { uploadType: 'media' },
+            headers: { 'Content-Type': 'application/json; charset=UTF-8' },
+            body: payload
+        });
+    } catch (error) {
+        const status = error?.status || error?.result?.error?.code;
+        if (status === 403) {
+            throw new Error('No write permission for web_accounts.json. Share the file with this Google account as Editor.');
+        }
+        throw error;
     }
-    return data;
 }
 
 function getBrowserLabel() {
@@ -1666,20 +1695,43 @@ async function trackCurrentWebAccount(forceNewSession = false) {
 
     const isNewSession = forceNewSession || !hasTrackedCurrentSession;
     try {
-        await supabaseRpc('track_web_account', {
-            p_user_id: String(googleAccountProfile.id),
-            p_email: googleAccountProfile.email || '',
-            p_name: googleAccountProfile.name || '',
-            p_picture: googleAccountProfile.picture || '',
-            p_session_id: dashboardWebSessionId,
-            p_browser: getBrowserLabel(),
-            p_user_agent: (navigator.userAgent || '').slice(0, 500),
-            p_page: `${location.pathname}${location.search}`.slice(0, 500),
-            p_is_new_session: isNewSession
-        });
+        const registry = await readAccountRegistry();
+        const accounts = Array.isArray(registry.accounts) ? registry.accounts : [];
+        const userId = String(googleAccountProfile.id);
+        const now = new Date().toISOString();
+        let account = accounts.find(a => String(a.user_id || '') === userId);
+
+        if (!account) {
+            account = {
+                user_id: userId,
+                email: googleAccountProfile.email || '',
+                name: googleAccountProfile.name || '',
+                picture: googleAccountProfile.picture || '',
+                first_seen: now,
+                last_seen: now,
+                visit_count: 0,
+                last_session_id: '',
+                browser: '',
+                user_agent: '',
+                last_page: ''
+            };
+            accounts.push(account);
+        }
+
+        account.email = googleAccountProfile.email || account.email || '';
+        account.name = googleAccountProfile.name || account.name || '';
+        account.picture = googleAccountProfile.picture || account.picture || '';
+        account.last_seen = now;
+        account.last_session_id = dashboardWebSessionId;
+        account.browser = getBrowserLabel();
+        account.user_agent = (navigator.userAgent || '').slice(0, 500);
+        account.last_page = `${location.pathname}${location.search}`.slice(0, 500);
+        if (isNewSession) account.visit_count = Number(account.visit_count || 0) + 1;
+
+        await writeAccountRegistry({ accounts });
         hasTrackedCurrentSession = true;
     } catch (error) {
-        console.warn('Account heartbeat failed:', error);
+        console.warn('Google Drive account heartbeat failed:', error);
     }
 }
 
@@ -1710,12 +1762,20 @@ function formatAdminLastSeen(value) {
     return d.toLocaleString();
 }
 
+function normalizeAdminAccounts(accounts) {
+    const now = Date.now();
+    return (Array.isArray(accounts) ? accounts : []).map(a => ({
+        ...a,
+        is_online: !!a.last_seen && (now - new Date(a.last_seen).getTime() < 90000)
+    })).sort((a, b) => new Date(b.last_seen || 0) - new Date(a.last_seen || 0));
+}
+
 function openAdminConsole() {
     const configured = isAccountRegistryConfigured();
     const hint = getEl('adminConfigHint');
     if (hint) hint.textContent = configured
-        ? 'Admin key is validated on the database function; it is not stored in this source code.'
-        : 'Account registry is not configured yet. Fill SUPABASE_URL and SUPABASE_ANON_KEY in dashboard.js.';
+        ? 'Account registry: Google Drive / web_accounts.json.'
+        : 'Google Drive registry file ID is not configured.';
 
     openModal('adminConsoleModal');
     const savedKey = sessionStorage.getItem(ADMIN_SESSION_KEY);
@@ -1734,7 +1794,11 @@ async function unlockAdminConsole(silent = false) {
     if (errorEl) errorEl.textContent = '';
 
     if (!isAccountRegistryConfigured()) {
-        if (errorEl) errorEl.textContent = 'Supabase registry is not configured.';
+        if (errorEl) errorEl.textContent = 'Google Drive registry file ID is not configured.';
+        return;
+    }
+    if (!isGoogleConnected()) {
+        if (errorEl) errorEl.textContent = 'Connect Google first, then open Admin again.';
         return;
     }
     if (!key) {
@@ -1743,16 +1807,21 @@ async function unlockAdminConsole(silent = false) {
     }
 
     try {
-        const data = await supabaseRpc('admin_list_web_accounts', { p_admin_key: key });
+        if ((await sha256Hex(key)) !== ADMIN_KEY_SHA256) throw new Error('Invalid admin key');
+        const registry = await readAccountRegistry();
         sessionStorage.setItem(ADMIN_SESSION_KEY, key);
-        adminAccountsCache = Array.isArray(data) ? data : [];
+        adminAccountsCache = normalizeAdminAccounts(registry.accounts);
         getEl('adminLockedView').style.display = 'none';
         getEl('adminUnlockedView').style.display = 'block';
         renderAdminAccounts();
         updateAdminSummary();
     } catch (error) {
-        sessionStorage.removeItem(ADMIN_SESSION_KEY);
-        if (errorEl) errorEl.textContent = /admin/i.test(error.message) ? 'Admin key is incorrect.' : error.message;
+        if (/Invalid admin key/i.test(error.message || '')) {
+            sessionStorage.removeItem(ADMIN_SESSION_KEY);
+            if (errorEl) errorEl.textContent = 'Admin key is incorrect.';
+        } else if (errorEl) {
+            errorEl.textContent = error.message || 'Cannot read the Google Drive account registry.';
+        }
         if (!silent) console.warn('Admin unlock failed:', error);
     }
 }
@@ -1772,13 +1841,13 @@ async function refreshAdminAccounts(showError = false) {
     const key = sessionStorage.getItem(ADMIN_SESSION_KEY);
     if (!key) return lockAdminConsole();
     try {
-        const data = await supabaseRpc('admin_list_web_accounts', { p_admin_key: key });
-        adminAccountsCache = Array.isArray(data) ? data : [];
+        if ((await sha256Hex(key)) !== ADMIN_KEY_SHA256) return lockAdminConsole();
+        const registry = await readAccountRegistry();
+        adminAccountsCache = normalizeAdminAccounts(registry.accounts);
         renderAdminAccounts();
         updateAdminSummary();
     } catch (error) {
-        if (showError) alert(error.message, 'Admin refresh failed');
-        if (/admin/i.test(error.message)) lockAdminConsole();
+        if (showError) alert(error.message || 'Admin refresh failed');
     }
 }
 
