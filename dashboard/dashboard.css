@@ -7393,3 +7393,166 @@ body.visuals-on:not(.light-mode) .group-card {
         -webkit-backdrop-filter: blur(8px) !important;
     }
 }
+
+
+/* ==========================================================================
+   SCENE V5 — REAL PHOTO BACKGROUNDS + LIGHTWEIGHT LIVE FX
+   --------------------------------------------------------------------------
+   Design rule:
+   - Real scenery is a photographic CSS background.
+   - Canvas draws ONLY subtle moving effects on photo themes.
+   - Only the ACTIVE theme image is requested by the browser.
+   - Visuals OFF removes both the photo and canvas completely.
+   ========================================================================== */
+
+:root {
+    --scene-photo: none;
+    --scene-photo-position: center center;
+    --scene-photo-overlay: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0));
+}
+
+/* Free Unsplash photographs, requested at a practical desktop size.
+   auto=format lets the CDN serve an efficient browser format when possible. */
+body[data-theme="forest"] {
+    --scene-photo:
+        linear-gradient(180deg, rgba(5,18,15,.24), rgba(4,14,10,.42)),
+        url("https://images.unsplash.com/photo-1770364360811-58c0fdb88f18?auto=format&fit=crop&q=62&w=1800");
+    --scene-photo-position: center 48%;
+}
+body[data-theme="rose"] {
+    --scene-photo:
+        linear-gradient(180deg, rgba(255,245,247,.20), rgba(55,26,31,.22)),
+        url("https://images.unsplash.com/photo-1721729482992-aef07f4acc27?auto=format&fit=crop&q=62&w=1800");
+    --scene-photo-position: center 55%;
+}
+body[data-theme="lavender"] {
+    --scene-photo:
+        linear-gradient(180deg, rgba(35,22,46,.08), rgba(31,20,45,.25)),
+        url("https://images.unsplash.com/photo-1499002238440-d264edd596ec?auto=format&fit=crop&q=62&w=1800");
+    --scene-photo-position: center 58%;
+}
+body[data-theme="ocean"] {
+    --scene-photo:
+        linear-gradient(180deg, rgba(0,25,39,.06), rgba(0,10,23,.28)),
+        url("https://images.unsplash.com/photo-1675223894754-7b0af6c38a90?auto=format&fit=crop&q=62&w=1800");
+    --scene-photo-position: center 38%;
+}
+body[data-theme="sunset"] {
+    --scene-photo:
+        linear-gradient(180deg, rgba(36,17,28,.08), rgba(22,12,22,.30)),
+        url("https://images.unsplash.com/photo-1496303861503-f6ec4e50034e?auto=format&fit=crop&q=62&w=1800");
+    --scene-photo-position: center center;
+}
+body[data-theme="sakura-night"] {
+    --scene-photo:
+        linear-gradient(180deg, rgba(8,19,50,.12), rgba(17,8,28,.30)),
+        url("https://images.unsplash.com/photo-1744273556970-d5cff25b2b4a?auto=format&fit=crop&q=62&w=1800");
+    --scene-photo-position: center 44%;
+}
+body[data-theme="cyber"] {
+    --scene-photo:
+        linear-gradient(180deg, rgba(2,8,18,.20), rgba(2,5,13,.46)),
+        url("https://images.unsplash.com/photo-1605747395760-ab9c974bde9d?auto=format&fit=crop&q=60&w=1800");
+    --scene-photo-position: center 58%;
+}
+
+/* PHOTO THEMES — the photograph is the actual page background. */
+body.visuals-on[data-theme="forest"],
+body.visuals-on[data-theme="rose"],
+body.visuals-on[data-theme="lavender"],
+body.visuals-on[data-theme="ocean"],
+body.visuals-on[data-theme="sunset"],
+body.visuals-on[data-theme="sakura-night"],
+body.visuals-on[data-theme="cyber"] {
+    background-image: var(--scene-photo) !important;
+    background-size: cover !important;
+    background-position: var(--scene-photo-position) !important;
+    background-repeat: no-repeat !important;
+    background-attachment: fixed !important;
+}
+
+/* Canvas is transparent and sits BETWEEN the real photo and dashboard content. */
+body.visuals-on #bgCanvas {
+    position: fixed !important;
+    inset: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: .72 !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+    filter: none !important;
+}
+
+/* Main content stays above live effects. */
+body > .container {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+/* True OFF: no photo, no old cached-looking canvas. */
+body.visuals-off {
+    background-image: var(--bg-gradient) !important;
+    background-attachment: scroll !important;
+}
+body.visuals-off #bgCanvas {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+/* Realistic scenes need quieter glass panels, not transparent white slabs. */
+body.visuals-on[data-theme="forest"] .group-card,
+body.visuals-on[data-theme="ocean"] .group-card,
+body.visuals-on[data-theme="sunset"] .group-card,
+body.visuals-on[data-theme="sakura-night"] .group-card,
+body.visuals-on[data-theme="cyber"] .group-card,
+body.visuals-on[data-theme="forest"] .toolbar,
+body.visuals-on[data-theme="ocean"] .toolbar,
+body.visuals-on[data-theme="sunset"] .toolbar,
+body.visuals-on[data-theme="sakura-night"] .toolbar,
+body.visuals-on[data-theme="cyber"] .toolbar,
+body.visuals-on[data-theme="forest"] .command-bar,
+body.visuals-on[data-theme="ocean"] .command-bar,
+body.visuals-on[data-theme="sunset"] .command-bar,
+body.visuals-on[data-theme="sakura-night"] .command-bar,
+body.visuals-on[data-theme="cyber"] .command-bar {
+    background: rgba(12,18,27,.80) !important;
+    backdrop-filter: blur(14px) saturate(.92) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(.92) !important;
+}
+
+/* Light photo themes: enough opacity for text while the field remains visible. */
+body.visuals-on[data-theme="rose"] .group-card,
+body.visuals-on[data-theme="lavender"] .group-card,
+body.visuals-on[data-theme="rose"] .toolbar,
+body.visuals-on[data-theme="lavender"] .toolbar,
+body.visuals-on[data-theme="rose"] .command-bar,
+body.visuals-on[data-theme="lavender"] .command-bar {
+    background: rgba(255,255,255,.84) !important;
+    backdrop-filter: blur(13px) saturate(.92) !important;
+    -webkit-backdrop-filter: blur(13px) saturate(.92) !important;
+}
+
+/* Keep the live effects understated; scenery should look alive, not animated. */
+body.visuals-on[data-theme="forest"] #bgCanvas { opacity: .55 !important; }
+body.visuals-on[data-theme="rose"] #bgCanvas,
+body.visuals-on[data-theme="lavender"] #bgCanvas { opacity: .42 !important; }
+body.visuals-on[data-theme="ocean"] #bgCanvas { opacity: .50 !important; }
+body.visuals-on[data-theme="sunset"] #bgCanvas { opacity: .38 !important; }
+body.visuals-on[data-theme="sakura-night"] #bgCanvas { opacity: .48 !important; }
+body.visuals-on[data-theme="cyber"] #bgCanvas { opacity: .34 !important; }
+
+/* On small screens avoid fixed-background repaint cost. */
+@media (max-width: 900px), (pointer: coarse) {
+    body.visuals-on[data-theme="forest"],
+    body.visuals-on[data-theme="rose"],
+    body.visuals-on[data-theme="lavender"],
+    body.visuals-on[data-theme="ocean"],
+    body.visuals-on[data-theme="sunset"],
+    body.visuals-on[data-theme="sakura-night"],
+    body.visuals-on[data-theme="cyber"] {
+        background-attachment: scroll !important;
+    }
+}
