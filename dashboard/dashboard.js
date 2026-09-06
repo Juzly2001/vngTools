@@ -7837,3 +7837,97 @@ Object.assign(THEME_SCENE_LABELS,{
     localStorage.setItem(THEME_KEY,'dark');
   }
 })();
+
+// ============================================================================
+// V11 — LIVING THEME INTERACTIONS
+// ============================================================================
+(function initLivingThemesV11(){
+  const finePointer = matchMedia?.('(hover:hover) and (pointer:fine)')?.matches;
+  const reduceMotion = matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+  let pointerX = innerWidth * .5, pointerY = innerHeight * .35;
+  let smoothX = pointerX, smoothY = pointerY;
+  let raf = 0;
+
+  function ensureTransitionFlash(){
+    let el=document.getElementById('themeTransitionFlash');
+    if(!el){
+      el=document.createElement('div');
+      el.id='themeTransitionFlash';
+      el.className='theme-transition-flash';
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  // Wrap the existing V10 theme function instead of replacing its logic.
+  const oldApply=applyDashboardTheme;
+  applyDashboardTheme=function(themeId,save=true){
+    const before=document.body.dataset.theme || getCurrentTheme();
+    oldApply(themeId,save);
+    if(!reduceMotion && before!==themeId){
+      const flash=ensureTransitionFlash();
+      flash.classList.remove('play');
+      void flash.offsetWidth;
+      flash.classList.add('play');
+      flash.addEventListener('animationend',()=>flash.classList.remove('play'),{once:true});
+    }
+  };
+
+  function updatePointerVars(){
+    raf=0;
+    smoothX += (pointerX-smoothX)*.10;
+    smoothY += (pointerY-smoothY)*.10;
+    const xp=Math.max(0,Math.min(100,smoothX/innerWidth*100));
+    const yp=Math.max(0,Math.min(100,smoothY/innerHeight*100));
+    document.body.style.setProperty('--theme-pointer-x',xp.toFixed(2)+'%');
+    document.body.style.setProperty('--theme-pointer-y',yp.toFixed(2)+'%');
+    if(Math.abs(pointerX-smoothX)>.3||Math.abs(pointerY-smoothY)>.3) raf=requestAnimationFrame(updatePointerVars);
+  }
+
+  if(finePointer && !reduceMotion){
+    window.addEventListener('pointermove',e=>{
+      pointerX=e.clientX;pointerY=e.clientY;
+      if(!raf)raf=requestAnimationFrame(updatePointerVars);
+    },{passive:true});
+
+    document.addEventListener('pointermove',e=>{
+      const card=e.target.closest?.('.group-card');
+      if(!card)return;
+      const r=card.getBoundingClientRect();
+      if(!r.width||!r.height)return;
+      const nx=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
+      const ny=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
+      card.style.setProperty('--card-light-x',(nx*100).toFixed(1)+'%');
+      card.style.setProperty('--card-light-y',(ny*100).toFixed(1)+'%');
+      card.style.setProperty('--card-tilt-y',((nx-.5)*3.2).toFixed(2)+'deg');
+      card.style.setProperty('--card-tilt-x',((.5-ny)*2.6).toFixed(2)+'deg');
+      card.classList.add('theme-depth-active');
+    },{passive:true});
+
+    document.addEventListener('pointerout',e=>{
+      const card=e.target.closest?.('.group-card');
+      if(!card || (e.relatedTarget && card.contains(e.relatedTarget)))return;
+      card.classList.remove('theme-depth-active');
+      card.style.removeProperty('--card-tilt-x');
+      card.style.removeProperty('--card-tilt-y');
+    },{passive:true});
+  }
+
+  // Add a tiny amount of pointer parallax to the canvas without altering V10 scene logic.
+  const oldDrawBackground=drawBackground;
+  drawBackground=function(ts=0){
+    if(canvas && ctx && isCanvasEnabled && finePointer && !reduceMotion){
+      const px=(smoothX/Math.max(1,innerWidth)-.5);
+      const py=(smoothY/Math.max(1,innerHeight)-.5);
+      canvas.style.transform=`translate3d(${(-px*5).toFixed(2)}px,${(-py*3).toFixed(2)}px,0) scale(1.012)`;
+    } else if(canvas) canvas.style.transform='';
+    return oldDrawBackground(ts);
+  };
+
+  // Picker copy reflects the upgraded interaction layer.
+  window.addEventListener('load',()=>{
+    ensureThemePicker();
+    const small=document.querySelector('#themePickerOverlay .theme-picker-head small');
+    if(small)small.textContent='Living themes · animated scenery · ambient depth · smooth transitions.';
+  });
+})();
