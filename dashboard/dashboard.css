@@ -7538,3 +7538,98 @@ body.visuals-on[data-theme="terminal"] #bgCanvas {
 body.visuals-on[data-theme="coffee"] #bgCanvas {
     filter:saturate(.92) contrast(1.015) brightness(.88) !important;
 }
+
+
+/* ==========================================================================
+   V10 — FINAL 14-THEME POLISH
+   ========================================================================== */
+
+/* Removed themes must never linger through an old body class / saved state. */
+body[data-theme="rose"],
+body[data-theme="lavender"],
+body[data-theme="lemon"],
+body[data-theme="peach"] {
+    --scene-photo:none !important;
+}
+
+/* Slightly clearer canvas than V9 so animation is actually visible. */
+body.visuals-on #bgCanvas {
+    opacity:1 !important;
+}
+
+/* Each scene gets tuned contrast rather than one universal filter. */
+body.visuals-on[data-theme="dark"] #bgCanvas {
+    filter:saturate(.88) contrast(1.01) brightness(.86) !important;
+}
+body.visuals-on[data-theme="light"] #bgCanvas {
+    filter:saturate(.88) contrast(.985) brightness(.99) !important;
+}
+body.visuals-on[data-theme="midnight"] #bgCanvas {
+    filter:saturate(.90) contrast(1.025) brightness(.86) !important;
+}
+body.visuals-on[data-theme="oled"] #bgCanvas {
+    filter:saturate(.96) contrast(1.05) brightness(.90) !important;
+}
+body.visuals-on[data-theme="forest"] #bgCanvas {
+    filter:saturate(.91) contrast(1.01) brightness(.88) !important;
+}
+body.visuals-on[data-theme="ocean"] #bgCanvas {
+    filter:saturate(.99) contrast(1.02) brightness(.92) !important;
+}
+body.visuals-on[data-theme="sunset"] #bgCanvas {
+    filter:saturate(.93) contrast(1.00) brightness(.94) !important;
+}
+body.visuals-on[data-theme="coffee"] #bgCanvas {
+    filter:saturate(.94) contrast(1.02) brightness(.90) !important;
+}
+body.visuals-on[data-theme="mint"] #bgCanvas {
+    filter:saturate(.87) contrast(.985) brightness(.98) !important;
+}
+body.visuals-on[data-theme="sakura-night"] #bgCanvas {
+    filter:saturate(.94) contrast(1.02) brightness(.89) !important;
+}
+body.visuals-on[data-theme="sky"] #bgCanvas {
+    filter:saturate(.90) contrast(.98) brightness(1.00) !important;
+}
+body.visuals-on[data-theme="cyber"] #bgCanvas {
+    filter:saturate(1.08) contrast(1.07) brightness(.94) !important;
+}
+body.visuals-on[data-theme="grape"] #bgCanvas {
+    filter:saturate(.91) contrast(1.00) brightness(.91) !important;
+}
+body.visuals-on[data-theme="terminal"] #bgCanvas {
+    filter:saturate(1.03) contrast(1.08) brightness(.91) !important;
+}
+
+/* More intentional glass per family. */
+body.visuals-on[data-theme="coffee"] .group-card,
+body.visuals-on[data-theme="coffee"] .toolbar,
+body.visuals-on[data-theme="coffee"] .command-bar {
+    background:rgba(31,21,16,.82) !important;
+    border-color:rgba(211,168,124,.15) !important;
+}
+body.visuals-on[data-theme="cyber"] .group-card,
+body.visuals-on[data-theme="cyber"] .toolbar,
+body.visuals-on[data-theme="cyber"] .command-bar {
+    background:rgba(8,12,27,.82) !important;
+    border-color:rgba(79,213,239,.14) !important;
+}
+body.visuals-on[data-theme="terminal"] .group-card,
+body.visuals-on[data-theme="terminal"] .toolbar,
+body.visuals-on[data-theme="terminal"] .command-bar {
+    background:rgba(3,17,9,.84) !important;
+    border-color:rgba(70,239,123,.13) !important;
+}
+body.visuals-on[data-theme="sakura-night"] .group-card,
+body.visuals-on[data-theme="sakura-night"] .toolbar,
+body.visuals-on[data-theme="sakura-night"] .command-bar {
+    background:rgba(24,18,31,.83) !important;
+    border-color:rgba(229,126,163,.12) !important;
+}
+
+/* Keep motion cheaper on phones without making it disappear. */
+@media (max-width:768px), (pointer:coarse) {
+    body.visuals-on #bgCanvas {
+        filter:brightness(.94) saturate(.90) !important;
+    }
+}
