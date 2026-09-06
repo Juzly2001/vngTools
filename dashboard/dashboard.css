@@ -7471,3 +7471,44 @@ body.visuals-on[data-theme="terminal"] #bgCanvas { filter:saturate(.86) contrast
       -webkit-backdrop-filter:blur(7px) !important;
   }
 }
+
+
+/* ==========================================================================
+   V8 — COMPLETE THEME POLISH
+   ========================================================================== */
+
+/* Let brighter procedural landscapes breathe a little more. */
+body.visuals-on[data-theme="sky"] #bgCanvas,
+body.visuals-on[data-theme="mint"] #bgCanvas,
+body.visuals-on[data-theme="lemon"] #bgCanvas,
+body.visuals-on[data-theme="peach"] #bgCanvas {
+    filter:saturate(.86) contrast(.98) brightness(.98) !important;
+}
+body.visuals-on[data-theme="coffee"] #bgCanvas {
+    filter:saturate(.88) contrast(1.01) brightness(.86) !important;
+}
+body.visuals-on[data-theme="grape"] #bgCanvas {
+    filter:saturate(.84) contrast(.99) brightness(.88) !important;
+}
+body.visuals-on[data-theme="midnight"] #bgCanvas,
+body.visuals-on[data-theme="oled"] #bgCanvas {
+    filter:saturate(.82) contrast(1.015) brightness(.83) !important;
+}
+body.visuals-on[data-theme="sakura-night"] #bgCanvas {
+    filter:saturate(.86) contrast(1.00) brightness(.86) !important;
+}
+
+/* Coffee gets a slightly warmer glass treatment so it belongs to the scene. */
+body.visuals-on[data-theme="coffee"] .group-card,
+body.visuals-on[data-theme="coffee"] .toolbar,
+body.visuals-on[data-theme="coffee"] .command-bar {
+    background:color-mix(in srgb, #221711 84%, transparent) !important;
+    border-color:rgba(210,171,132,.15) !important;
+}
+
+/* Grape is now a dusk vineyard, so avoid the old loud purple glass. */
+body.visuals-on[data-theme="grape"] .group-card,
+body.visuals-on[data-theme="grape"] .toolbar,
+body.visuals-on[data-theme="grape"] .command-bar {
+    background:color-mix(in srgb, #28202d 86%, transparent) !important;
+}
