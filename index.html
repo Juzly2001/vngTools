@@ -38,10 +38,16 @@
     </aside>
 
     <div class="container" id="top">
-        <header class="hero-header">
-            <div class="hero-badge">✨ Personal Command Center</div>
-            <h1>🌟 WORKSPACE DASHBOARD</h1>
-            <p class="hero-subtitle">Manage links, notes, schedules, and synced data in one cleaner interface.</p>
+        <header class="hero-header workspace-hero-v12">
+            <div class="hero-copy-v12">
+                <div class="hero-kicker-v12"><span class="hero-status-dot-v12"></span> Personal workspace</div>
+                <h1>Workspace</h1>
+                <p class="hero-subtitle" id="workspaceGreeting">Your links, notes, schedules and boards — in one place.</p>
+            </div>
+            <div class="hero-meta-v12">
+                <span id="workspaceTodayLabel">Today</span>
+                <button class="hero-command-v12" onclick="openCommandPalette()" title="Open Command Palette">⌘K <span>Quick find</span></button>
+            </div>
         </header>
 
         <section class="dashboard-overview" aria-label="Dashboard overview">
@@ -94,6 +100,14 @@
 
         <div class="groups-grid" id="groupsContainer"></div>
     </div>
+
+    <nav class="mobile-bottom-nav-v12" aria-label="Mobile navigation">
+        <button onclick="scrollToSection('top')"><span>⌂</span><small>Home</small></button>
+        <button onclick="openCommandPalette()"><span>⌕</span><small>Find</small></button>
+        <button class="mobile-add-v12" onclick="openCreateGroupTypeModal()"><span>＋</span><small>Add</small></button>
+        <button onclick="openScheduleHub('calendar')"><span>◫</span><small>Schedule</small></button>
+        <button onclick="toggleMobileSidebar(true)"><span>•••</span><small>More</small></button>
+    </nav>
 
     <div class="context-menu" id="customContextMenu">
         <div id="menuItemsContent"></div>

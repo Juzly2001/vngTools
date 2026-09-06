@@ -7878,3 +7878,20 @@ Object.assign(THEME_SCENE_LABELS,{
     if(small)small.textContent='Canvas scenery · stars · wind · clouds · fish · petals · optimized motion.';
   });
 })();
+
+
+// ============================================================================
+// V12 UI POLISH — presentation only; no new data model or feature dependency.
+// ============================================================================
+(function initWorkspaceUIV12(){
+    function refreshWorkspaceHero(){
+        const now = new Date();
+        const hour = now.getHours();
+        const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+        const greetingEl = document.getElementById('workspaceGreeting');
+        const dateEl = document.getElementById('workspaceTodayLabel');
+        if (greetingEl) greetingEl.textContent = `${greeting}. Everything you need is ready here.`;
+        if (dateEl) dateEl.textContent = new Intl.DateTimeFormat(undefined,{weekday:'short',day:'2-digit',month:'short'}).format(now);
+    }
+    window.addEventListener('load', refreshWorkspaceHero, {once:true});
+})();
