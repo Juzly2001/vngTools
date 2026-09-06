@@ -5691,282 +5691,54 @@ body.light-mode .admin-console-v3 .admin-console-footer {
 }
 
 
-/* ==========================================================================
-   NOTE V2
-   ========================================================================== */
-.note-v2-launcher {
-    position: fixed;
-    right: 24px;
-    bottom: 92px;
-    z-index: 1200;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    min-height: 42px;
-    padding: 0 14px;
-    border: 1px solid var(--border-color);
-    border-radius: 14px;
-    background: var(--modal-bg);
-    color: var(--text-main);
-    box-shadow: 0 12px 30px rgba(0,0,0,.16);
-    cursor: pointer;
-    font-weight: 800;
-}
-.note-v2-launcher:hover { transform: translateY(-1px); border-color: var(--accent-color); }
+/* ===== NOTE V3 integrated rich editor ===== */
+.note-rich-modal{width:min(1180px,96vw);max-width:1180px;max-height:92vh;overflow:hidden}
+.note-rich-head{margin-bottom:14px}
+.note-rich-layout{display:grid;grid-template-columns:minmax(0,1fr) 260px;gap:16px;max-height:calc(92vh - 100px);overflow:auto;padding-right:2px}
+.note-rich-main{min-width:0}
+.note-title-row{display:grid;grid-template-columns:1fr auto;gap:8px;margin-bottom:9px}
+.note-rich-title{width:100%;box-sizing:border-box;border:1px solid var(--border-color);border-radius:12px;background:var(--inner-bg);color:var(--text-main);padding:12px 14px;font-size:17px;font-weight:800;outline:none}
+.note-rich-title:focus{border-color:var(--accent-color)}
+.note-pin-toggle{width:46px;border:1px solid var(--border-color);border-radius:12px;background:var(--inner-bg);cursor:pointer;filter:grayscale(1);opacity:.65}
+.note-pin-toggle.active{filter:none;opacity:1;border-color:#f59e0b;background:rgba(245,158,11,.10)}
+.note-rich-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:5px;padding:7px;border:1px solid var(--border-color);border-bottom:0;border-radius:12px 12px 0 0;background:var(--modal-bg)}
+.note-rich-toolbar button{min-width:32px;height:32px;border:1px solid transparent;border-radius:8px;background:transparent;color:var(--text-main);cursor:pointer;padding:0 8px}
+.note-rich-toolbar button:hover{background:var(--inner-bg);border-color:var(--border-color)}
+.note-toolbar-sep{width:1px;height:22px;background:var(--border-color);margin:0 2px}
+.note-rich-editor{min-height:300px;max-height:48vh;overflow:auto;border:1px solid var(--border-color);border-radius:0 0 12px 12px;background:var(--inner-bg);color:var(--text-main);padding:15px;outline:none;line-height:1.6;word-break:break-word}
+.note-rich-editor:empty::before{content:attr(data-placeholder);color:var(--text-sub);pointer-events:none}
+.note-rich-editor h2{font-size:1.45em;margin:.5em 0 .25em}.note-rich-editor h3{font-size:1.18em;margin:.5em 0 .25em}
+.note-rich-editor ul,.note-rich-editor ol{padding-left:24px}.note-rich-editor a{color:var(--accent-color);text-decoration:underline}
+.note-rich-editor table,.view-note-content.rich-note-content table{width:100%;border-collapse:collapse;margin:10px 0;table-layout:fixed}
+.note-rich-editor th,.note-rich-editor td,.view-note-content.rich-note-content th,.view-note-content.rich-note-content td{border:1px solid var(--border-color);padding:8px 9px;vertical-align:top;min-width:60px}
+.note-rich-editor th,.view-note-content.rich-note-content th{background:rgba(127,127,127,.08);font-weight:800}
+.note-check-section{margin-top:12px;padding:12px;border:1px solid var(--border-color);border-radius:12px;background:var(--inner-bg)}
+.note-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.note-section-head>div{display:flex;flex-direction:column;gap:2px}.note-section-head small{color:var(--text-sub);font-size:10px}
+.note-checklist-editor{display:grid;gap:7px;max-height:300px;overflow:auto}
+.note-checklist-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}
+.note-checklist-row input[type=text]{width:100%;box-sizing:border-box;border:1px solid var(--border-color);border-radius:9px;background:var(--modal-bg);color:var(--text-main);padding:8px 10px}
+.note-checklist-row input[type=checkbox]{width:16px;height:16px}.note-checklist-remove{border:0;background:transparent;color:var(--danger-color);font-size:18px;cursor:pointer}
+.note-rich-side{display:grid;align-content:start;gap:12px;position:sticky;top:0}
+.note-rich-side label,.note-link-label{display:grid;gap:6px;color:var(--text-sub);font-size:11px;font-weight:800}
+.note-rich-select,.note-rich-date,.note-link-label input{width:100%;box-sizing:border-box;border:1px solid var(--border-color);border-radius:10px;background:var(--inner-bg);color:var(--text-main);padding:9px 10px}
+.note-emoji-wrap{max-height:130px;overflow:auto}.note-rich-side-actions{display:grid;gap:7px}.note-editor-status{color:var(--text-sub);font-size:10px;line-height:1.5}
+.danger-soft{color:var(--danger-color)!important}.btn-compact{padding:6px 9px!important;min-height:unset!important}
+.note-table-modal{width:min(430px,92vw)}.note-table-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.note-table-form label{display:grid;gap:6px;color:var(--text-sub);font-size:11px;font-weight:800}.note-table-form input{border:1px solid var(--border-color);background:var(--inner-bg);color:var(--text-main);border-radius:10px;padding:10px}
+.app-notice-modal{width:min(420px,92vw);text-align:center}.app-notice-icon{font-size:42px;margin-bottom:8px}.app-notice-message{color:var(--text-sub);line-height:1.6;white-space:pre-wrap}
+.note-detail-meta{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}.note-detail-chip{border:1px solid var(--border-color);border-radius:999px;padding:4px 8px;color:var(--text-sub);font-size:10px;background:var(--inner-bg)}
+.note-detail-checklist{margin-top:14px;padding:12px;border:1px solid var(--border-color);border-radius:12px;background:var(--inner-bg)}.note-detail-checklist h4{margin:0 0 8px}
+.note-detail-check-row{display:flex;gap:8px;align-items:flex-start;padding:5px 0;color:var(--text-main)}.note-detail-check-row.done span:last-child{text-decoration:line-through;color:var(--text-sub)}
 
-.note-manager-box {
-    width: min(1180px, 96vw);
-    max-width: 1180px;
-    max-height: 90vh;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-}
-.note-manager-head { margin-bottom: 12px; }
-.note-manager-toolbar {
-    display: grid;
-    grid-template-columns: minmax(260px,1fr) auto auto;
-    gap: 10px;
-    align-items: center;
-}
-.note-search-box { width: 100%; }
-.note-filter-select,
-.note-editor-select,
-.note-editor-side input[type="datetime-local"] {
-    border: 1px solid var(--border-color);
-    background: var(--inner-bg);
-    color: var(--text-main);
-    border-radius: 10px;
-    padding: 10px 12px;
-}
-.note-category-filters {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin: 12px 0;
-}
-.note-category-chip {
-    border: 1px solid var(--border-color);
-    background: var(--inner-bg);
-    color: var(--text-sub);
-    border-radius: 999px;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 700;
-}
-.note-category-chip.active {
-    color: #fff;
-    background: var(--accent-color);
-    border-color: var(--accent-color);
-}
-.notes-grid-v2 {
-    overflow: auto;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px,1fr));
-    gap: 12px;
-    padding: 2px 2px 6px;
-}
-.note-card-v2 {
-    position: relative;
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    background: var(--inner-bg);
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    min-height: 180px;
-    cursor: pointer;
-    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
-}
-.note-card-v2:hover {
-    transform: translateY(-2px);
-    border-color: var(--accent-color);
-    box-shadow: 0 12px 26px rgba(0,0,0,.10);
-}
-.note-card-v2.archived { opacity: .68; }
-.note-card-top {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    align-items: flex-start;
-}
-.note-card-title {
-    margin: 0;
-    font-size: 15px;
-    color: var(--text-main);
-    line-height: 1.35;
-}
-.note-card-pin { font-size: 15px; }
-.note-card-meta {
-    display: flex;
-    gap: 6px;
-    flex-wrap: wrap;
-    margin: 8px 0;
-}
-.note-chip {
-    display: inline-flex;
-    align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: 999px;
-    padding: 3px 7px;
-    font-size: 10px;
-    color: var(--text-sub);
-    background: rgba(127,127,127,.05);
-}
-.note-chip.overdue { color: var(--danger-color); border-color: rgba(239,68,68,.3); background: rgba(239,68,68,.08); }
-.note-chip.today { color: #f59e0b; border-color: rgba(245,158,11,.3); background: rgba(245,158,11,.08); }
-.note-card-content {
-    color: var(--text-sub);
-    font-size: 12px;
-    line-height: 1.55;
-    display: -webkit-box;
-    -webkit-line-clamp: 5;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    white-space: pre-wrap;
-}
-.note-card-checklist {
-    display: grid;
-    gap: 5px;
-    margin-top: 10px;
-}
-.note-check-preview {
-    font-size: 11px;
-    color: var(--text-sub);
-    display: flex;
-    gap: 6px;
-    align-items: center;
-}
-.note-card-footer {
-    margin-top: auto;
-    padding-top: 12px;
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;
-    color: var(--text-sub);
-    font-size: 10px;
-}
-.note-empty-state {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 50px 20px;
-    border: 1px dashed var(--border-color);
-    border-radius: 16px;
-    color: var(--text-sub);
-}
-
-.note-editor-box {
-    width: min(980px, 96vw);
-    max-width: 980px;
-}
-.note-editor-grid {
-    display: grid;
-    grid-template-columns: minmax(0,1fr) 270px;
-    gap: 18px;
-}
-.note-editor-main { min-width: 0; }
-.note-title-input,
-.note-content-input {
-    width: 100%;
-    border: 1px solid var(--border-color);
-    background: var(--inner-bg);
-    color: var(--text-main);
-    border-radius: 12px;
-    box-sizing: border-box;
-}
-.note-title-input {
-    padding: 12px 14px;
-    font-size: 17px;
-    font-weight: 800;
-}
-.note-content-input {
-    min-height: 260px;
-    margin-top: 10px;
-    resize: vertical;
-    padding: 14px;
-    line-height: 1.6;
-}
-.note-editor-side {
-    display: grid;
-    align-content: start;
-    gap: 12px;
-}
-.note-editor-side label {
-    display: grid;
-    gap: 6px;
-    color: var(--text-sub);
-    font-size: 12px;
-    font-weight: 700;
-}
-.note-inline-toggle {
-    grid-template-columns: auto 1fr !important;
-    align-items: center;
-}
-.note-editor-actions {
-    display: grid;
-    gap: 8px;
-    margin-top: 4px;
-}
-.danger-soft { color: var(--danger-color) !important; }
-.note-editor-meta {
-    color: var(--text-sub);
-    line-height: 1.5;
-}
-.note-editor-section {
-    margin-top: 12px;
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 12px;
-    background: var(--inner-bg);
-}
-.note-editor-section-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 8px;
-}
-.note-checklist-editor { display: grid; gap: 7px; }
-.note-checklist-row {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
-    gap: 8px;
-    align-items: center;
-}
-.note-checklist-row input[type="text"] {
-    width: 100%;
-    border: 1px solid var(--border-color);
-    background: var(--modal-bg);
-    color: var(--text-main);
-    border-radius: 9px;
-    padding: 8px 10px;
-}
-.note-checklist-remove {
-    border: 0;
-    background: transparent;
-    color: var(--danger-color);
-    cursor: pointer;
-    font-size: 16px;
-}
-.btn-compact { padding: 6px 9px !important; min-height: unset !important; }
-
-html[data-theme="light"] .note-card-v2,
-body.light-theme .note-card-v2 {
-    background: #fff;
-}
-html[data-theme="dark"] .note-filter-select option,
-html[data-theme="dark"] .note-editor-select option,
-body.dark-theme .note-filter-select option,
-body.dark-theme .note-editor-select option {
-    background: #111827;
-    color: #f8fafc;
-}
-
-@media (max-width: 760px) {
-    .note-manager-toolbar { grid-template-columns: 1fr; }
-    .note-editor-grid { grid-template-columns: 1fr; }
-    .note-editor-side { grid-template-columns: 1fr 1fr; }
-    .note-editor-actions { grid-column: 1 / -1; grid-template-columns: repeat(2,minmax(0,1fr)); }
-    .note-v2-launcher span { display:none; }
-    .note-v2-launcher { width:44px; height:44px; padding:0; justify-content:center; border-radius:50%; }
-}
+html[data-theme=dark] .note-rich-select,html[data-theme=dark] .note-rich-date,html[data-theme=dark] .note-table-form input,html[data-theme=dark] .note-link-label input,
+body.dark-theme .note-rich-select,body.dark-theme .note-rich-date,body.dark-theme .note-table-form input,body.dark-theme .note-link-label input{background:#111827!important;color:#f8fafc!important;color-scheme:dark}
+html[data-theme=dark] .note-rich-select option,body.dark-theme .note-rich-select option{background:#111827!important;color:#f8fafc!important}
+html[data-theme=light] .note-rich-modal,html[data-theme=light] .note-table-modal,html[data-theme=light] .app-notice-modal,
+body.light-theme .note-rich-modal,body.light-theme .note-table-modal,body.light-theme .app-notice-modal{background:#fff!important}
+html[data-theme=light] .note-rich-title,html[data-theme=light] .note-rich-editor,html[data-theme=light] .note-check-section,html[data-theme=light] .note-rich-select,html[data-theme=light] .note-rich-date,html[data-theme=light] .note-checklist-row input[type=text],html[data-theme=light] .note-link-label input,
+body.light-theme .note-rich-title,body.light-theme .note-rich-editor,body.light-theme .note-check-section,body.light-theme .note-rich-select,body.light-theme .note-rich-date,body.light-theme .note-checklist-row input[type=text],body.light-theme .note-link-label input{background:#fff!important;color:#111827!important;border-color:#d7dde7!important}
+html[data-theme=light] .note-rich-toolbar,body.light-theme .note-rich-toolbar{background:#f8fafc!important;border-color:#d7dde7!important}
+html[data-theme=light] .note-rich-toolbar button,body.light-theme .note-rich-toolbar button{color:#111827!important}
+@media(max-width:800px){.note-rich-layout{grid-template-columns:1fr}.note-rich-side{position:static;grid-template-columns:1fr 1fr}.note-rich-side-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.note-rich-modal{width:97vw;max-height:95vh}.note-rich-layout{max-height:calc(95vh - 90px)}.note-rich-side{grid-template-columns:1fr}.note-rich-side-actions{grid-column:auto;grid-template-columns:1fr}.note-rich-toolbar{gap:3px}.note-rich-toolbar button{padding:0 6px}}

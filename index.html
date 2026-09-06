@@ -199,20 +199,122 @@
     </div>
 
     <div class="modal-overlay" id="noteModal">
-        <div class="modal-box">
-            <h3 id="noteModalTitle">📝 Add Note Button</h3>
-            <label>Button display title:</label>
-            <input type="text" id="noteTitleInput" placeholder="Example: Urgent notes...">
-            <label>Detailed note content:</label>
-            <textarea id="noteContentInput" placeholder="Enter full content..."></textarea>
-            <label>Choose emoji:</label>
-            <div class="emoji-picker-container"><div class="emoji-grid" id="noteEmojiGrid"></div></div>
-            <div class="modal-footer">
-                <button class="btn-secondary" onclick="closeModal('noteModal')">Cancel</button>
-                <button class="btn-primary" onclick="submitNoteForm()">Save</button>
+        <div class="modal-box note-rich-modal">
+            <div class="command-head redesigned-head note-rich-head">
+                <div>
+                    <span id="noteModalTitle">📝 New Note</span>
+                    <small id="noteModalSubtitle">Rich text, tables and unlimited checklist items. Saved with your dashboard data.</small>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('noteModal')">✕</button>
+            </div>
+
+            <div class="note-rich-layout">
+                <div class="note-rich-main">
+                    <div class="note-title-row">
+                        <input id="noteTitleInput" class="note-rich-title" type="text" placeholder="Note title...">
+                        <button id="notePinBtn" class="note-pin-toggle" type="button" onclick="toggleRichNotePin()" title="Pin note">📌</button>
+                    </div>
+
+                    <div class="note-rich-toolbar">
+                        <button type="button" onclick="noteFormat('bold')" title="Bold"><b>B</b></button>
+                        <button type="button" onclick="noteFormat('italic')" title="Italic"><i>I</i></button>
+                        <button type="button" onclick="noteFormat('underline')" title="Underline"><u>U</u></button>
+                        <button type="button" onclick="noteFormat('strikeThrough')" title="Strikethrough"><s>S</s></button>
+                        <span class="note-toolbar-sep"></span>
+                        <button type="button" onclick="noteBlock('h2')">H2</button>
+                        <button type="button" onclick="noteBlock('h3')">H3</button>
+                        <button type="button" onclick="noteBlock('p')">P</button>
+                        <span class="note-toolbar-sep"></span>
+                        <button type="button" onclick="noteFormat('insertUnorderedList')">• List</button>
+                        <button type="button" onclick="noteFormat('insertOrderedList')">1. List</button>
+                        <button type="button" onclick="openNoteLinkModal()">🔗 Link</button>
+                        <button type="button" onclick="openNoteTablePicker()">▦ Table</button>
+                        <button type="button" onclick="noteFormat('removeFormat')">Tx</button>
+                    </div>
+
+                    <div id="noteRichEditor" class="note-rich-editor" contenteditable="true" data-placeholder="Write your note here..."></div>
+
+                    <div class="note-check-section">
+                        <div class="note-section-head">
+                            <div><strong>☑ Checklist</strong><small id="noteChecklistCount">0 items</small></div>
+                            <button class="btn-secondary btn-compact" type="button" onclick="addRichNoteChecklistItem()">＋ Add item</button>
+                        </div>
+                        <div id="noteChecklistEditor" class="note-checklist-editor"></div>
+                    </div>
+                </div>
+
+                <aside class="note-rich-side">
+                    <label>Category
+                        <select id="noteCategoryInput" class="note-rich-select">
+                            <option value="">No category</option>
+                            <option value="work">💼 Work</option>
+                            <option value="personal">👤 Personal</option>
+                            <option value="urgent">🔥 Urgent</option>
+                            <option value="idea">💡 Idea</option>
+                        </select>
+                    </label>
+
+                    <label>Deadline
+                        <input id="noteDeadlineInput" type="datetime-local" class="note-rich-date">
+                    </label>
+
+                    <label>Emoji
+                        <div class="emoji-picker-container note-emoji-wrap"><div class="emoji-grid" id="noteEmojiGrid"></div></div>
+                    </label>
+
+                    <div class="note-rich-side-actions">
+                        <button class="btn-primary" type="button" onclick="submitNoteForm()">💾 Save note</button>
+                        <button class="btn-secondary" type="button" onclick="duplicateNoteFromEditor()">⧉ Duplicate</button>
+                        <button class="btn-secondary" type="button" onclick="copyRichNoteFromEditor()">📋 Copy</button>
+                        <button class="btn-secondary danger-soft" id="noteDeleteFromEditorBtn" type="button" onclick="deleteNoteFromEditor()">🗑 Delete</button>
+                    </div>
+                    <div id="noteEditorStatus" class="note-editor-status">Ready</div>
+                </aside>
             </div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="noteTableModal">
+        <div class="modal-box note-table-modal">
+            <div class="command-head redesigned-head">
+                <div><span>▦ Insert table</span><small>Choose rows and columns.</small></div>
+                <button class="modal-close-soft" onclick="closeModal('noteTableModal')">✕</button>
+            </div>
+            <div class="note-table-form">
+                <label>Rows<input id="noteTableRows" type="number" min="1" max="20" value="3"></label>
+                <label>Columns<input id="noteTableCols" type="number" min="1" max="10" value="3"></label>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('noteTableModal')">Cancel</button>
+                <button class="btn-primary" onclick="insertNoteTable()">Insert table</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="noteLinkModal">
+        <div class="modal-box note-table-modal">
+            <div class="command-head redesigned-head">
+                <div><span>🔗 Insert link</span><small>Add a URL to selected text.</small></div>
+                <button class="modal-close-soft" onclick="closeModal('noteLinkModal')">✕</button>
+            </div>
+            <label class="note-link-label">URL<input id="noteLinkUrlInput" type="text" placeholder="https://example.com"></label>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('noteLinkModal')">Cancel</button>
+                <button class="btn-primary" onclick="insertNoteLink()">Insert link</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="appNoticeModal">
+        <div class="modal-box app-notice-modal">
+            <div class="app-notice-icon" id="appNoticeIcon">ℹ️</div>
+            <h3 id="appNoticeTitle">Notice</h3>
+            <div id="appNoticeMessage" class="app-notice-message"></div>
+            <div class="modal-footer"><button class="btn-primary" onclick="closeModal('appNoticeModal')">OK</button></div>
+        </div>
+    </div>
+
+
 
     <div class="modal-overlay" id="scheduleModal">
         <div class="modal-box" style="max-width: 580px; width: 95%;">
@@ -611,94 +713,6 @@
     </div>
 
 
-
-
-    <button id="noteV2Launcher" class="note-v2-launcher" type="button" onclick="openNoteManager()" title="Open Notes">
-        📝 <span>Notes</span>
-    </button>
-
-
-    <div class="modal-overlay" id="noteManagerModal">
-        <div class="modal-box note-manager-box">
-            <div class="command-head redesigned-head note-manager-head">
-                <div>
-                    <span>📝 Notes</span>
-                    <small>Pin, categorize, search and manage notes without leaving the dashboard.</small>
-                </div>
-                <button class="modal-close-soft" onclick="closeModal('noteManagerModal')">✕</button>
-            </div>
-
-            <div class="note-manager-toolbar">
-                <div class="search-box note-search-box">
-                    <span>🔎</span>
-                    <input id="noteSearchInput" type="search" placeholder="Search notes..." oninput="renderNotesV2()">
-                </div>
-                <select id="noteFilterSelect" class="note-filter-select" onchange="renderNotesV2()">
-                    <option value="all">All notes</option>
-                    <option value="pinned">Pinned</option>
-                    <option value="today">Due today</option>
-                    <option value="overdue">Overdue</option>
-                    <option value="archived">Archived</option>
-                </select>
-                <button class="btn-primary" onclick="openNoteEditor()">＋ New note</button>
-            </div>
-
-            <div id="noteCategoryFilters" class="note-category-filters"></div>
-            <div id="notesGridV2" class="notes-grid-v2"></div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="noteEditorModal">
-        <div class="modal-box note-editor-box">
-            <div class="command-head redesigned-head">
-                <div>
-                    <span id="noteEditorTitle">📝 New note</span>
-                    <small id="noteEditorSubtitle">Autosaved locally as you edit.</small>
-                </div>
-                <button class="modal-close-soft" onclick="closeModal('noteEditorModal')">✕</button>
-            </div>
-
-            <div class="note-editor-grid">
-                <div class="note-editor-main">
-                    <input id="noteTitleInput" class="note-title-input" type="text" placeholder="Note title">
-                    <textarea id="noteContentInput" class="note-content-input" placeholder="Write your note..."></textarea>
-
-                    <div class="note-editor-section">
-                        <div class="note-editor-section-head">
-                            <strong>Checklist</strong>
-                            <button class="btn-secondary btn-compact" onclick="addNoteChecklistItem()">＋ Item</button>
-                        </div>
-                        <div id="noteChecklistEditor" class="note-checklist-editor"></div>
-                    </div>
-                </div>
-
-                <div class="note-editor-side">
-                    <label>Category
-                        <select id="noteCategoryInput" class="note-editor-select"></select>
-                    </label>
-                    <label>Deadline
-                        <input id="noteDeadlineInput" type="datetime-local">
-                    </label>
-                    <label class="note-inline-toggle">
-                        <input id="notePinnedInput" type="checkbox">
-                        <span>📌 Pin note</span>
-                    </label>
-                    <label class="note-inline-toggle">
-                        <input id="noteArchivedInput" type="checkbox">
-                        <span>🗃️ Archived</span>
-                    </label>
-
-                    <div class="note-editor-actions">
-                        <button class="btn-primary" onclick="saveNoteEditor()">💾 Save</button>
-                        <button class="btn-secondary" onclick="duplicateCurrentNote()">⧉ Duplicate</button>
-                        <button class="btn-secondary" onclick="copyCurrentNote()">📋 Copy</button>
-                        <button class="btn-secondary danger-soft" onclick="deleteCurrentNote()">🗑 Delete</button>
-                    </div>
-                    <small id="noteEditorMeta" class="note-editor-meta"></small>
-                </div>
-            </div>
-        </div>
-    </div>
 
     <script src="./dashboard/dashboard.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
