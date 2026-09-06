@@ -7576,7 +7576,7 @@ function v10ResetFx(){
 
   if(s==='night'||s==='midnight'){
     add(78,()=>({kind:'star',x:v10Rand(0,w),y:v10Rand(0,h*.66),r:v10Rand(.45,1.55),a:v10Rand(.28,.88),tw:v10Rand(.7,2.3),p:v10Rand(0,6.283)}));
-    add(2,()=>({kind:'shoot',x:v10Rand(w*.25,w*.95),y:v10Rand(-h*.15,h*.30),vx:v10Rand(-3.2,-1.9),vy:v10Rand(2.0,3.1),life:v10Rand(-180,60),max:95}));
+    add(3,()=>({kind:'shoot',x:v10Rand(w*.25,w*.95),y:v10Rand(-h*.15,h*.30),vx:v10Rand(-3.2,-1.9),vy:v10Rand(2.0,3.1),life:v10Rand(-180,60),max:95}));
     add(12,()=>({kind:'water',x:v10Rand(w*.55,w*.91),y:v10Rand(h*.76,h*.98),len:v10Rand(14,50),a:v10Rand(.025,.10),p:v10Rand(0,6.283)}));
   } else if(s==='oled'){
     add(42,()=>({kind:'star',x:v10Rand(0,w),y:v10Rand(0,h*.70),r:v10Rand(.35,1.2),a:v10Rand(.16,.62),tw:v10Rand(.6,1.8),p:v10Rand(0,6.283)}));
@@ -7587,14 +7587,14 @@ function v10ResetFx(){
     add(12,()=>({kind:'leafspeck',x:v10Rand(0,w),y:v10Rand(0,h),r:v10Rand(.4,1.1),a:v10Rand(.03,.10),vx:v10Rand(.02,.08),vy:v10Rand(.02,.07),p:v10Rand(0,6.283)}));
   } else if(s==='ocean'){
     add(24,()=>({kind:'bubble',x:v10Rand(0,w),y:v10Rand(h*.30,h*1.04),r:v10Rand(1.5,6.5),a:v10Rand(.08,.24),vy:v10Rand(-.22,-.08),p:v10Rand(0,6.283)}));
-    add(24,(_,)=>({kind:'fish',x:v10Rand(-w*.15,w*1.10),y:v10Rand(h*.24,h*.76),s:v10Rand(.38,.95),dir:Math.random()>.5?1:-1,v:v10Rand(.18,.62),a:v10Rand(.20,.48),p:v10Rand(0,6.283),tone:Math.floor(v10Rand(0,5))}));
+    add(24,(_,)=>({kind:'fish',x:v10Rand(-w*.15,w*1.10),y:v10Rand(h*.24,h*.76),s:v10Rand(.38,.95),dir:Math.random()>.5?1:-1,v:v10Rand(.24,.72),a:v10Rand(.20,.48),p:v10Rand(0,6.283),tone:Math.floor(v10Rand(0,5))}));
     add(5,()=>({kind:'ray',x:v10Rand(-w*.1,w*.9),p:v10Rand(0,6.283),a:v10Rand(.012,.032)}));
   } else if(s==='coffee'){
     add(52,()=>({kind:'rain',x:v10Rand(w*.04,w*.94),y:v10Rand(h*.07,h*.57),len:v10Rand(8,28),v:v10Rand(.45,1.1),a:v10Rand(.035,.12),p:v10Rand(0,6.283)}));
     add(10,()=>({kind:'steam',x:v10Rand(w*.12,w*.90),y:v10Rand(h*.60,h*.90),r:v10Rand(8,18),a:v10Rand(.018,.050),vy:v10Rand(-.05,-.025),p:v10Rand(0,6.283)}));
     add(9,()=>({kind:'lamp',x:v10Rand(.08,.92),p:v10Rand(0,6.283),a:v10Rand(.025,.065)}));
   } else if(s==='sakura'){
-    add(32,()=>({kind:'petal',x:v10Rand(-40,w),y:v10Rand(-h*.2,h),r:v10Rand(2.0,4.2),a:v10Rand(.30,.68),vx:v10Rand(.18,.55),vy:v10Rand(.12,.34),rot:v10Rand(0,6.283),vr:v10Rand(-.025,.025),p:v10Rand(0,6.283)}));
+    add(32,()=>({kind:'petal',x:v10Rand(-40,w),y:v10Rand(-h*.2,h),r:v10Rand(2.0,4.2),a:v10Rand(.30,.68),vx:v10Rand(.24,.68),vy:v10Rand(.16,.40),rot:v10Rand(0,6.283),vr:v10Rand(-.025,.025),p:v10Rand(0,6.283)}));
     add(12,()=>({kind:'lantern',x:v10Rand(.14,.86),y:v10Rand(.58,.94),p:v10Rand(0,6.283),a:v10Rand(.025,.08)}));
     add(8,()=>({kind:'moonDust',x:v10Rand(0,w),y:v10Rand(0,h*.55),r:v10Rand(.4,1.1),a:v10Rand(.04,.12),p:v10Rand(0,6.283)}));
   } else if(s==='cyber'||s==='terminal'){
@@ -7606,7 +7606,7 @@ function v10ResetFx(){
     add(18,()=>({kind:'duskDust',x:v10Rand(0,w),y:v10Rand(h*.28,h*.90),r:v10Rand(.7,1.8),a:v10Rand(.035,.12),vx:v10Rand(-.025,.04),vy:v10Rand(-.018,.018),p:v10Rand(0,6.283)}));
     add(12,()=>({kind:'fireflyPurple',x:v10Rand(0,w),y:v10Rand(h*.45,h*.92),r:v10Rand(.7,1.4),a:v10Rand(.10,.35),p:v10Rand(0,6.283),vx:v10Rand(-.05,.05),vy:v10Rand(-.025,.025)}));
   } else if(s==='day'||s==='sky'||s==='meadow'||s==='sunset'){
-    add(s==='sky'?11:7,()=>({kind:'cloud',x:v10Rand(-180,w),y:v10Rand(30,h*(s==='sunset'?.42:.35)),sc:v10Rand(.55,1.18),a:v10Rand(.09,.22),v:v10Rand(.035,.095),p:v10Rand(0,6.283)}));
+    add(s==='sky'?11:7,()=>({kind:'cloud',x:v10Rand(-180,w),y:v10Rand(30,h*(s==='sunset'?.42:.35)),sc:v10Rand(.55,1.18),a:v10Rand(.09,.22),v:v10Rand(.050,.125),p:v10Rand(0,6.283)}));
     add(10,()=>({kind:'bird',x:v10Rand(-60,w),y:v10Rand(h*.16,h*.50),s:v10Rand(.45,1.0),v:v10Rand(.12,.30),a:v10Rand(.10,.28),p:v10Rand(0,6.283)}));
     if(s==='meadow')add(18,()=>({kind:'pollen',x:v10Rand(0,w),y:v10Rand(h*.48,h*.98),r:v10Rand(.5,1.4),a:v10Rand(.04,.13),vx:v10Rand(.015,.065),vy:v10Rand(-.025,.015),p:v10Rand(0,6.283)}));
     if(s==='sunset')add(14,()=>({kind:'goldDust',x:v10Rand(0,w),y:v10Rand(h*.36,h*.92),r:v10Rand(.6,1.4),a:v10Rand(.03,.10),vx:v10Rand(.01,.045),vy:v10Rand(-.02,.01),p:v10Rand(0,6.283)}));
@@ -7839,14 +7839,10 @@ Object.assign(THEME_SCENE_LABELS,{
 })();
 
 // ============================================================================
-// V11 — LIVING THEME INTERACTIONS
+// V11.1 — CANVAS-FIRST THEMES (NO POINTER / NO TILT / NO CURSOR PARALLAX)
 // ============================================================================
-(function initLivingThemesV11(){
-  const finePointer = matchMedia?.('(hover:hover) and (pointer:fine)')?.matches;
+(function initCanvasFirstThemesV11_1(){
   const reduceMotion = matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
-  let pointerX = innerWidth * .5, pointerY = innerHeight * .35;
-  let smoothX = pointerX, smoothY = pointerY;
-  let raf = 0;
 
   function ensureTransitionFlash(){
     let el=document.getElementById('themeTransitionFlash');
@@ -7859,7 +7855,7 @@ Object.assign(THEME_SCENE_LABELS,{
     return el;
   }
 
-  // Wrap the existing V10 theme function instead of replacing its logic.
+  // Keep only a cheap theme-change fade. No mouse/pointer tracking is registered.
   const oldApply=applyDashboardTheme;
   applyDashboardTheme=function(themeId,save=true){
     const before=document.body.dataset.theme || getCurrentTheme();
@@ -7873,61 +7869,12 @@ Object.assign(THEME_SCENE_LABELS,{
     }
   };
 
-  function updatePointerVars(){
-    raf=0;
-    smoothX += (pointerX-smoothX)*.10;
-    smoothY += (pointerY-smoothY)*.10;
-    const xp=Math.max(0,Math.min(100,smoothX/innerWidth*100));
-    const yp=Math.max(0,Math.min(100,smoothY/innerHeight*100));
-    document.body.style.setProperty('--theme-pointer-x',xp.toFixed(2)+'%');
-    document.body.style.setProperty('--theme-pointer-y',yp.toFixed(2)+'%');
-    if(Math.abs(pointerX-smoothX)>.3||Math.abs(pointerY-smoothY)>.3) raf=requestAnimationFrame(updatePointerVars);
-  }
+  // Canvas is intentionally fixed. No translate/scale tied to the cursor.
+  if(canvas) canvas.style.transform='';
 
-  if(finePointer && !reduceMotion){
-    window.addEventListener('pointermove',e=>{
-      pointerX=e.clientX;pointerY=e.clientY;
-      if(!raf)raf=requestAnimationFrame(updatePointerVars);
-    },{passive:true});
-
-    document.addEventListener('pointermove',e=>{
-      const card=e.target.closest?.('.group-card');
-      if(!card)return;
-      const r=card.getBoundingClientRect();
-      if(!r.width||!r.height)return;
-      const nx=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width));
-      const ny=Math.max(0,Math.min(1,(e.clientY-r.top)/r.height));
-      card.style.setProperty('--card-light-x',(nx*100).toFixed(1)+'%');
-      card.style.setProperty('--card-light-y',(ny*100).toFixed(1)+'%');
-      card.style.setProperty('--card-tilt-y',((nx-.5)*3.2).toFixed(2)+'deg');
-      card.style.setProperty('--card-tilt-x',((.5-ny)*2.6).toFixed(2)+'deg');
-      card.classList.add('theme-depth-active');
-    },{passive:true});
-
-    document.addEventListener('pointerout',e=>{
-      const card=e.target.closest?.('.group-card');
-      if(!card || (e.relatedTarget && card.contains(e.relatedTarget)))return;
-      card.classList.remove('theme-depth-active');
-      card.style.removeProperty('--card-tilt-x');
-      card.style.removeProperty('--card-tilt-y');
-    },{passive:true});
-  }
-
-  // Add a tiny amount of pointer parallax to the canvas without altering V10 scene logic.
-  const oldDrawBackground=drawBackground;
-  drawBackground=function(ts=0){
-    if(canvas && ctx && isCanvasEnabled && finePointer && !reduceMotion){
-      const px=(smoothX/Math.max(1,innerWidth)-.5);
-      const py=(smoothY/Math.max(1,innerHeight)-.5);
-      canvas.style.transform=`translate3d(${(-px*5).toFixed(2)}px,${(-py*3).toFixed(2)}px,0) scale(1.012)`;
-    } else if(canvas) canvas.style.transform='';
-    return oldDrawBackground(ts);
-  };
-
-  // Picker copy reflects the upgraded interaction layer.
   window.addEventListener('load',()=>{
     ensureThemePicker();
     const small=document.querySelector('#themePickerOverlay .theme-picker-head small');
-    if(small)small.textContent='Living themes · animated scenery · ambient depth · smooth transitions.';
+    if(small)small.textContent='Canvas scenery · stars · wind · clouds · fish · petals · optimized motion.';
   });
 })();

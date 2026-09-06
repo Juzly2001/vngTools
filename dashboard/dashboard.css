@@ -7635,155 +7635,58 @@ body.visuals-on[data-theme="sakura-night"] .command-bar {
 }
 
 /* ========================================================================== 
-   V11 — LIVING THEMES: AMBIENT UI + DEPTH + CINEMATIC TRANSITIONS
+   V11.1 — CANVAS-FIRST THEMES
+   No cursor-follow glow, no card tilt, no pointer-driven parallax.
    ========================================================================== */
-body[data-theme] {
-    --theme-pointer-x: 50%;
-    --theme-pointer-y: 35%;
-    --theme-tilt-x: 0deg;
-    --theme-tilt-y: 0deg;
-    --theme-glow: color-mix(in srgb, var(--accent-color) 42%, transparent);
-}
 
-/* Theme-aware soft light that subtly follows the pointer. */
-body.visuals-on[data-theme]::before {
-    content:"";
-    position:fixed;
-    inset:-18vmax;
-    z-index:-1;
-    pointer-events:none;
-    background:
-      radial-gradient(circle at var(--theme-pointer-x) var(--theme-pointer-y),
-        color-mix(in srgb, var(--accent-color) 11%, transparent) 0,
-        transparent 23vmax),
-      radial-gradient(circle at 82% 12%,
-        color-mix(in srgb, var(--schedule-accent) 7%, transparent) 0,
-        transparent 28vmax);
-    opacity:.72;
-    transform:translate3d(0,0,0);
-    animation:themeAmbientDrift 16s ease-in-out infinite alternate;
-    will-change:transform,opacity;
-}
-@keyframes themeAmbientDrift {
-    0%   { transform:translate3d(-1.1%, -.7%, 0) scale(1); opacity:.54; }
-    50%  { opacity:.78; }
-    100% { transform:translate3d(1.2%, .9%, 0) scale(1.025); opacity:.64; }
-}
-
-/* Cinematic theme-change flash injected by JS. */
+/* Cheap, centered theme transition only. It does not track the pointer. */
 .theme-transition-flash {
     position:fixed;
     inset:0;
     z-index:10000030;
     pointer-events:none;
     opacity:0;
-    background:
-      radial-gradient(circle at var(--theme-pointer-x,50%) var(--theme-pointer-y,40%),
-      color-mix(in srgb, var(--accent-color) 30%, white 8%) 0,
-      transparent 42%),
-      color-mix(in srgb, var(--bg-gradient, #111827) 26%, transparent);
-    backdrop-filter:blur(0px);
-    -webkit-backdrop-filter:blur(0px);
+    background:radial-gradient(circle at 50% 42%,
+      color-mix(in srgb, var(--accent-color) 22%, white 5%) 0,
+      transparent 46%);
 }
 .theme-transition-flash.play {
-    animation:themeSceneChange .62s cubic-bezier(.2,.8,.2,1) both;
+    animation:themeSceneChange .42s ease-out both;
 }
 @keyframes themeSceneChange {
-    0%   { opacity:0; backdrop-filter:blur(0); -webkit-backdrop-filter:blur(0); }
-    34%  { opacity:.44; backdrop-filter:blur(5px); -webkit-backdrop-filter:blur(5px); }
-    100% { opacity:0; backdrop-filter:blur(0); -webkit-backdrop-filter:blur(0); }
+    0%   { opacity:0; }
+    32%  { opacity:.24; }
+    100% { opacity:0; }
 }
 
-/* Living glass: a faint highlight follows the pointer without disturbing layout. */
-body.visuals-on[data-theme] .group-card,
-body.visuals-on[data-theme] .overview-card,
-body.visuals-on[data-theme] .toolbar,
-body.visuals-on[data-theme] .command-bar,
-body.visuals-on[data-theme] .tag-filter-bar {
-    position:relative;
-    overflow:hidden;
-}
-body.visuals-on[data-theme] .group-card::after,
-body.visuals-on[data-theme] .overview-card::after {
-    content:"";
-    position:absolute;
-    inset:0;
-    border-radius:inherit;
-    pointer-events:none;
-    background:radial-gradient(circle at var(--card-light-x,50%) var(--card-light-y,20%),
-      color-mix(in srgb, white 13%, var(--accent-color) 4%) 0,
-      transparent 36%);
-    opacity:0;
-    transition:opacity .25s ease;
-}
-body.visuals-on[data-theme] .group-card:hover::after,
-body.visuals-on[data-theme] .overview-card:hover::after { opacity:.56; }
-
-@media (hover:hover) and (pointer:fine) {
-    body.visuals-on[data-theme] .group-card.theme-depth-active {
-        transform:perspective(1000px) rotateX(var(--card-tilt-x,0deg)) rotateY(var(--card-tilt-y,0deg)) translateY(-3px);
-        box-shadow:
-          0 19px 45px rgba(0,0,0,.22),
-          0 0 0 1px color-mix(in srgb,var(--accent-color) 11%,transparent),
-          0 0 28px color-mix(in srgb,var(--accent-color) 7%,transparent) !important;
-        transition:transform .12s ease-out,border-color .2s ease,box-shadow .2s ease;
-    }
-}
-
-/* Buttons feel less flat while preserving their existing colors. */
-body[data-theme] button:not(.theme-choice):not(.sidebar-close):not(.theme-picker-close) {
-    transform:translateZ(0);
-}
-@media (hover:hover) and (pointer:fine) {
-    body[data-theme] button:not(.theme-choice):not(.sidebar-close):not(.theme-picker-close):hover {
-        filter:brightness(1.045) saturate(1.05);
-    }
-    body[data-theme] button:not(.theme-choice):active {
-        transform:translateY(1px) scale(.985);
-    }
-}
-
-/* Theme picker = animated miniature previews. */
+/* Theme picker can remain animated because it only runs while the picker is open. */
 .theme-choice::before {
     content:"";
     position:absolute;
     inset:-45%;
-    background:conic-gradient(from 0deg,transparent 0 34%,rgba(255,255,255,.20) 43%,transparent 52% 100%);
+    background:conic-gradient(from 0deg,transparent 0 34%,rgba(255,255,255,.16) 43%,transparent 52% 100%);
     opacity:0;
     transform:translateX(-28%) rotate(0deg);
     transition:opacity .2s ease;
 }
-.theme-choice:hover::before { opacity:.55; animation:themePreviewSweep 2.8s linear infinite; }
+.theme-choice:hover::before { opacity:.42; animation:themePreviewSweep 3.2s linear infinite; }
 @keyframes themePreviewSweep { to { transform:translateX(28%) rotate(360deg); } }
 .theme-choice.active {
-    box-shadow:0 10px 30px color-mix(in srgb,var(--accent-color) 19%,transparent), inset 0 1px rgba(255,255,255,.16);
+    box-shadow:0 8px 24px color-mix(in srgb,var(--accent-color) 14%,transparent), inset 0 1px rgba(255,255,255,.12);
 }
 .theme-choice .theme-check {
     width:22px;height:22px;border-radius:999px;display:grid;place-items:center;
-    background:rgba(0,0,0,.20);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);
+    background:rgba(0,0,0,.20);
 }
-.theme-choice.active .theme-check { animation:themeCheckPop .32s cubic-bezier(.2,.9,.3,1.3); }
-@keyframes themeCheckPop { 0%{transform:scale(.45);opacity:.2} 100%{transform:scale(1);opacity:1} }
 
-/* Extra identity for the most expressive themes. */
-body.visuals-on[data-theme="cyber"] .group-card:hover { border-color:rgba(84,230,255,.28) !important; box-shadow:0 18px 45px rgba(0,0,0,.28),0 0 24px rgba(84,230,255,.07) !important; }
-body.visuals-on[data-theme="terminal"] .group-card:hover { border-color:rgba(102,255,154,.25) !important; box-shadow:0 18px 45px rgba(0,0,0,.28),0 0 22px rgba(102,255,154,.06) !important; }
-body.visuals-on[data-theme="sakura-night"] .group-card:hover { border-color:rgba(236,143,169,.25) !important; }
-body.visuals-on[data-theme="ocean"] .group-card:hover { border-color:rgba(160,235,245,.22) !important; }
-body.visuals-on[data-theme="forest"] .group-card:hover { border-color:rgba(190,230,165,.20) !important; }
-body.visuals-on[data-theme="coffee"] .group-card:hover { border-color:rgba(231,190,146,.22) !important; }
-
-/* Mobile / accessibility safety: cinematic, but cheap. */
-@media (max-width:768px), (pointer:coarse) {
-    body.visuals-on[data-theme]::before { opacity:.40; animation-duration:22s; }
-    body.visuals-on[data-theme] .group-card::after,
-    body.visuals-on[data-theme] .overview-card::after { display:none; }
+/* Explicitly neutralize any leftover inline depth variables/classes from an older V11 run. */
+body.visuals-on[data-theme] .group-card.theme-depth-active {
+    transform:none !important;
 }
+
 @media (prefers-reduced-motion:reduce) {
-    body.visuals-on[data-theme]::before,
     .theme-choice:hover::before,
-    .theme-transition-flash.play,
-    .theme-choice.active .theme-check { animation:none !important; }
+    .theme-transition-flash.play { animation:none !important; }
     .theme-transition-flash { display:none !important; }
-    .theme-depth-active { transform:none !important; }
 }
+
