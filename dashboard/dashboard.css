@@ -7512,3 +7512,29 @@ body.visuals-on[data-theme="grape"] .toolbar,
 body.visuals-on[data-theme="grape"] .command-bar {
     background:color-mix(in srgb, #28202d 86%, transparent) !important;
 }
+
+
+/* ==========================================================================
+   V9 scene-specific finishing
+   ========================================================================== */
+body.visuals-on[data-theme="rose"] #bgCanvas,
+body.visuals-on[data-theme="lavender"] #bgCanvas,
+body.visuals-on[data-theme="lemon"] #bgCanvas,
+body.visuals-on[data-theme="peach"] #bgCanvas {
+    filter:saturate(.86) contrast(.99) brightness(.96) !important;
+}
+body.visuals-on[data-theme="ocean"] #bgCanvas {
+    filter:saturate(.96) contrast(1.015) brightness(.91) !important;
+}
+body.visuals-on[data-theme="sakura-night"] #bgCanvas {
+    filter:saturate(.92) contrast(1.015) brightness(.86) !important;
+}
+body.visuals-on[data-theme="cyber"] #bgCanvas {
+    filter:saturate(1.02) contrast(1.04) brightness(.91) !important;
+}
+body.visuals-on[data-theme="terminal"] #bgCanvas {
+    filter:saturate(.98) contrast(1.05) brightness(.88) !important;
+}
+body.visuals-on[data-theme="coffee"] #bgCanvas {
+    filter:saturate(.92) contrast(1.015) brightness(.88) !important;
+}
