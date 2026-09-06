@@ -233,10 +233,14 @@
                         </select>
                     </label>
 
-                    <label class="note-v4-meta-field note-v4-deadline-field">
+                    <div class="note-v4-meta-field note-v4-deadline-field">
                         <span>Deadline</span>
-                        <input id="noteDeadlineInput" type="datetime-local">
-                    </label>
+                        <input id="noteDeadlineInput" type="hidden">
+                        <button id="noteDeadlineButton" class="note-deadline-button" type="button" onclick="openNoteDeadlinePicker()">
+                            <span id="noteDeadlineDisplay">No deadline</span>
+                            <span class="note-deadline-calendar-icon">📅</span>
+                        </button>
+                    </div>
 
                     <button id="notePinBtn" class="note-v4-meta-btn note-pin-button" type="button" onclick="toggleRichNotePin()">
                         <span>📌</span>
@@ -300,6 +304,56 @@
                     <button class="note-v4-secondary-btn" type="button" onclick="closeModal('noteModal')">Cancel</button>
                     <button class="note-v4-primary-btn" type="button" onclick="submitNoteForm()">Save note</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal-overlay" id="noteDeadlineModal">
+        <div class="modal-box note-calendar-modal">
+            <div class="note-calendar-header">
+                <div>
+                    <h3>Choose deadline</h3>
+                    <p>Select a date and optional time.</p>
+                </div>
+                <button class="modal-close-soft" type="button" onclick="closeModal('noteDeadlineModal')">✕</button>
+            </div>
+
+            <div class="note-calendar-quick">
+                <button type="button" onclick="noteDeadlineQuick('today')">Today</button>
+                <button type="button" onclick="noteDeadlineQuick('tomorrow')">Tomorrow</button>
+                <button type="button" onclick="noteDeadlineQuick('week')">+7 days</button>
+                <button type="button" class="clear" onclick="clearNoteDeadline()">Clear</button>
+            </div>
+
+            <div class="note-calendar-nav">
+                <button type="button" onclick="changeNoteDeadlineMonth(-1)" aria-label="Previous month">‹</button>
+                <button id="noteCalendarMonthLabel" type="button" class="month-label" onclick="noteDeadlineGoToday()">September 2026</button>
+                <button type="button" onclick="changeNoteDeadlineMonth(1)" aria-label="Next month">›</button>
+            </div>
+
+            <div class="note-calendar-weekdays">
+                <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+            </div>
+            <div id="noteCalendarGrid" class="note-calendar-grid"></div>
+
+            <div class="note-calendar-time">
+                <div class="note-calendar-time-label">
+                    <span>⏰ Time</span>
+                    <small>Optional</small>
+                </div>
+                <div class="note-calendar-time-controls">
+                    <select id="noteDeadlineHour"></select>
+                    <span>:</span>
+                    <select id="noteDeadlineMinute"></select>
+                </div>
+            </div>
+
+            <div class="note-calendar-selected" id="noteDeadlineSelectedSummary">No date selected</div>
+
+            <div class="note-calendar-actions">
+                <button class="note-v4-secondary-btn" type="button" onclick="closeModal('noteDeadlineModal')">Cancel</button>
+                <button class="note-v4-primary-btn" type="button" onclick="applyNoteDeadline()">Apply deadline</button>
             </div>
         </div>
     </div>

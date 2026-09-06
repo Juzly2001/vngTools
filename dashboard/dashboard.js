@@ -858,6 +858,238 @@ function submitGroupForm() {
 
 
 
+
+// ============================================================================
+// NOTE DEADLINE CALENDAR
+// ============================================================================
+let noteDeadlineCalendarView = new Date();
+let noteDeadlineCalendarSelected = null;
+
+function pad2(value) {
+    return String(value).padStart(2, '0');
+}
+
+function localDateTimeValue(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+    return `${date.getFullYear()}-${pad2(date.getMonth() + 1)}-${pad2(date.getDate())}T${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+}
+
+function parseLocalDateTimeValue(value) {
+    if (!value) return null;
+    const match = String(value).match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/);
+    if (!match) return null;
+    const [, y, m, d, hh, mm] = match;
+    const date = new Date(Number(y), Number(m) - 1, Number(d), Number(hh), Number(mm), 0, 0);
+    return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatNoteDeadlineDisplay(value) {
+    const date = parseLocalDateTimeValue(value);
+    if (!date) return 'No deadline';
+    return date.toLocaleString([], {
+        weekday: 'short',
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+}
+
+function updateNoteDeadlineButton() {
+    const value = getEl('noteDeadlineInput')?.value || '';
+    const display = getEl('noteDeadlineDisplay');
+    const button = getEl('noteDeadlineButton');
+    if (display) display.textContent = formatNoteDeadlineDisplay(value);
+    if (button) button.classList.toggle('has-value', !!value);
+}
+
+function populateNoteDeadlineTime() {
+    const hour = getEl('noteDeadlineHour');
+    const minute = getEl('noteDeadlineMinute');
+    if (!hour || !minute || hour.options.length) return;
+
+    hour.innerHTML = Array.from({ length: 24 }, (_, i) =>
+        `<option value="${pad2(i)}">${pad2(i)}</option>`
+    ).join('');
+
+    minute.innerHTML = ['00','05','10','15','20','25','30','35','40','45','50','55']
+        .map(v => `<option value="${v}">${v}</option>`)
+        .join('');
+}
+
+function openNoteDeadlinePicker() {
+    populateNoteDeadlineTime();
+
+    const current = parseLocalDateTimeValue(getEl('noteDeadlineInput')?.value || '');
+    const now = new Date();
+    const base = current || now;
+
+    noteDeadlineCalendarSelected = current ? new Date(current) : null;
+    noteDeadlineCalendarView = new Date(base.getFullYear(), base.getMonth(), 1);
+
+    if (getEl('noteDeadlineHour')) getEl('noteDeadlineHour').value = current ? pad2(current.getHours()) : '18';
+    if (getEl('noteDeadlineMinute')) {
+        const minute = current ? current.getMinutes() : 0;
+        const rounded = Math.round(minute / 5) * 5;
+        getEl('noteDeadlineMinute').value = pad2(rounded === 60 ? 55 : rounded);
+    }
+
+    renderNoteDeadlineCalendar();
+    openModal('noteDeadlineModal');
+}
+
+function changeNoteDeadlineMonth(delta) {
+    noteDeadlineCalendarView = new Date(
+        noteDeadlineCalendarView.getFullYear(),
+        noteDeadlineCalendarView.getMonth() + delta,
+        1
+    );
+    renderNoteDeadlineCalendar();
+}
+
+function noteDeadlineGoToday() {
+    const now = new Date();
+    noteDeadlineCalendarView = new Date(now.getFullYear(), now.getMonth(), 1);
+    renderNoteDeadlineCalendar();
+}
+
+function sameCalendarDay(a, b) {
+    return a && b &&
+        a.getFullYear() === b.getFullYear() &&
+        a.getMonth() === b.getMonth() &&
+        a.getDate() === b.getDate();
+}
+
+function renderNoteDeadlineCalendar() {
+    const grid = getEl('noteCalendarGrid');
+    const label = getEl('noteCalendarMonthLabel');
+    if (!grid || !label) return;
+
+    const year = noteDeadlineCalendarView.getFullYear();
+    const month = noteDeadlineCalendarView.getMonth();
+    label.textContent = noteDeadlineCalendarView.toLocaleDateString([], { month:'long', year:'numeric' });
+
+    const first = new Date(year, month, 1);
+    const mondayIndex = (first.getDay() + 6) % 7;
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrev = new Date(year, month, 0).getDate();
+    const today = new Date();
+
+    const cells = [];
+    for (let i = 0; i < 42; i++) {
+        let date;
+        let outside = false;
+
+        if (i < mondayIndex) {
+            date = new Date(year, month - 1, daysInPrev - mondayIndex + i + 1);
+            outside = true;
+        } else if (i >= mondayIndex + daysInMonth) {
+            date = new Date(year, month + 1, i - (mondayIndex + daysInMonth) + 1);
+            outside = true;
+        } else {
+            date = new Date(year, month, i - mondayIndex + 1);
+        }
+
+        const selected = sameCalendarDay(date, noteDeadlineCalendarSelected);
+        const isToday = sameCalendarDay(date, today);
+        const timestamp = date.getTime();
+
+        cells.push(`<button type="button"
+            class="note-calendar-day ${outside ? 'outside' : ''} ${selected ? 'selected' : ''} ${isToday ? 'today' : ''}"
+            onclick="selectNoteDeadlineDay(${timestamp})">
+            <span>${date.getDate()}</span>
+        </button>`);
+    }
+
+    grid.innerHTML = cells.join('');
+    updateNoteDeadlineSummary();
+}
+
+function selectNoteDeadlineDay(timestamp) {
+    const picked = new Date(timestamp);
+    const hour = Number(getEl('noteDeadlineHour')?.value || 18);
+    const minute = Number(getEl('noteDeadlineMinute')?.value || 0);
+    picked.setHours(hour, minute, 0, 0);
+
+    noteDeadlineCalendarSelected = picked;
+    noteDeadlineCalendarView = new Date(picked.getFullYear(), picked.getMonth(), 1);
+    renderNoteDeadlineCalendar();
+}
+
+function noteDeadlineQuick(type) {
+    const now = new Date();
+    const picked = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 18, 0, 0, 0);
+    if (type === 'tomorrow') picked.setDate(picked.getDate() + 1);
+    if (type === 'week') picked.setDate(picked.getDate() + 7);
+
+    noteDeadlineCalendarSelected = picked;
+    noteDeadlineCalendarView = new Date(picked.getFullYear(), picked.getMonth(), 1);
+
+    if (getEl('noteDeadlineHour')) getEl('noteDeadlineHour').value = '18';
+    if (getEl('noteDeadlineMinute')) getEl('noteDeadlineMinute').value = '00';
+    renderNoteDeadlineCalendar();
+}
+
+function updateNoteDeadlineSummary() {
+    const summary = getEl('noteDeadlineSelectedSummary');
+    if (!summary) return;
+
+    if (!noteDeadlineCalendarSelected) {
+        summary.textContent = 'No date selected';
+        return;
+    }
+
+    const copy = new Date(noteDeadlineCalendarSelected);
+    copy.setHours(
+        Number(getEl('noteDeadlineHour')?.value || 18),
+        Number(getEl('noteDeadlineMinute')?.value || 0),
+        0, 0
+    );
+
+    summary.textContent = copy.toLocaleString([], {
+        weekday:'long',
+        day:'2-digit',
+        month:'long',
+        year:'numeric',
+        hour:'2-digit',
+        minute:'2-digit'
+    });
+}
+
+function applyNoteDeadline() {
+    if (!noteDeadlineCalendarSelected) {
+        clearNoteDeadline();
+        return;
+    }
+
+    const selected = new Date(noteDeadlineCalendarSelected);
+    selected.setHours(
+        Number(getEl('noteDeadlineHour')?.value || 18),
+        Number(getEl('noteDeadlineMinute')?.value || 0),
+        0, 0
+    );
+
+    if (getEl('noteDeadlineInput')) {
+        getEl('noteDeadlineInput').value = localDateTimeValue(selected);
+    }
+    updateNoteDeadlineButton();
+    closeModal('noteDeadlineModal');
+}
+
+function clearNoteDeadline() {
+    noteDeadlineCalendarSelected = null;
+    if (getEl('noteDeadlineInput')) getEl('noteDeadlineInput').value = '';
+    updateNoteDeadlineButton();
+    closeModal('noteDeadlineModal');
+}
+
+document.addEventListener('change', event => {
+    if (event.target?.id === 'noteDeadlineHour' || event.target?.id === 'noteDeadlineMinute') {
+        updateNoteDeadlineSummary();
+    }
+});
+
 // ============================================================================
 // NOTE V4 — CLEAN IMPLEMENTATION
 // ============================================================================
@@ -1233,8 +1465,9 @@ function openItemModal(type, groupId, index = false) {
 
         getEl('noteCategoryInput').value = old.category || '';
         getEl('noteDeadlineInput').value = old.deadline
-            ? new Date(old.deadline).toISOString().slice(0, 16)
+            ? localDateTimeValue(new Date(old.deadline))
             : '';
+        updateNoteDeadlineButton();
 
         richNotePinned = !!old.pinned;
         getEl('notePinBtn')?.classList.toggle('active', richNotePinned);

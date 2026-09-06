@@ -6576,3 +6576,484 @@ body.light-theme .note-v4-toolbar button {
         max-height: 38px !important;
     }
 }
+
+
+/* ==========================================================================
+   THEME V5 — POLISHED LIGHT & DARK SYSTEM
+   ========================================================================== */
+
+/* Dark: calmer, cleaner, higher readability */
+:root {
+    --bg-gradient:
+        radial-gradient(circle at 12% 0%, rgba(99,102,241,.14), transparent 30%),
+        radial-gradient(circle at 88% 8%, rgba(16,185,129,.07), transparent 24%),
+        linear-gradient(180deg, #070b14 0%, #0a1020 48%, #090d18 100%);
+    --panel-bg: rgba(15, 23, 42, .78);
+    --border-color: rgba(148, 163, 184, .14);
+    --text-main: #f1f5f9;
+    --text-sub: #94a3b8;
+    --modal-bg: rgba(12, 18, 32, .985);
+    --context-bg: rgba(15, 23, 42, .985);
+    --inner-bg: rgba(20, 30, 48, .64);
+    --shadow-main: 0 20px 55px rgba(0,0,0,.38);
+}
+
+/* Light: neutral white/blue-gray, no muddy gray panels */
+body.light-mode {
+    --bg-gradient:
+        radial-gradient(circle at 14% 0%, rgba(99,102,241,.075), transparent 28%),
+        radial-gradient(circle at 88% 4%, rgba(14,165,233,.065), transparent 23%),
+        linear-gradient(180deg, #f8fafc 0%, #f4f7fb 42%, #eef3f8 100%);
+    --panel-bg: rgba(255,255,255,.94);
+    --border-color: #e2e8f0;
+    --text-main: #172033;
+    --text-sub: #64748b;
+    --accent-color: #5755e7;
+    --accent-hover: #4744d4;
+    --note-accent: #d97706;
+    --note-accent-hover: #b45309;
+    --note-bg-opacity: #fff8e7;
+    --schedule-accent: #059669;
+    --schedule-accent-hover: #047857;
+    --schedule-bg-opacity: #eafaf3;
+    --modal-bg: #ffffff;
+    --context-bg: #ffffff;
+    --inner-bg: #f8fafc;
+    --shadow-main: 0 14px 34px rgba(30,41,59,.09);
+}
+
+body {
+    background-attachment: fixed;
+}
+
+/* Main surfaces */
+.toolbar,
+.command-bar,
+.overview-card,
+.group-card,
+.tag-filter-bar,
+.modal-box,
+.context-menu,
+.calendar-container,
+.today-important-box {
+    border-color: var(--border-color);
+    box-shadow: 0 1px 0 rgba(255,255,255,.025), var(--shadow-main);
+}
+
+body.light-mode .toolbar,
+body.light-mode .command-bar,
+body.light-mode .overview-card,
+body.light-mode .group-card,
+body.light-mode .tag-filter-bar,
+body.light-mode .modal-box,
+body.light-mode .context-menu,
+body.light-mode .calendar-container,
+body.light-mode .today-important-box {
+    background: rgba(255,255,255,.96) !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 1px 2px rgba(15,23,42,.025), 0 10px 30px rgba(15,23,42,.065) !important;
+}
+
+/* Cards */
+body.light-mode .group-card {
+    background: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%) !important;
+}
+body.light-mode .group-card:hover {
+    border-color: #cbd5e1 !important;
+    box-shadow: 0 14px 36px rgba(15,23,42,.09) !important;
+}
+
+/* Inputs and selectors everywhere */
+input,
+textarea,
+select,
+.search-box {
+    transition: border-color .16s ease, box-shadow .16s ease, background .16s ease;
+}
+body.light-mode input,
+body.light-mode textarea,
+body.light-mode select,
+body.light-mode .search-box,
+body.light-mode .emoji-search-wrap {
+    background: #ffffff !important;
+    color: #172033 !important;
+    border-color: #dbe3ec !important;
+}
+body.light-mode input:focus,
+body.light-mode textarea:focus,
+body.light-mode select:focus,
+body.light-mode .search-box:focus-within {
+    border-color: #818cf8 !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.10) !important;
+    outline: none !important;
+}
+body.light-mode input::placeholder,
+body.light-mode textarea::placeholder {
+    color: #94a3b8 !important;
+}
+
+/* Buttons */
+body.light-mode .btn-secondary,
+body.light-mode .note-v4-secondary-btn,
+body.light-mode .note-v4-reader-action,
+body.light-mode .admin-mini-btn {
+    background: #ffffff !important;
+    color: #334155 !important;
+    border-color: #dbe3ec !important;
+    box-shadow: 0 1px 2px rgba(15,23,42,.025);
+}
+body.light-mode .btn-secondary:hover,
+body.light-mode .note-v4-secondary-btn:hover,
+body.light-mode .note-v4-reader-action:hover,
+body.light-mode .admin-mini-btn:hover {
+    background: #f8fafc !important;
+    border-color: #c5d0dd !important;
+}
+
+/* Link / Note / Schedule buttons */
+body.light-mode .link-button {
+    background: #eef4ff !important;
+    color: #3447a8 !important;
+    border-color: #d8e2ff !important;
+}
+body.light-mode .note-button {
+    background: #fff8e7 !important;
+    color: #92550a !important;
+    border-color: #f4dfae !important;
+}
+body.light-mode .schedule-button {
+    background: #ecfbf4 !important;
+    color: #047857 !important;
+    border-color: #c8eedb !important;
+}
+
+/* Table polish */
+body.light-mode table {
+    color: #253147;
+}
+body.light-mode thead,
+body.light-mode th {
+    background: #f7f9fc !important;
+    color: #475569 !important;
+}
+body.light-mode td,
+body.light-mode th {
+    border-color: #e5eaf1 !important;
+}
+body.light-mode tbody tr:hover {
+    background: #f8fafc !important;
+}
+
+/* Modal overlay/readability */
+.modal-overlay {
+    backdrop-filter: blur(9px);
+    -webkit-backdrop-filter: blur(9px);
+}
+body.light-mode .modal-overlay {
+    background: rgba(15,23,42,.38) !important;
+}
+body:not(.light-mode) .modal-overlay {
+    background: rgba(1,5,14,.67) !important;
+}
+
+/* Admin light mode */
+body.light-mode .admin-summary-card,
+body.light-mode .admin-table-wrap,
+body.light-mode .admin-audit-item,
+body.light-mode .admin-detail-profile,
+body.light-mode .admin-session-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+body.light-mode .admin-summary-card {
+    box-shadow: 0 3px 12px rgba(15,23,42,.035);
+}
+body.light-mode .admin-tabbar {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+}
+
+/* Emoji / picker surfaces */
+body.light-mode .emoji-picker-shell,
+body.light-mode .note-v4-icon-item,
+body.light-mode .note-v4-icon-search {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+body.light-mode .note-v4-icon-item:hover,
+body.light-mode .note-v4-icon-item.selected {
+    background: #eef2ff !important;
+    border-color: #818cf8 !important;
+}
+
+/* Notes light mode */
+body.light-mode .note-v4-header,
+body.light-mode .note-v4-footer,
+body.light-mode .note-v4-toolbar {
+    background: #fbfcfe !important;
+}
+body.light-mode .note-v4-editor-card,
+body.light-mode .note-v4-editor,
+body.light-mode .note-v4-checklist,
+body.light-mode .note-v4-meta-field,
+body.light-mode .note-v4-meta-btn {
+    background: #ffffff !important;
+    border-color: #e1e7ef !important;
+}
+body.light-mode .note-v4-view-content:not(:empty),
+body.light-mode .note-v4-view-checklist {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+}
+
+/* Scrollbars */
+body.light-mode ::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+}
+body.light-mode ::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+
+/* ==========================================================================
+   NOTE DEADLINE CALENDAR
+   ========================================================================== */
+
+.note-deadline-button {
+    width: 100%;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 0 10px 10px 0;
+    background: transparent;
+    color: var(--text-sub);
+    cursor: pointer;
+    text-align: left;
+    font-size: 11px;
+}
+.note-deadline-button.has-value {
+    color: var(--text-main);
+    font-weight: 700;
+}
+.note-deadline-calendar-icon {
+    flex: 0 0 auto;
+    opacity: .82;
+}
+
+.note-calendar-modal {
+    width: min(470px, 94vw);
+    max-width: 470px;
+    padding: 18px !important;
+    border-radius: 18px;
+}
+
+.note-calendar-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.note-calendar-header h3 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 16px;
+}
+.note-calendar-header p {
+    margin: 3px 0 0;
+    color: var(--text-sub);
+    font-size: 10px;
+}
+
+.note-calendar-quick {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.note-calendar-quick button {
+    min-height: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--inner-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+}
+.note-calendar-quick button:hover {
+    border-color: var(--accent-color);
+}
+.note-calendar-quick button.clear {
+    color: var(--danger-color);
+}
+
+.note-calendar-nav {
+    display: grid;
+    grid-template-columns: 36px 1fr 36px;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 9px;
+}
+.note-calendar-nav button {
+    min-height: 34px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--inner-bg);
+    color: var(--text-main);
+    cursor: pointer;
+}
+.note-calendar-nav .month-label {
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.note-calendar-weekdays,
+.note-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.note-calendar-weekdays {
+    margin-bottom: 4px;
+}
+.note-calendar-weekdays span {
+    padding: 5px 0;
+    color: var(--text-sub);
+    text-align: center;
+    font-size: 9px;
+    font-weight: 800;
+}
+.note-calendar-day {
+    aspect-ratio: 1;
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 11px;
+}
+.note-calendar-day:hover {
+    background: var(--inner-bg);
+    border-color: var(--border-color);
+}
+.note-calendar-day.outside {
+    color: var(--text-sub);
+    opacity: .42;
+}
+.note-calendar-day.today {
+    border-color: color-mix(in srgb, var(--accent-color) 50%, transparent);
+    color: var(--accent-color);
+    font-weight: 900;
+}
+.note-calendar-day.selected {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #ffffff;
+    font-weight: 900;
+    box-shadow: 0 5px 14px color-mix(in srgb, var(--accent-color) 22%, transparent);
+}
+
+.note-calendar-time {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 10px 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 11px;
+    background: var(--inner-bg);
+}
+.note-calendar-time-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 800;
+}
+.note-calendar-time-label small {
+    color: var(--text-sub);
+    font-size: 9px;
+    font-weight: 500;
+}
+.note-calendar-time-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.note-calendar-time-controls select {
+    width: 64px;
+    min-height: 34px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--modal-bg);
+    color: var(--text-main);
+    text-align: center;
+}
+
+.note-calendar-selected {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    margin-top: 9px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--accent-color) 8%, var(--inner-bg));
+    color: var(--text-sub);
+    font-size: 10px;
+}
+
+.note-calendar-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Light deadline calendar */
+body.light-mode .note-calendar-modal {
+    background: #ffffff !important;
+}
+body.light-mode .note-calendar-quick button,
+body.light-mode .note-calendar-nav button,
+body.light-mode .note-calendar-time,
+body.light-mode .note-calendar-time-controls select {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #334155 !important;
+}
+body.light-mode .note-calendar-day:hover {
+    background: #f1f5f9 !important;
+}
+body.light-mode .note-calendar-selected {
+    background: #eef2ff !important;
+    color: #4f46e5 !important;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .note-v4-meta {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .note-calendar-quick {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 480px) {
+    .note-v4-meta {
+        grid-template-columns: 1fr !important;
+    }
+    .note-calendar-modal {
+        width: 96vw;
+        padding: 14px !important;
+    }
+}
