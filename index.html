@@ -258,8 +258,16 @@
                         <input id="noteDeadlineInput" type="datetime-local" class="note-rich-date">
                     </label>
 
-                    <label>Emoji
-                        <div class="emoji-picker-container note-emoji-wrap"><div class="emoji-grid" id="noteEmojiGrid"></div></div>
+                    <label class="note-emoji-label">Emoji
+                        <div class="note-emoji-picker-shell">
+                            <div class="note-emoji-picker-top">
+                                <span>Choose icon</span>
+                                <small>Scroll to see more</small>
+                            </div>
+                            <div class="emoji-picker-container note-emoji-wrap">
+                                <div class="emoji-grid" id="noteEmojiGrid"></div>
+                            </div>
+                        </div>
                     </label>
 
                     <div class="note-rich-side-actions">

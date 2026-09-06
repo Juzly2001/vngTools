@@ -1005,7 +1005,7 @@ function openItemModal(type, groupId, index = false) {
     } else if (type === 'note') {
         getEl('noteModalTitle').innerText = state.isEditMode ? "📝 Edit Note" : "➕ New Note";
         if (getEl('noteModalSubtitle')) getEl('noteModalSubtitle').textContent =
-            state.isEditMode ? "Edit rich content, tables and checklist items." : "Create a rich note inside this Note group.";
+            state.isEditMode ? "Edit rich content, tables and checklist items." : "Create a rich note with formatting, tables and an interactive checklist.";
         getEl('noteTitleInput').value = item ? (item.title || '') : '';
         const editor = getEl('noteRichEditor');
         if (editor) editor.innerHTML = item?.content_html
@@ -1124,6 +1124,35 @@ function triggerDelete(type) {
     });
 }
 
+
+function toggleNoteChecklistItem(groupId, noteIndex, checklistIndex, checked) {
+    const group = getGroup(groupId);
+    if (!group || !Array.isArray(group.notes)) return;
+
+    const note = group.notes[noteIndex];
+    if (!note || !Array.isArray(note.checklist) || !note.checklist[checklistIndex]) return;
+
+    note.checklist[checklistIndex].done = !!checked;
+    note.updated_at = new Date().toISOString();
+    saveData();
+
+    // Refresh only the visible checklist UI instead of closing/reopening the modal.
+    const row = document.querySelector(
+        `.note-detail-check-row[data-note-group="${CSS.escape(String(groupId))}"][data-note-index="${noteIndex}"][data-check-index="${checklistIndex}"]`
+    );
+    if (row) {
+        row.classList.toggle('done', !!checked);
+        const cb = row.querySelector('input[type="checkbox"]');
+        if (cb) cb.checked = !!checked;
+    }
+
+    const progress = getEl('noteDetailChecklistProgress');
+    if (progress) {
+        const done = note.checklist.filter(i => i.done).length;
+        progress.textContent = `${done}/${note.checklist.length} done`;
+    }
+}
+
 function showContentDetail(groupId, index, type) {
     const group = getGroup(groupId);
     if (!group) return;
@@ -1148,8 +1177,18 @@ function showContentDetail(groupId, index, type) {
         const contentHTML = noteObj.content_html ? sanitizeRichNoteHTML(noteObj.content_html) : linkify(noteObj.content || '');
         const checklist = Array.isArray(noteObj.checklist) ? noteObj.checklist : [];
         const checklistHTML = checklist.length ? `<div class="note-detail-checklist">
-            <h4>☑ Checklist (${checklist.filter(i=>i.done).length}/${checklist.length})</h4>
-            ${checklist.map(i=>`<div class="note-detail-check-row ${i.done?'done':''}"><span>${i.done?'☑':'☐'}</span><span>${escapeHTML(i.text||'')}</span></div>`).join('')}
+            <div class="note-detail-checklist-head">
+                <h4>☑ Checklist</h4>
+                <span class="note-detail-progress" id="noteDetailChecklistProgress">${checklist.filter(i=>i.done).length}/${checklist.length} done</span>
+            </div>
+            ${checklist.map((i, checkIdx)=>`<label class="note-detail-check-row ${i.done?'done':''}"
+                data-note-group="${escapeHTML(String(index))}"
+                data-note-index="${type}"
+                data-check-index="${checkIdx}">
+                <input type="checkbox" ${i.done?'checked':''}
+                    onchange="toggleNoteChecklistItem('${escapeHTML(String(index))}', ${type}, ${checkIdx}, this.checked)">
+                <span class="note-detail-check-text">${escapeHTML(i.text||'')}</span>
+            </label>`).join('')}
         </div>` : '';
         bodyEl.innerHTML = `${chips.length?`<div class="note-detail-meta">${chips.join('')}</div>`:''}<div class="view-note-content rich-note-content" id="contentToCopy">${contentHTML}</div>${checklistHTML}`;
     } 

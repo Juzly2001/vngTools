@@ -5742,3 +5742,233 @@ html[data-theme=light] .note-rich-toolbar,body.light-theme .note-rich-toolbar{ba
 html[data-theme=light] .note-rich-toolbar button,body.light-theme .note-rich-toolbar button{color:#111827!important}
 @media(max-width:800px){.note-rich-layout{grid-template-columns:1fr}.note-rich-side{position:static;grid-template-columns:1fr 1fr}.note-rich-side-actions{grid-column:1/-1;grid-template-columns:1fr 1fr}}
 @media(max-width:560px){.note-rich-modal{width:97vw;max-height:95vh}.note-rich-layout{max-height:calc(95vh - 90px)}.note-rich-side{grid-template-columns:1fr}.note-rich-side-actions{grid-column:auto;grid-template-columns:1fr}.note-rich-toolbar{gap:3px}.note-rich-toolbar button{padding:0 6px}}
+
+
+/* ==========================================================================
+   NOTE V3.1 — interactive checklist + cleaner detail modal + bigger emoji picker
+   ========================================================================== */
+
+/* Make note detail modal feel like a proper document viewer */
+#contentDetailModal .modal-box,
+.content-detail-modal-box {
+    width: min(760px, 94vw);
+    max-width: 760px;
+    max-height: 88vh;
+    overflow: hidden;
+    border-radius: 18px;
+}
+#contentDetailModal .modal-body,
+#contentDetailBody {
+    max-height: 68vh;
+    overflow: auto;
+}
+.view-note-content.rich-note-content {
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--inner-bg);
+    color: var(--text-main);
+    line-height: 1.7;
+    font-size: 13px;
+}
+.view-note-content.rich-note-content:empty {
+    display: none;
+}
+.view-note-content.rich-note-content h2 {
+    margin: .2em 0 .5em;
+    font-size: 1.45em;
+}
+.view-note-content.rich-note-content h3 {
+    margin: .2em 0 .45em;
+    font-size: 1.18em;
+}
+.view-note-content.rich-note-content p {
+    margin: .45em 0;
+}
+.view-note-content.rich-note-content ul,
+.view-note-content.rich-note-content ol {
+    padding-left: 24px;
+}
+.view-note-content.rich-note-content a {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
+/* Interactive checklist */
+.note-detail-checklist {
+    margin-top: 12px;
+    padding: 14px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--inner-bg);
+}
+.note-detail-checklist-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.note-detail-checklist-head h4 {
+    margin: 0;
+    font-size: 13px;
+}
+.note-detail-progress {
+    color: var(--text-sub);
+    font-size: 10px;
+    font-weight: 700;
+}
+.note-detail-check-row {
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 9px;
+    align-items: start;
+    padding: 8px 6px;
+    border-radius: 9px;
+    transition: background .15s ease;
+    cursor: pointer;
+}
+.note-detail-check-row:hover {
+    background: rgba(127,127,127,.07);
+}
+.note-detail-check-row input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    margin: 1px 0 0;
+    cursor: pointer;
+    accent-color: var(--accent-color);
+}
+.note-detail-check-text {
+    color: var(--text-main);
+    font-size: 12px;
+    line-height: 1.45;
+    word-break: break-word;
+}
+.note-detail-check-row.done .note-detail-check-text {
+    text-decoration: line-through;
+    color: var(--text-sub);
+}
+.note-detail-check-row.done {
+    opacity: .78;
+}
+
+/* Larger, usable emoji picker inside Note editor */
+.note-emoji-label {
+    gap: 7px !important;
+}
+.note-emoji-picker-shell {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--inner-bg);
+    overflow: hidden;
+}
+.note-emoji-picker-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-main);
+}
+.note-emoji-picker-top span {
+    font-size: 11px;
+    font-weight: 800;
+}
+.note-emoji-picker-top small {
+    color: var(--text-sub);
+    font-size: 9px;
+}
+.note-emoji-wrap {
+    max-height: 250px !important;
+    min-height: 190px;
+    overflow: auto !important;
+    padding: 9px !important;
+    background: transparent !important;
+}
+.note-emoji-wrap .emoji-grid,
+#noteEmojiGrid {
+    display: grid !important;
+    grid-template-columns: repeat(6, minmax(32px, 1fr)) !important;
+    gap: 7px !important;
+    width: 100% !important;
+}
+.note-emoji-wrap .emoji-option,
+.note-emoji-wrap .emoji-item,
+.note-emoji-wrap button,
+#noteEmojiGrid > * {
+    min-width: 34px !important;
+    min-height: 34px !important;
+    width: 100% !important;
+    border-radius: 9px !important;
+    font-size: 18px !important;
+}
+.note-emoji-wrap .emoji-option:hover,
+.note-emoji-wrap .emoji-item:hover,
+#noteEmojiGrid > *:hover {
+    transform: scale(1.05);
+}
+.note-emoji-wrap .emoji-search,
+.note-emoji-wrap input[type="search"],
+.note-emoji-wrap input[type="text"] {
+    min-height: 34px !important;
+    font-size: 11px !important;
+}
+
+/* Give the side panel enough width now that Emoji is larger */
+.note-rich-layout {
+    grid-template-columns: minmax(0, 1fr) 320px;
+}
+.note-rich-side {
+    min-width: 0;
+}
+
+/* Light mode polish */
+html[data-theme="light"] #contentDetailModal .modal-box,
+body.light-theme #contentDetailModal .modal-box,
+html[data-theme="light"] .note-emoji-picker-shell,
+body.light-theme .note-emoji-picker-shell {
+    background: #ffffff !important;
+}
+html[data-theme="light"] .view-note-content.rich-note-content,
+html[data-theme="light"] .note-detail-checklist,
+body.light-theme .view-note-content.rich-note-content,
+body.light-theme .note-detail-checklist {
+    background: #ffffff !important;
+    border-color: #d7dde7 !important;
+    color: #111827 !important;
+}
+html[data-theme="light"] .note-detail-check-text,
+body.light-theme .note-detail-check-text {
+    color: #111827 !important;
+}
+
+/* Dark mode */
+html[data-theme="dark"] .note-emoji-picker-shell,
+body.dark-theme .note-emoji-picker-shell {
+    background: #0f172a !important;
+}
+html[data-theme="dark"] .view-note-content.rich-note-content,
+html[data-theme="dark"] .note-detail-checklist,
+body.dark-theme .view-note-content.rich-note-content,
+body.dark-theme .note-detail-checklist {
+    background: #0b1220 !important;
+    color: #f8fafc !important;
+}
+html[data-theme="dark"] .note-detail-check-text,
+body.dark-theme .note-detail-check-text {
+    color: #f8fafc !important;
+}
+
+@media (max-width: 900px) {
+    .note-rich-layout {
+        grid-template-columns: 1fr;
+    }
+    .note-rich-side {
+        position: static;
+    }
+    .note-emoji-wrap {
+        min-height: 150px;
+        max-height: 210px !important;
+    }
+}
