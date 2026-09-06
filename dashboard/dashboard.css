@@ -5422,3 +5422,66 @@ body.light-mode .kanban-full-column .kanban-card { background: #fff; }
     .google-permission-gate-card { max-height:calc(100vh - 24px); padding:20px; border-radius:18px; }
     .google-permission-gate-card h2 { font-size:19px; }
 }
+
+
+/* ==========================================================================
+   ADMIN CONSOLE V3 — OWNER / ROLE / BLOCK / SESSIONS / AUDIT
+   ========================================================================== */
+.admin-console-v3 { max-width:1220px; width:min(97vw,1220px); }
+.admin-console-head { position:sticky; top:0; z-index:8; background:var(--modal-bg); padding-bottom:12px; }
+.admin-owner-lock { max-width:620px; }
+.admin-summary-grid-v3 { grid-template-columns:repeat(5,minmax(0,1fr)); }
+.admin-summary-card.danger strong { color:var(--danger-color); }
+.admin-tabbar { display:flex; gap:6px; margin:16px 0 4px; padding:4px; width:fit-content; border:1px solid var(--border-color); border-radius:12px; background:var(--inner-bg); }
+.admin-tab { border:0; border-radius:9px; padding:8px 13px; background:transparent; color:var(--text-sub); cursor:pointer; font-weight:700; }
+.admin-tab.active { background:var(--accent-color); color:#fff; }
+.admin-toolbar-v3 { flex-wrap:wrap; }
+.admin-filter-select { width:auto; min-width:126px; margin:0; padding:9px 34px 9px 11px; border-radius:10px; border:1px solid var(--border-color); background:var(--inner-bg); color:var(--text-main); }
+.admin-users-table-v3 { min-width:1080px; }
+.admin-role-pill { display:inline-flex; align-items:center; border-radius:999px; padding:5px 9px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; border:1px solid var(--border-color); }
+.admin-role-pill.owner { color:#f59e0b; background:rgba(245,158,11,.10); border-color:rgba(245,158,11,.25); }
+.admin-role-pill.admin { color:#8b5cf6; background:rgba(139,92,246,.10); border-color:rgba(139,92,246,.25); }
+.admin-role-pill.user { color:var(--text-sub); background:rgba(148,163,184,.08); }
+.admin-role-pill.blocked { color:var(--danger-color); background:rgba(239,68,68,.10); border-color:rgba(239,68,68,.25); }
+.admin-actions-cell { display:flex; gap:6px; align-items:center; white-space:nowrap; }
+.admin-mini-btn { border:1px solid var(--border-color); border-radius:9px; background:var(--inner-bg); color:var(--text-main); padding:6px 8px; font-size:11px; cursor:pointer; }
+.admin-mini-btn:hover { border-color:var(--accent-color); }
+.admin-mini-btn.danger { color:var(--danger-color); }
+.admin-role-select { width:auto; min-width:92px; margin:0; padding:6px 26px 6px 8px; font-size:11px; border-radius:9px; border:1px solid var(--border-color); background:var(--inner-bg); color:var(--text-main); }
+.admin-session-count { display:flex; flex-direction:column; gap:2px; }
+.admin-session-count strong { font-size:13px; }
+.admin-session-count small { color:var(--text-sub); }
+.admin-audit-list { display:grid; gap:8px; max-height:58vh; overflow:auto; padding:2px; }
+.admin-audit-item { display:grid; grid-template-columns:150px minmax(170px,.8fr) minmax(240px,1.4fr); gap:12px; align-items:start; padding:11px 12px; border:1px solid var(--border-color); border-radius:12px; background:var(--inner-bg); }
+.admin-audit-item time { color:var(--text-sub); font-size:11px; }
+.admin-audit-actor { min-width:0; display:flex; flex-direction:column; gap:2px; }
+.admin-audit-actor strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+.admin-audit-actor small { color:var(--text-sub); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.admin-audit-event { font-size:12px; line-height:1.5; }
+.admin-audit-event strong { display:block; margin-bottom:2px; }
+.admin-console-footer { display:flex; justify-content:space-between; gap:10px; margin-top:10px; color:var(--text-sub); font-size:11px; }
+.admin-user-detail-box { max-width:760px; width:min(95vw,760px); }
+.admin-detail-profile { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid var(--border-color); border-radius:14px; background:var(--inner-bg); }
+.admin-detail-profile img,.admin-detail-avatar { width:48px; height:48px; border-radius:50%; object-fit:cover; flex:0 0 48px; }
+.admin-detail-avatar { display:grid; place-items:center; background:var(--accent-color); color:#fff; font-weight:800; }
+.admin-detail-profile>div:last-child { min-width:0; display:flex; flex-direction:column; gap:3px; }
+.admin-detail-profile span,.admin-detail-profile small { color:var(--text-sub); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.admin-detail-section-title { margin:16px 0 8px; font-size:13px; }
+.admin-session-list { display:grid; gap:8px; }
+.admin-session-card { display:grid; grid-template-columns:1fr auto; gap:10px; align-items:center; padding:11px 12px; border:1px solid var(--border-color); border-radius:12px; background:var(--inner-bg); }
+.admin-session-card.revoked { opacity:.62; }
+.admin-session-meta { min-width:0; display:flex; flex-direction:column; gap:3px; }
+.admin-session-meta strong { font-size:12px; }
+.admin-session-meta span,.admin-session-meta small { color:var(--text-sub); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.google-permission-gate-card-v3 { width:min(520px,100%); }
+.google-gate-identity { display:flex; align-items:center; gap:11px; margin:15px 0 2px; padding:10px 12px; border:1px solid var(--border-color); border-radius:13px; background:var(--inner-bg); }
+.google-gate-identity img,#googleGateAvatarFallback { width:40px; height:40px; border-radius:50%; flex:0 0 40px; }
+.google-gate-identity img { object-fit:cover; }
+#googleGateAvatarFallback { display:grid; place-items:center; background:var(--accent-color); color:#fff; font-weight:800; }
+.google-gate-identity>div:last-child { min-width:0; display:flex; flex-direction:column; gap:2px; }
+.google-gate-identity strong { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.google-gate-identity span,.google-gate-identity small { color:var(--text-sub); font-size:11px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.google-permission-gate.is-blocked .google-permission-gate-icon { background:rgba(239,68,68,.12); }
+.google-permission-gate.is-blocked .google-permission-gate-message { color:var(--danger-color); font-weight:700; }
+@media (max-width:900px) { .admin-summary-grid-v3 { grid-template-columns:repeat(2,minmax(0,1fr)); } .admin-audit-item { grid-template-columns:1fr; gap:4px; } }
+@media (max-width:560px) { .admin-summary-grid-v3 { grid-template-columns:1fr 1fr; } .admin-filter-select { width:100%; } .admin-console-footer { flex-direction:column; } }

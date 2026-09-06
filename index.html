@@ -252,68 +252,113 @@
         </div>
     </div>
 
-
-
-
     <div class="modal-overlay" id="adminConsoleModal">
-        <div class="modal-box admin-console-box">
-            <div class="command-head redesigned-head">
+        <div class="modal-box admin-console-box admin-console-v3">
+            <div class="command-head redesigned-head admin-console-head">
                 <div>
                     <span>🛡️ Admin Console</span>
-                    <small>View accounts tracked in the shared Google Drive registry.</small>
+                    <small id="adminIdentityLine">Owner/Admin access is verified from the connected Google account.</small>
                 </div>
                 <button class="modal-close-soft" onclick="closeModal('adminConsoleModal')">✕</button>
             </div>
 
-            <div id="adminLockedView" class="admin-locked-view">
-                <div class="admin-key-icon">🔐</div>
-                <h3>Admin key required</h3>
-                <p>Connect Google, then enter the admin key to view activity stored in web_accounts.json.</p>
-                <label for="adminKeyInput">Admin key</label>
-                <div class="admin-key-row">
-                    <input type="password" id="adminKeyInput" placeholder="Enter admin key..." autocomplete="off" onkeydown="if(event.key==='Enter') unlockAdminConsole()">
-                    <button class="btn-primary" onclick="unlockAdminConsole()">Unlock</button>
-                </div>
-                <div id="adminKeyError" class="admin-key-error"></div>
+            <div id="adminLockedView" class="admin-locked-view admin-owner-lock">
+                <div class="admin-key-icon">🛡️</div>
+                <h3>Owner or Admin account required</h3>
+                <p id="adminAccessMessage">Connect the Google account that owns <strong>web_accounts.json</strong>, or an account promoted to Admin by the Owner.</p>
+                <button class="btn-primary" onclick="handlePermissionGateConnect()">🔑 Connect / switch Google</button>
                 <p class="admin-config-hint" id="adminConfigHint"></p>
             </div>
 
             <div id="adminUnlockedView" style="display:none;">
-                <div class="admin-summary-grid">
+                <div class="admin-summary-grid admin-summary-grid-v3">
                     <div class="admin-summary-card"><span>Total accounts</span><strong id="adminTotalAccounts">0</strong></div>
                     <div class="admin-summary-card online"><span>Online now</span><strong id="adminOnlineAccounts">0</strong></div>
-                    <div class="admin-summary-card"><span>Updated</span><strong id="adminLastRefresh">—</strong></div>
+                    <div class="admin-summary-card"><span>Admins</span><strong id="adminAdminAccounts">0</strong></div>
+                    <div class="admin-summary-card danger"><span>Blocked</span><strong id="adminBlockedAccounts">0</strong></div>
+                    <div class="admin-summary-card"><span>Active sessions</span><strong id="adminActiveSessions">0</strong></div>
                 </div>
 
-                <div class="admin-toolbar-row">
-                    <div class="search-box admin-search-box">
-                        <span>🔎</span>
-                        <input id="adminUserSearch" type="search" placeholder="Search name or email..." oninput="renderAdminAccounts()">
+                <div class="admin-tabbar">
+                    <button id="adminUsersTabBtn" class="admin-tab active" onclick="switchAdminTab('users')">👥 Users</button>
+                    <button id="adminAuditTabBtn" class="admin-tab" onclick="switchAdminTab('audit')">🧾 Audit log</button>
+                </div>
+
+                <div id="adminUsersPane">
+                    <div class="admin-toolbar-row admin-toolbar-v3">
+                        <div class="search-box admin-search-box">
+                            <span>🔎</span>
+                            <input id="adminUserSearch" type="search" placeholder="Search name or email..." oninput="renderAdminAccounts()">
+                        </div>
+                        <select id="adminRoleFilter" class="admin-filter-select" onchange="renderAdminAccounts()">
+                            <option value="all">All roles</option>
+                            <option value="owner">Owner</option>
+                            <option value="admin">Admin</option>
+                            <option value="user">User</option>
+                            <option value="blocked">Blocked</option>
+                        </select>
+                        <select id="adminStatusFilter" class="admin-filter-select" onchange="renderAdminAccounts()">
+                            <option value="all">All status</option>
+                            <option value="online">Online</option>
+                            <option value="offline">Offline</option>
+                        </select>
+                        <button class="btn-secondary" onclick="refreshAdminAccounts(true)">🔄 Refresh</button>
                     </div>
-                    <button class="btn-secondary" onclick="refreshAdminAccounts(true)">🔄 Refresh</button>
-                    <button class="btn-secondary" onclick="lockAdminConsole()">🔒 Lock</button>
+
+                    <div class="admin-table-wrap">
+                        <table class="admin-users-table admin-users-table-v3">
+                            <thead>
+                                <tr>
+                                    <th>Account</th><th>Role</th><th>Status</th><th>Last seen</th>
+                                    <th>Sessions</th><th>Visits</th><th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminUsersTableBody">
+                                <tr><td colspan="7" class="admin-empty-cell">No data.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="admin-footnote">
+                        Online = a non-revoked session sent a heartbeat within the last 90 seconds.
+                        Owner is detected from the Google Drive file owner, so there is no Admin Key to lose.
+                    </p>
                 </div>
 
-                <div class="admin-table-wrap">
-                    <table class="admin-users-table">
-                        <thead>
-                            <tr>
-                                <th>Account</th>
-                                <th>Status</th>
-                                <th>Last seen</th>
-                                <th>Visits</th>
-                                <th>Browser</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminUsersTableBody">
-                            <tr><td colspan="5" class="admin-empty-cell">No data.</td></tr>
-                        </tbody>
-                    </table>
+                <div id="adminAuditPane" style="display:none;">
+                    <div class="admin-toolbar-row admin-toolbar-v3">
+                        <div class="search-box admin-search-box">
+                            <span>🔎</span>
+                            <input id="adminAuditSearch" type="search" placeholder="Search audit events..." oninput="renderAdminAuditLog()">
+                        </div>
+                        <button class="btn-secondary" onclick="refreshAdminAccounts(true)">🔄 Refresh</button>
+                    </div>
+                    <div id="adminAuditList" class="admin-audit-list">
+                        <div class="admin-empty-cell">No audit events.</div>
+                    </div>
                 </div>
-                <p class="admin-footnote">Online = Google Drive heartbeat received within the last 90 seconds.</p>
+
+                <div class="admin-console-footer">
+                    <span id="adminLastRefresh">Updated —</span>
+                    <span id="adminRegistryRevision">Revision —</span>
+                </div>
             </div>
         </div>
     </div>
+
+    <div class="modal-overlay" id="adminUserDetailModal">
+        <div class="modal-box admin-user-detail-box">
+            <div class="command-head redesigned-head">
+                <div>
+                    <span id="adminUserDetailTitle">👤 User details</span>
+                    <small id="adminUserDetailSubtitle">Sessions and device activity</small>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('adminUserDetailModal')">✕</button>
+            </div>
+            <div id="adminUserDetailContent"></div>
+        </div>
+    </div>
+
+
 
     <div class="modal-overlay" id="accountModal">
         <div class="modal-box account-modal-box">
@@ -357,7 +402,7 @@
                 <button class="btn-primary" id="accountConnectBtn" onclick="handleAuthClick()">🔑 Connect Google</button>
                 <button class="btn-secondary" id="accountSwitchBtn" onclick="switchGoogleAccount()" style="display:none;">🔄 Switch account</button>
                 <button class="btn-real-danger" id="accountLogoutBtn" onclick="disconnectGoogleAccount()" style="display:none;">↪ Sign out</button>
-                <button class="btn-secondary" onclick="closeModal('accountModal'); openAdminConsole();">🛡️ Admin console</button>
+                <button class="btn-secondary" id="accountAdminBtn" onclick="closeModal('accountModal'); openAdminConsole();" style="display:none;">🛡️ Admin console</button>
             </div>
         </div>
     </div>
@@ -506,19 +551,30 @@
 
 
     <!-- GOOGLE REQUIRED PERMISSIONS GATE -->
+
     <div id="googlePermissionGate" class="google-permission-gate" role="dialog" aria-modal="true" aria-labelledby="googlePermissionGateTitle">
-        <div class="google-permission-gate-card">
+        <div class="google-permission-gate-card google-permission-gate-card-v3">
             <div class="google-permission-gate-brand">
                 <div class="google-permission-gate-icon">🔐</div>
                 <div>
                     <span class="google-permission-gate-kicker">Workspace Dashboard</span>
-                    <h2 id="googlePermissionGateTitle">Google access required</h2>
+                    <h2 id="googlePermissionGateTitle">Sign in to continue</h2>
                 </div>
             </div>
 
-            <p class="google-permission-gate-copy">
-                Sign in with Google and grant all required permissions before using this dashboard.
-                If a required permission is left unchecked on Google's consent screen, the dashboard will remain locked.
+            <div id="googleGateIdentity" class="google-gate-identity" style="display:none;">
+                <img id="googleGateAvatar" alt="" style="display:none;">
+                <div id="googleGateAvatarFallback">👤</div>
+                <div>
+                    <strong id="googleGateName">Google account</strong>
+                    <span id="googleGateEmail">—</span>
+                    <small id="googleGateRole">Checking access…</small>
+                </div>
+            </div>
+
+            <p class="google-permission-gate-copy" id="googlePermissionGateCopy">
+                Google Drive access is required for dashboard sync, account status and session management.
+                All required permissions must be selected on Google's consent screen.
             </p>
 
             <div class="google-permission-scope-list">
@@ -528,32 +584,33 @@
                 </div>
                 <div class="google-permission-scope-row" data-scope-check="email">
                     <span class="google-permission-scope-status">○</span>
-                    <div><strong>Email address</strong><small>Identify the account using the website</small></div>
+                    <div><strong>Email address</strong><small>Identify your account</small></div>
                 </div>
                 <div class="google-permission-scope-row" data-scope-check="drive">
                     <span class="google-permission-scope-status">○</span>
-                    <div><strong>Google Drive</strong><small>Access the shared web_accounts.json registry</small></div>
+                    <div><strong>Google Drive</strong><small>Safely update the shared account registry</small></div>
                 </div>
                 <div class="google-permission-scope-row" data-scope-check="appdata">
                     <span class="google-permission-scope-status">○</span>
-                    <div><strong>Drive App Data</strong><small>Keep dashboard sync data in the private app-data area</small></div>
+                    <div><strong>Drive App Data</strong><small>Private dashboard sync data</small></div>
                 </div>
             </div>
 
-            <div id="googlePermissionGateMessage" class="google-permission-gate-message">
-                Initializing Google sign-in…
-            </div>
+            <div id="googlePermissionGateMessage" class="google-permission-gate-message">Initializing Google sign-in…</div>
 
             <button id="googlePermissionGateButton" class="btn-primary google-permission-gate-button"
-                    type="button" onclick="handlePermissionGateConnect()" disabled>
-                ⏳ Loading Google…
-            </button>
+                    type="button" onclick="handlePermissionGateConnect()" disabled>⏳ Loading Google…</button>
+
+            <button id="googlePermissionSwitchButton" class="btn-secondary google-permission-gate-button"
+                    type="button" onclick="switchGoogleAccount()" style="display:none;">🔄 Use another Google account</button>
 
             <small class="google-permission-gate-footnote">
-                The website checks the OAuth token returned by Google. Partial permission grants cannot unlock the dashboard.
+                Blocked accounts and revoked sessions stay locked even when Google permissions are valid.
             </small>
         </div>
     </div>
+
+
 
     <script src="./dashboard/dashboard.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
