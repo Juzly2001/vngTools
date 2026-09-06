@@ -6490,3 +6490,89 @@ body.light-theme .note-v4-toolbar button {
         font-size: 18px !important;
     }
 }
+
+
+/* ==========================================================================
+   NOTE V4.2 — CENTER ICON PICKER
+   ========================================================================== */
+
+/*
+   Use flex-wrap instead of CSS Grid here.
+   This centers the icon collection itself and also centers the final
+   incomplete row, avoiding the large empty area on the right.
+*/
+.note-v4-icon-grid {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    justify-content: center !important;
+    align-content: flex-start !important;
+    align-items: center !important;
+
+    gap: 7px !important;
+    max-height: 340px !important;
+    overflow-y: auto !important;
+
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 12px 0 0 !important;
+    padding: 2px 12px 10px !important;
+
+    grid-template-columns: none !important;
+    grid-auto-rows: auto !important;
+}
+
+/* Fixed square buttons — never stretch with container width. */
+.note-v4-icon-item {
+    flex: 0 0 42px !important;
+
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    max-width: 42px !important;
+    max-height: 42px !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
+}
+
+/* Keep the scrollbar visually separated from icons. */
+.note-v4-icon-grid {
+    scrollbar-gutter: stable;
+}
+
+/* Slightly narrower side padding on smaller screens. */
+@media (max-width: 780px) {
+    .note-v4-icon-grid {
+        gap: 6px !important;
+        padding-left: 8px !important;
+        padding-right: 8px !important;
+    }
+
+    .note-v4-icon-item {
+        flex-basis: 40px !important;
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        max-width: 40px !important;
+        max-height: 40px !important;
+    }
+}
+
+@media (max-width: 520px) {
+    .note-v4-icon-item {
+        flex-basis: 38px !important;
+        width: 38px !important;
+        height: 38px !important;
+        min-width: 38px !important;
+        min-height: 38px !important;
+        max-width: 38px !important;
+        max-height: 38px !important;
+    }
+}
