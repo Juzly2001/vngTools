@@ -18,7 +18,7 @@ const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 // Shared account registry stored in one Google Drive JSON file.
 const ACCOUNT_REGISTRY_FILE_ID = '1RALrPeij_phHv0xXJ7EYSOdwS4CdbcHp';
 const ACCOUNT_HEARTBEAT_MS = 30000;
-const ADMIN_KEY_SHA256 = 'c36cca105d056398bd76290c5895cadd66443212f5dbdcafd74bf4c31442b665';
+const ADMIN_KEY_SHA256 = '6df24cbd27066a7c30b7c2feed28c8e4ab6c732cf946c9f7039353ec0a29326c';
 const ADMIN_SESSION_KEY = 'dashboardAdminSessionKey';
 const WEB_SESSION_ID_KEY = 'dashboardWebSessionId';
 
