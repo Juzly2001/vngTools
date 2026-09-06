@@ -5625,3 +5625,351 @@ function openKanbanTopModal(id) { openSmartModal(id); }
 function closeKanbanTopModal(id) { closeSmartModal(id); }
 function openKanbanChildModal(id) { openSmartModal(id); }
 function closeKanbanChildModal(id) { closeSmartModal(id); }
+
+/* ==========================================================================
+   NOTE V2
+   ========================================================================== */
+const NOTE_V2_STORAGE_KEY = 'workspace_notes_v2';
+const NOTE_V2_CATEGORY_KEY = 'workspace_note_categories_v2';
+
+let notesV2 = [];
+let noteCategoriesV2 = [];
+let activeNoteCategoryFilter = 'all';
+let currentEditingNoteId = null;
+let noteAutosaveTimer = null;
+
+function loadNotesV2() {
+    try {
+        const raw = JSON.parse(localStorage.getItem(NOTE_V2_STORAGE_KEY) || '[]');
+        notesV2 = Array.isArray(raw) ? raw : [];
+    } catch (_) {
+        notesV2 = [];
+    }
+
+    try {
+        const rawCats = JSON.parse(localStorage.getItem(NOTE_V2_CATEGORY_KEY) || '[]');
+        noteCategoriesV2 = Array.isArray(rawCats) && rawCats.length ? rawCats : [
+            { id:'work', name:'Work', emoji:'💼' },
+            { id:'personal', name:'Personal', emoji:'👤' },
+            { id:'urgent', name:'Urgent', emoji:'🔥' },
+            { id:'idea', name:'Idea', emoji:'💡' }
+        ];
+    } catch (_) {
+        noteCategoriesV2 = [
+            { id:'work', name:'Work', emoji:'💼' },
+            { id:'personal', name:'Personal', emoji:'👤' },
+            { id:'urgent', name:'Urgent', emoji:'🔥' },
+            { id:'idea', name:'Idea', emoji:'💡' }
+        ];
+    }
+
+    saveNoteCategoriesV2();
+}
+
+function saveNotesV2() {
+    localStorage.setItem(NOTE_V2_STORAGE_KEY, JSON.stringify(notesV2));
+}
+
+function saveNoteCategoriesV2() {
+    localStorage.setItem(NOTE_V2_CATEGORY_KEY, JSON.stringify(noteCategoriesV2));
+}
+
+function openNoteManager() {
+    loadNotesV2();
+    renderNoteCategoryFilters();
+    renderNotesV2();
+    openModal('noteManagerModal');
+}
+
+function renderNoteCategoryFilters() {
+    const wrap = getEl('noteCategoryFilters');
+    if (!wrap) return;
+    wrap.innerHTML = [
+        `<button class="note-category-chip ${activeNoteCategoryFilter === 'all' ? 'active' : ''}" onclick="setNoteCategoryFilter('all')">All categories</button>`,
+        ...noteCategoriesV2.map(c => `<button class="note-category-chip ${activeNoteCategoryFilter === c.id ? 'active' : ''}" onclick="setNoteCategoryFilter('${escapeHTML(c.id)}')">${escapeHTML(c.emoji || '•')} ${escapeHTML(c.name)}</button>`)
+    ].join('');
+}
+
+function setNoteCategoryFilter(categoryId) {
+    activeNoteCategoryFilter = categoryId;
+    renderNoteCategoryFilters();
+    renderNotesV2();
+}
+
+function noteDueState(deadline) {
+    if (!deadline) return '';
+    const due = new Date(deadline);
+    if (Number.isNaN(due.getTime())) return '';
+    const now = new Date();
+
+    const sameDay = due.getFullYear() === now.getFullYear() &&
+        due.getMonth() === now.getMonth() &&
+        due.getDate() === now.getDate();
+
+    if (due.getTime() < now.getTime()) return 'overdue';
+    if (sameDay) return 'today';
+    return 'future';
+}
+
+function formatNoteDeadline(deadline) {
+    if (!deadline) return '';
+    const d = new Date(deadline);
+    if (Number.isNaN(d.getTime())) return '';
+    return d.toLocaleString([], { dateStyle:'short', timeStyle:'short' });
+}
+
+function renderNotesV2() {
+    const wrap = getEl('notesGridV2');
+    if (!wrap) return;
+
+    const q = (getEl('noteSearchInput')?.value || '').trim().toLowerCase();
+    const filter = getEl('noteFilterSelect')?.value || 'all';
+
+    let rows = notesV2.filter(n => {
+        const searchOk = !q || `${n.title || ''} ${n.content || ''} ${(n.checklist || []).map(i => i.text).join(' ')}`.toLowerCase().includes(q);
+        const categoryOk = activeNoteCategoryFilter === 'all' || n.category === activeNoteCategoryFilter;
+
+        let filterOk = true;
+        const due = noteDueState(n.deadline);
+        if (filter === 'pinned') filterOk = !!n.pinned && !n.archived;
+        else if (filter === 'today') filterOk = due === 'today' && !n.archived;
+        else if (filter === 'overdue') filterOk = due === 'overdue' && !n.archived;
+        else if (filter === 'archived') filterOk = !!n.archived;
+        else filterOk = !n.archived;
+
+        return searchOk && categoryOk && filterOk;
+    });
+
+    rows = rows.sort((a,b) => {
+        if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
+        return new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0);
+    });
+
+    if (!rows.length) {
+        wrap.innerHTML = `<div class="note-empty-state">No notes found.<br><br><button class="btn-primary" onclick="openNoteEditor()">＋ Create your first note</button></div>`;
+        return;
+    }
+
+    wrap.innerHTML = rows.map(n => {
+        const cat = noteCategoriesV2.find(c => c.id === n.category);
+        const dueState = noteDueState(n.deadline);
+        const checklist = Array.isArray(n.checklist) ? n.checklist : [];
+        const checked = checklist.filter(i => i.done).length;
+        const preview = checklist.slice(0,3).map(i =>
+            `<div class="note-check-preview"><span>${i.done ? '☑' : '☐'}</span><span>${escapeHTML(i.text || '')}</span></div>`
+        ).join('');
+
+        return `<article class="note-card-v2 ${n.archived ? 'archived' : ''}" onclick="openNoteEditor('${escapeHTML(n.id)}')">
+            <div class="note-card-top">
+                <h3 class="note-card-title">${escapeHTML(n.title || 'Untitled note')}</h3>
+                <span class="note-card-pin">${n.pinned ? '📌' : ''}</span>
+            </div>
+
+            <div class="note-card-meta">
+                ${cat ? `<span class="note-chip">${escapeHTML(cat.emoji || '')} ${escapeHTML(cat.name)}</span>` : ''}
+                ${n.deadline ? `<span class="note-chip ${dueState}">${dueState === 'overdue' ? '⚠ Overdue' : dueState === 'today' ? '⏰ Today' : '📅'} ${escapeHTML(formatNoteDeadline(n.deadline))}</span>` : ''}
+                ${checklist.length ? `<span class="note-chip">☑ ${checked}/${checklist.length}</span>` : ''}
+                ${n.archived ? `<span class="note-chip">🗃 Archived</span>` : ''}
+            </div>
+
+            <div class="note-card-content">${escapeHTML(n.content || '')}</div>
+            ${preview ? `<div class="note-card-checklist">${preview}</div>` : ''}
+
+            <div class="note-card-footer">
+                <span>Edited ${escapeHTML(formatAdminLastSeen(n.updated_at || n.created_at))}</span>
+                <span>${escapeHTML(n.id.slice(-6))}</span>
+            </div>
+        </article>`;
+    }).join('');
+}
+
+function populateNoteCategorySelect() {
+    const select = getEl('noteCategoryInput');
+    if (!select) return;
+    select.innerHTML = `<option value="">No category</option>` +
+        noteCategoriesV2.map(c => `<option value="${escapeHTML(c.id)}">${escapeHTML(c.emoji || '')} ${escapeHTML(c.name)}</option>`).join('');
+}
+
+function createBlankNote() {
+    const now = new Date().toISOString();
+    return {
+        id: crypto.randomUUID ? crypto.randomUUID() : `note-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        title:'',
+        content:'',
+        category:'',
+        pinned:false,
+        archived:false,
+        deadline:'',
+        checklist:[],
+        created_at:now,
+        updated_at:now
+    };
+}
+
+function openNoteEditor(noteId = null) {
+    loadNotesV2();
+    populateNoteCategorySelect();
+
+    let note = noteId ? notesV2.find(n => n.id === noteId) : null;
+    if (!note) {
+        note = createBlankNote();
+        notesV2.unshift(note);
+        saveNotesV2();
+    }
+
+    currentEditingNoteId = note.id;
+    getEl('noteEditorTitle').textContent = note.title ? `📝 ${note.title}` : '📝 New note';
+    getEl('noteTitleInput').value = note.title || '';
+    getEl('noteContentInput').value = note.content || '';
+    getEl('noteCategoryInput').value = note.category || '';
+    getEl('notePinnedInput').checked = !!note.pinned;
+    getEl('noteArchivedInput').checked = !!note.archived;
+    getEl('noteDeadlineInput').value = note.deadline ? new Date(note.deadline).toISOString().slice(0,16) : '';
+    renderNoteChecklistEditor(note.checklist || []);
+    updateNoteEditorMeta(note);
+    attachNoteAutosave();
+    openModal('noteEditorModal');
+}
+
+function collectNoteEditorDraft() {
+    const note = notesV2.find(n => n.id === currentEditingNoteId);
+    if (!note) return null;
+
+    const checklist = [...document.querySelectorAll('#noteChecklistEditor .note-checklist-row')].map(row => ({
+        id: row.dataset.itemId || (crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}-${Math.random()}`),
+        text: row.querySelector('input[type="text"]')?.value || '',
+        done: !!row.querySelector('input[type="checkbox"]')?.checked
+    })).filter(i => i.text.trim() || i.done);
+
+    note.title = getEl('noteTitleInput')?.value || '';
+    note.content = getEl('noteContentInput')?.value || '';
+    note.category = getEl('noteCategoryInput')?.value || '';
+    note.pinned = !!getEl('notePinnedInput')?.checked;
+    note.archived = !!getEl('noteArchivedInput')?.checked;
+    const due = getEl('noteDeadlineInput')?.value || '';
+    note.deadline = due ? new Date(due).toISOString() : '';
+    note.checklist = checklist;
+    note.updated_at = new Date().toISOString();
+    return note;
+}
+
+function saveNoteEditor() {
+    const note = collectNoteEditorDraft();
+    if (!note) return;
+    saveNotesV2();
+    updateNoteEditorMeta(note);
+    renderNotesV2();
+    if (getEl('noteEditorTitle')) getEl('noteEditorTitle').textContent = note.title ? `📝 ${note.title}` : '📝 New note';
+}
+
+function attachNoteAutosave() {
+    const ids = ['noteTitleInput','noteContentInput','noteCategoryInput','notePinnedInput','noteArchivedInput','noteDeadlineInput'];
+    ids.forEach(id => {
+        const el = getEl(id);
+        if (!el || el.dataset.noteAutosaveBound === '1') return;
+        const handler = () => {
+            clearTimeout(noteAutosaveTimer);
+            noteAutosaveTimer = setTimeout(saveNoteEditor, 350);
+        };
+        el.addEventListener('input', handler);
+        el.addEventListener('change', handler);
+        el.dataset.noteAutosaveBound = '1';
+    });
+}
+
+function updateNoteEditorMeta(note) {
+    const meta = getEl('noteEditorMeta');
+    if (!meta) return;
+    meta.textContent = `Created ${new Date(note.created_at).toLocaleString()} · Updated ${new Date(note.updated_at).toLocaleString()}`;
+}
+
+function renderNoteChecklistEditor(items = []) {
+    const wrap = getEl('noteChecklistEditor');
+    if (!wrap) return;
+    wrap.innerHTML = (items || []).map(item => noteChecklistRowHTML(item)).join('');
+}
+
+function noteChecklistRowHTML(item) {
+    const id = item?.id || (crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}-${Math.random()}`);
+    return `<div class="note-checklist-row" data-item-id="${escapeHTML(id)}">
+        <input type="checkbox" ${item?.done ? 'checked' : ''} onchange="saveNoteEditor()">
+        <input type="text" value="${escapeHTML(item?.text || '')}" placeholder="Checklist item" oninput="scheduleNoteAutosave()">
+        <button class="note-checklist-remove" onclick="this.closest('.note-checklist-row').remove(); saveNoteEditor();" title="Remove">×</button>
+    </div>`;
+}
+
+function addNoteChecklistItem() {
+    const wrap = getEl('noteChecklistEditor');
+    if (!wrap) return;
+    wrap.insertAdjacentHTML('beforeend', noteChecklistRowHTML({ text:'', done:false }));
+    const last = wrap.lastElementChild?.querySelector('input[type="text"]');
+    last?.focus();
+}
+
+function scheduleNoteAutosave() {
+    clearTimeout(noteAutosaveTimer);
+    noteAutosaveTimer = setTimeout(saveNoteEditor, 350);
+}
+
+function duplicateCurrentNote() {
+    const source = collectNoteEditorDraft();
+    if (!source) return;
+    saveNotesV2();
+
+    const clone = JSON.parse(JSON.stringify(source));
+    clone.id = crypto.randomUUID ? crypto.randomUUID() : `note-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+    clone.title = `${source.title || 'Untitled note'} (copy)`;
+    clone.created_at = new Date().toISOString();
+    clone.updated_at = clone.created_at;
+    clone.checklist = (clone.checklist || []).map(i => ({
+        ...i,
+        id: crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}-${Math.random()}`
+    }));
+    notesV2.unshift(clone);
+    saveNotesV2();
+    currentEditingNoteId = clone.id;
+    openNoteEditor(clone.id);
+}
+
+async function copyCurrentNote() {
+    const note = collectNoteEditorDraft();
+    if (!note) return;
+    const cat = noteCategoriesV2.find(c => c.id === note.category);
+    const checklistText = (note.checklist || []).map(i => `${i.done ? '☑' : '☐'} ${i.text}`).join('\n');
+    const text = [
+        note.title || 'Untitled note',
+        cat ? `${cat.emoji || ''} ${cat.name}` : '',
+        note.deadline ? `Deadline: ${formatNoteDeadline(note.deadline)}` : '',
+        '',
+        note.content || '',
+        checklistText ? `\nChecklist:\n${checklistText}` : ''
+    ].filter(Boolean).join('\n');
+
+    try {
+        await navigator.clipboard.writeText(text);
+        if (getEl('noteEditorSubtitle')) {
+            const old = getEl('noteEditorSubtitle').textContent;
+            getEl('noteEditorSubtitle').textContent = 'Copied to clipboard ✓';
+            setTimeout(() => { if (getEl('noteEditorSubtitle')) getEl('noteEditorSubtitle').textContent = old; }, 1200);
+        }
+    } catch (_) {
+        alert('Could not copy this note.');
+    }
+}
+
+function deleteCurrentNote() {
+    if (!currentEditingNoteId) return;
+    const note = notesV2.find(n => n.id === currentEditingNoteId);
+    if (!note) return;
+    if (!confirm(`Delete "${note.title || 'Untitled note'}"?`)) return;
+
+    notesV2 = notesV2.filter(n => n.id !== currentEditingNoteId);
+    saveNotesV2();
+    currentEditingNoteId = null;
+    closeModal('noteEditorModal');
+    renderNotesV2();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadNotesV2();
+});

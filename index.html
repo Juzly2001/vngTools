@@ -612,6 +612,94 @@
 
 
 
+
+    <button id="noteV2Launcher" class="note-v2-launcher" type="button" onclick="openNoteManager()" title="Open Notes">
+        📝 <span>Notes</span>
+    </button>
+
+
+    <div class="modal-overlay" id="noteManagerModal">
+        <div class="modal-box note-manager-box">
+            <div class="command-head redesigned-head note-manager-head">
+                <div>
+                    <span>📝 Notes</span>
+                    <small>Pin, categorize, search and manage notes without leaving the dashboard.</small>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('noteManagerModal')">✕</button>
+            </div>
+
+            <div class="note-manager-toolbar">
+                <div class="search-box note-search-box">
+                    <span>🔎</span>
+                    <input id="noteSearchInput" type="search" placeholder="Search notes..." oninput="renderNotesV2()">
+                </div>
+                <select id="noteFilterSelect" class="note-filter-select" onchange="renderNotesV2()">
+                    <option value="all">All notes</option>
+                    <option value="pinned">Pinned</option>
+                    <option value="today">Due today</option>
+                    <option value="overdue">Overdue</option>
+                    <option value="archived">Archived</option>
+                </select>
+                <button class="btn-primary" onclick="openNoteEditor()">＋ New note</button>
+            </div>
+
+            <div id="noteCategoryFilters" class="note-category-filters"></div>
+            <div id="notesGridV2" class="notes-grid-v2"></div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="noteEditorModal">
+        <div class="modal-box note-editor-box">
+            <div class="command-head redesigned-head">
+                <div>
+                    <span id="noteEditorTitle">📝 New note</span>
+                    <small id="noteEditorSubtitle">Autosaved locally as you edit.</small>
+                </div>
+                <button class="modal-close-soft" onclick="closeModal('noteEditorModal')">✕</button>
+            </div>
+
+            <div class="note-editor-grid">
+                <div class="note-editor-main">
+                    <input id="noteTitleInput" class="note-title-input" type="text" placeholder="Note title">
+                    <textarea id="noteContentInput" class="note-content-input" placeholder="Write your note..."></textarea>
+
+                    <div class="note-editor-section">
+                        <div class="note-editor-section-head">
+                            <strong>Checklist</strong>
+                            <button class="btn-secondary btn-compact" onclick="addNoteChecklistItem()">＋ Item</button>
+                        </div>
+                        <div id="noteChecklistEditor" class="note-checklist-editor"></div>
+                    </div>
+                </div>
+
+                <div class="note-editor-side">
+                    <label>Category
+                        <select id="noteCategoryInput" class="note-editor-select"></select>
+                    </label>
+                    <label>Deadline
+                        <input id="noteDeadlineInput" type="datetime-local">
+                    </label>
+                    <label class="note-inline-toggle">
+                        <input id="notePinnedInput" type="checkbox">
+                        <span>📌 Pin note</span>
+                    </label>
+                    <label class="note-inline-toggle">
+                        <input id="noteArchivedInput" type="checkbox">
+                        <span>🗃️ Archived</span>
+                    </label>
+
+                    <div class="note-editor-actions">
+                        <button class="btn-primary" onclick="saveNoteEditor()">💾 Save</button>
+                        <button class="btn-secondary" onclick="duplicateCurrentNote()">⧉ Duplicate</button>
+                        <button class="btn-secondary" onclick="copyCurrentNote()">📋 Copy</button>
+                        <button class="btn-secondary danger-soft" onclick="deleteCurrentNote()">🗑 Delete</button>
+                    </div>
+                    <small id="noteEditorMeta" class="note-editor-meta"></small>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="./dashboard/dashboard.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
