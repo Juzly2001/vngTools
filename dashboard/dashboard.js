@@ -11575,3 +11575,284 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 })();
+
+
+// ============================================================================
+// CURRENT ACCOUNT RENAME V1 — CUSTOM DISPLAY NAME + CROSS-DEVICE DRIVE SYNC
+// - Adds Rename beside the Current account display name
+// - Keeps the Google email/identity unchanged
+// - Saves the custom display name locally and inside accountUiPreferences
+// - Restores the name on another browser/device after the same Google workspace loads
+// ============================================================================
+(function initCurrentAccountRenameV1(){
+    if (window.__CURRENT_ACCOUNT_RENAME_V1_READY__) return;
+    window.__CURRENT_ACCOUNT_RENAME_V1_READY__ = true;
+
+    const NAME_PREFIX = 'workspace_custom_account_name_v1_';
+
+    function identityKey(){
+        return String(
+            googleAccountProfile?.id ||
+            googleAccountProfile?.email ||
+            'default'
+        ).toLowerCase().replace(/[^a-z0-9@._-]/g, '_');
+    }
+
+    function storageKey(){
+        return NAME_PREFIX + identityKey();
+    }
+
+    function getCustomAccountName(){
+        try { return (localStorage.getItem(storageKey()) || '').trim(); }
+        catch (_) { return ''; }
+    }
+
+    function setCustomAccountName(value){
+        const clean = String(value || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+        try {
+            if (clean) localStorage.setItem(storageKey(), clean);
+            else localStorage.removeItem(storageKey());
+        } catch (_) {}
+        return clean;
+    }
+
+    function effectiveAccountName(){
+        return getCustomAccountName() || googleAccountProfile?.name || googleAccountProfile?.email || 'Google account';
+    }
+
+    function injectRenameStyles(){
+        if (document.getElementById('currentAccountRenameV1Styles')) return;
+        const style = document.createElement('style');
+        style.id = 'currentAccountRenameV1Styles';
+        style.textContent = `
+            #accountModal .account-profile-copy{min-width:0;}
+            #accountModal .account-name-row-v1{
+                display:flex;align-items:center;gap:7px;min-width:0;
+            }
+            #accountModal .account-name-row-v1 #accountDisplayName{
+                min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
+            }
+            #accountModal .account-rename-btn-v1{
+                width:28px;height:28px;min-width:28px;padding:0;border-radius:8px;
+                display:inline-grid;place-items:center;font-size:13px;line-height:1;
+                background:rgba(255,255,255,.06);color:var(--text-sub);
+                border:1px solid var(--border-color);box-shadow:none;
+            }
+            #accountModal .account-rename-btn-v1:hover{
+                color:var(--text-main);background:rgba(255,255,255,.12);
+            }
+            body.light-mode #accountModal .account-rename-btn-v1{background:#fff;}
+            #accountModal .account-rename-editor-v1{
+                display:none;align-items:center;gap:7px;margin-top:7px;width:100%;
+            }
+            #accountModal .account-rename-editor-v1.active{display:flex;}
+            #accountModal .account-rename-input-v1{
+                flex:1;min-width:0;height:34px;padding:7px 10px;border-radius:9px;
+                border:1px solid var(--border-color);background:var(--inner-bg);
+                color:var(--text-main);outline:none;
+            }
+            #accountModal .account-rename-input-v1:focus{border-color:var(--accent-color);}
+            #accountModal .account-rename-editor-v1 button{
+                min-height:34px;padding:7px 10px;font-size:12px;
+            }
+            #accountModal .account-rename-hint-v1{
+                display:block;margin-top:4px;font-size:10.5px;color:var(--text-sub);opacity:.78;
+            }
+        `;
+        document.head.appendChild(style);
+    }
+
+    function ensureRenameControls(){
+        injectRenameStyles();
+        const display = document.getElementById('accountDisplayName');
+        if (!display) return;
+        const copy = display.closest('.account-profile-copy') || display.parentElement;
+        if (!copy) return;
+
+        let row = document.getElementById('accountNameRowV1');
+        if (!row) {
+            row = document.createElement('div');
+            row.id = 'accountNameRowV1';
+            row.className = 'account-name-row-v1';
+            display.parentNode.insertBefore(row, display);
+            row.appendChild(display);
+
+            const renameBtn = document.createElement('button');
+            renameBtn.type = 'button';
+            renameBtn.id = 'accountRenameBtnV1';
+            renameBtn.className = 'account-rename-btn-v1';
+            renameBtn.title = 'Rename account';
+            renameBtn.setAttribute('aria-label', 'Rename current account');
+            renameBtn.textContent = '✎';
+            renameBtn.addEventListener('click', openRenameEditor);
+            row.appendChild(renameBtn);
+        }
+
+        let editor = document.getElementById('accountRenameEditorV1');
+        if (!editor) {
+            editor = document.createElement('div');
+            editor.id = 'accountRenameEditorV1';
+            editor.className = 'account-rename-editor-v1';
+            editor.innerHTML = `
+                <input id="accountRenameInputV1" class="account-rename-input-v1" type="text" maxlength="80" placeholder="Display name">
+                <button type="button" class="btn-primary" id="accountRenameSaveV1">Save</button>
+                <button type="button" class="btn-secondary" id="accountRenameCancelV1">Cancel</button>
+            `;
+            row.insertAdjacentElement('afterend', editor);
+
+            const hint = document.createElement('small');
+            hint.id = 'accountRenameHintV1';
+            hint.className = 'account-rename-hint-v1';
+            hint.textContent = 'Custom name syncs with this Google workspace. Email and Google account identity are unchanged.';
+            editor.insertAdjacentElement('afterend', hint);
+
+            document.getElementById('accountRenameSaveV1')?.addEventListener('click', saveRename);
+            document.getElementById('accountRenameCancelV1')?.addEventListener('click', closeRenameEditor);
+            document.getElementById('accountRenameInputV1')?.addEventListener('keydown', e => {
+                if (e.key === 'Enter') { e.preventDefault(); saveRename(); }
+                if (e.key === 'Escape') { e.preventDefault(); closeRenameEditor(); }
+            });
+        }
+
+        const connected = typeof isGoogleConnected === 'function' && isGoogleConnected();
+        const btn = document.getElementById('accountRenameBtnV1');
+        const hint = document.getElementById('accountRenameHintV1');
+        if (btn) btn.style.display = connected ? 'inline-grid' : 'none';
+        if (hint) hint.style.display = connected ? 'block' : 'none';
+        if (!connected) closeRenameEditor();
+    }
+
+    function openRenameEditor(){
+        if (!(typeof isGoogleConnected === 'function' && isGoogleConnected())) return;
+        ensureRenameControls();
+        const editor = document.getElementById('accountRenameEditorV1');
+        const input = document.getElementById('accountRenameInputV1');
+        if (!editor || !input) return;
+        input.value = getCustomAccountName() || googleAccountProfile?.name || '';
+        editor.classList.add('active');
+        setTimeout(() => { input.focus(); input.select(); }, 0);
+    }
+
+    function closeRenameEditor(){
+        document.getElementById('accountRenameEditorV1')?.classList.remove('active');
+    }
+
+    async function saveRename(){
+        const input = document.getElementById('accountRenameInputV1');
+        const saveBtn = document.getElementById('accountRenameSaveV1');
+        if (!input) return;
+        const next = String(input.value || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+        if (!next) {
+            alert('Please enter a display name.');
+            input.focus();
+            return;
+        }
+
+        const oldText = saveBtn?.textContent;
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving…'; }
+        setCustomAccountName(next);
+        applyCustomNameToUI();
+        closeRenameEditor();
+
+        try {
+            if (typeof persistWorkspaceChange === 'function') {
+                await Promise.resolve(persistWorkspaceChange('account-name'));
+            } else if (typeof syncToGoogleDrive === 'function') {
+                await Promise.resolve(syncToGoogleDrive(true));
+            }
+        } catch (error) {
+            console.warn('Could not sync custom account name yet:', error);
+        } finally {
+            if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = oldText || 'Save'; }
+        }
+    }
+
+    function applyCustomNameToUI(){
+        ensureRenameControls();
+        const connected = typeof isGoogleConnected === 'function' && isGoogleConnected();
+        if (!connected) return;
+        const label = effectiveAccountName();
+        const display = document.getElementById('accountDisplayName');
+        if (display) display.textContent = label;
+
+        const headerBtn = document.getElementById('btn-login-google');
+        if (headerBtn) {
+            headerBtn.title = `${label}${googleAccountProfile?.email && googleAccountProfile.email !== label ? ` · ${googleAccountProfile.email}` : ''}`;
+            headerBtn.setAttribute('aria-label', `Current account: ${label}`);
+        }
+
+        const viewerName = document.getElementById('accountAvatarViewerNameV1');
+        if (viewerName) viewerName.textContent = label;
+    }
+
+    // Store the custom name in the same Drive workspace payload already used for
+    // the cross-device custom avatar preference.
+    if (typeof buildDrivePayload === 'function') {
+        const buildDrivePayloadRenameV1 = buildDrivePayload;
+        buildDrivePayload = function(){
+            const payload = buildDrivePayloadRenameV1.apply(this, arguments);
+            if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+                payload.accountUiPreferences = {
+                    ...(payload.accountUiPreferences || {}),
+                    customAccountName: getCustomAccountName() || ''
+                };
+            }
+            return payload;
+        };
+    }
+
+    if (typeof applyDrivePayload === 'function') {
+        const applyDrivePayloadRenameV1 = applyDrivePayload;
+        applyDrivePayload = function(payload){
+            const result = applyDrivePayloadRenameV1.apply(this, arguments);
+            if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+                const cloudName = payload.accountUiPreferences?.customAccountName;
+                if (typeof cloudName === 'string') setCustomAccountName(cloudName);
+            }
+            setTimeout(applyCustomNameToUI, 0);
+            return result;
+        };
+    }
+
+    if (typeof updateGoogleAccountUI === 'function') {
+        const updateGoogleAccountUIRenameV1 = updateGoogleAccountUI;
+        updateGoogleAccountUI = function(){
+            const result = updateGoogleAccountUIRenameV1.apply(this, arguments);
+            setTimeout(applyCustomNameToUI, 0);
+            return result;
+        };
+    }
+
+    if (typeof openAccountPanel === 'function') {
+        const openAccountPanelRenameV1 = openAccountPanel;
+        openAccountPanel = function(){
+            const result = openAccountPanelRenameV1.apply(this, arguments);
+            setTimeout(() => { ensureRenameControls(); applyCustomNameToUI(); }, 0);
+            return result;
+        };
+    }
+
+    // The large-avatar viewer is created lazily; refresh its caption immediately after opening.
+    document.addEventListener('click', () => {
+        if (document.getElementById('accountAvatarViewerV1')?.classList.contains('active')) {
+            const name = document.getElementById('accountAvatarViewerNameV1');
+            if (name) name.textContent = effectiveAccountName();
+        }
+    }, true);
+
+    window.addEventListener('storage', e => {
+        if (e.key && e.key.startsWith(NAME_PREFIX)) setTimeout(applyCustomNameToUI, 0);
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        ensureRenameControls();
+        applyCustomNameToUI();
+    });
+    window.addEventListener('load', () => {
+        ensureRenameControls();
+        applyCustomNameToUI();
+    });
+
+    window.renameCurrentAccount = openRenameEditor;
+    window.getCurrentAccountDisplayName = effectiveAccountName;
+})();
