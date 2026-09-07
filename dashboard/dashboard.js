@@ -4656,7 +4656,7 @@ function renderTrashModal() {
             </div>
             <div class="trash-actions">
                 <button class="btn-success" onclick="restoreTrashItemAt(${index})">Restore</button>
-                <button class="btn-real-danger" onclick="removeTrashItemAt(${index})">Delete permanently</button>
+                <button class="btn-real-danger" onclick="removeTrashItemAt(${index})">Delete</button>
             </div>
         </div>`).join('');
 }
@@ -10170,6 +10170,47 @@ document.addEventListener('DOMContentLoaded', () => {
 
             .account-avatar-actions-v3 button{
                 min-height:34px;
+            }
+
+            /* Keep avatar actions compact on phones. The Google-photo reset action
+               should stay secondary instead of stretching across the modal. */
+            @media (max-width: 768px){
+                .account-avatar-actions-v3{
+                    gap:6px;
+                    margin-top:10px;
+                    align-items:center;
+                }
+
+                #accountAvatarChangeV3,
+                #accountAvatarResetV3{
+                    flex:0 0 auto !important;
+                    width:auto !important;
+                    min-width:0 !important;
+                    min-height:38px !important;
+                    padding:7px 10px !important;
+                    margin:0 !important;
+                    font-size:12px !important;
+                    line-height:1.15 !important;
+                    white-space:nowrap !important;
+                    border-radius:10px !important;
+                }
+
+                #accountAvatarResetV3{
+                    max-width:150px !important;
+                }
+
+                .account-avatar-note-v3{
+                    margin-top:0;
+                }
+            }
+
+            @media (max-width: 390px){
+                #accountAvatarChangeV3,
+                #accountAvatarResetV3{
+                    min-height:36px !important;
+                    padding:6px 8px !important;
+                    font-size:11.5px !important;
+                }
             }
 
             .account-avatar-note-v3{
