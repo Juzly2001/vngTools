@@ -577,7 +577,11 @@ function groupMatchesKeyword(group, keyword) {
     if (!keyword) return true;
     const chunks = [group.title, group.emoji, group.type, ...(group.tags || [])];
     (group.links || []).forEach(item => chunks.push(item.name, item.url, item.emoji, ...(item.tags || [])));
-    (group.notes || []).forEach(item => chunks.push(item.title, item.content, item.emoji, ...(item.tags || [])));
+    (group.notes || []).forEach(item => chunks.push(
+        item.title, item.content, item.emoji,
+        ...normalizeNoteTags(item),
+        ...normalizeNoteTags(item).map(noteTagLabel)
+    ));
     (group.schedules || []).forEach(item => chunks.push(item.title, item.content, item.date, item.endDate, item.time, item.endTime, item.emoji, ...(item.tags || [])));
     return chunks.filter(Boolean).join(' ').toLowerCase().includes(keyword);
 }
@@ -729,7 +733,11 @@ function renderDashboard() {
                     item.className = 'item-wrapper';
                     item.setAttribute('data-index', idx);
                     const pinMark = note.pinned ? '📌 ' : '';
-                    item.innerHTML = `<div class="note-button" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})">${pinMark}${nEmoji}${escapeHTML(note.title || "Note")}</div>`;
+                    const noteTags = normalizeNoteTags(note);
+                    const tagPreview = noteTags.length
+                        ? `<span class="note-button-tags">${noteTags.slice(0, 2).map(tag => `<span class="note-button-tag">${escapeHTML(noteTagLabel(tag))}</span>`).join('')}${noteTags.length > 2 ? `<span class="note-button-tag more">+${noteTags.length - 2}</span>` : ''}</span>`
+                        : '';
+                    item.innerHTML = `<div class="note-button note-button-with-tags" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})"><span class="note-button-title">${pinMark}${nEmoji}${escapeHTML(note.title || "Note")}</span>${tagPreview}</div>`;
                     item.querySelector('.note-button').onclick = () => showContentDetail(group.id, idx, 'note');
                     contentArea.appendChild(item);
                 });
@@ -1334,14 +1342,98 @@ function richNotePlainText(html) {
     return div.innerText || '';
 }
 
+const NOTE_TAG_PRESETS = {
+    work: '💼 Work',
+    personal: '👤 Personal',
+    urgent: '🔥 Urgent',
+    idea: '💡 Idea',
+    study: '📚 Study',
+    reference: '📎 Reference'
+};
+let noteSelectedTags = [];
+
 function categoryLabel(id) {
-    return ({
-        work: '💼 Work',
-        personal: '👤 Personal',
-        urgent: '🔥 Urgent',
-        idea: '💡 Idea'
-    })[id] || '';
+    return NOTE_TAG_PRESETS[id] || '';
 }
+
+function noteTagLabel(tag) {
+    const key = String(tag || '').trim();
+    return NOTE_TAG_PRESETS[key] || key;
+}
+
+function normalizeNoteTags(note) {
+    const tags = Array.isArray(note?.tags) ? note.tags : [];
+    const legacy = note?.category ? [note.category] : [];
+    return [...new Set([...tags, ...legacy].map(v => String(v || '').trim()).filter(Boolean))];
+}
+
+function renderNoteTagsPicker() {
+    const presetBox = getEl('noteTagsPresetList');
+    const selectedBox = getEl('noteTagsSelected');
+    const summary = getEl('noteTagsSummary');
+    if (!presetBox || !selectedBox || !summary) return;
+
+    presetBox.innerHTML = Object.entries(NOTE_TAG_PRESETS).map(([key, label]) => {
+        const active = noteSelectedTags.includes(key);
+        return `<button type="button" class="note-tag-option ${active ? 'active' : ''}" onclick="toggleNoteTag('${key}')"><span>${escapeHTML(label)}</span><b>${active ? '✓' : '+'}</b></button>`;
+    }).join('');
+
+    selectedBox.innerHTML = noteSelectedTags.length
+        ? noteSelectedTags.map(tag => `<button type="button" class="note-tag-chip" onclick="removeNoteTag('${escapeHTML(String(tag)).replace(/'/g, '&#39;')}')" title="Remove tag"><span>${escapeHTML(noteTagLabel(tag))}</span><b>×</b></button>`).join('')
+        : '<span class="note-tags-empty">No tags selected</span>';
+
+    summary.textContent = noteSelectedTags.length
+        ? (noteSelectedTags.length === 1 ? noteTagLabel(noteSelectedTags[0]) : `${noteSelectedTags.length} tags selected`)
+        : 'Choose tags';
+}
+
+function toggleNoteTag(tag) {
+    const key = String(tag || '').trim();
+    if (!key) return;
+    noteSelectedTags = noteSelectedTags.includes(key)
+        ? noteSelectedTags.filter(t => t !== key)
+        : [...noteSelectedTags, key];
+    renderNoteTagsPicker();
+}
+
+function removeNoteTag(tag) {
+    noteSelectedTags = noteSelectedTags.filter(t => t !== String(tag || ''));
+    renderNoteTagsPicker();
+}
+
+function addCustomNoteTag() {
+    const input = getEl('noteCustomTagInput');
+    const raw = String(input?.value || '').trim().replace(/\s+/g, ' ');
+    if (!raw) return;
+    const duplicate = noteSelectedTags.some(tag => noteTagLabel(tag).toLowerCase() === raw.toLowerCase());
+    if (!duplicate) noteSelectedTags.push(raw);
+    if (input) input.value = '';
+    renderNoteTagsPicker();
+}
+
+function toggleNoteTagsPicker(event) {
+    event?.stopPropagation?.();
+    const picker = getEl('noteTagsPicker');
+    const button = getEl('noteTagsButton');
+    if (!picker) return;
+    const willOpen = picker.hidden;
+    picker.hidden = !willOpen;
+    button?.classList.toggle('open', willOpen);
+    button?.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen) renderNoteTagsPicker();
+}
+
+document.addEventListener('click', event => {
+    const field = event.target?.closest?.('.note-tags-field');
+    if (field) return;
+    const picker = getEl('noteTagsPicker');
+    const button = getEl('noteTagsButton');
+    if (picker && !picker.hidden) {
+        picker.hidden = true;
+        button?.classList.remove('open');
+        button?.setAttribute('aria-expanded', 'false');
+    }
+});
 
 function noteDeadlineLabel(value) {
     if (!value) return '';
@@ -1463,7 +1555,12 @@ function openItemModal(type, groupId, index = false) {
                 : (old.content ? `<p>${escapeHTML(old.content).replace(/\n/g, '<br>')}</p>` : '');
         }
 
-        getEl('noteCategoryInput').value = old.category || '';
+        noteSelectedTags = normalizeNoteTags(old);
+        renderNoteTagsPicker();
+        const noteTagsPicker = getEl('noteTagsPicker');
+        if (noteTagsPicker) noteTagsPicker.hidden = true;
+        getEl('noteTagsButton')?.classList.remove('open');
+        getEl('noteTagsButton')?.setAttribute('aria-expanded', 'false');
         getEl('noteDeadlineInput').value = old.deadline
             ? localDateTimeValue(new Date(old.deadline))
             : '';
@@ -1527,7 +1624,9 @@ function submitItemForm(type) {
             content: richNotePlainText(contentHTML),
             content_html: contentHTML,
             emoji: state.selectedEmoji || 'NONE',
-            category: getEl('noteCategoryInput')?.value || '',
+            tags: [...noteSelectedTags],
+            // Keep one legacy category value for backward compatibility with older saved data/code.
+            category: noteSelectedTags.find(tag => Object.prototype.hasOwnProperty.call(NOTE_TAG_PRESETS, tag)) || '',
             deadline: deadlineRaw ? new Date(deadlineRaw).toISOString() : '',
             pinned: richNotePinned,
             checklist: collectRichChecklist(),
@@ -1664,7 +1763,7 @@ function showContentDetail(groupId, index, type) {
 
         const chips = [];
         if (noteObj.pinned) chips.push('<span class="note-v4-reader-chip">📌 Pinned</span>');
-        if (noteObj.category) chips.push(`<span class="note-v4-reader-chip">${escapeHTML(categoryLabel(noteObj.category))}</span>`);
+        normalizeNoteTags(noteObj).forEach(tag => chips.push(`<span class="note-v4-reader-chip note-v4-reader-tag">${escapeHTML(noteTagLabel(tag))}</span>`));
         if (noteObj.deadline) chips.push(`<span class="note-v4-reader-chip">📅 ${escapeHTML(noteDeadlineLabel(noteObj.deadline))}</span>`);
         if (noteObj.updated_at) chips.push(`<span class="note-v4-reader-chip">Edited ${escapeHTML(formatAdminLastSeen(noteObj.updated_at))}</span>`);
 
@@ -8335,7 +8434,11 @@ mq.addEventListener?.('change',sync);if(document.readyState==='loading')document
 
     function renderNoteItems(group) {
         const all = (group.notes || []).map((item, index) => ({ item, index }))
-            .filter(({item}) => matchesQuery([item.title, notePreview(item), item.category, ...(item.tags || [])]));
+            .filter(({item}) => matchesQuery([
+                item.title, notePreview(item),
+                ...normalizeNoteTags(item),
+                ...normalizeNoteTags(item).map(noteTagLabel)
+            ]));
         const shown = all.slice(0, MAX_PREVIEW);
 
         if (!shown.length) return {

@@ -10527,28 +10527,83 @@ body[data-theme="peach"] .custom-datetime-v5-panel {
     .custom-time-v5-col { max-height: min(230px, 38vh); }
 }
 
-/* Ẩn dấu X mặc định của Chrome/Edge */
-#globalSearch::-webkit-search-cancel-button {
-    -webkit-appearance: none;
-    appearance: none;
-    display: none;
-}
 
-/* Ẩn nút X custom khi search trống */
-.search-box > button {
-    opacity: 0;
-    visibility: hidden;
-    pointer-events: none;
-    transform: scale(0.8);
-    transition: opacity 0.18s ease,
-                transform 0.18s ease,
-                visibility 0.18s ease;
+/* ==========================================================================\n   NOTE TAGS MULTI-SELECT V6\n   ========================================================================== */
+.note-tags-field { position: relative; min-width: 190px; }
+.note-tags-button {
+    width: 100%; min-height: 42px; padding: 2px;
+    border: 1px solid var(--border-color); border-radius: 12px;
+    background: var(--inner-bg); color: var(--text-main);
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    font: inherit; font-size: 13px; font-weight: 650; cursor: pointer;
+    transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease, background .18s ease;
 }
-
-/* Khi có chữ trong search -> hiện X */
-.search-box:has(#globalSearch:not(:placeholder-shown)) > button {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: scale(1);
+.note-tags-button:hover { border-color: color-mix(in srgb, var(--accent-color) 55%, var(--border-color)); }
+.note-tags-button.open,
+.note-tags-button:focus-visible {
+    outline: none; border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 18%, transparent);
+}
+.note-tags-chevron { font-size: 16px; color: var(--text-sub); transition: transform .18s ease; }
+.note-tags-button.open .note-tags-chevron { transform: rotate(180deg); }
+.note-tags-picker[hidden] { display: none !important; }
+.note-tags-picker {
+    position: absolute; z-index: 10000020; top: calc(100% + 8px); left: 0;
+    width: min(340px, calc(100vw - 32px)); padding: 12px;
+    border-radius: 16px; border: 1px solid var(--border-color);
+    background: var(--modal-bg); color: var(--text-main);
+    box-shadow: 0 18px 50px rgba(0,0,0,.28);
+    backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+    animation: noteTagsIn .16s ease-out;
+}
+@keyframes noteTagsIn { from { opacity: 0; transform: translateY(-5px) scale(.985); } to { opacity: 1; transform: none; } }
+.note-tags-picker-head { display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin:1px 2px 10px; }
+.note-tags-picker-head strong { font-size:13px; }
+.note-tags-picker-head small { color:var(--text-sub); font-size:10px; }
+.note-tags-preset-list { display:grid; grid-template-columns:1fr 1fr; gap:7px; }
+.note-tag-option {
+    min-width:0; padding:9px 10px; border:1px solid var(--border-color); border-radius:11px;
+    background:var(--inner-bg); color:var(--text-main); display:flex; align-items:center; justify-content:space-between;
+    gap:8px; font-size:12px; font-weight:650; cursor:pointer;
+}
+.note-tag-option:hover { border-color:var(--accent-color); transform:translateY(-1px); }
+.note-tag-option.active {
+    border-color:color-mix(in srgb, var(--accent-color) 65%, transparent);
+    background:color-mix(in srgb, var(--accent-color) 16%, var(--inner-bg));
+}
+.note-tag-option b { color:var(--accent-color); font-size:13px; }
+.note-tags-selected { display:flex; flex-wrap:wrap; gap:6px; min-height:27px; padding:10px 1px 8px; }
+.note-tag-chip {
+    padding:5px 8px; border:1px solid color-mix(in srgb, var(--accent-color) 28%, var(--border-color)); border-radius:999px;
+    background:color-mix(in srgb, var(--accent-color) 10%, var(--inner-bg)); color:var(--text-main);
+    display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:650; cursor:pointer;
+}
+.note-tag-chip b { color:var(--text-sub); font-size:14px; line-height:1; }
+.note-tags-empty { color:var(--text-sub); font-size:11px; padding:4px 2px; }
+.note-tags-custom-row { display:grid; grid-template-columns:1fr auto; gap:7px; padding-top:9px; border-top:1px solid var(--border-color); }
+.note-tags-custom-row input {
+    min-width:0; height:36px !important; margin:0 !important; padding:7px 10px !important;
+    border-radius:10px !important; font-size:12px !important;
+}
+.note-tags-custom-row button {
+    height:36px; padding:0 12px; border-radius:10px; background:var(--accent-color); color:#fff;
+    font-size:12px; font-weight:750;
+}
+.note-button-with-tags { flex-direction:column; align-items:flex-start; gap:6px; border-radius:16px; }
+.note-button-title { display:flex; align-items:center; gap:3px; max-width:100%; }
+.note-button-tags { display:flex; flex-wrap:wrap; gap:4px; max-width:100%; }
+.note-button-tag {
+    max-width:120px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    padding:2px 6px; border-radius:999px; border:1px solid color-mix(in srgb, var(--accent-color) 24%, var(--border-color));
+    background:color-mix(in srgb, var(--accent-color) 9%, transparent); color:var(--text-sub);
+    font-size:9px; line-height:1.4; font-weight:700;
+}
+.note-button-tag.more { color:var(--accent-color); }
+.note-v4-reader-tag { border-color:color-mix(in srgb, var(--accent-color) 35%, var(--border-color)); }
+body.light-mode .note-tags-picker { background:#fff; }
+body.light-mode .note-tags-button,
+body.light-mode .note-tag-option { background:#fff; }
+@media (max-width: 640px) {
+    .note-tags-field { min-width:0; width:100%; }
+    .note-tags-picker { position:fixed; left:16px; right:16px; top:auto; bottom:88px; width:auto; max-height:55vh; overflow:auto; }
 }

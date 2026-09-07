@@ -246,16 +246,25 @@
                         <span>Icon</span>
                     </button>
 
-                    <label class="note-v4-meta-field">
-                        <span>Category</span>
-                        <select id="noteCategoryInput">
-                            <option value="">None</option>
-                            <option value="work">💼 Work</option>
-                            <option value="personal">👤 Personal</option>
-                            <option value="urgent">🔥 Urgent</option>
-                            <option value="idea">💡 Idea</option>
-                        </select>
-                    </label>
+                    <div class="note-v4-meta-field note-tags-field">
+                        <span>Tags</span>
+                        <button id="noteTagsButton" class="note-tags-button" type="button" onclick="toggleNoteTagsPicker(event)" aria-expanded="false">
+                            <span id="noteTagsSummary">Choose tags</span>
+                            <span class="note-tags-chevron">⌄</span>
+                        </button>
+                        <div id="noteTagsPicker" class="note-tags-picker" hidden>
+                            <div class="note-tags-picker-head">
+                                <strong>Tags</strong>
+                                <small>Select more than one</small>
+                            </div>
+                            <div id="noteTagsPresetList" class="note-tags-preset-list"></div>
+                            <div id="noteTagsSelected" class="note-tags-selected"></div>
+                            <div class="note-tags-custom-row">
+                                <input id="noteCustomTagInput" type="text" maxlength="24" placeholder="Add custom tag..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomNoteTag();}">
+                                <button type="button" onclick="addCustomNoteTag()">Add</button>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="note-v4-meta-field note-v4-deadline-field">
                         <span>Deadline</span>
