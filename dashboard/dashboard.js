@@ -7891,7 +7891,7 @@ Object.assign(THEME_SCENE_LABELS,{
         const greetingEl = document.getElementById('workspaceGreeting');
         const dateEl = document.getElementById('workspaceTodayLabel');
         if (greetingEl) greetingEl.textContent = `${greeting}. Everything you need is ready here.`;
-        if (dateEl) dateEl.textContent = new Intl.DateTimeFormat(undefined,{weekday:'short',day:'2-digit',month:'short'}).format(now);
+        if (dateEl) dateEl.textContent = new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'2-digit',month:'short',year: 'numeric'}).format(now);
     }
     window.addEventListener('load', refreshWorkspaceHero, {once:true});
 })();
