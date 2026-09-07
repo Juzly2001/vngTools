@@ -7928,3 +7928,145 @@ Object.assign(THEME_SCENE_LABELS,{
         });
     }, {once:true});
 })();
+
+// ============================================================================
+// MOBILE PRO 2026 — navigation state hardening
+// Keeps the page, drawer and mobile dock from competing for touch/scroll state.
+// ============================================================================
+(function initMobileProNavigation() {
+    const mq = window.matchMedia('(max-width: 768px)');
+
+    function syncMobileSidebarA11y() {
+        const open = document.body.classList.contains('sidebar-open');
+        const sidebar = document.querySelector('.app-sidebar');
+        const backdrop = document.getElementById('sidebarBackdrop');
+        const moreBtn = document.querySelector('.mobile-bottom-nav-v12 button:last-child');
+
+        if (sidebar) {
+            sidebar.setAttribute('aria-hidden', open ? 'false' : 'true');
+            sidebar.setAttribute('aria-modal', mq.matches && open ? 'true' : 'false');
+            if (mq.matches) sidebar.setAttribute('role', 'dialog');
+            else {
+                sidebar.removeAttribute('role');
+                sidebar.removeAttribute('aria-modal');
+                sidebar.removeAttribute('aria-hidden');
+            }
+        }
+        if (backdrop) backdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+        if (moreBtn) moreBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+
+    const originalToggleMobileSidebar = window.toggleMobileSidebar;
+    window.toggleMobileSidebar = function(force) {
+        if (typeof originalToggleMobileSidebar === 'function') {
+            originalToggleMobileSidebar(force);
+        } else {
+            const shouldOpen = typeof force === 'boolean'
+                ? force
+                : !document.body.classList.contains('sidebar-open');
+            document.body.classList.toggle('sidebar-open', shouldOpen);
+        }
+        syncMobileSidebarA11y();
+    };
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
+            window.toggleMobileSidebar(false);
+        }
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!mq.matches || !document.body.classList.contains('sidebar-open')) return;
+        const sidebar = event.target.closest('.app-sidebar');
+        const moreBtn = event.target.closest('.mobile-bottom-nav-v12 button:last-child');
+        if (!sidebar && !moreBtn && !event.target.closest('#sidebarBackdrop')) {
+            window.toggleMobileSidebar(false);
+        }
+    }, { passive: true });
+
+    function handleBreakpointChange() {
+        if (!mq.matches) document.body.classList.remove('sidebar-open');
+        syncMobileSidebarA11y();
+    }
+
+    if (mq.addEventListener) mq.addEventListener('change', handleBreakpointChange);
+    else mq.addListener(handleBreakpointChange);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', syncMobileSidebarA11y, { once: true });
+    } else {
+        syncMobileSidebarA11y();
+    }
+})();
+
+// ============================================================================
+// MOBILE PRO 2026.1 — contextual group menus
+// Keeps context menus close to the tap/click while clamping them to the viewport.
+// ============================================================================
+(function initMobileContextualMenus() {
+    const mobileMQ = window.matchMedia('(max-width: 768px)');
+    const originalOpenContextMenu = window.openContextMenu;
+
+    if (typeof originalOpenContextMenu !== 'function') return;
+
+    function placeMobileContextMenu(menu, event, isGroupMenu) {
+        if (!menu || !mobileMQ.matches) return;
+
+        menu.classList.toggle('mobile-group-context', !!isGroupMenu);
+        menu.classList.toggle('mobile-item-context', !isGroupMenu);
+
+        // Let the browser calculate the real menu size before clamping position.
+        requestAnimationFrame(() => {
+            const vv = window.visualViewport;
+            const viewportWidth = vv ? vv.width : window.innerWidth;
+            const viewportHeight = vv ? vv.height : window.innerHeight;
+            const offsetLeft = vv ? vv.offsetLeft : 0;
+            const offsetTop = vv ? vv.offsetTop : 0;
+            const gap = 10;
+            const dockReserve = 82;
+            const rect = menu.getBoundingClientRect();
+
+            const clientX = Number.isFinite(event?.clientX) ? event.clientX : viewportWidth / 2;
+            const clientY = Number.isFinite(event?.clientY) ? event.clientY : viewportHeight / 2;
+
+            let left = clientX + 8;
+            if (left + rect.width > offsetLeft + viewportWidth - gap) {
+                left = clientX - rect.width - 8;
+            }
+            left = Math.max(offsetLeft + gap, Math.min(left, offsetLeft + viewportWidth - rect.width - gap));
+
+            let top = clientY + 10;
+            const usableBottom = offsetTop + viewportHeight - dockReserve;
+            if (top + rect.height > usableBottom) {
+                top = clientY - rect.height - 10;
+            }
+            top = Math.max(offsetTop + gap, Math.min(top, usableBottom - rect.height));
+
+            menu.style.setProperty('--mobile-menu-left', `${Math.round(left)}px`);
+            menu.style.setProperty('--mobile-menu-top', `${Math.round(top)}px`);
+            menu.style.setProperty('--mobile-menu-origin-x', clientX > viewportWidth / 2 ? '100%' : '0%');
+            menu.style.setProperty('--mobile-menu-origin-y', top < clientY ? '100%' : '0%');
+        });
+    }
+
+    window.openContextMenu = function(event, targetType, groupId, index = null) {
+        originalOpenContextMenu.call(this, event, targetType, groupId, index);
+
+        if (!mobileMQ.matches) return;
+        const menu = document.getElementById('customContextMenu');
+        const isGroupMenu = String(targetType || '').startsWith('group-');
+        placeMobileContextMenu(menu, event, isGroupMenu);
+    };
+
+    // If the viewport changes while a menu is open, close it rather than leave it stranded.
+    const closeFloatingMenu = () => {
+        if (!mobileMQ.matches) return;
+        const menu = document.getElementById('customContextMenu');
+        if (menu && menu.style.display !== 'none') menu.style.display = 'none';
+    };
+
+    window.addEventListener('orientationchange', closeFloatingMenu, { passive: true });
+    if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', closeFloatingMenu, { passive: true });
+    }
+})();

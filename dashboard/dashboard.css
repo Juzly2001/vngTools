@@ -8176,3 +8176,659 @@ body { padding-top: 18px; }
         grid-template-columns:repeat(3,minmax(0,1fr)) !important;
     }
 }
+
+/* ========================================================================== 
+   MOBILE PRO 2026 — FINAL AUTHORITATIVE MOBILE EXPERIENCE
+   This block intentionally comes last so older experimental mobile rules
+   cannot compete with the current app-like navigation model.
+   ========================================================================== */
+@media (max-width: 768px) {
+    :root {
+        --mobile-page-gap: 12px;
+        --mobile-dock-height: 68px;
+        --mobile-safe-bottom: max(10px, env(safe-area-inset-bottom));
+        --mobile-surface: color-mix(in srgb, var(--panel-bg) 96%, transparent);
+        --mobile-surface-strong: color-mix(in srgb, var(--context-bg) 98%, transparent);
+        --mobile-line: color-mix(in srgb, var(--border-color) 88%, transparent);
+    }
+
+    html {
+        scroll-padding-top: 12px;
+        -webkit-text-size-adjust: 100%;
+    }
+
+    body {
+        width: 100% !important;
+        min-width: 0 !important;
+        overflow-x: hidden !important;
+        padding: 10px var(--mobile-page-gap) calc(var(--mobile-dock-height) + var(--mobile-safe-bottom) + 18px) !important;
+        overscroll-behavior-x: none;
+    }
+
+    body.sidebar-open {
+        overflow: hidden !important;
+        touch-action: none;
+    }
+
+    .container {
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+    }
+
+    /* Hero: compact mobile app header */
+    .hero-header.workspace-hero-v12 {
+        min-height: auto !important;
+        margin: 0 0 12px !important;
+        padding: 8px 4px 12px !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        border-bottom: 0 !important;
+    }
+    .hero-copy-v12 { min-width: 0; }
+    .hero-kicker-v12 {
+        font-size: 10px !important;
+        letter-spacing: .09em !important;
+        opacity: .8;
+    }
+    .workspace-hero-v12 h1 {
+        margin: 5px 0 5px !important;
+        font-size: clamp(1.85rem, 9vw, 2.3rem) !important;
+        line-height: 1 !important;
+        letter-spacing: -.045em !important;
+    }
+    .workspace-hero-v12 .hero-subtitle {
+        max-width: 32rem;
+        font-size: 12px !important;
+        line-height: 1.45 !important;
+        color: var(--text-sub) !important;
+    }
+    .hero-meta-v12 { display: none !important; }
+
+    /* Overview becomes a compact horizontal insight strip */
+    .dashboard-overview {
+        display: flex !important;
+        gap: 8px !important;
+        margin: 0 -2px 12px !important;
+        padding: 2px !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        -webkit-overflow-scrolling: touch;
+    }
+    .dashboard-overview::-webkit-scrollbar { display: none; }
+    .dashboard-overview .overview-card,
+    .dashboard-overview .overview-card:last-child {
+        flex: 0 0 132px !important;
+        min-width: 132px !important;
+        min-height: 66px !important;
+        grid-column: auto !important;
+        padding: 11px 12px !important;
+        border: 1px solid var(--mobile-line) !important;
+        border-radius: 16px !important;
+        background: var(--mobile-surface) !important;
+        scroll-snap-align: start;
+        box-shadow: 0 8px 22px rgba(0,0,0,.08) !important;
+    }
+    .dashboard-overview .overview-card span {
+        font-size: 10px !important;
+        font-weight: 750 !important;
+        white-space: nowrap;
+    }
+    .dashboard-overview .overview-card strong {
+        font-size: 1.35rem !important;
+    }
+
+    /* Search is the single persistent command surface */
+    .command-bar {
+        position: sticky !important;
+        top: 8px !important;
+        z-index: 80 !important;
+        display: block !important;
+        margin: 0 0 10px !important;
+        padding: 6px !important;
+        border: 1px solid var(--mobile-line) !important;
+        border-radius: 16px !important;
+        background: var(--mobile-surface-strong) !important;
+        box-shadow: 0 8px 28px rgba(0,0,0,.12) !important;
+        backdrop-filter: blur(18px) saturate(1.12) !important;
+        -webkit-backdrop-filter: blur(18px) saturate(1.12) !important;
+    }
+    .command-bar .search-box {
+        min-height: 48px !important;
+        width: 100% !important;
+        border-radius: 12px !important;
+    }
+    .command-bar .search-box input {
+        min-width: 0 !important;
+        font-size: 16px !important; /* prevent iOS input zoom */
+    }
+    .command-bar .quick-actions { display: none !important; }
+
+    /* Tags are swipeable, one line, no wrapping collision */
+    .tag-filter-bar {
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        margin: 0 0 10px !important;
+        padding: 0 2px !important;
+        overflow: hidden !important;
+    }
+    .tag-filter-head {
+        flex: 0 0 auto;
+        font-size: 11px !important;
+    }
+    .tag-filter-chips {
+        display: flex !important;
+        flex: 1 1 auto !important;
+        gap: 7px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        overflow-x: auto !important;
+        flex-wrap: nowrap !important;
+        scrollbar-width: none;
+        -webkit-overflow-scrolling: touch;
+    }
+    .tag-filter-chips::-webkit-scrollbar { display: none; }
+    .tag-chip {
+        flex: 0 0 auto !important;
+        min-height: 34px !important;
+        padding: 7px 11px !important;
+        white-space: nowrap !important;
+    }
+
+    /* Keep only the primary creation action on mobile */
+    .toolbar {
+        margin: 0 0 12px !important;
+        padding: 0 !important;
+        min-height: 0 !important;
+        border: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        backdrop-filter: none !important;
+    }
+    .toolbar-left,
+    .toolbar-left .create-group-main-btn {
+        width: 100% !important;
+    }
+    .toolbar-left .create-group-main-btn {
+        min-height: 48px !important;
+        justify-content: center !important;
+        border-radius: 14px !important;
+        font-size: 14px !important;
+        box-shadow: 0 9px 22px color-mix(in srgb, var(--accent-color) 18%, transparent) !important;
+    }
+    .toolbar-right { display: none !important; }
+
+    /* Content cards: comfortable touch sizing and clean hierarchy */
+    .groups-grid {
+        column-count: 1 !important;
+        column-gap: 0 !important;
+        padding: 0 0 10px !important;
+    }
+    .group-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        margin: 0 0 12px !important;
+        padding: 15px !important;
+        border-radius: 18px !important;
+        overflow: hidden;
+    }
+    .group-header {
+        min-width: 0;
+        margin-bottom: 12px !important;
+        padding-bottom: 11px !important;
+    }
+    .group-title {
+        min-width: 0;
+        font-size: 1rem !important;
+        line-height: 1.3 !important;
+    }
+    .item-wrapper {
+        max-width: 100%;
+        margin: 4px !important;
+    }
+    .link-button,
+    .note-button,
+    .schedule-button {
+        max-width: 100% !important;
+        min-height: 44px !important;
+        padding: 10px 14px !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Drawer stack. This is deliberately below modal layers but above the dock. */
+    #mobileSidebarToggle { display: none !important; }
+    .sidebar-backdrop {
+        display: block !important;
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 2400 !important;
+        background: rgba(2, 6, 23, .56) !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+        backdrop-filter: blur(3px) !important;
+        -webkit-backdrop-filter: blur(3px) !important;
+        transition: opacity .22s ease, visibility .22s ease !important;
+    }
+    body.sidebar-open .sidebar-backdrop {
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+
+    .app-sidebar {
+        display: flex !important;
+        position: fixed !important;
+        inset: 0 0 0 auto !important;
+        z-index: 2410 !important;
+        width: min(88vw, 360px) !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        margin: 0 !important;
+        padding: max(18px, env(safe-area-inset-top)) 14px calc(18px + env(safe-area-inset-bottom)) !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 7px !important;
+        overflow-y: auto !important;
+        overflow-x: hidden !important;
+        border: 0 !important;
+        border-left: 1px solid var(--mobile-line) !important;
+        border-radius: 24px 0 0 24px !important;
+        background: var(--mobile-surface-strong) !important;
+        color: var(--text-main) !important;
+        box-shadow: -24px 0 60px rgba(0,0,0,.28) !important;
+        transform: translate3d(104%,0,0) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: none !important;
+        overscroll-behavior: contain;
+        touch-action: pan-y;
+        transition: transform .26s cubic-bezier(.22,.75,.22,1) !important;
+        backdrop-filter: blur(24px) saturate(1.15) !important;
+        -webkit-backdrop-filter: blur(24px) saturate(1.15) !important;
+    }
+    body.sidebar-open .app-sidebar,
+    .app-sidebar.active,
+    .app-sidebar.open {
+        transform: translate3d(0,0,0) !important;
+        pointer-events: auto !important;
+    }
+    .app-sidebar .sidebar-logo {
+        flex: 0 0 auto !important;
+        width: 48px !important;
+        height: 48px !important;
+        min-height: 48px !important;
+        margin: 0 0 12px 2px !important;
+        border-radius: 16px !important;
+        display: grid !important;
+        place-items: center !important;
+        background: linear-gradient(135deg, var(--accent-color), color-mix(in srgb,var(--accent-color) 58%,#a855f7)) !important;
+        box-shadow: 0 10px 24px color-mix(in srgb,var(--accent-color) 20%,transparent) !important;
+    }
+    .sidebar-close {
+        display: grid !important;
+        position: absolute !important;
+        top: max(18px, env(safe-area-inset-top)) !important;
+        right: 15px !important;
+        width: 40px !important;
+        height: 40px !important;
+        min-height: 40px !important;
+        padding: 0 !important;
+        place-items: center !important;
+        border: 1px solid var(--mobile-line) !important;
+        border-radius: 13px !important;
+        background: var(--inner-bg) !important;
+        color: var(--text-main) !important;
+        font-size: 24px !important;
+        line-height: 1 !important;
+    }
+    .app-sidebar button:not(.sidebar-close):not(.sidebar-pro-toggle) {
+        width: 100% !important;
+        min-height: 48px !important;
+        margin: 0 !important;
+        padding: 11px 13px !important;
+        display: flex !important;
+        flex: 0 0 auto !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 12px !important;
+        border: 1px solid transparent !important;
+        border-radius: 13px !important;
+        background: transparent !important;
+        color: var(--text-main) !important;
+        font-size: 14px !important;
+        font-weight: 720 !important;
+        text-align: left !important;
+    }
+    .app-sidebar button:not(.sidebar-close):not(.sidebar-pro-toggle):active {
+        transform: scale(.985) !important;
+        background: color-mix(in srgb,var(--accent-color) 11%,var(--inner-bg)) !important;
+    }
+    .app-sidebar .sidebar-menu-icon {
+        display: inline-grid !important;
+        place-items: center !important;
+        flex: 0 0 34px !important;
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 10px !important;
+        background: color-mix(in srgb,var(--accent-color) 9%,var(--inner-bg)) !important;
+        font-size: 17px !important;
+    }
+    .app-sidebar #themeBtn {
+        margin-top: 8px !important;
+        border-top: 1px solid var(--mobile-line) !important;
+        padding-top: 14px !important;
+    }
+    .app-sidebar #themeBtnCanvas { display: none !important; }
+    #sidebarProToggle, .sidebar-pro-toggle { display: none !important; }
+
+    /* Bottom dock: one navigation system only. Hide it while drawer/modal work happens. */
+    .mobile-bottom-nav-v12 {
+        display: grid !important;
+        position: fixed !important;
+        left: 10px !important;
+        right: 10px !important;
+        bottom: var(--mobile-safe-bottom) !important;
+        z-index: 2300 !important;
+        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+        align-items: end !important;
+        min-height: var(--mobile-dock-height) !important;
+        padding: 7px 8px 6px !important;
+        border: 1px solid var(--mobile-line) !important;
+        border-radius: 20px !important;
+        background: var(--mobile-surface-strong) !important;
+        box-shadow: 0 16px 42px rgba(0,0,0,.23) !important;
+        backdrop-filter: blur(22px) saturate(1.18) !important;
+        -webkit-backdrop-filter: blur(22px) saturate(1.18) !important;
+        transform: translateY(0) !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        transition: transform .2s ease, opacity .16s ease, visibility .16s ease !important;
+    }
+    body.sidebar-open .mobile-bottom-nav-v12 {
+        transform: translateY(calc(100% + 24px)) !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+    .mobile-bottom-nav-v12 button {
+        min-width: 0 !important;
+        min-height: 48px !important;
+        padding: 3px 1px !important;
+        border: 0 !important;
+        border-radius: 12px !important;
+        background: transparent !important;
+        color: var(--text-sub) !important;
+        gap: 3px !important;
+        touch-action: manipulation;
+    }
+    .mobile-bottom-nav-v12 button:active {
+        background: color-mix(in srgb,var(--accent-color) 10%,transparent) !important;
+        transform: scale(.96);
+    }
+    .mobile-bottom-nav-v12 button > span {
+        font-size: 19px !important;
+        line-height: 1 !important;
+    }
+    .mobile-bottom-nav-v12 small {
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 9px !important;
+        font-weight: 760 !important;
+        line-height: 1.1;
+    }
+    .mobile-bottom-nav-v12 .mobile-add-v12 > span {
+        width: 44px !important;
+        height: 44px !important;
+        margin-top: -22px !important;
+        border-radius: 15px !important;
+        display: grid !important;
+        place-items: center !important;
+        background: linear-gradient(135deg,var(--accent-color),color-mix(in srgb,var(--accent-color) 60%,#a855f7)) !important;
+        color: #fff !important;
+        font-size: 27px !important;
+        box-shadow: 0 10px 26px color-mix(in srgb,var(--accent-color) 34%,transparent) !important;
+    }
+    .mobile-bottom-nav-v12 .mobile-add-v12 small { color: var(--text-main) !important; }
+
+    /* Context menus behave as bottom sheets instead of tiny floating desktop menus. */
+    .context-menu {
+        position: fixed !important;
+        left: 10px !important;
+        right: 10px !important;
+        top: auto !important;
+        bottom: calc(var(--mobile-dock-height) + var(--mobile-safe-bottom) + 8px) !important;
+        width: auto !important;
+        max-width: none !important;
+        max-height: min(62dvh, 460px) !important;
+        overflow-y: auto !important;
+        border-radius: 18px !important;
+        box-shadow: 0 20px 55px rgba(0,0,0,.34) !important;
+    }
+
+    /* Every modal becomes a safe mobile sheet/card; no horizontal clipping. */
+    .modal-overlay {
+        padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom)) !important;
+        align-items: flex-end !important;
+        overflow: hidden !important;
+    }
+    .modal-box,
+    .sidebar-panel-box,
+    .note-v4-modal,
+    .create-group-type-box {
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: min(92dvh, 860px) !important;
+        margin: 0 !important;
+        border-radius: 22px !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        -webkit-overflow-scrolling: touch;
+    }
+    .modal-box input,
+    .modal-box textarea,
+    .modal-box select {
+        max-width: 100% !important;
+        font-size: 16px !important;
+    }
+    .modal-footer {
+        position: sticky;
+        bottom: 0;
+        z-index: 3;
+        gap: 8px !important;
+        padding-bottom: max(4px, env(safe-area-inset-bottom)) !important;
+        background: linear-gradient(to top, var(--modal-bg) 72%, transparent) !important;
+    }
+    .modal-footer button { min-height: 44px !important; }
+
+    /* Tables and kanban retain usability through horizontal scroll, never page overflow. */
+    .schedule-table-wrapper,
+    .kanban-board,
+    .note-v4-toolbar,
+    .emoji-tabs {
+        max-width: 100% !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Remove hover movement on touch devices. */
+    .group-card:hover,
+    .link-button:hover,
+    .note-button:hover,
+    .schedule-button:hover {
+        transform: none !important;
+    }
+}
+
+@media (max-width: 390px) {
+    :root { --mobile-page-gap: 9px; }
+    .dashboard-overview .overview-card,
+    .dashboard-overview .overview-card:last-child {
+        flex-basis: 122px !important;
+        min-width: 122px !important;
+    }
+    .group-card { padding: 13px !important; }
+    .mobile-bottom-nav-v12 { left: 7px !important; right: 7px !important; }
+    .mobile-bottom-nav-v12 small { font-size: 8px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) and (max-width: 768px) {
+    .app-sidebar,
+    .sidebar-backdrop,
+    .mobile-bottom-nav-v12 {
+        transition: none !important;
+    }
+}
+
+/* ========================================================================== 
+   MOBILE PRO 2026.1 — CONTEXTUAL MENUS + BALANCED MODALS
+   Group/item menus float near the tapped control. Standard dialogs are
+   centered cards; only genuinely large workspaces keep a sheet/fullscreen feel.
+   ========================================================================== */
+@media (max-width: 768px) {
+    /* Context menu: compact floating popover instead of permanent bottom sheet. */
+    .context-menu {
+        position: fixed !important;
+        left: var(--mobile-menu-left, 12px) !important;
+        right: auto !important;
+        top: var(--mobile-menu-top, 96px) !important;
+        bottom: auto !important;
+        width: min(300px, calc(100vw - 24px)) !important;
+        max-width: calc(100vw - 24px) !important;
+        max-height: min(56dvh, 430px) !important;
+        padding: 6px !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        border-radius: 16px !important;
+        border: 1px solid color-mix(in srgb, var(--border-color) 78%, transparent) !important;
+        box-shadow: 0 18px 46px rgba(0,0,0,.30), 0 2px 8px rgba(0,0,0,.12) !important;
+        transform-origin: var(--mobile-menu-origin-x, 50%) var(--mobile-menu-origin-y, 0%) !important;
+        animation: mobileContextIn .16s cubic-bezier(.2,.8,.2,1) both !important;
+        z-index: 2600 !important;
+    }
+
+    .context-menu.mobile-group-context {
+        width: min(310px, calc(100vw - 24px)) !important;
+    }
+
+    .context-menu-item {
+        min-height: 44px !important;
+        padding: 10px 12px !important;
+        border-radius: 11px !important;
+        display: flex !important;
+        align-items: center !important;
+        line-height: 1.25 !important;
+        font-size: 14px !important;
+    }
+
+    .context-menu-item:active {
+        transform: scale(.985) !important;
+        background: color-mix(in srgb, var(--accent-color) 13%, transparent) !important;
+    }
+
+    .context-menu-divider {
+        margin: 5px 4px !important;
+        opacity: .8 !important;
+    }
+
+    /* Move submenu becomes an inset panel so it never goes off-screen on mobile. */
+    .context-menu .move-submenu-container .sub-items {
+        position: static !important;
+        left: auto !important;
+        top: auto !important;
+        width: 100% !important;
+        max-height: 190px !important;
+        margin: 4px 0 2px !important;
+        overflow-y: auto !important;
+        border-radius: 11px !important;
+        box-shadow: none !important;
+    }
+
+    @keyframes mobileContextIn {
+        from { opacity: 0; transform: scale(.96) translateY(-4px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    /* Standard mobile dialogs: centered floating cards, not bottom sheets. */
+    .modal-overlay {
+        padding: max(14px, env(safe-area-inset-top)) 12px max(14px, env(safe-area-inset-bottom)) !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow-y: auto !important;
+    }
+
+    .modal-overlay > .modal-box,
+    .modal-overlay > .sidebar-panel-box,
+    .modal-overlay > .note-v4-modal,
+    .modal-overlay > .create-group-type-box {
+        width: min(100%, 520px) !important;
+        max-width: 520px !important;
+        max-height: min(86dvh, 760px) !important;
+        margin: auto !important;
+        border-radius: 20px !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        box-shadow: 0 24px 70px rgba(0,0,0,.34) !important;
+    }
+
+    /* Compact text/confirm dialogs should feel lighter. */
+    .modal-overlay > .kanban-text-modal-box,
+    #confirmModal .modal-box,
+    #deleteConfirmModal .modal-box {
+        width: min(100%, 390px) !important;
+        max-width: 390px !important;
+        max-height: min(72dvh, 560px) !important;
+    }
+
+    /* Footer belongs to the card; remove the old sheet-style fade. */
+    .modal-footer {
+        position: sticky !important;
+        bottom: 0 !important;
+        z-index: 3 !important;
+        background: var(--panel-bg, var(--context-bg)) !important;
+        border-top: 1px solid color-mix(in srgb, var(--border-color) 70%, transparent) !important;
+        padding-top: 10px !important;
+    }
+
+    /* Large workspaces remain immersive because centering them would waste space. */
+    .kanban-workspace-overlay {
+        align-items: stretch !important;
+        padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .kanban-workspace-overlay > .modal-box,
+    .kanban-workspace-overlay .kanban-workspace-modal {
+        width: 100% !important;
+        max-width: none !important;
+        height: 100% !important;
+        max-height: 100% !important;
+        border-radius: 18px !important;
+    }
+}
+
+@media (max-width: 390px) {
+    .context-menu {
+        width: min(292px, calc(100vw - 20px)) !important;
+        max-width: calc(100vw - 20px) !important;
+    }
+    .modal-overlay {
+        padding-left: 10px !important;
+        padding-right: 10px !important;
+    }
+    .modal-overlay > .modal-box,
+    .modal-overlay > .sidebar-panel-box,
+    .modal-overlay > .note-v4-modal,
+    .modal-overlay > .create-group-type-box {
+        border-radius: 18px !important;
+    }
+}
