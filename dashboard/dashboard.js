@@ -4327,61 +4327,47 @@ window.addEventListener('scroll', () => {
 window.addEventListener('click', () => { const m = getEl('customContextMenu'); if (m) m.style.display = 'none'; });
 window.addEventListener('resize', resizeCanvas);
 
-let mobileLongPressStart = null;
-const cancelMobileLongPress = () => {
-    clearTimeout(pressTimer);
-    pressTimer = null;
-    mobileLongPressStart = null;
-};
-
 document.addEventListener('touchstart', e => {
-    if (e.touches.length !== 1) return;
     const target = e.target.closest('.link-button, .note-button, .schedule-button, .schedule-row, .group-card');
-    if (!target || e.target.closest('.modal-overlay, .context-menu, button, input, textarea, select')) return;
+    if (!target) return;
 
-    const touch = e.touches[0];
-    mobileLongPressStart = { clientX: touch.clientX, clientY: touch.clientY };
+    // Snapshot the touch point immediately. Keeping the original TouchEvent around for
+    // 500ms is unreliable on mobile browsers and pageX/pageY alone do not work with
+    // the fixed-position mobile context menu.
+    const touch = e.touches?.[0] || e.changedTouches?.[0];
+    if (!touch) return;
+    const pressPoint = {
+        clientX: touch.clientX,
+        clientY: touch.clientY,
+        pageX: touch.pageX,
+        pageY: touch.pageY
+    };
+
     clearTimeout(pressTimer);
-
     pressTimer = setTimeout(() => {
         let groupId = null, index = null, targetType = null;
-        const card = target.closest('.group-card');
-        if (!card || !document.documentElement.contains(card)) return;
+        const card = target.closest('.group-card'); if (!card) return;
         groupId = card.dataset.id;
 
         if (target.classList.contains('link-button') || target.classList.contains('note-button') || target.classList.contains('schedule-button')) {
             index = parseInt(target.parentElement.dataset.index);
             targetType = target.classList.contains('link-button') ? 'link' : (target.classList.contains('note-button') ? 'note' : 'schedule');
         } else if (target.classList.contains('schedule-row')) {
-            index = Array.from(target.parentElement.children).indexOf(target);
-            targetType = 'schedule';
+            index = Array.from(target.parentElement.children).indexOf(target); targetType = 'schedule';
         } else {
             targetType = `group-${getGroup(groupId)?.type}`;
         }
 
-        const x = mobileLongPressStart?.clientX ?? touch.clientX;
-        const y = mobileLongPressStart?.clientY ?? touch.clientY;
         openContextMenu({
             preventDefault(){},
             stopPropagation(){},
-            clientX: x,
-            clientY: y,
-            pageX: x + window.scrollX,
-            pageY: y + window.scrollY
+            ...pressPoint
         }, targetType, groupId, index);
-        pressTimer = null;
-    }, 480);
+    }, 500);
 }, { passive: true });
 
-document.addEventListener('touchmove', e => {
-    if (!mobileLongPressStart || !e.touches.length) return;
-    const t = e.touches[0];
-    if (Math.hypot(t.clientX - mobileLongPressStart.clientX, t.clientY - mobileLongPressStart.clientY) > 10) {
-        cancelMobileLongPress();
-    }
-}, { passive: true });
-document.addEventListener('touchend', cancelMobileLongPress, { passive: true });
-document.addEventListener('touchcancel', cancelMobileLongPress, { passive: true });
+document.addEventListener('touchend', () => clearTimeout(pressTimer));
+document.addEventListener('touchmove', () => clearTimeout(pressTimer));
 
 window.addEventListener('load', () => {
     state?.dashboardData?.forEach(g => { if (g.pinKey) g.isLocked = true; });
@@ -8241,10 +8227,21 @@ Object.assign(THEME_SCENE_LABELS,{
             const dockReserve = 82;
             const rect = menu.getBoundingClientRect();
 
-            const fallbackClientX = Number.isFinite(event?.pageX) ? event.pageX - window.scrollX : viewportWidth / 2;
-            const fallbackClientY = Number.isFinite(event?.pageY) ? event.pageY - window.scrollY : viewportHeight / 2;
-            const clientX = Number.isFinite(event?.clientX) ? event.clientX : fallbackClientX;
-            const clientY = Number.isFinite(event?.clientY) ? event.clientY : fallbackClientY;
+            // Accept MouseEvent, TouchEvent-like objects and legacy pageX/pageY callers.
+            // The menu itself is position:fixed, so all coordinates must end up in the
+            // visual viewport/client coordinate space.
+            const touchPoint = event?.touches?.[0] || event?.changedTouches?.[0] || null;
+            const rawClientX = touchPoint?.clientX ?? event?.clientX;
+            const rawClientY = touchPoint?.clientY ?? event?.clientY;
+            const rawPageX = touchPoint?.pageX ?? event?.pageX;
+            const rawPageY = touchPoint?.pageY ?? event?.pageY;
+
+            const clientX = Number.isFinite(rawClientX)
+                ? rawClientX
+                : (Number.isFinite(rawPageX) ? rawPageX - window.scrollX : offsetLeft + viewportWidth / 2);
+            const clientY = Number.isFinite(rawClientY)
+                ? rawClientY
+                : (Number.isFinite(rawPageY) ? rawPageY - window.scrollY : offsetTop + viewportHeight / 2);
 
             let left = clientX + 8;
             if (left + rect.width > offsetLeft + viewportWidth - gap) {
