@@ -11706,7 +11706,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 overflow:hidden;
                 text-overflow:ellipsis;
                 white-space:nowrap;
-                color:var(--text-main);
+                color:inherit;
                 font-size:13px;
                 font-weight:750;
                 line-height:1.25;
