@@ -9175,6 +9175,7 @@ body.desktop-inspector-open .desktop-inspector{opacity:1;visibility:visible;poin
     }
 
     .inspector-item-main {
+        overflow: auto;
         flex: 1;
         min-width: 0;
     }
