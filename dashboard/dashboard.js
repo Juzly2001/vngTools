@@ -12029,3 +12029,533 @@ document.addEventListener('DOMContentLoaded', () => {
     window.getCurrentAccountDisplayName = effectiveAccountName;
 })();
 
+
+// ============================================================================
+// CUSTOM DROPDOWN V4 — stable portal menu, anchored to trigger
+// ============================================================================
+(function initCustomDropdownV4(){
+    const enhanced = new WeakSet();
+    let opened = null;
+    let rafId = 0;
+
+    const getMenu = wrap => wrap?._customDropdownMenu || null;
+
+    const schedulePosition = () => {
+        if (!opened) return;
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+            rafId = 0;
+            positionMenu(opened);
+        });
+    };
+
+    const close = (wrap) => {
+        if (!wrap) return;
+        wrap.classList.remove('open');
+        const trigger = wrap.querySelector('.custom-select-v3-trigger');
+        const menu = getMenu(wrap);
+        trigger?.setAttribute('aria-expanded', 'false');
+        if (menu) {
+            menu.classList.remove('open');
+            menu.hidden = true;
+            menu.style.visibility = '';
+        }
+        if (opened === wrap) opened = null;
+    };
+
+    const closeAll = (except = null) => {
+        document.querySelectorAll('.custom-select-v3.open').forEach(w => {
+            if (w !== except) close(w);
+        });
+    };
+
+    function positionMenu(wrap) {
+        if (!wrap || wrap !== opened || !wrap.isConnected) return;
+        const trigger = wrap.querySelector('.custom-select-v3-trigger');
+        const menu = getMenu(wrap);
+        if (!trigger || !menu || menu.hidden) return;
+
+        const r = trigger.getBoundingClientRect();
+        if (!r.width || !r.height) { close(wrap); return; }
+
+        const gap = 7;
+        const edge = 10;
+        const minWidth = 120;
+        const width = Math.min(Math.max(r.width, minWidth), window.innerWidth - edge * 2);
+
+        menu.style.width = `${width}px`;
+        menu.style.left = `${Math.max(edge, Math.min(r.left, window.innerWidth - width - edge))}px`;
+        menu.style.maxHeight = `${Math.min(280, Math.max(140, window.innerHeight * 0.55))}px`;
+
+        // Measure after width/max-height are known.
+        const menuHeight = Math.min(menu.scrollHeight, parseFloat(menu.style.maxHeight) || 280);
+        const roomBelow = window.innerHeight - r.bottom - gap - edge;
+        const roomAbove = r.top - gap - edge;
+        const openAbove = roomBelow < Math.min(menuHeight, 170) && roomAbove > roomBelow;
+
+        if (openAbove) {
+            const usable = Math.max(80, roomAbove);
+            menu.style.maxHeight = `${Math.min(menuHeight, usable)}px`;
+            const finalHeight = Math.min(menu.scrollHeight, parseFloat(menu.style.maxHeight));
+            menu.style.top = `${Math.max(edge, r.top - finalHeight - gap)}px`;
+            menu.dataset.placement = 'top';
+        } else {
+            const usable = Math.max(80, roomBelow);
+            menu.style.maxHeight = `${Math.min(menuHeight, usable)}px`;
+            menu.style.top = `${Math.min(window.innerHeight - edge, r.bottom + gap)}px`;
+            menu.dataset.placement = 'bottom';
+        }
+
+        menu.style.visibility = 'visible';
+    }
+
+    const buildOptions = (select, menu) => {
+        const frag = document.createDocumentFragment();
+        menu.replaceChildren();
+
+        function addOption(opt){
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'custom-select-v3-option';
+            btn.textContent = opt.textContent;
+            btn.dataset.value = opt.value;
+            btn.disabled = opt.disabled;
+            btn.setAttribute('role', 'option');
+            btn.setAttribute('aria-selected', opt.selected ? 'true' : 'false');
+            if (opt.selected) btn.classList.add('is-selected');
+
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (opt.disabled) return;
+                const changed = select.selectedIndex !== opt.index;
+                select.selectedIndex = opt.index;
+                syncFromNative(select, false);
+                if (changed) {
+                    select.dispatchEvent(new Event('input', { bubbles: true }));
+                    select.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                const wrap = select.closest('.custom-select-v3');
+                close(wrap);
+                wrap?.querySelector('.custom-select-v3-trigger')?.focus({ preventScroll: true });
+            });
+            frag.appendChild(btn);
+        }
+
+        Array.from(select.children).forEach(child => {
+            if (child.tagName === 'OPTGROUP') {
+                const group = document.createElement('div');
+                group.className = 'custom-select-v3-optgroup';
+                group.textContent = child.label;
+                frag.appendChild(group);
+                Array.from(child.children).forEach(addOption);
+            } else if (child.tagName === 'OPTION') {
+                addOption(child);
+            }
+        });
+        menu.appendChild(frag);
+    };
+
+    const syncFromNative = (select, rebuild = true) => {
+        const wrap = select.closest('.custom-select-v3');
+        if (!wrap) return;
+        const label = wrap.querySelector('.custom-select-v3-label');
+        const trigger = wrap.querySelector('.custom-select-v3-trigger');
+        const menu = getMenu(wrap);
+        const option = select.options[select.selectedIndex];
+
+        if (label) label.textContent = option ? option.textContent : '';
+        if (trigger) {
+            trigger.disabled = !!select.disabled;
+            trigger.title = select.title || '';
+        }
+
+        if (menu) {
+            if (rebuild) {
+                buildOptions(select, menu);
+            } else {
+                const buttons = menu.querySelectorAll('.custom-select-v3-option');
+                buttons.forEach((btn, i) => {
+                    const selected = i === select.selectedIndex;
+                    btn.classList.toggle('is-selected', selected);
+                    btn.setAttribute('aria-selected', selected ? 'true' : 'false');
+                });
+            }
+        }
+    };
+
+    const enhance = (select) => {
+        if (!select || enhanced.has(select) || select.multiple || Number(select.size) > 1) return;
+        if (select.closest('.custom-select-v3')) return;
+        enhanced.add(select);
+
+        const wrap = document.createElement('div');
+        wrap.className = 'custom-select-v3';
+        if (select.className) wrap.dataset.nativeClass = select.className;
+
+        const trigger = document.createElement('button');
+        trigger.type = 'button';
+        trigger.className = 'custom-select-v3-trigger';
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+
+        const label = document.createElement('span');
+        label.className = 'custom-select-v3-label';
+        const arrow = document.createElement('span');
+        arrow.className = 'custom-select-v3-arrow';
+        arrow.setAttribute('aria-hidden', 'true');
+        trigger.append(label, arrow);
+
+        // IMPORTANT: menu is portaled to <body>, so transformed/modal ancestors
+        // can no longer alter fixed-position coordinates.
+        const menu = document.createElement('div');
+        menu.className = 'custom-select-v3-menu';
+        menu.setAttribute('role', 'listbox');
+        menu.hidden = true;
+        document.body.appendChild(menu);
+        wrap._customDropdownMenu = menu;
+
+        select.parentNode.insertBefore(wrap, select);
+        wrap.append(select, trigger);
+        select.classList.add('custom-select-v3-native');
+
+        trigger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (select.disabled) return;
+            const willOpen = !wrap.classList.contains('open');
+            closeAll(wrap);
+            if (!willOpen) { close(wrap); return; }
+
+            syncFromNative(select, true);
+            wrap.classList.add('open');
+            trigger.setAttribute('aria-expanded', 'true');
+            opened = wrap;
+            menu.hidden = false;
+            menu.classList.add('open');
+            menu.style.visibility = 'hidden';
+
+            // Position first, then scroll selected item without moving the page.
+            requestAnimationFrame(() => {
+                positionMenu(wrap);
+                const selected = menu.querySelector('.is-selected');
+                if (selected) {
+                    const mt = menu.scrollTop;
+                    const top = selected.offsetTop;
+                    const bottom = top + selected.offsetHeight;
+                    if (top < mt) menu.scrollTop = top;
+                    else if (bottom > mt + menu.clientHeight) menu.scrollTop = bottom - menu.clientHeight;
+                }
+            });
+        });
+
+        trigger.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') { close(wrap); return; }
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (!wrap.classList.contains('open')) trigger.click();
+                const buttons = [...menu.querySelectorAll('.custom-select-v3-option:not(:disabled)')];
+                if (!buttons.length) return;
+                const current = menu.querySelector('.custom-select-v3-option.is-active') || menu.querySelector('.is-selected');
+                let i = Math.max(0, buttons.indexOf(current));
+                i = e.key === 'ArrowDown' ? Math.min(buttons.length - 1, i + 1) : Math.max(0, i - 1);
+                buttons.forEach(b => b.classList.remove('is-active'));
+                buttons[i].classList.add('is-active');
+                const top = buttons[i].offsetTop;
+                const bottom = top + buttons[i].offsetHeight;
+                if (top < menu.scrollTop) menu.scrollTop = top;
+                else if (bottom > menu.scrollTop + menu.clientHeight) menu.scrollTop = bottom - menu.clientHeight;
+            } else if (e.key === 'Enter' && wrap.classList.contains('open')) {
+                const active = menu.querySelector('.custom-select-v3-option.is-active');
+                if (active) { e.preventDefault(); active.click(); }
+            }
+        });
+
+        select.addEventListener('change', () => syncFromNative(select, true));
+
+        // Observe only meaningful native select changes. Debounce into one frame.
+        let syncRaf = 0;
+        const obs = new MutationObserver(() => {
+            cancelAnimationFrame(syncRaf);
+            syncRaf = requestAnimationFrame(() => {
+                syncFromNative(select, true);
+                if (opened === wrap) schedulePosition();
+            });
+        });
+        obs.observe(select, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: ['selected', 'disabled', 'label']
+        });
+        wrap._customDropdownObserver = obs;
+        syncFromNative(select, true);
+    };
+
+    const scan = (root = document) => {
+        if (root.matches?.('select')) enhance(root);
+        root.querySelectorAll?.('select').forEach(enhance);
+    };
+
+    document.addEventListener('pointerdown', (e) => {
+        if (!opened) return;
+        const menu = getMenu(opened);
+        if (opened.contains(e.target) || menu?.contains(e.target)) return;
+        close(opened);
+    }, true);
+
+    // Reposition only when the PAGE/VIEWPORT changes. Scrolling the menu itself
+    // must NOT trigger positioning, which was the main source of jitter in V3.
+    window.addEventListener('resize', schedulePosition, { passive: true });
+    window.addEventListener('scroll', schedulePosition, { passive: true });
+
+    const rootObs = new MutationObserver(mutations => {
+        mutations.forEach(m => m.addedNodes.forEach(n => {
+            if (n.nodeType === 1 && !n.classList?.contains('custom-select-v3-menu')) scan(n);
+        }));
+    });
+
+    const start = () => {
+        scan(document);
+        rootObs.observe(document.body, { childList: true, subtree: true });
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
+    else start();
+})();
+
+// ============================================================================
+// CUSTOM DATE / TIME PICKER V5
+// Keeps the original input[type=date/time] as the source of truth so all
+// existing Schedule create/edit/save logic continues to read the same values.
+// ============================================================================
+(() => {
+    const enhanced = new WeakSet();
+    let opened = null;
+    let raf = 0;
+
+    const pad = n => String(n).padStart(2, '0');
+    const ymd = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+    const sameDay = (a,b) => !!a && !!b && a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate();
+    const parseDate = value => {
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return null;
+        const [y,m,d] = value.split('-').map(Number);
+        const out = new Date(y,m-1,d);
+        return Number.isNaN(out.getTime()) ? null : out;
+    };
+    const formatDate = value => {
+        const d = parseDate(value);
+        if (!d) return 'Choose date';
+        try { return new Intl.DateTimeFormat(undefined,{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).format(d); }
+        catch (_) { return value; }
+    };
+    const normalizeTime = value => /^\d{2}:\d{2}/.test(value || '') ? value.slice(0,5) : '';
+
+    function getPanel(wrap){ return wrap?._customDateTimePanel || null; }
+    function dispatchNative(input){
+        input.dispatchEvent(new Event('input', {bubbles:true}));
+        input.dispatchEvent(new Event('change', {bubbles:true}));
+    }
+    function syncLabel(input){
+        const wrap = input.closest('.custom-datetime-v5');
+        const label = wrap?.querySelector('.custom-datetime-v5-label');
+        if (!label) return;
+        label.textContent = input.type === 'date' ? formatDate(input.value) : (normalizeTime(input.value) || 'Choose time');
+    }
+    function close(wrap = opened){
+        if (!wrap) return;
+        const panel = getPanel(wrap);
+        wrap.classList.remove('open');
+        wrap.querySelector('.custom-datetime-v5-trigger')?.setAttribute('aria-expanded','false');
+        if (panel) {
+            panel.classList.remove('open');
+            panel.hidden = true;
+        }
+        if (opened === wrap) opened = null;
+    }
+    function closeAll(except){ if (opened && opened !== except) close(opened); }
+
+    function position(wrap){
+        if (!wrap?.classList.contains('open')) return;
+        const trigger = wrap.querySelector('.custom-datetime-v5-trigger');
+        const panel = getPanel(wrap);
+        if (!trigger || !panel || panel.hidden) return;
+        const r = trigger.getBoundingClientRect();
+        const edge = 8, gap = 7;
+        const width = Math.min(Math.max(286, r.width), Math.min(330, window.innerWidth - edge*2));
+        panel.style.width = `${width}px`;
+        panel.style.left = `${Math.max(edge, Math.min(r.left, window.innerWidth - width - edge))}px`;
+        panel.style.visibility = 'hidden';
+        panel.style.top = '0px';
+        const h = panel.offsetHeight || 320;
+        const below = window.innerHeight - r.bottom - edge;
+        const above = r.top - edge;
+        if (below < Math.min(h, 250) && above > below) {
+            panel.style.top = `${Math.max(edge, r.top - h - gap)}px`;
+            panel.dataset.placement = 'top';
+        } else {
+            panel.style.top = `${Math.min(window.innerHeight - h - edge, r.bottom + gap)}px`;
+            panel.dataset.placement = 'bottom';
+        }
+        panel.style.visibility = 'visible';
+    }
+    function schedulePosition(){
+        if (!opened) return;
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => position(opened));
+    }
+
+    function buildDatePanel(input, panel){
+        let selected = parseDate(input.value);
+        let view = selected ? new Date(selected.getFullYear(), selected.getMonth(), 1) : new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+
+        panel.innerHTML = `
+            <div class="custom-date-v5-head">
+                <button type="button" data-act="prev" aria-label="Previous month">‹</button>
+                <div class="custom-date-v5-title"></div>
+                <button type="button" data-act="next" aria-label="Next month">›</button>
+            </div>
+            <div class="custom-date-v5-weekdays"><span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span></div>
+            <div class="custom-date-v5-grid"></div>
+            <div class="custom-date-v5-foot">
+                <button type="button" data-act="clear">Clear</button>
+                <button type="button" data-act="today">Today</button>
+            </div>`;
+
+        const title = panel.querySelector('.custom-date-v5-title');
+        const grid = panel.querySelector('.custom-date-v5-grid');
+        const render = () => {
+            title.textContent = view.toLocaleDateString([], {month:'long',year:'numeric'});
+            grid.replaceChildren();
+            const first = new Date(view.getFullYear(), view.getMonth(), 1);
+            const start = new Date(first);
+            start.setDate(first.getDate() - first.getDay());
+            const today = new Date();
+            for (let i=0;i<42;i++) {
+                const d = new Date(start);
+                d.setDate(start.getDate()+i);
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.className = 'custom-date-v5-day';
+                b.textContent = String(d.getDate());
+                if (d.getMonth() !== view.getMonth()) b.classList.add('outside');
+                if (sameDay(d,today)) b.classList.add('today');
+                if (sameDay(d,selected)) b.classList.add('selected');
+                b.addEventListener('click', () => {
+                    selected = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+                    input.value = ymd(selected);
+                    syncLabel(input);
+                    dispatchNative(input);
+                    close(input.closest('.custom-datetime-v5'));
+                    input.closest('.custom-datetime-v5')?.querySelector('.custom-datetime-v5-trigger')?.focus({preventScroll:true});
+                });
+                grid.appendChild(b);
+            }
+        };
+        panel.querySelector('[data-act="prev"]').onclick = () => { view = new Date(view.getFullYear(), view.getMonth()-1, 1); render(); schedulePosition(); };
+        panel.querySelector('[data-act="next"]').onclick = () => { view = new Date(view.getFullYear(), view.getMonth()+1, 1); render(); schedulePosition(); };
+        panel.querySelector('[data-act="today"]').onclick = () => {
+            const d = new Date();
+            input.value = ymd(d);
+            syncLabel(input); dispatchNative(input); close(input.closest('.custom-datetime-v5'));
+        };
+        panel.querySelector('[data-act="clear"]').onclick = () => {
+            input.value = '';
+            syncLabel(input); dispatchNative(input); close(input.closest('.custom-datetime-v5'));
+        };
+        render();
+    }
+
+    function buildTimePanel(input, panel){
+        let current = normalizeTime(input.value) || '09:00';
+        let [hour, minute] = current.split(':').map(Number);
+        panel.innerHTML = `
+            <div class="custom-time-v5-title"><strong>Choose time</strong><span class="custom-time-v5-preview"></span></div>
+            <div class="custom-time-v5-columns">
+                <div class="custom-time-v5-col custom-time-v5-hours"><small>Hour</small></div>
+                <div class="custom-time-v5-col custom-time-v5-minutes"><small>Minute</small></div>
+            </div>
+            <div class="custom-time-v5-actions">
+                <button type="button" data-act="clear">Clear</button>
+                <button type="button" class="primary" data-act="apply">Apply</button>
+            </div>`;
+        const preview = panel.querySelector('.custom-time-v5-preview');
+        const hc = panel.querySelector('.custom-time-v5-hours');
+        const mc = panel.querySelector('.custom-time-v5-minutes');
+        const refresh = () => {
+            preview.textContent = `${pad(hour)}:${pad(minute)}`;
+            hc.querySelectorAll('.custom-time-v5-option').forEach(b => b.classList.toggle('selected', Number(b.dataset.value)===hour));
+            mc.querySelectorAll('.custom-time-v5-option').forEach(b => b.classList.toggle('selected', Number(b.dataset.value)===minute));
+        };
+        for (let h=0;h<24;h++) {
+            const b=document.createElement('button'); b.type='button'; b.className='custom-time-v5-option'; b.dataset.value=h; b.textContent=pad(h);
+            b.onclick=()=>{hour=h;refresh();}; hc.appendChild(b);
+        }
+        // Every minute keeps native time precision while still looking custom.
+        for (let m=0;m<60;m++) {
+            const b=document.createElement('button'); b.type='button'; b.className='custom-time-v5-option'; b.dataset.value=m; b.textContent=pad(m);
+            b.onclick=()=>{minute=m;refresh();}; mc.appendChild(b);
+        }
+        panel.querySelector('[data-act="apply"]').onclick=()=>{
+            input.value=`${pad(hour)}:${pad(minute)}`;
+            syncLabel(input); dispatchNative(input); close(input.closest('.custom-datetime-v5'));
+        };
+        panel.querySelector('[data-act="clear"]').onclick=()=>{
+            input.value=''; syncLabel(input); dispatchNative(input); close(input.closest('.custom-datetime-v5'));
+        };
+        refresh();
+        requestAnimationFrame(()=>{
+            hc.querySelector('.selected')?.scrollIntoView({block:'center'});
+            mc.querySelector('.selected')?.scrollIntoView({block:'center'});
+        });
+    }
+
+    function enhance(input){
+        if (!input || enhanced.has(input) || (input.type !== 'date' && input.type !== 'time')) return;
+        if (input.closest('.custom-datetime-v5')) return;
+        enhanced.add(input);
+
+        const wrap=document.createElement('div'); wrap.className='custom-datetime-v5';
+        const trigger=document.createElement('button'); trigger.type='button'; trigger.className='custom-datetime-v5-trigger';
+        trigger.setAttribute('aria-haspopup','dialog'); trigger.setAttribute('aria-expanded','false');
+        const icon=document.createElement('span'); icon.className='custom-datetime-v5-icon'; icon.textContent=input.type==='date'?'📅':'🕒';
+        const label=document.createElement('span'); label.className='custom-datetime-v5-label';
+        const chev=document.createElement('span'); chev.className='custom-datetime-v5-chevron'; chev.setAttribute('aria-hidden','true');
+        trigger.append(icon,label,chev);
+
+        const panel=document.createElement('div'); panel.className='custom-datetime-v5-panel'; panel.hidden=true; panel.setAttribute('role','dialog');
+        document.body.appendChild(panel); wrap._customDateTimePanel=panel;
+
+        input.parentNode.insertBefore(wrap,input);
+        wrap.append(input,trigger);
+        input.classList.add('custom-datetime-v5-native');
+        syncLabel(input);
+
+        trigger.onclick=(e)=>{
+            e.stopPropagation();
+            const willOpen=!wrap.classList.contains('open');
+            closeAll(wrap);
+            if (!willOpen){ close(wrap); return; }
+            if (input.type==='date') buildDatePanel(input,panel); else buildTimePanel(input,panel);
+            wrap.classList.add('open'); trigger.setAttribute('aria-expanded','true'); opened=wrap;
+            panel.hidden=false; panel.classList.add('open'); panel.style.visibility='hidden';
+            requestAnimationFrame(()=>position(wrap));
+        };
+        trigger.onkeydown=(e)=>{ if(e.key==='Escape'){ e.preventDefault(); close(wrap); } };
+        input.addEventListener('change',()=>syncLabel(input));
+    }
+
+    const scan=(root=document)=>{
+        if (root.matches?.('input[type="date"], input[type="time"]')) enhance(root);
+        root.querySelectorAll?.('input[type="date"], input[type="time"]').forEach(enhance);
+    };
+    document.addEventListener('pointerdown',(e)=>{
+        if(!opened) return;
+        const panel=getPanel(opened);
+        if(opened.contains(e.target)||panel?.contains(e.target)) return;
+        close(opened);
+    },true);
+    window.addEventListener('resize',schedulePosition,{passive:true});
+    window.addEventListener('scroll',schedulePosition,{passive:true});
+
+    const obs=new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(n=>{ if(n.nodeType===1 && !n.classList?.contains('custom-datetime-v5-panel')) scan(n); })));
+    const start=()=>{ scan(document); obs.observe(document.body,{childList:true,subtree:true}); };
+    if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
+})();

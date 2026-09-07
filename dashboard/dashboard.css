@@ -9730,3 +9730,799 @@ body.account-avatar-viewer-open-v1{overflow:hidden;}
     .account-avatar-viewer-dialog-v1 img{width:min(330px,82vw);height:min(330px,82vw);border-radius:20px;}
     .auto-time-slots span{font-size:9px;padding:4px 6px;}
 }
+
+/* ========================================================================== 
+   NATIVE DROPDOWN THEME FIX V1 — all themes / Windows Chrome
+   Prevents white popup + white text in dark themes.
+   ========================================================================== */
+
+/* Base native-select styling follows the active dashboard theme. */
+body[data-theme] select {
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+    background-color: var(--inner-bg) !important;
+}
+
+/* The dropdown popup itself is rendered natively by the browser on Windows.
+   Options therefore need explicit foreground/background colors as well. */
+body[data-theme] select option,
+body[data-theme] select optgroup {
+    background-color: var(--modal-bg) !important;
+    color: var(--text-main) !important;
+}
+
+/* Dark-family themes: tell Chromium to use dark native controls/popups. */
+body[data-theme="dark"] select,
+body[data-theme="midnight"] select,
+body[data-theme="oled"] select,
+body[data-theme="forest"] select,
+body[data-theme="ocean"] select,
+body[data-theme="sunset"] select,
+body[data-theme="coffee"] select,
+body[data-theme="sakura-night"] select,
+body[data-theme="cyber"] select,
+body[data-theme="grape"] select,
+body[data-theme="terminal"] select {
+    color-scheme: dark !important;
+}
+
+/* Light-family themes: keep native controls genuinely light. */
+body[data-theme="light"] select,
+body[data-theme="rose"] select,
+body[data-theme="lavender"] select,
+body[data-theme="mint"] select,
+body[data-theme="sky"] select,
+body[data-theme="lemon"] select,
+body[data-theme="peach"] select {
+    color-scheme: light !important;
+}
+
+/* Solid popup surfaces improve native option rendering when --modal-bg is rgba. */
+body[data-theme="dark"] select option,
+body[data-theme="dark"] select optgroup { background-color: #0f172a !important; }
+body[data-theme="midnight"] select option,
+body[data-theme="midnight"] select optgroup { background-color: #020617 !important; }
+body[data-theme="oled"] select option,
+body[data-theme="oled"] select optgroup { background-color: #050505 !important; }
+body[data-theme="forest"] select option,
+body[data-theme="forest"] select optgroup { background-color: #052e16 !important; }
+body[data-theme="ocean"] select option,
+body[data-theme="ocean"] select optgroup { background-color: #082f49 !important; }
+body[data-theme="sunset"] select option,
+body[data-theme="sunset"] select optgroup { background-color: #431407 !important; }
+body[data-theme="coffee"] select option,
+body[data-theme="coffee"] select optgroup { background-color: #2b1d16 !important; }
+body[data-theme="sakura-night"] select option,
+body[data-theme="sakura-night"] select optgroup { background-color: #1f102f !important; }
+body[data-theme="cyber"] select option,
+body[data-theme="cyber"] select optgroup { background-color: #020617 !important; }
+body[data-theme="grape"] select option,
+body[data-theme="grape"] select optgroup { background-color: #25043f !important; }
+body[data-theme="terminal"] select option,
+body[data-theme="terminal"] select optgroup { background-color: #001a09 !important; }
+
+body[data-theme="light"] select option,
+body[data-theme="light"] select optgroup,
+body[data-theme="rose"] select option,
+body[data-theme="rose"] select optgroup,
+body[data-theme="lavender"] select option,
+body[data-theme="lavender"] select optgroup,
+body[data-theme="mint"] select option,
+body[data-theme="mint"] select optgroup,
+body[data-theme="sky"] select option,
+body[data-theme="sky"] select optgroup,
+body[data-theme="lemon"] select option,
+body[data-theme="lemon"] select optgroup,
+body[data-theme="peach"] select option,
+body[data-theme="peach"] select optgroup {
+    background-color: #ffffff !important;
+    color: var(--text-main) !important;
+}
+
+/* Preserve intentionally transparent compact selects while still fixing their popup. */
+body[data-theme] .note-v4-meta-field select {
+    background: transparent !important;
+}
+
+/* Deadline time selects should look like the surrounding calendar surface. */
+body[data-theme] .note-calendar-time-controls select {
+    background-color: var(--modal-bg) !important;
+    color: var(--text-main) !important;
+}
+
+/* Admin had its own native-option patch; keep it theme-aware instead of forcing navy. */
+body[data-theme] .admin-console-v3 select,
+body[data-theme] .admin-console-v3 select option,
+body[data-theme] .admin-console-v3 select optgroup {
+    color: var(--text-main) !important;
+}
+
+/* ========================================================================== 
+   DROPDOWN REDESIGN V2 — polished glass/native selects for every theme
+   ========================================================================== */
+
+/* Generic select surface */
+body[data-theme] select {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 42px;
+    padding: 0 42px 0 14px !important;
+    border: 1px solid color-mix(in srgb, var(--border-color) 78%, var(--accent-color) 22%) !important;
+    border-radius: 12px !important;
+    background-color: color-mix(in srgb, var(--modal-bg) 88%, var(--accent-color) 12%) !important;
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-sub) 50%),
+        linear-gradient(135deg, var(--text-sub) 50%, transparent 50%);
+    background-position:
+        calc(100% - 17px) calc(50% - 2px),
+        calc(100% - 12px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    color: var(--text-main) !important;
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    outline: none;
+    box-shadow:
+        inset 0 1px 0 color-mix(in srgb, #fff 7%, transparent),
+        0 3px 10px rgba(0,0,0,.08);
+    transition:
+        border-color .18s ease,
+        box-shadow .18s ease,
+        background-color .18s ease,
+        transform .18s ease;
+}
+
+body[data-theme] select:hover {
+    border-color: color-mix(in srgb, var(--accent-color) 56%, var(--border-color)) !important;
+    background-color: color-mix(in srgb, var(--modal-bg) 82%, var(--accent-color) 18%) !important;
+}
+
+body[data-theme] select:focus,
+body[data-theme] select:focus-visible {
+    border-color: var(--accent-color) !important;
+    box-shadow:
+        0 0 0 3px color-mix(in srgb, var(--accent-color) 18%, transparent),
+        0 8px 20px rgba(0,0,0,.12) !important;
+}
+
+body[data-theme] select:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+    filter: saturate(.65);
+}
+
+/* Native popup rows */
+body[data-theme] select option,
+body[data-theme] select optgroup {
+    padding: 10px 12px;
+    font-weight: 500;
+}
+
+/* Light themes get a cleaner elevated white surface. */
+body[data-theme="light"] select,
+body[data-theme="rose"] select,
+body[data-theme="lavender"] select,
+body[data-theme="mint"] select,
+body[data-theme="sky"] select,
+body[data-theme="lemon"] select,
+body[data-theme="peach"] select {
+    background-color: color-mix(in srgb, #fff 94%, var(--accent-color) 6%) !important;
+    box-shadow: 0 3px 10px rgba(15,23,42,.06);
+}
+
+/* Note Category: keep its compact meta-card look, but make the select feel designed. */
+body[data-theme] .note-v4-meta-field select {
+    min-height: 29px !important;
+    height: 29px !important;
+    padding: 0 28px 0 2px !important;
+    border: 0 !important;
+    border-radius: 7px !important;
+    background-color: transparent !important;
+    background-position:
+        calc(100% - 10px) calc(50% - 2px),
+        calc(100% - 6px) calc(50% - 2px);
+    background-size: 4px 4px, 4px 4px;
+    box-shadow: none !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+body[data-theme] .note-v4-meta-field select:hover {
+    background-color: color-mix(in srgb, var(--accent-color) 9%, transparent) !important;
+}
+body[data-theme] .note-v4-meta-field select:focus {
+    background-color: color-mix(in srgb, var(--accent-color) 12%, transparent) !important;
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-color) 15%, transparent) !important;
+}
+
+/* Deadline hour/minute controls: small pill-like selects. */
+body[data-theme] .note-calendar-time-controls select {
+    width: 68px;
+    min-height: 36px !important;
+    height: 36px;
+    padding: 0 25px 0 9px !important;
+    border-radius: 10px !important;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 800;
+    background-position:
+        calc(100% - 10px) calc(50% - 2px),
+        calc(100% - 6px) calc(50% - 2px);
+    background-size: 4px 4px, 4px 4px;
+}
+
+/* Admin filters: slightly more compact but still premium. */
+body[data-theme] .admin-filter-select {
+    min-height: 40px !important;
+    padding: 0 38px 0 12px !important;
+    border-radius: 11px !important;
+    font-size: 12px;
+    font-weight: 700;
+}
+body[data-theme] .admin-role-select {
+    min-height: 34px !important;
+    height: 34px;
+    padding: 0 31px 0 10px !important;
+    border-radius: 10px !important;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* Modal selects match text inputs without looking like browser defaults. */
+body[data-theme] .modal-box select:not(.admin-role-select):not(.admin-filter-select) {
+    min-height: 44px;
+    border-radius: 12px !important;
+}
+
+/* Keyboard accessibility */
+body[data-theme] select:focus-visible {
+    outline: none !important;
+}
+
+/* Mobile: generous tap target without oversized visual weight. */
+@media (max-width: 600px) {
+    body[data-theme] select {
+        min-height: 44px;
+        font-size: 14px;
+    }
+    body[data-theme] .note-v4-meta-field select {
+        min-height: 30px !important;
+        height: 30px !important;
+        font-size: 11px !important;
+    }
+    body[data-theme] .note-calendar-time-controls select {
+        min-height: 38px !important;
+        height: 38px;
+    }
+}
+
+/* ========================================================================== 
+   CUSTOM DROPDOWN V4 — stable portal menu + rounded visual design
+   ========================================================================== */
+.custom-select-v3-native {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    overflow: hidden !important;
+}
+
+.custom-select-v3 {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+    min-width: 0;
+    font: inherit;
+}
+
+.custom-select-v3-trigger {
+    width: 100%;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 0 12px 0 14px;
+    border: 1px solid color-mix(in srgb, var(--border-color) 70%, var(--accent-color) 30%);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--modal-bg) 91%, var(--accent-color) 9%);
+    color: var(--text-main);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 5px 14px rgba(0,0,0,.09);
+    cursor: pointer;
+    text-align: left;
+    transition: border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+
+.custom-select-v3-trigger:hover {
+    border-color: color-mix(in srgb, var(--accent-color) 58%, var(--border-color));
+    background: color-mix(in srgb, var(--modal-bg) 84%, var(--accent-color) 16%);
+}
+
+.custom-select-v3.open .custom-select-v3-trigger,
+.custom-select-v3-trigger:focus-visible {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 18%, transparent), 0 8px 20px rgba(0,0,0,.12);
+}
+
+.custom-select-v3-label {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: 650;
+}
+
+.custom-select-v3-arrow {
+    width: 24px;
+    height: 24px;
+    flex: 0 0 24px;
+    border-radius: 8px;
+    display: grid;
+    place-items: center;
+    color: var(--text-sub);
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    transition: transform .18s ease, color .18s ease, background .18s ease;
+}
+.custom-select-v3-arrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+}
+.custom-select-v3.open .custom-select-v3-arrow {
+    transform: rotate(180deg);
+    color: var(--accent-color);
+    background: color-mix(in srgb, var(--accent-color) 17%, transparent);
+}
+
+/* Portaled directly under body, so fixed coordinates always use viewport. */
+.custom-select-v3-menu {
+    position: fixed;
+    z-index: 2147483000;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 7px;
+    border: 1px solid color-mix(in srgb, var(--border-color) 68%, var(--accent-color) 32%);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--modal-bg) 96%, var(--accent-color) 4%);
+    color: var(--text-main);
+    box-shadow: 0 20px 46px rgba(0,0,0,.27), inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter: blur(18px) saturate(1.1);
+    -webkit-backdrop-filter: blur(18px) saturate(1.1);
+    opacity: 0;
+    transform: translateY(-4px) scale(.988);
+    transform-origin: top center;
+    pointer-events: none;
+    will-change: transform, opacity;
+}
+.custom-select-v3-menu[hidden] { display: none !important; }
+.custom-select-v3-menu.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    transition: opacity .12s ease, transform .12s ease;
+}
+.custom-select-v3-menu[data-placement="top"] {
+    transform-origin: bottom center;
+}
+
+.custom-select-v3-option {
+    width: 100%;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    margin: 1px 0;
+    border: 0;
+    border-radius: 11px;
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 560;
+    text-align: left;
+    cursor: pointer;
+    transition: background .12s ease, color .12s ease;
+}
+.custom-select-v3-option:hover,
+.custom-select-v3-option.is-active {
+    background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+}
+.custom-select-v3-option.is-selected {
+    color: color-mix(in srgb, var(--accent-color) 82%, var(--text-main));
+    background: color-mix(in srgb, var(--accent-color) 19%, transparent);
+    font-weight: 750;
+}
+.custom-select-v3-option.is-selected::after {
+    content: "✓";
+    margin-left: auto;
+    font-weight: 900;
+    color: var(--accent-color);
+}
+.custom-select-v3-option:disabled {
+    opacity: .45;
+    cursor: not-allowed;
+}
+.custom-select-v3-optgroup {
+    padding: 9px 10px 5px;
+    color: var(--text-sub);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+/* Compact Note category */
+.note-v4-meta-field .custom-select-v3 { width: auto; min-width: 92px; }
+.note-v4-meta-field .custom-select-v3-trigger {
+    min-height: 30px;
+    height: 30px;
+    padding: 0 7px 0 9px;
+    border-radius: 9px;
+    box-shadow: none;
+    background: color-mix(in srgb, var(--accent-color) 7%, transparent);
+}
+.note-v4-meta-field .custom-select-v3-label { font-size: 11px; font-weight: 750; }
+.note-v4-meta-field .custom-select-v3-arrow { width: 19px; height: 19px; flex-basis: 19px; border-radius: 6px; }
+.note-v4-meta-field .custom-select-v3-arrow::before { width: 5px; height: 5px; border-width: 1.5px; }
+
+/* Deadline hour/minute */
+.note-calendar-time-controls .custom-select-v3 { width: 72px; }
+.note-calendar-time-controls .custom-select-v3-trigger {
+    min-height: 38px;
+    height: 38px;
+    padding: 0 7px 0 10px;
+    border-radius: 12px;
+}
+.note-calendar-time-controls .custom-select-v3-label { text-align: center; font-size: 12px; font-weight: 800; }
+.note-calendar-time-controls .custom-select-v3-arrow { width: 20px; height: 20px; flex-basis: 20px; }
+
+/* Admin */
+.custom-select-v3:has(> .admin-filter-select) { min-width: 126px; }
+.custom-select-v3:has(> .admin-role-select) { min-width: 92px; }
+.custom-select-v3:has(> .admin-role-select) .custom-select-v3-trigger {
+    min-height: 34px;
+    height: 34px;
+    border-radius: 10px;
+}
+.custom-select-v3:has(> .admin-role-select) .custom-select-v3-label { font-size: 11px; }
+
+body[data-theme="light"] .custom-select-v3-menu,
+body[data-theme="rose"] .custom-select-v3-menu,
+body[data-theme="lavender"] .custom-select-v3-menu,
+body[data-theme="mint"] .custom-select-v3-menu,
+body[data-theme="sky"] .custom-select-v3-menu,
+body[data-theme="lemon"] .custom-select-v3-menu,
+body[data-theme="peach"] .custom-select-v3-menu {
+    background: color-mix(in srgb, #fff 97%, var(--accent-color) 3%);
+    box-shadow: 0 18px 42px rgba(15,23,42,.16), inset 0 1px 0 #fff;
+}
+
+@media (max-width: 600px) {
+    .custom-select-v3-menu { max-height: min(320px, 55vh); }
+    .custom-select-v3-option { min-height: 42px; font-size: 14px; }
+}
+
+/* ========================================================================== 
+   CUSTOM DATE / TIME PICKER V5 — Schedule start/end controls
+   ========================================================================== */
+.custom-datetime-v5-native {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    clip: rect(0 0 0 0) !important;
+    clip-path: inset(50%) !important;
+    overflow: hidden !important;
+}
+
+.custom-datetime-v5 {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.custom-datetime-v5-trigger {
+    width: 100%;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px 0 13px;
+    border: 1px solid color-mix(in srgb, var(--border-color) 70%, var(--accent-color) 30%);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--modal-bg) 91%, var(--accent-color) 9%);
+    color: var(--text-main);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 5px 14px rgba(0,0,0,.09);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color .16s ease, background .16s ease, box-shadow .16s ease, transform .16s ease;
+}
+.custom-datetime-v5-trigger:hover {
+    border-color: color-mix(in srgb, var(--accent-color) 58%, var(--border-color));
+    background: color-mix(in srgb, var(--modal-bg) 84%, var(--accent-color) 16%);
+}
+.custom-datetime-v5.open .custom-datetime-v5-trigger,
+.custom-datetime-v5-trigger:focus-visible {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 18%, transparent), 0 8px 20px rgba(0,0,0,.12);
+}
+.custom-datetime-v5-icon {
+    width: 27px;
+    height: 27px;
+    flex: 0 0 27px;
+    display: grid;
+    place-items: center;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+    font-size: 14px;
+}
+.custom-datetime-v5-label {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+.custom-datetime-v5-chevron {
+    width: 22px;
+    height: 22px;
+    flex: 0 0 22px;
+    border-radius: 7px;
+    display: grid;
+    place-items: center;
+    color: var(--text-sub);
+    background: color-mix(in srgb, var(--accent-color) 9%, transparent);
+    transition: transform .18s ease, color .18s ease;
+}
+.custom-datetime-v5-chevron::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    transform: translateY(-2px) rotate(45deg);
+}
+.custom-datetime-v5.open .custom-datetime-v5-chevron {
+    transform: rotate(180deg);
+    color: var(--accent-color);
+}
+
+.custom-datetime-v5-panel {
+    position: fixed;
+    z-index: 2147483001;
+    width: min(330px, calc(100vw - 20px));
+    padding: 12px;
+    border: 1px solid color-mix(in srgb, var(--border-color) 66%, var(--accent-color) 34%);
+    border-radius: 20px;
+    background: color-mix(in srgb, var(--modal-bg) 96%, var(--accent-color) 4%);
+    color: var(--text-main);
+    box-shadow: 0 24px 58px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter: blur(20px) saturate(1.12);
+    -webkit-backdrop-filter: blur(20px) saturate(1.12);
+    opacity: 0;
+    transform: translateY(-5px) scale(.985);
+    transform-origin: top center;
+    pointer-events: none;
+    visibility: hidden;
+}
+.custom-datetime-v5-panel[hidden] { display: none !important; }
+.custom-datetime-v5-panel.open {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+    visibility: visible;
+    transition: opacity .12s ease, transform .12s ease;
+}
+.custom-datetime-v5-panel[data-placement="top"] { transform-origin: bottom center; }
+
+.custom-date-v5-head {
+    display: grid;
+    grid-template-columns: 34px 1fr 34px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.custom-date-v5-head button,
+.custom-time-v5-actions button {
+    border: 0;
+    color: var(--text-main);
+    background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+    cursor: pointer;
+}
+.custom-date-v5-head button {
+    width: 34px;
+    height: 34px;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    padding: 0;
+    font-size: 18px;
+}
+.custom-date-v5-head button:hover { background: color-mix(in srgb, var(--accent-color) 18%, transparent); }
+.custom-date-v5-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 850;
+    letter-spacing: .01em;
+}
+.custom-date-v5-weekdays,
+.custom-date-v5-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.custom-date-v5-weekdays { margin-bottom: 4px; }
+.custom-date-v5-weekdays span {
+    min-height: 24px;
+    display: grid;
+    place-items: center;
+    color: var(--text-sub);
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+.custom-date-v5-day {
+    aspect-ratio: 1 / 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 11px;
+    display: grid;
+    place-items: center;
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background .12s ease, transform .12s ease, color .12s ease;
+}
+.custom-date-v5-day:hover {
+    background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+    transform: translateY(-1px);
+}
+.custom-date-v5-day.outside { color: color-mix(in srgb, var(--text-sub) 55%, transparent); opacity: .62; }
+.custom-date-v5-day.today {
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-color) 70%, transparent);
+    color: var(--accent-color);
+}
+.custom-date-v5-day.selected {
+    background: var(--accent-color);
+    color: #fff;
+    font-weight: 850;
+    box-shadow: 0 7px 16px color-mix(in srgb, var(--accent-color) 30%, transparent);
+}
+.custom-date-v5-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+.custom-date-v5-foot button {
+    min-height: 32px;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--accent-color) 11%, transparent);
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 750;
+    cursor: pointer;
+}
+.custom-date-v5-foot button:hover { background: color-mix(in srgb, var(--accent-color) 18%, transparent); }
+.custom-date-v5-foot .primary { background: var(--accent-color); color:#fff; }
+
+.custom-time-v5-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+.custom-time-v5-title strong { font-size: 13px; }
+.custom-time-v5-preview {
+    padding: 5px 9px;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--accent-color) 13%, transparent);
+    color: var(--accent-color);
+    font-size: 12px;
+    font-weight: 850;
+    font-variant-numeric: tabular-nums;
+}
+.custom-time-v5-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.custom-time-v5-col {
+    min-width: 0;
+    max-height: 235px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--inner-bg) 82%, transparent);
+}
+.custom-time-v5-col small {
+    position: sticky;
+    top: -6px;
+    z-index: 2;
+    display: block;
+    margin: -6px -6px 5px;
+    padding: 8px 9px 6px;
+    background: color-mix(in srgb, var(--modal-bg) 96%, var(--accent-color) 4%);
+    color: var(--text-sub);
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.custom-time-v5-option {
+    width: 100%;
+    min-height: 34px;
+    margin: 1px 0;
+    padding: 0 9px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    cursor: pointer;
+}
+.custom-time-v5-option:hover { background: color-mix(in srgb, var(--accent-color) 13%, transparent); }
+.custom-time-v5-option.selected { background: color-mix(in srgb, var(--accent-color) 19%, transparent); color: var(--accent-color); font-weight: 850; }
+.custom-time-v5-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border-color);
+}
+.custom-time-v5-actions button {
+    min-height: 33px;
+    padding: 0 12px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 800;
+}
+.custom-time-v5-actions .primary { background: var(--accent-color); color:#fff; }
+
+body[data-theme="light"] .custom-datetime-v5-panel,
+body[data-theme="rose"] .custom-datetime-v5-panel,
+body[data-theme="lavender"] .custom-datetime-v5-panel,
+body[data-theme="mint"] .custom-datetime-v5-panel,
+body[data-theme="sky"] .custom-datetime-v5-panel,
+body[data-theme="lemon"] .custom-datetime-v5-panel,
+body[data-theme="peach"] .custom-datetime-v5-panel {
+    background: color-mix(in srgb, #fff 97%, var(--accent-color) 3%);
+    box-shadow: 0 20px 48px rgba(15,23,42,.18), inset 0 1px 0 #fff;
+}
+
+@media (max-width: 600px) {
+    .custom-datetime-v5-panel { width: min(330px, calc(100vw - 14px)); border-radius: 18px; }
+    .custom-date-v5-day { border-radius: 10px; }
+    .custom-time-v5-col { max-height: min(230px, 38vh); }
+}
