@@ -30,6 +30,18 @@
     --shadow-main: 0 15px 35px rgba(0,0,0,0.6);
 }
 
+/* Ẩn toàn bộ placeholder trong input */
+input::placeholder {
+    color: transparent !important;
+    opacity: 0 !important;
+}
+
+/* Nếu muốn ẩn luôn placeholder của textarea */
+textarea::placeholder {
+    color: transparent !important;
+    opacity: 0 !important;
+}
+
 /* --- LIGHT MODE --- */
 body.light-mode {
     --bg-gradient: linear-gradient(135deg, #edf2f7 0%, #dbeafe 100%);
