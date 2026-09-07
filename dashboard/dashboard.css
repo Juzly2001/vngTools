@@ -10526,3 +10526,29 @@ body[data-theme="peach"] .custom-datetime-v5-panel {
     .custom-date-v5-day { border-radius: 10px; }
     .custom-time-v5-col { max-height: min(230px, 38vh); }
 }
+
+/* Ẩn dấu X mặc định của Chrome/Edge */
+#globalSearch::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    display: none;
+}
+
+/* Ẩn nút X custom khi search trống */
+.search-box > button {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: scale(0.8);
+    transition: opacity 0.18s ease,
+                transform 0.18s ease,
+                visibility 0.18s ease;
+}
+
+/* Khi có chữ trong search -> hiện X */
+.search-box:has(#globalSearch:not(:placeholder-shown)) > button {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: scale(1);
+}
