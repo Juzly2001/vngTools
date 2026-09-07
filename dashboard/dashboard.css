@@ -10531,7 +10531,7 @@ body[data-theme="peach"] .custom-datetime-v5-panel {
 /* ==========================================================================\n   NOTE TAGS MULTI-SELECT V6\n   ========================================================================== */
 .note-tags-field { position: relative; min-width: 190px; }
 .note-tags-button {
-    width: 100%; min-height: 42px; padding: 2px;
+    width: 100%; padding: 2px;
     border: 1px solid var(--border-color); border-radius: 12px;
     background: var(--inner-bg); color: var(--text-main);
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
