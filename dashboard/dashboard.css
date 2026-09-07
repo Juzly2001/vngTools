@@ -7731,7 +7731,7 @@ body { padding-top: 24px; }
 .hero-kicker-v12 { display:flex;align-items:center;gap:8px;color:var(--text-sub);font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase; }
 .hero-status-dot-v12 { width:7px;height:7px;border-radius:50%;background:var(--accent-color);box-shadow:0 0 12px color-mix(in srgb,var(--accent-color) 65%,transparent); }
 .workspace-hero-v12 .hero-subtitle { margin:0;max-width:720px;font-size:13px; }
-.hero-meta-v12 { display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;color:var(--text-sub);font-size:14px;font-weight:700; }
+.hero-meta-v12 { display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end;color:var(--text-sub);font-size:13px;font-weight:700; }
 .hero-command-v12 { min-height:36px;padding:0 12px;border:1px solid var(--v12-hairline);border-radius:10px;background:var(--v12-surface-soft);color:var(--text-main);font:inherit;cursor:pointer; }
 .hero-command-v12 span { margin-left:5px;color:var(--text-sub);font-weight:600; }
 
