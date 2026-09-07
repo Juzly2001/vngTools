@@ -98,8 +98,23 @@
 
 
 
+        <div class="desktop-content-controls">
+            <div class="desktop-view-switch">
+                <button id="desktopGridViewBtn" onclick="setDesktopGroupView('grid')" title="Grid view">▦ <span>Grid</span></button>
+                <button id="desktopListViewBtn" onclick="setDesktopGroupView('list')" title="Compact list view">☷ <span>List</span></button>
+            </div>
+            <div class="desktop-controls-hint"><kbd>Ctrl</kbd> + <kbd>K</kbd> Quick Find</div>
+        </div>
         <div class="groups-grid" id="groupsContainer"></div>
     </div>
+
+    <aside id="desktopInspector" class="desktop-inspector" aria-hidden="true">
+        <div class="desktop-inspector-head">
+            <div><small>INSPECTOR</small><h2 id="desktopInspectorTitle">Group details</h2></div>
+            <button onclick="closeDesktopInspector()" aria-label="Close">✕</button>
+        </div>
+        <div id="desktopInspectorBody" class="desktop-inspector-body"></div>
+    </aside>
 
     <nav class="mobile-bottom-nav-v12" aria-label="Mobile navigation">
         <button onclick="scrollToSection('top')"><span>⌂</span><small>Home</small></button>
