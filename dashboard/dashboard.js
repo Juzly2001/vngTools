@@ -6370,7 +6370,13 @@ let autoTimeThemeTimer = null;
 let lastAutoTimeThemeSlot = '';
 
 function getCurrentTheme(){ const v=localStorage.getItem(THEME_KEY)||'dark'; return DASHBOARD_THEMES.some(t=>t.id===v)?v:'dark'; }
-function getThemeMeta(id=getCurrentTheme()){ return DASHBOARD_THEMES.find(t=>t.id===id)||DASHBOARD_THEMES[0]; }
+function getThemeMeta(id=null){
+  // Visuals must follow the theme currently applied to the page.
+  // Auto by time intentionally does not overwrite THEME_KEY, so reading only
+  // localStorage here would keep the old Visuals scene.
+  const activeThemeId = id || document.body.dataset.theme || getCurrentTheme();
+  return DASHBOARD_THEMES.find(t=>t.id===activeThemeId)||DASHBOARD_THEMES[0];
+}
 function sceneLabel(scene){return THEME_SCENE_LABELS[scene]||scene;}
 function isAutoTimeThemeEnabled(){ return localStorage.getItem(AUTO_TIME_THEME_KEY)==='true'; }
 function getAutoTimeThemeInfo(date=new Date()){
@@ -6528,7 +6534,18 @@ function applyCanvasState(){
     if(btn)btn.innerHTML='<span class="sidebar-menu-icon">🌟</span><span>Visuals</span>';
   }
 }
-function toggleThemeCanvas(){isCanvasEnabled=!isCanvasEnabled;localStorage.setItem('canvas-enabled',isCanvasEnabled);applyCanvasState();}
+function toggleThemeCanvas(){
+  isCanvasEnabled=!isCanvasEnabled;
+  localStorage.setItem('canvas-enabled',isCanvasEnabled);
+
+  // When Visuals is turned back on while Auto by time is active,
+  // sync the current time slot first so the canvas never revives an old scene.
+  if(isCanvasEnabled && isAutoTimeThemeEnabled()){
+    applyAutoTimeTheme(true);
+  }
+
+  applyCanvasState();
+}
 window.addEventListener('resize',()=>{clearTimeout(window.__sceneResizeTimer);window.__sceneResizeTimer=setTimeout(resizeCanvas,120)},{passive:true});
 document.addEventListener('visibilitychange',()=>{if(document.hidden){if(animationFrameId){cancelAnimationFrame(animationFrameId);animationFrameId=null}}else if(isCanvasEnabled&&!animationFrameId){fxLastFrame=0;animationFrameId=requestAnimationFrame(drawBackground)}});
 window.addEventListener('load',()=>{ensureThemePicker();applyDashboardTheme(getCurrentTheme(),false);applyCanvasState();});
@@ -7919,9 +7936,9 @@ Object.assign(THEME_SCENE_LABELS,{
 
   // Keep only a cheap theme-change fade. No mouse/pointer tracking is registered.
   const oldApply=applyDashboardTheme;
-  applyDashboardTheme=function(themeId,save=true){
+  applyDashboardTheme=function(themeId,save=true,preserveAuto=false){
     const before=document.body.dataset.theme || getCurrentTheme();
-    oldApply(themeId,save);
+    oldApply(themeId,save,preserveAuto);
     if(!reduceMotion && before!==themeId){
       const flash=ensureTransitionFlash();
       flash.classList.remove('play');
