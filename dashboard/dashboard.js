@@ -4656,7 +4656,7 @@ function renderTrashModal() {
             </div>
             <div class="trash-actions">
                 <button class="btn-success" onclick="restoreTrashItemAt(${index})">Restore</button>
-                <button class="btn-real-danger" onclick="removeTrashItemAt(${index})">Delete</button>
+                <button class="btn-real-danger" onclick="removeTrashItemAt(${index})">Delete permanently</button>
             </div>
         </div>`).join('');
 }
@@ -10472,29 +10472,6 @@ document.addEventListener('DOMContentLoaded', () => {
             editBtn.textContent = '✎';
             editBtn.onclick = chooseCustomAvatarV3;
             wrap.appendChild(editBtn);
-        }
-
-        let actions = document.getElementById('accountAvatarActionsV3');
-        if (!actions) {
-            actions = document.createElement('div');
-            actions.id = 'accountAvatarActionsV3';
-            actions.className = 'account-avatar-actions-v3';
-            actions.innerHTML = `
-                <button type="button" class="btn-secondary" id="accountAvatarChangeV3">✏️ Change avatar</button>
-                <button type="button" class="btn-secondary" id="accountAvatarResetV3">↩ Use Google photo</button>
-                <p class="account-avatar-note-v3">Your custom avatar is resized to 256×256 before being saved.</p>
-            `;
-
-            const infoArea =
-                document.querySelector('#accountModal .account-profile') ||
-                document.querySelector('#accountModal .account-identity') ||
-                wrap.parentElement;
-
-            if (infoArea) infoArea.appendChild(actions);
-            else wrap.insertAdjacentElement('afterend', actions);
-
-            document.getElementById('accountAvatarChangeV3')?.addEventListener('click', chooseCustomAvatarV3);
-            document.getElementById('accountAvatarResetV3')?.addEventListener('click', resetCustomAvatarV3);
         }
 
         applyEffectiveAvatarToUI();
