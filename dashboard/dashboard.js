@@ -6365,18 +6365,80 @@ const prefersReducedMotion = matchMedia?.('(prefers-reduced-motion: reduce)')?.m
 const FX_QUALITY = (()=>{ const mobile=innerWidth<769; const cores=navigator.hardwareConcurrency||4; const mem=navigator.deviceMemory||4; if(prefersReducedMotion) return .22; if(mobile||cores<=4||mem<=4) return .55; return .9; })();
 const FX_TARGET_FPS = FX_QUALITY < .6 ? 30 : 45;
 
+const AUTO_TIME_THEME_KEY = 'dashboardAutoTimeThemeV1';
+let autoTimeThemeTimer = null;
+let lastAutoTimeThemeSlot = '';
+
 function getCurrentTheme(){ const v=localStorage.getItem(THEME_KEY)||'dark'; return DASHBOARD_THEMES.some(t=>t.id===v)?v:'dark'; }
 function getThemeMeta(id=getCurrentTheme()){ return DASHBOARD_THEMES.find(t=>t.id===id)||DASHBOARD_THEMES[0]; }
 function sceneLabel(scene){return THEME_SCENE_LABELS[scene]||scene;}
-function applyDashboardTheme(themeId,save=true){
+function isAutoTimeThemeEnabled(){ return localStorage.getItem(AUTO_TIME_THEME_KEY)==='true'; }
+function getAutoTimeThemeInfo(date=new Date()){
+  const h=date.getHours();
+  if(h>=5 && h<10) return {slot:'morning',label:'Morning',icon:'🌅',theme:'sky',range:'05:00–09:59'};
+  if(h>=10 && h<14) return {slot:'noon',label:'Noon',icon:'☀️',theme:'light',range:'10:00–13:59'};
+  if(h>=14 && h<18) return {slot:'afternoon',label:'Afternoon',icon:'🌇',theme:'sunset',range:'14:00–17:59'};
+  if(h>=18 && h<22) return {slot:'evening',label:'Evening',icon:'☕',theme:'coffee',range:'18:00–21:59'};
+  return {slot:'night',label:'Night',icon:'🌙',theme:'midnight',range:'22:00–04:59'};
+}
+function updateAutoTimeThemeUI(){
+  const autoBtn=document.getElementById('autoTimeThemeChoice');
+  if(!autoBtn)return;
+  const enabled=isAutoTimeThemeEnabled();
+  const info=getAutoTimeThemeInfo();
+  autoBtn.classList.toggle('active',enabled);
+  const check=autoBtn.querySelector('.theme-check'); if(check)check.textContent=enabled?'✓':'';
+  const desc=autoBtn.querySelector('.auto-time-description');
+  if(desc)desc.textContent=enabled?`${info.icon} ${info.label} now · ${info.range} · ${getThemeMeta(info.theme).name}`:'Automatically changes Morning · Noon · Afternoon · Evening · Night';
+}
+function applyDashboardTheme(themeId,save=true,preserveAuto=false){
   const meta=getThemeMeta(themeId); document.body.dataset.theme=meta.id; document.body.classList.toggle('light-mode',LIGHT_COMPAT_THEMES.has(meta.id));
-  if(save)localStorage.setItem(THEME_KEY,meta.id); const btn=getEl('themeBtn'); if(btn)btn.innerHTML=`<span class="sidebar-menu-icon">${meta.icon}</span><span>Theme</span>`;
-  document.querySelectorAll('.theme-choice').forEach(el=>{const on=el.dataset.theme===meta.id;el.classList.toggle('active',on);const m=el.querySelector('.theme-check');if(m)m.textContent=on?'✓':'';});
+  if(save){localStorage.setItem(THEME_KEY,meta.id); if(!preserveAuto)localStorage.setItem(AUTO_TIME_THEME_KEY,'false');}
+  const btn=getEl('themeBtn');
+  if(btn){
+    const auto=isAutoTimeThemeEnabled();
+    const info=getAutoTimeThemeInfo();
+    btn.innerHTML=`<span class="sidebar-menu-icon">${auto?info.icon:meta.icon}</span><span>${auto?'Auto theme':'Theme'}</span>`;
+    btn.title=auto?`Auto by time: ${info.label} (${info.range}) · ${meta.name}`:`Theme: ${meta.name}`;
+  }
+  document.querySelectorAll('.theme-choice[data-theme]').forEach(el=>{const on=!isAutoTimeThemeEnabled()&&el.dataset.theme===meta.id;el.classList.toggle('active',on);const m=el.querySelector('.theme-check');if(m)m.textContent=on?'✓':'';});
+  updateAutoTimeThemeUI();
   invalidateScene(); if(isCanvasEnabled){initBackgroundObjects(); if(!animationFrameId)animationFrameId=requestAnimationFrame(drawBackground);}
 }
+function applyAutoTimeTheme(force=false){
+  if(!isAutoTimeThemeEnabled())return;
+  const info=getAutoTimeThemeInfo();
+  if(!force && lastAutoTimeThemeSlot===info.slot)return;
+  lastAutoTimeThemeSlot=info.slot;
+  applyDashboardTheme(info.theme,false,true);
+  updateAutoTimeThemeUI();
+}
+function setAutoTimeTheme(enabled=true){
+  localStorage.setItem(AUTO_TIME_THEME_KEY,enabled?'true':'false');
+  lastAutoTimeThemeSlot='';
+  if(enabled){applyAutoTimeTheme(true); startAutoTimeThemeWatcher();}
+  else {stopAutoTimeThemeWatcher(); applyDashboardTheme(getCurrentTheme(),false,true);}
+  updateAutoTimeThemeUI();
+}
+function startAutoTimeThemeWatcher(){
+  stopAutoTimeThemeWatcher();
+  if(!isAutoTimeThemeEnabled())return;
+  autoTimeThemeTimer=setInterval(()=>applyAutoTimeTheme(false),30000);
+}
+function stopAutoTimeThemeWatcher(){if(autoTimeThemeTimer){clearInterval(autoTimeThemeTimer);autoTimeThemeTimer=null;}}
 function toggleTheme(){openThemePicker();}
-function ensureThemePicker(){if(document.getElementById('themePickerOverlay'))return;const o=document.createElement('div');o.id='themePickerOverlay';o.className='theme-picker-overlay';o.innerHTML=`<div class="theme-picker-panel" role="dialog" aria-modal="true"><div class="theme-picker-head"><div><h3>🎨 Choose theme</h3><small style="color:var(--text-sub)">Cinematic adaptive scenes — optimized for smoothness.</small></div><button class="theme-picker-close" type="button">✕</button></div><div class="theme-picker-grid">${DASHBOARD_THEMES.map(t=>`<button class="theme-choice" type="button" data-theme="${t.id}"><span class="theme-check"></span><strong>${t.icon} ${t.name}</strong><small>${sceneLabel(t.scene)}</small></button>`).join('')}</div></div>`;document.body.appendChild(o);o.addEventListener('click',e=>{if(e.target===o)closeThemePicker()});o.querySelector('.theme-picker-close')?.addEventListener('click',closeThemePicker);o.querySelectorAll('.theme-choice').forEach(b=>b.addEventListener('click',()=>{applyDashboardTheme(b.dataset.theme);closeThemePicker();}));}
-function openThemePicker(){ensureThemePicker();document.getElementById('themePickerOverlay')?.classList.add('active');applyDashboardTheme(getCurrentTheme(),false)}
+function ensureThemePicker(){
+  if(document.getElementById('themePickerOverlay'))return;
+  const o=document.createElement('div');o.id='themePickerOverlay';o.className='theme-picker-overlay';
+  o.innerHTML=`<div class="theme-picker-panel" role="dialog" aria-modal="true"><div class="theme-picker-head"><div><h3>🎨 Choose theme</h3><small style="color:var(--text-sub)">Cinematic adaptive scenes — optimized for smoothness.</small></div><button class="theme-picker-close" type="button">✕</button></div><button id="autoTimeThemeChoice" class="theme-choice auto-time-theme-choice" type="button"><span class="theme-check"></span><strong>🕒 Auto by time</strong><small class="auto-time-description">Automatically changes Morning · Noon · Afternoon · Evening · Night</small><span class="auto-time-slots"><span>🌅 Morning</span><span>☀️ Noon</span><span>🌇 Afternoon</span><span>☕ Evening</span><span>🌙 Night</span></span></button><div class="theme-picker-grid">${DASHBOARD_THEMES.map(t=>`<button class="theme-choice" type="button" data-theme="${t.id}"><span class="theme-check"></span><strong>${t.icon} ${t.name}</strong><small>${sceneLabel(t.scene)}</small></button>`).join('')}</div></div>`;
+  document.body.appendChild(o);
+  o.addEventListener('click',e=>{if(e.target===o)closeThemePicker()});
+  o.querySelector('.theme-picker-close')?.addEventListener('click',closeThemePicker);
+  o.querySelector('#autoTimeThemeChoice')?.addEventListener('click',()=>{setAutoTimeTheme(!isAutoTimeThemeEnabled());updateAutoTimeThemeUI();});
+  o.querySelectorAll('.theme-choice[data-theme]').forEach(b=>b.addEventListener('click',()=>{setAutoTimeTheme(false);applyDashboardTheme(b.dataset.theme,true,false);closeThemePicker();}));
+  updateAutoTimeThemeUI();
+}
+function openThemePicker(){ensureThemePicker();document.getElementById('themePickerOverlay')?.classList.add('active');if(isAutoTimeThemeEnabled())applyAutoTimeTheme(true);else applyDashboardTheme(getCurrentTheme(),false,true);updateAutoTimeThemeUI();}
 function closeThemePicker(){document.getElementById('themePickerOverlay')?.classList.remove('active')}
 function invalidateScene(){sceneCacheKey='';sceneCache=null;sceneCacheCtx=null;}
 
@@ -11398,4 +11460,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Public helper for debugging.
     window.repairWorkspaceChecklistLayout = repairChecklistDOMV6;
+})();
+
+
+// ============================================================================
+// AUTO TIME THEME + LARGE CURRENT ACCOUNT AVATAR VIEWER (V1)
+// ============================================================================
+(function initAutoTimeThemeAndAvatarViewerV1(){
+    function ensureAvatarViewer(){
+        if(document.getElementById('accountAvatarViewerV1')) return;
+        const viewer=document.createElement('div');
+        viewer.id='accountAvatarViewerV1';
+        viewer.className='account-avatar-viewer-v1';
+        viewer.setAttribute('aria-hidden','true');
+        viewer.innerHTML=`
+            <div class="account-avatar-viewer-backdrop-v1" data-close-avatar-viewer></div>
+            <div class="account-avatar-viewer-dialog-v1" role="dialog" aria-modal="true" aria-label="Account avatar preview">
+                <button class="account-avatar-viewer-close-v1" type="button" aria-label="Close avatar preview">✕</button>
+                <img id="accountAvatarViewerImageV1" alt="Large account avatar">
+                <div class="account-avatar-viewer-caption-v1">
+                    <strong id="accountAvatarViewerNameV1">Current account</strong>
+                    <span id="accountAvatarViewerEmailV1"></span>
+                </div>
+            </div>`;
+        document.body.appendChild(viewer);
+        viewer.querySelector('[data-close-avatar-viewer]')?.addEventListener('click',closeAccountAvatarViewerV1);
+        viewer.querySelector('.account-avatar-viewer-close-v1')?.addEventListener('click',closeAccountAvatarViewerV1);
+    }
+
+    function getDisplayedAccountAvatarSrc(){
+        const img=document.getElementById('accountAvatar');
+        if(img?.src && getComputedStyle(img).display!=='none') return img.src;
+        try { if(typeof effectiveAvatar==='function') return effectiveAvatar()||''; } catch(_){}
+        return googleAccountProfile?.picture||'';
+    }
+
+    window.openAccountAvatarViewerV1=function(){
+        const src=getDisplayedAccountAvatarSrc();
+        if(!src) return;
+        ensureAvatarViewer();
+        const viewer=document.getElementById('accountAvatarViewerV1');
+        const image=document.getElementById('accountAvatarViewerImageV1');
+        const name=document.getElementById('accountAvatarViewerNameV1');
+        const email=document.getElementById('accountAvatarViewerEmailV1');
+        if(image) image.src=src;
+        if(name) name.textContent=googleAccountProfile?.name||'Current account';
+        if(email) email.textContent=googleAccountProfile?.email||'';
+        viewer?.classList.add('active');
+        viewer?.setAttribute('aria-hidden','false');
+        document.body.classList.add('account-avatar-viewer-open-v1');
+    };
+
+    window.closeAccountAvatarViewerV1=function(){
+        const viewer=document.getElementById('accountAvatarViewerV1');
+        viewer?.classList.remove('active');
+        viewer?.setAttribute('aria-hidden','true');
+        document.body.classList.remove('account-avatar-viewer-open-v1');
+    };
+
+    function bindCurrentAccountAvatar(){
+        const img=document.getElementById('accountAvatar');
+        if(!img || img.__largeAvatarViewerBoundV1) return;
+        img.__largeAvatarViewerBoundV1=true;
+        img.classList.add('account-avatar-zoomable-v1');
+        img.setAttribute('title','Click to view larger avatar');
+        img.setAttribute('tabindex','0');
+        img.setAttribute('role','button');
+        img.setAttribute('aria-label','View larger account avatar');
+        img.addEventListener('click',e=>{e.stopPropagation();openAccountAvatarViewerV1();});
+        img.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openAccountAvatarViewerV1();}});
+    }
+
+    document.addEventListener('keydown',e=>{
+        if(e.key==='Escape' && document.getElementById('accountAvatarViewerV1')?.classList.contains('active')) closeAccountAvatarViewerV1();
+    });
+
+    document.addEventListener('DOMContentLoaded',()=>{
+        bindCurrentAccountAvatar();
+        if(isAutoTimeThemeEnabled()){applyAutoTimeTheme(true);startAutoTimeThemeWatcher();}
+    });
+    window.addEventListener('load',()=>{
+        bindCurrentAccountAvatar();
+        if(isAutoTimeThemeEnabled()){applyAutoTimeTheme(true);startAutoTimeThemeWatcher();}
+    });
+
+    const originalOpenAccountPanelAutoAvatarV1=openAccountPanel;
+    openAccountPanel=function(){
+        const result=originalOpenAccountPanelAutoAvatarV1.apply(this,arguments);
+        setTimeout(bindCurrentAccountAvatar,0);
+        return result;
+    };
+
+    window.addEventListener('storage',e=>{
+        if(e.key===AUTO_TIME_THEME_KEY){
+            if(isAutoTimeThemeEnabled()){applyAutoTimeTheme(true);startAutoTimeThemeWatcher();}
+            else stopAutoTimeThemeWatcher();
+        }
+    });
 })();

@@ -9606,3 +9606,126 @@ body.desktop-inspector-open .desktop-inspector{opacity:1;visibility:visible;poin
         white-space: nowrap;
     }
 }
+
+
+/* ========================================================================== 
+   AUTO BY TIME THEME + LARGE ACCOUNT AVATAR VIEWER (V1)
+   ========================================================================== */
+.auto-time-theme-choice{
+    width:100%;
+    margin:0 0 14px;
+    text-align:left;
+    display:grid !important;
+    grid-template-columns:1fr auto;
+    gap:4px 12px !important;
+    padding:14px 16px !important;
+    border:1px solid var(--border-color) !important;
+    background:color-mix(in srgb, var(--panel-bg) 88%, var(--accent-color) 12%) !important;
+    color:var(--text-main) !important;
+    position:relative;
+}
+.auto-time-theme-choice > strong,
+.auto-time-theme-choice > small,
+.auto-time-theme-choice > .auto-time-slots{grid-column:1 / -1;}
+.auto-time-theme-choice .theme-check{position:absolute;right:14px;top:12px;}
+.auto-time-theme-choice.active{
+    border-color:var(--accent-color) !important;
+    box-shadow:0 0 0 2px color-mix(in srgb, var(--accent-color) 18%, transparent);
+}
+.auto-time-theme-choice small{color:var(--text-sub);font-weight:500;}
+.auto-time-slots{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px;}
+.auto-time-slots span{
+    padding:4px 8px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:700;
+    background:var(--inner-bg);
+    border:1px solid var(--border-color);
+    color:var(--text-sub);
+}
+.account-avatar.account-avatar-zoomable-v1{
+    cursor:zoom-in !important;
+    transition:transform .18s ease, box-shadow .18s ease;
+}
+.account-avatar.account-avatar-zoomable-v1:hover{
+    transform:scale(1.035);
+    box-shadow:0 8px 22px rgba(0,0,0,.22);
+}
+.account-avatar.account-avatar-zoomable-v1:focus-visible{
+    outline:3px solid color-mix(in srgb, var(--accent-color) 55%, transparent);
+    outline-offset:3px;
+}
+.account-avatar-viewer-v1{
+    position:fixed;
+    inset:0;
+    z-index:10000050;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:24px;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .2s ease, visibility .2s ease;
+}
+.account-avatar-viewer-v1.active{opacity:1;visibility:visible;pointer-events:auto;}
+.account-avatar-viewer-backdrop-v1{
+    position:absolute;
+    inset:0;
+    background:rgba(2,6,23,.76);
+    backdrop-filter:blur(12px);
+}
+.account-avatar-viewer-dialog-v1{
+    width:min(520px,92vw);
+    max-height:88vh;
+    position:relative;
+    z-index:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:16px;
+    padding:22px;
+    border-radius:24px;
+    background:var(--modal-bg);
+    border:1px solid var(--border-color);
+    box-shadow:0 28px 80px rgba(0,0,0,.45);
+    transform:scale(.94) translateY(8px);
+    transition:transform .22s ease;
+}
+.account-avatar-viewer-v1.active .account-avatar-viewer-dialog-v1{transform:scale(1) translateY(0);}
+.account-avatar-viewer-dialog-v1 img{
+    display:block;
+    width:min(390px,76vw);
+    height:min(390px,76vw);
+    max-height:62vh;
+    object-fit:cover;
+    border-radius:24px;
+    border:1px solid var(--border-color);
+    background:var(--inner-bg);
+    box-shadow:0 16px 45px rgba(0,0,0,.28);
+}
+.account-avatar-viewer-close-v1{
+    position:absolute;
+    right:12px;
+    top:12px;
+    width:36px;
+    height:36px;
+    padding:0;
+    display:grid;
+    place-items:center;
+    border-radius:50%;
+    background:rgba(15,23,42,.72);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.14);
+    z-index:2;
+}
+.account-avatar-viewer-caption-v1{text-align:center;display:flex;flex-direction:column;gap:4px;max-width:100%;}
+.account-avatar-viewer-caption-v1 strong{font-size:16px;color:var(--text-main);}
+.account-avatar-viewer-caption-v1 span{font-size:12px;color:var(--text-sub);overflow-wrap:anywhere;}
+body.account-avatar-viewer-open-v1{overflow:hidden;}
+@media(max-width:600px){
+    .account-avatar-viewer-v1{padding:14px;}
+    .account-avatar-viewer-dialog-v1{padding:16px;border-radius:20px;}
+    .account-avatar-viewer-dialog-v1 img{width:min(330px,82vw);height:min(330px,82vw);border-radius:20px;}
+    .auto-time-slots span{font-size:9px;padding:4px 6px;}
+}
