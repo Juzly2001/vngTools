@@ -10787,3 +10787,122 @@ input[type="search"]::-webkit-search-cancel-button {
         grid-column: auto;
     }
 }
+
+
+/* ==========================================================================
+   FIX - Favorites / Recent: same usable size as Command Palette
+   ========================================================================== */
+
+/* Desktop/tablet: match Command Palette width */
+#sidebarPanelModal .sidebar-panel-box {
+    width: min(95vw, 720px) !important;
+    max-width: 720px !important;
+    max-height: min(88vh, 760px) !important;
+}
+
+/* The old global .smart-list max-height:146px caused only ~3 rows to show.
+   Override it only inside Favorites / Recent. */
+#sidebarPanelModal #sidebarPanelContent {
+    flex: 1 1 auto !important;
+    max-height: 58vh !important;
+    overflow-y: auto !important;
+    padding: 14px 20px 20px !important;
+    margin: 0 !important;
+}
+
+#sidebarPanelModal #sidebarPanelContent .smart-list {
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+}
+
+/* Mobile: keep the modal safely inside the viewport */
+@media (max-width: 640px) {
+    #sidebarPanelModal .sidebar-panel-box {
+        width: 96vw !important;
+        max-width: 96vw !important;
+        max-height: 90vh !important;
+    }
+
+    #sidebarPanelModal #sidebarPanelContent {
+        max-height: 72vh !important;
+    }
+}
+
+/* ==========================================================================
+   GLOBAL FIX - MODAL HEADER CLOSE BUTTON
+   Dùng chung cho hiện tại và các modal tạo thêm về sau.
+   HTML chỉ cần:
+   <button class="btn-secondary" onclick="closeModal('...')">Close</button>
+   ========================================================================== */
+
+/* Nút .btn-secondary cuối cùng nằm trực tiếp trong .command-head được xem là Close */
+.modal-overlay .command-head > .btn-secondary:last-child {
+    position: relative !important;
+    flex: 0 0 38px !important;
+
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0 !important;
+
+    border-radius: 14px !important;
+    background: var(--inner-bg) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+
+    font-size: 0 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    overflow: hidden !important;
+}
+
+/* Ẩn chữ Close bằng font-size:0 và vẽ icon ✕ đúng tâm nút */
+.modal-overlay .command-head > .btn-secondary:last-child::before {
+    content: "✕" !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    line-height: 1 !important;
+
+    /* +1px là optical correction cho glyph ✕ của Segoe UI/system font */
+    transform: translate(-50%, -50%) !important;
+    transform-origin: center !important;
+    pointer-events: none !important;
+}
+
+.modal-overlay .command-head > .btn-secondary:last-child:hover {
+    border-color: var(--accent-color) !important;
+}
+
+/* Mobile vẫn giữ đúng kích thước/tâm icon, không bị rule button responsive kéo giãn */
+@media (max-width: 768px) {
+    .modal-overlay .command-head > .btn-secondary:last-child {
+        flex: 0 0 38px !important;
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+        padding: 0 !important;
+    }
+}
+
