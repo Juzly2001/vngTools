@@ -7970,20 +7970,10 @@ Object.assign(THEME_SCENE_LABELS,{
         const greetingEl = document.getElementById('workspaceGreeting');
         const dateEl = document.getElementById('workspaceTodayLabel');
 
-        let accountName = '';
-        try {
-            const connected = typeof isGoogleConnected === 'function' && isGoogleConnected();
-            if (connected && typeof window.getCurrentAccountDisplayName === 'function') {
-                accountName = String(window.getCurrentAccountDisplayName() || '').trim();
-            } else if (connected && typeof googleAccountProfile !== 'undefined') {
-                accountName = String(googleAccountProfile?.name || '').trim();
-            }
-        } catch (_) {}
-
         if (greetingEl) {
-            greetingEl.textContent = accountName
-                ? `Hi, ${accountName}. Everything you need is ready here.`
-                : 'Everything you need is ready here.';
+            const hour = now.getHours();
+            const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+            greetingEl.textContent = `${greeting}. Everything you need is ready here.`;
         }
         if (dateEl) dateEl.textContent = new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).format(now);
     }
@@ -11593,15 +11583,15 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 // ============================================================================
-// CURRENT ACCOUNT INLINE RENAME V3 — STABLE DIRECT EDIT + VISIBLE HERO GREETING + DRIVE SYNC
+// CURRENT ACCOUNT INLINE RENAME V5 — DIRECT EDIT + HERO ACCOUNT LABEL + DRIVE SYNC
 // - Click the displayed account name itself to rename; no extra input row
 // - Enter / blur saves, Escape cancels
 // - Custom name follows the existing Drive workspace payload
-// - Header profile shows avatar + custom name in a compact pill
+// - Hero meta shows date + "Hi, Name" beside the avatar
 // ============================================================================
-(function initCurrentAccountInlineRenameV2(){
-    if (window.__CURRENT_ACCOUNT_INLINE_RENAME_V2_READY__) return;
-    window.__CURRENT_ACCOUNT_INLINE_RENAME_V2_READY__ = true;
+(function initCurrentAccountInlineRenameV4(){
+    if (window.__CURRENT_ACCOUNT_INLINE_RENAME_V4_READY__) return;
+    window.__CURRENT_ACCOUNT_INLINE_RENAME_V4_READY__ = true;
 
     const NAME_PREFIX = 'workspace_custom_account_name_v1_';
     let renameOriginalValue = '';
@@ -11637,9 +11627,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function injectInlineRenameStyles(){
-        if (document.getElementById('currentAccountInlineRenameV2Styles')) return;
+        if (document.getElementById('currentAccountInlineRenameV4Styles')) return;
         const style = document.createElement('style');
-        style.id = 'currentAccountInlineRenameV2Styles';
+        style.id = 'currentAccountInlineRenameV4Styles';
         style.textContent = `
             #accountModal .account-profile-copy{min-width:0;}
             #accountModal #accountDisplayName{
@@ -11689,82 +11679,119 @@ document.addEventListener('DOMContentLoaded', () => {
                 background:rgba(15,23,42,.035);
             }
 
-            /* Compact profile pill outside the modal */
-            #btn-login-google.profile-header-btn-v5.header-account-pill-v2{
-                width:auto !important;
-                min-width:0 !important;
-                height:42px !important;
-                min-height:42px !important;
-                padding:4px 11px 4px 4px !important;
-                border-radius:999px !important;
-                gap:8px !important;
-                display:inline-flex !important;
-                align-items:center !important;
-                justify-content:flex-start !important;
-                overflow:visible !important;
-                background:rgba(255,255,255,.055) !important;
-                border:1px solid var(--border-color) !important;
-                box-shadow:0 6px 18px rgba(0,0,0,.12) !important;
-                backdrop-filter:blur(10px);
+            /* Hero account block: date + greeting on the left, avatar on the right */
+            .hero-meta-v12.hero-account-meta-v4{
+                display:grid !important;
+                grid-template-columns:minmax(0,auto) 42px;
+                grid-template-rows:auto auto;
+                column-gap:10px;
+                row-gap:1px;
+                align-items:center;
+                justify-content:end;
+                text-align:right;
             }
-            body.light-mode #btn-login-google.profile-header-btn-v5.header-account-pill-v2{
-                background:rgba(255,255,255,.82) !important;
-                box-shadow:0 5px 16px rgba(15,23,42,.08) !important;
+            .hero-meta-v12.hero-account-meta-v4 #workspaceTodayLabel{
+                grid-column:1;
+                grid-row:1;
+                display:block;
+                line-height:1.25;
+                white-space:nowrap;
             }
-            #btn-login-google.header-account-pill-v2:hover{
-                transform:translateY(-1px);
-                border-color:color-mix(in srgb, var(--accent-color) 48%, var(--border-color)) !important;
-            }
-            #btn-login-google.header-account-pill-v2 .profile-avatar-v5,
-            #btn-login-google.header-account-pill-v2 .profile-fallback-v5{
-                width:32px !important;
-                min-width:32px !important;
-                height:32px !important;
-                border-radius:50% !important;
-                flex:0 0 32px !important;
-            }
-            #btn-login-google.header-account-pill-v2 .header-account-name-v2{
-                display:block !important;
-                max-width:170px;
+            .hero-meta-v12.hero-account-meta-v4 .workspace-account-name-v4{
+                grid-column:1;
+                grid-row:2;
+                display:block;
                 min-width:0;
+                max-width:220px;
                 overflow:hidden;
                 text-overflow:ellipsis;
                 white-space:nowrap;
                 color:var(--text-main);
                 font-size:13px;
-                font-weight:700;
-                line-height:1;
+                font-weight:750;
+                line-height:1.25;
+                letter-spacing:.01em;
             }
-            #btn-login-google.header-account-pill-v2 .profile-status-v5{
-                right:3px !important;
-                bottom:3px !important;
+            .hero-meta-v12.hero-account-meta-v4 #btn-login-google.profile-header-btn-v5{
+                grid-column:2;
+                grid-row:1 / span 2;
+                align-self:center;
+                justify-self:end;
+                width:42px !important;
+                min-width:42px !important;
+                height:42px !important;
+                min-height:42px !important;
+                padding:4px !important;
+                border-radius:50% !important;
+                display:inline-flex !important;
+                align-items:center !important;
+                justify-content:center !important;
+                overflow:visible !important;
+            }
+            .hero-meta-v12.hero-account-meta-v4 #btn-login-google .profile-avatar-v5,
+            .hero-meta-v12.hero-account-meta-v4 #btn-login-google .profile-fallback-v5{
+                width:34px !important;
+                min-width:34px !important;
+                height:34px !important;
+                border-radius:50% !important;
+                flex:0 0 34px !important;
+            }
+            .hero-meta-v12.hero-account-meta-v4 #btn-login-google .profile-status-v5{
+                right:1px !important;
+                bottom:1px !important;
+            }
+            .hero-meta-v12.hero-account-meta-v4 #btn-login-google .header-account-name-v2{
+                display:none !important;
             }
             @media (max-width:700px){
-                #btn-login-google.profile-header-btn-v5.header-account-pill-v2{
-                    width:auto !important;
-                    min-width:0 !important;
+                .hero-meta-v12.hero-account-meta-v4{
+                    grid-template-columns:minmax(0,auto) 38px;
+                    column-gap:8px;
+                }
+                .hero-meta-v12.hero-account-meta-v4 .workspace-account-name-v4{
+                    max-width:150px;
+                    font-size:12px;
+                }
+                .hero-meta-v12.hero-account-meta-v4 #btn-login-google.profile-header-btn-v5{
+                    width:38px !important;
+                    min-width:38px !important;
                     height:38px !important;
                     min-height:38px !important;
-                    padding:3px 9px 3px 3px !important;
-                    gap:6px !important;
+                    padding:4px !important;
                 }
-                #btn-login-google.header-account-pill-v2 .profile-avatar-v5,
-                #btn-login-google.header-account-pill-v2 .profile-fallback-v5{
+                .hero-meta-v12.hero-account-meta-v4 #btn-login-google .profile-avatar-v5,
+                .hero-meta-v12.hero-account-meta-v4 #btn-login-google .profile-fallback-v5{
                     width:30px !important;
                     min-width:30px !important;
                     height:30px !important;
                     flex-basis:30px !important;
                 }
-                #btn-login-google.header-account-pill-v2 .header-account-name-v2{
-                    max-width:92px;
-                    font-size:12px;
-                }
-            }
-            @media (max-width:430px){
-                #btn-login-google.header-account-pill-v2 .header-account-name-v2{max-width:72px;}
             }
         `;
         document.head.appendChild(style);
+    }
+
+    function ensureHeroAccountName(){
+        injectInlineRenameStyles();
+        const heroMeta = document.querySelector('.hero-meta-v12');
+        const dateEl = document.getElementById('workspaceTodayLabel');
+        const btn = document.getElementById('btn-login-google');
+        if (!heroMeta || !dateEl || !btn) return null;
+
+        heroMeta.classList.add('hero-account-meta-v4');
+
+        let nameEl = document.getElementById('workspaceAccountNameV4');
+        if (!nameEl) {
+            nameEl = document.createElement('span');
+            nameEl.id = 'workspaceAccountNameV4';
+            nameEl.className = 'workspace-account-name-v4';
+            nameEl.setAttribute('aria-live', 'polite');
+        }
+
+        if (nameEl.parentElement !== heroMeta) heroMeta.appendChild(nameEl);
+        if (btn.parentElement !== heroMeta) heroMeta.appendChild(btn);
+
+        return nameEl;
     }
 
     function getHeaderAvatar(){
@@ -11778,13 +11805,15 @@ document.addEventListener('DOMContentLoaded', () => {
         return googleAccountProfile?.picture || '';
     }
 
-    function renderHeaderAccountPill(){
+    function renderHeaderAvatar(){
         injectInlineRenameStyles();
         const btn = document.getElementById('btn-login-google');
         if (!btn) return;
         const connected = typeof isGoogleConnected === 'function' && isGoogleConnected();
+        const nameEl = ensureHeroAccountName();
 
         if (!connected) {
+            if (nameEl) nameEl.textContent = '';
             btn.classList.remove('header-account-pill-v2');
             return;
         }
@@ -11794,21 +11823,24 @@ document.addEventListener('DOMContentLoaded', () => {
         const initial = String(label).trim().charAt(0).toUpperCase() || 'G';
         const title = `${label}${googleAccountProfile?.email && googleAccountProfile.email !== label ? ` · ${googleAccountProfile.email}` : ''}`;
 
-        const currentLabel = btn.querySelector('.header-account-name-v2')?.textContent || '';
-        const currentAvatar = btn.querySelector('.profile-avatar-v5')?.getAttribute('src') || '';
-        const hasFallback = !!btn.querySelector('.profile-fallback-v5');
-        const desiredFallback = !avatar;
+        if (nameEl) {
+            nameEl.textContent = `Hi, ${label}`;
+            nameEl.title = `Hi, ${label}`;
+        }
 
-        btn.classList.add('profile-header-btn-v5', 'header-account-pill-v2');
+        btn.classList.add('profile-header-btn-v5');
+        btn.classList.remove('header-account-pill-v2');
         btn.title = title;
         btn.setAttribute('aria-label', `Current account: ${label}`);
 
-        if (currentLabel === label && currentAvatar === avatar && hasFallback === desiredFallback) return;
+        const currentAvatar = btn.querySelector('.profile-avatar-v5')?.getAttribute('src') || '';
+        const currentInitial = btn.querySelector('.profile-fallback-v5')?.textContent || '';
+        if ((avatar && currentAvatar === avatar) || (!avatar && currentInitial === initial)) return;
 
         isApplyingHeaderProfile = true;
         btn.innerHTML = avatar
-            ? `<span style="position:relative;display:inline-flex;flex:0 0 auto;"><img class="profile-avatar-v5" src="${escapeHTML(avatar)}" alt=""><span class="profile-status-v5" aria-hidden="true"></span></span><span class="header-account-name-v2">${escapeHTML(label)}</span>`
-            : `<span style="position:relative;display:inline-flex;flex:0 0 auto;"><span class="profile-fallback-v5">${escapeHTML(initial)}</span><span class="profile-status-v5" aria-hidden="true"></span></span><span class="header-account-name-v2">${escapeHTML(label)}</span>`;
+            ? `<span style="position:relative;display:inline-flex;flex:0 0 auto;"><img class="profile-avatar-v5" src="${escapeHTML(avatar)}" alt=""><span class="profile-status-v5" aria-hidden="true"></span></span>`
+            : `<span style="position:relative;display:inline-flex;flex:0 0 auto;"><span class="profile-fallback-v5">${escapeHTML(initial)}</span><span class="profile-status-v5" aria-hidden="true"></span></span>`;
         isApplyingHeaderProfile = false;
     }
 
@@ -11825,11 +11857,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        renderHeaderAccountPill();
-
-        try {
-            if (typeof window.refreshWorkspaceHero === 'function') window.refreshWorkspaceHero();
-        } catch (_) {}
+        renderHeaderAvatar();
 
         const viewerName = document.getElementById('accountAvatarViewerNameV1');
         if (viewerName && connected) viewerName.textContent = effectiveAccountName();
@@ -11894,8 +11922,8 @@ document.addEventListener('DOMContentLoaded', () => {
     function bindInlineRename(){
         injectInlineRenameStyles();
         const display = document.getElementById('accountDisplayName');
-        if (!display || display.__inlineRenameV2Bound) return;
-        display.__inlineRenameV2Bound = true;
+        if (!display || display.__inlineRenameV4Bound) return;
+        display.__inlineRenameV4Bound = true;
 
         display.addEventListener('click', () => beginInlineRename());
         display.addEventListener('input', () => {
@@ -11925,7 +11953,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Persist name alongside the same cross-device workspace payload used by account UI preferences.
     if (typeof buildDrivePayload === 'function') {
         const originalBuildDrivePayload = buildDrivePayload;
         buildDrivePayload = function(){
@@ -11971,14 +11998,13 @@ document.addEventListener('DOMContentLoaded', () => {
         };
     }
 
-    // V5 may redraw the header avatar after avatar/profile changes. Mirror the custom name back without loops.
     function observeHeaderProfile(){
         const btn = document.getElementById('btn-login-google');
-        if (!btn || btn.__headerAccountNameV2Observed) return;
-        btn.__headerAccountNameV2Observed = true;
+        if (!btn || btn.__headerAccountNameV4Observed) return;
+        btn.__headerAccountNameV4Observed = true;
         new MutationObserver(() => {
             if (isApplyingHeaderProfile) return;
-            requestAnimationFrame(renderHeaderAccountPill);
+            requestAnimationFrame(renderHeaderAvatar);
         }).observe(btn, { childList:true, subtree:true, attributes:true, attributeFilter:['src'] });
     }
 
@@ -12001,3 +12027,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.renameCurrentAccount = beginInlineRename;
     window.getCurrentAccountDisplayName = effectiveAccountName;
 })();
+
