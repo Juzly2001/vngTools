@@ -11137,3 +11137,265 @@ document.addEventListener('DOMContentLoaded', () => {
     // refreshHeaderProfileAvatar()
     window.refreshHeaderProfileAvatar = renderProfessionalProfileV5;
 })();
+// ============================================================================
+// UI FIX V6
+// 1) Remove the redundant "Change avatar" button; pencil overlay remains.
+// 2) Repair Note checklist layout so checkbox + text stay on one row.
+// ============================================================================
+
+(function initWorkspaceUIFixV6() {
+    if (window.__WORKSPACE_UI_FIX_V6_READY__) return;
+    window.__WORKSPACE_UI_FIX_V6_READY__ = true;
+
+    function injectUIFixV6Styles() {
+        if (document.getElementById('workspaceUIFixV6Styles')) return;
+
+        const style = document.createElement('style');
+        style.id = 'workspaceUIFixV6Styles';
+        style.textContent = `
+            /* ---------------------------------------------------------------
+               Account avatar
+               --------------------------------------------------------------- */
+            #accountAvatarChangeV3{
+                display:none !important;
+            }
+
+            /* With the redundant button removed, keep Reset neatly beside avatar. */
+            #accountAvatarActionsV3{
+                margin-top:10px !important;
+            }
+
+            /* ---------------------------------------------------------------
+               Note checklist repair
+               The old/global label/input rules can force the checkbox and text
+               onto separate lines. These rules intentionally have high specificity.
+               --------------------------------------------------------------- */
+
+            .note-checklist,
+            .checklist-items,
+            .checklist-list,
+            [class*="checklist"]{
+                box-sizing:border-box;
+            }
+
+            .note-checklist .checklist-item,
+            .checklist-items .checklist-item,
+            .checklist-list .checklist-item,
+            .note-checklist-item,
+            [class*="checklist"] > label,
+            [class*="checklist"] .checklist-row{
+                display:flex !important;
+                flex-direction:row !important;
+                align-items:center !important;
+                justify-content:flex-start !important;
+                gap:10px !important;
+                width:100% !important;
+                min-width:0 !important;
+                margin:0 !important;
+                padding:5px 0 !important;
+                line-height:1.35 !important;
+                box-sizing:border-box !important;
+            }
+
+            .note-checklist input[type="checkbox"],
+            .checklist-items input[type="checkbox"],
+            .checklist-list input[type="checkbox"],
+            .note-checklist-item input[type="checkbox"],
+            [class*="checklist"] input[type="checkbox"]{
+                appearance:auto !important;
+                -webkit-appearance:checkbox !important;
+                display:inline-block !important;
+                position:static !important;
+                float:none !important;
+                flex:0 0 auto !important;
+                width:17px !important;
+                min-width:17px !important;
+                max-width:17px !important;
+                height:17px !important;
+                min-height:17px !important;
+                max-height:17px !important;
+                margin:0 !important;
+                padding:0 !important;
+                vertical-align:middle !important;
+                transform:none !important;
+            }
+
+            .note-checklist .checklist-item span,
+            .checklist-items .checklist-item span,
+            .checklist-list .checklist-item span,
+            .note-checklist-item span,
+            [class*="checklist"] .checklist-row span,
+            [class*="checklist"] > label > span{
+                display:block !important;
+                flex:1 1 auto !important;
+                min-width:0 !important;
+                width:auto !important;
+                margin:0 !important;
+                padding:0 !important;
+                white-space:normal !important;
+                overflow-wrap:anywhere !important;
+                line-height:1.4 !important;
+            }
+
+            /* Common structure: <label><input><span/text></label> */
+            [class*="checklist"] label:has(> input[type="checkbox"]){
+                display:flex !important;
+                flex-direction:row !important;
+                align-items:center !important;
+                gap:10px !important;
+                width:100% !important;
+                margin:0 !important;
+                padding:5px 0 !important;
+            }
+
+            /* Common structure: <div><input><label>Text</label></div> */
+            [class*="checklist"] div:has(> input[type="checkbox"]){
+                display:flex !important;
+                flex-direction:row !important;
+                align-items:center !important;
+                justify-content:flex-start !important;
+                gap:10px !important;
+                width:100% !important;
+                min-width:0 !important;
+            }
+
+            [class*="checklist"] div:has(> input[type="checkbox"]) > label{
+                display:block !important;
+                flex:1 1 auto !important;
+                width:auto !important;
+                min-width:0 !important;
+                margin:0 !important;
+                padding:0 !important;
+                line-height:1.4 !important;
+            }
+
+            [class*="checklist"] input[type="checkbox"]:checked + span,
+            [class*="checklist"] input[type="checkbox"]:checked + label{
+                opacity:.62;
+                text-decoration:line-through;
+            }
+        `;
+
+        document.head.appendChild(style);
+    }
+
+    function removeRedundantAvatarButtonV6() {
+        const button = document.getElementById('accountAvatarChangeV3');
+        if (button) button.remove();
+
+        // The pencil overlay is the only control for selecting a new avatar.
+        const pencil = document.getElementById('accountAvatarEditBubbleV3');
+        if (pencil) {
+            pencil.title = 'Change avatar';
+            pencil.setAttribute('aria-label', 'Change avatar');
+        }
+    }
+
+    function repairChecklistDOMV6(root = document) {
+        // Normalize checklist rows that were rendered with checkbox/text as block children.
+        const checkboxes = root.querySelectorAll?.(
+            '.note-checklist input[type="checkbox"], ' +
+            '.checklist-items input[type="checkbox"], ' +
+            '.checklist-list input[type="checkbox"], ' +
+            '.note-checklist-item input[type="checkbox"], ' +
+            '[class*="checklist"] input[type="checkbox"]'
+        ) || [];
+
+        checkboxes.forEach(cb => {
+            const parent = cb.parentElement;
+            if (!parent) return;
+
+            // Do not change event handlers or data attributes; only normalize layout.
+            parent.style.setProperty('display', 'flex', 'important');
+            parent.style.setProperty('flex-direction', 'row', 'important');
+            parent.style.setProperty('align-items', 'center', 'important');
+            parent.style.setProperty('justify-content', 'flex-start', 'important');
+            parent.style.setProperty('gap', '10px', 'important');
+            parent.style.setProperty('width', '100%', 'important');
+            parent.style.setProperty('min-width', '0', 'important');
+
+            cb.style.setProperty('display', 'inline-block', 'important');
+            cb.style.setProperty('position', 'static', 'important');
+            cb.style.setProperty('flex', '0 0 17px', 'important');
+            cb.style.setProperty('width', '17px', 'important');
+            cb.style.setProperty('height', '17px', 'important');
+            cb.style.setProperty('margin', '0', 'important');
+
+            // If text is wrapped in a label/span, explicitly prevent the global form CSS
+            // from making it full-width below the checkbox.
+            Array.from(parent.children).forEach(child => {
+                if (child === cb) return;
+                if (child.matches?.('label, span, p, div')) {
+                    child.style.setProperty('flex', '1 1 auto', 'important');
+                    child.style.setProperty('width', 'auto', 'important');
+                    child.style.setProperty('min-width', '0', 'important');
+                    child.style.setProperty('margin', '0', 'important');
+                }
+            });
+        });
+    }
+
+    function applyUIFixesV6(root = document) {
+        injectUIFixV6Styles();
+        removeRedundantAvatarButtonV6();
+        repairChecklistDOMV6(root);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        applyUIFixesV6();
+
+        // Notes/checklists can be re-rendered dynamically. Observe only added nodes and
+        // normalize them without touching checklist data or click/change handlers.
+        const observer = new MutationObserver(mutations => {
+            let needsAvatarCleanup = false;
+
+            mutations.forEach(mutation => {
+                mutation.addedNodes.forEach(node => {
+                    if (!(node instanceof Element)) return;
+
+                    if (
+                        node.id === 'accountAvatarChangeV3' ||
+                        node.querySelector?.('#accountAvatarChangeV3')
+                    ) {
+                        needsAvatarCleanup = true;
+                    }
+
+                    if (
+                        node.matches?.('[class*="checklist"], input[type="checkbox"]') ||
+                        node.querySelector?.('[class*="checklist"] input[type="checkbox"]')
+                    ) {
+                        repairChecklistDOMV6(node.matches?.('[class*="checklist"]') ? node : document);
+                    }
+                });
+            });
+
+            if (needsAvatarCleanup) removeRedundantAvatarButtonV6();
+        });
+
+        observer.observe(document.body, {
+            childList:true,
+            subtree:true
+        });
+    });
+
+    window.addEventListener('load', () => {
+        applyUIFixesV6();
+        setTimeout(applyUIFixesV6, 250);
+        setTimeout(applyUIFixesV6, 800);
+    });
+
+    // Account modal may reconstruct its controls whenever opened.
+    const openAccountPanelV6 = openAccountPanel;
+    openAccountPanel = function() {
+        const result = openAccountPanelV6.apply(this, arguments);
+
+        setTimeout(() => {
+            removeRedundantAvatarButtonV6();
+        }, 0);
+
+        return result;
+    };
+
+    // Public helper for debugging.
+    window.repairWorkspaceChecklistLayout = repairChecklistDOMV6;
+})();
