@@ -9730,28 +9730,3 @@ body.account-avatar-viewer-open-v1{overflow:hidden;}
     .account-avatar-viewer-dialog-v1 img{width:min(330px,82vw);height:min(330px,82vw);border-radius:20px;}
     .auto-time-slots span{font-size:9px;padding:4px 6px;}
 }
-
-#accountModal #accountDisplayName {
-    max-width: 100%;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-/* Khi đang rename */
-#accountModal #accountDisplayName.account-name-editing-v2 {
-    width: 100%;
-    max-width: 100%;
-    min-width: 0;
-
-    overflow-x: auto;
-    overflow-y: hidden;
-    white-space: nowrap;
-
-    scrollbar-width: none;
-}
-
-#accountModal #accountDisplayName.account-name-editing-v2::-webkit-scrollbar {
-    display: none;
-}

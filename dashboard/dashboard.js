@@ -11636,7 +11636,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 position:relative;
                 display:inline-flex;
                 align-items:center;
-                width:fit-content;
+                width:100%;
                 max-width:100%;
                 min-width:28px;
                 padding:3px 26px 3px 5px;
@@ -11669,8 +11669,9 @@ document.addEventListener('DOMContentLoaded', () => {
             #accountModal #accountDisplayName.account-name-editable-v2:hover::after,
             #accountModal #accountDisplayName.account-name-editing-v2::after{opacity:.8;}
             #accountModal #accountDisplayName.account-name-editing-v2{
-                overflow:visible;
-                white-space:normal;
+                overflow-x:auto;
+                overflow-y:hidden;
+                white-space:nowrap;
                 background:var(--inner-bg);
                 border-color:var(--accent-color);
                 box-shadow:0 0 0 3px color-mix(in srgb, var(--accent-color) 16%, transparent);
