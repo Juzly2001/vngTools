@@ -3156,7 +3156,9 @@ function updateGoogleAccountUI() {
     const logoutBtn = getEl('accountLogoutBtn');
     const adminBtn = getEl('accountAdminBtn');
 
-    if (displayName) displayName.textContent = connected ? (profile?.name || 'Google account') : 'Not connected';
+    if (displayName && !displayName.classList.contains('account-name-editing-v2')) {
+        displayName.textContent = connected ? (profile?.name || 'Google account') : 'Not connected';
+    }
     if (email) email.textContent = connected ? (profile?.email || 'Profile information is loading…') : 'Connect Google to identify the account being used.';
     if (connectionText) {
         connectionText.textContent = connected ? '● Connected' : '● Offline';
@@ -7965,13 +7967,27 @@ Object.assign(THEME_SCENE_LABELS,{
 (function initWorkspaceUIV12(){
     function refreshWorkspaceHero(){
         const now = new Date();
-        const hour = now.getHours();
-        const greeting = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
         const greetingEl = document.getElementById('workspaceGreeting');
         const dateEl = document.getElementById('workspaceTodayLabel');
-        if (greetingEl) greetingEl.textContent = `${greeting}. Everything you need is ready here.`;
-        if (dateEl) dateEl.textContent = new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'2-digit',month:'short',year: 'numeric'}).format(now);
+
+        let accountName = '';
+        try {
+            const connected = typeof isGoogleConnected === 'function' && isGoogleConnected();
+            if (connected && typeof window.getCurrentAccountDisplayName === 'function') {
+                accountName = String(window.getCurrentAccountDisplayName() || '').trim();
+            } else if (connected && typeof googleAccountProfile !== 'undefined') {
+                accountName = String(googleAccountProfile?.name || '').trim();
+            }
+        } catch (_) {}
+
+        if (greetingEl) {
+            greetingEl.textContent = accountName
+                ? `Hi, ${accountName}. Everything you need is ready here.`
+                : 'Everything you need is ready here.';
+        }
+        if (dateEl) dateEl.textContent = new Intl.DateTimeFormat('en-GB',{weekday:'short',day:'2-digit',month:'short',year:'numeric'}).format(now);
     }
+    window.refreshWorkspaceHero = refreshWorkspaceHero;
     window.addEventListener('load', refreshWorkspaceHero, {once:true});
 })();
 
@@ -11577,7 +11593,7 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 
 // ============================================================================
-// CURRENT ACCOUNT INLINE RENAME V2 — DIRECT EDIT + CROSS-DEVICE DRIVE SYNC
+// CURRENT ACCOUNT INLINE RENAME V3 — STABLE DIRECT EDIT + VISIBLE HERO GREETING + DRIVE SYNC
 // - Click the displayed account name itself to rename; no extra input row
 // - Enter / blur saves, Escape cancels
 // - Custom name follows the existing Drive workspace payload
@@ -11589,6 +11605,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const NAME_PREFIX = 'workspace_custom_account_name_v1_';
     let renameOriginalValue = '';
+    let renameDraftValue = '';
     let isApplyingHeaderProfile = false;
 
     function identityKey(){
@@ -11810,6 +11827,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
         renderHeaderAccountPill();
 
+        try {
+            if (typeof window.refreshWorkspaceHero === 'function') window.refreshWorkspaceHero();
+        } catch (_) {}
+
         const viewerName = document.getElementById('accountAvatarViewerNameV1');
         if (viewerName && connected) viewerName.textContent = effectiveAccountName();
     }
@@ -11835,7 +11856,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
-        const next = String(display.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80);
+        const next = String(renameDraftValue || display.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 80);
         if (!next) {
             display.textContent = renameOriginalValue || effectiveAccountName();
             return;
@@ -11854,6 +11875,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!connected || !display || display.classList.contains('account-name-editing-v2')) return;
 
         renameOriginalValue = effectiveAccountName();
+        renameDraftValue = renameOriginalValue;
         display.textContent = renameOriginalValue;
         display.setAttribute('contenteditable', 'true');
         display.setAttribute('spellcheck', 'false');
@@ -11876,6 +11898,11 @@ document.addEventListener('DOMContentLoaded', () => {
         display.__inlineRenameV2Bound = true;
 
         display.addEventListener('click', () => beginInlineRename());
+        display.addEventListener('input', () => {
+            if (display.classList.contains('account-name-editing-v2')) {
+                renameDraftValue = String(display.textContent || '').slice(0, 80);
+            }
+        });
         display.addEventListener('keydown', e => {
             if (!display.classList.contains('account-name-editing-v2')) return;
             if (e.key === 'Enter') {
