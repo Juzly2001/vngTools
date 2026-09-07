@@ -10632,3 +10632,146 @@ body.light-mode .note-tag-option { background:#fff; }
     pointer-events: auto;
     transform: scale(1);
 }
+
+/* =========================================================
+   ADMIN CONSOLE — SEARCH / SELECT ALIGNMENT FIX
+   ========================================================= */
+
+/* Mọi control trong toolbar phải tính kích thước đúng */
+.admin-console-v3 .admin-toolbar-v3 > * {
+    box-sizing: border-box;
+    min-width: 0;
+    margin: 0;
+}
+
+/* Toolbar */
+.admin-console-v3 .admin-toolbar-v3 {
+    display: grid;
+    grid-template-columns: minmax(240px, 1fr) 150px 150px auto;
+    gap: 10px;
+    align-items: stretch;
+}
+
+/* ================= SEARCH ================= */
+
+.admin-console-v3 .admin-search-box {
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    min-height: 42px;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 12px;
+    margin: 0;
+
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background: var(--inner-bg);
+
+    overflow: hidden;
+}
+
+.admin-console-v3 .admin-search-box > span {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 8px 0 0;
+    padding: 0;
+
+    line-height: 1;
+}
+
+/* Quan trọng: reset style input kế thừa */
+.admin-console-v3 .admin-search-box input {
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 0;
+    height: 100%;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 0;
+
+    background: transparent !important;
+    box-shadow: none !important;
+
+    color: var(--text-main);
+    font: inherit;
+    line-height: normal;
+}
+
+/* bỏ decoration mặc định của search */
+.admin-console-v3 .admin-search-box input[type="search"] {
+    appearance: none;
+    -webkit-appearance: none;
+}
+
+.admin-console-v3
+.admin-search-box
+input[type="search"]::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+}
+
+/* ================= SELECT ================= */
+
+.admin-console-v3 .admin-filter-select,
+.admin-console-v3 .admin-role-select {
+    box-sizing: border-box;
+
+    width: 100%;
+    min-width: 0;
+    height: 42px;
+    min-height: 42px;
+
+    margin: 0 !important;
+    padding: 0 38px 0 12px !important;
+
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+
+    color: var(--text-main);
+
+    line-height: 40px;
+    vertical-align: middle;
+}
+
+/* ================= BUTTON ================= */
+
+.admin-console-v3 .admin-toolbar-v3 > button {
+    min-height: 42px;
+    height: 42px;
+    margin: 0;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ================= RESPONSIVE ================= */
+
+@media (max-width: 860px) {
+    .admin-console-v3 .admin-toolbar-v3 {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .admin-console-v3 .admin-toolbar-v3 .admin-search-box {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 560px) {
+    .admin-console-v3 .admin-toolbar-v3 {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-console-v3 .admin-toolbar-v3 .admin-search-box {
+        grid-column: auto;
+    }
+}
