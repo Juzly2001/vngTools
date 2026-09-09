@@ -2614,7 +2614,7 @@ function handlePermissionGateConnect() {
     if (isGoogleConnected() && (!hasRequiredGoogleScopes() || currentAccountAccess.blocked || currentAccountAccess.sessionRevoked)) {
         clearStoredGoogleOAuthState();
     }
-    handleAuthClick(false, true);
+    handleAuthClick(false, false);
 }
 
 function enforceGooglePermissions() {
@@ -3389,7 +3389,7 @@ function handleAuthClick(forceAccountChooser = false, forceConsent = false) {
     };
 
     tokenClient.requestAccessToken({
-        prompt:forceConsent || forceAccountChooser || gapi.client.getToken() === null ? 'consent' : ''
+        prompt: forceConsent ? 'consent' : ''
     });
 }
 
