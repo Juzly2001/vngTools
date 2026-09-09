@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Terms of Service — Workspace Dashboard</title>
+<meta name="description" content="Terms of Service for Workspace Dashboard.">
+<style>
+:root{
+  --bg:#0b1020;
+  --panel:rgba(17,24,39,.78);
+  --panel-2:rgba(255,255,255,.045);
+  --text:#e8ecf3;
+  --muted:#a8b0c0;
+  --line:rgba(255,255,255,.10);
+  --accent:#7c9cff;
+  --accent-2:#8b5cf6;
+  --ok:#34d399;
+  --shadow:0 24px 70px rgba(0,0,0,.30);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 15% 15%,rgba(124,156,255,.18),transparent 30%),
+    radial-gradient(circle at 90% 10%,rgba(139,92,246,.16),transparent 28%),
+    linear-gradient(180deg,#0a0f1e 0%,#0f172a 100%);
+  color:var(--text);
+  min-height:100vh;
+}
+a{color:#a9bbff;text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{width:min(1040px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-bottom:24px;
+}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700}
+.logo{
+  width:42px;height:42px;border-radius:14px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 10px 30px rgba(124,156,255,.25);
+}
+.back{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 14px;border:1px solid var(--line);border-radius:12px;
+  background:rgba(255,255,255,.035);color:var(--text)
+}
+.hero{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  border-radius:26px;padding:34px;box-shadow:var(--shadow);backdrop-filter:blur(16px);
+  margin-bottom:22px;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;color:#c6d0ff;
+  padding:7px 10px;border-radius:999px;border:1px solid rgba(124,156,255,.28);
+  background:rgba(124,156,255,.08);margin-bottom:14px
+}
+h1{font-size:clamp(34px,6vw,54px);line-height:1.02;margin:0 0 14px;letter-spacing:-1.5px}
+.subtitle{font-size:17px;line-height:1.7;color:var(--muted);max-width:760px;margin:0}
+.meta{margin-top:18px;color:#c4cbda;font-size:14px}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:22px}
+.toc,.card{
+  border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(14px);
+  border-radius:20px;
+}
+.toc{padding:18px;position:sticky;top:18px;height:max-content}
+.toc h3{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#98a2b6;margin:0 0 12px}
+.toc a{display:block;padding:9px 10px;border-radius:10px;color:#cbd3e1;font-size:14px}
+.toc a:hover{background:rgba(255,255,255,.05);text-decoration:none;color:#fff}
+.card{padding:28px}
+section+section{border-top:1px solid var(--line);margin-top:28px;padding-top:28px}
+h2{font-size:23px;margin:0 0 12px;letter-spacing:-.3px}
+h3{font-size:17px;margin:18px 0 8px}
+p,li{color:#c3cad8;line-height:1.75}
+ul{padding-left:21px}
+.notice{
+  margin:16px 0;padding:16px 18px;border-radius:14px;
+  border:1px solid rgba(52,211,153,.22);background:rgba(52,211,153,.07);
+  color:#d6f8eb
+}
+.footer{
+  margin-top:22px;padding:18px 4px;color:#8f99aa;font-size:13px;
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap
+}
+@media(max-width:780px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static}
+  .hero,.card{padding:22px}
+  .topbar{align-items:flex-start}
+}
+@media(prefers-color-scheme:light){
+  :root{
+    --bg:#f5f7fb;--panel:rgba(255,255,255,.88);--panel-2:#fff;
+    --text:#172033;--muted:#5e687a;--line:rgba(20,30,50,.10);
+    --shadow:0 20px 50px rgba(40,50,80,.10)
+  }
+  body{
+    background:
+      radial-gradient(circle at 15% 15%,rgba(124,156,255,.16),transparent 30%),
+      radial-gradient(circle at 90% 10%,rgba(139,92,246,.12),transparent 28%),
+      #f6f8fc;
+  }
+  .back{background:rgba(255,255,255,.75)}
+  .toc a{color:#4d5870}
+  .toc a:hover{background:rgba(35,55,90,.05);color:#172033}
+  .notice{color:#14532d}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><div class="logo">W</div><span>Workspace Dashboard</span></div>
+    <a class="back" href="./">← Back to app</a>
+  </div>
+
+  <header class="hero">
+    <div class="eyebrow">Service Terms</div>
+    <h1>Terms of Service</h1>
+    <p class="subtitle">
+      These Terms of Service describe the rules and conditions for using Workspace Dashboard.
+    </p>
+    <div class="meta">Last updated: September 9, 2026</div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Table of contents">
+      <h3>Contents</h3>
+      <a href="#acceptance">1. Acceptance</a>
+      <a href="#service">2. Service</a>
+      <a href="#account">3. Accounts</a>
+      <a href="#google">4. Google services</a>
+      <a href="#acceptable">5. Acceptable use</a>
+      <a href="#content">6. User content</a>
+      <a href="#availability">7. Availability</a>
+      <a href="#liability">8. Disclaimer</a>
+      <a href="#termination">9. Suspension</a>
+      <a href="#changes">10. Changes</a>
+      <a href="#contact">11. Contact</a>
+    </nav>
+
+    <main class="card">
+      <section id="acceptance">
+        <h2>1. Acceptance of these terms</h2>
+        <p>
+          By accessing or using Workspace Dashboard, you agree to these Terms of Service.
+          If you do not agree, do not use the application.
+        </p>
+      </section>
+
+      <section id="service">
+        <h2>2. Description of the service</h2>
+        <p>
+          Workspace Dashboard is a web-based productivity application for organizing workspace information,
+          links, notes, schedules, groups, settings, and related dashboard content. It may also provide
+          synchronization, account-management, role, session, and administrative features.
+        </p>
+      </section>
+
+      <section id="account">
+        <h2>3. Accounts and access</h2>
+        <p>
+          Certain features require a Google Account. You are responsible for using an account that you are
+          authorized to use and for protecting access to your device and account.
+        </p>
+        <p>
+          Workspace Dashboard may apply account roles and access controls. Authorized administrators may
+          change account roles, revoke sessions, or block access where required for operation or security.
+        </p>
+      </section>
+
+      <section id="google">
+        <h2>4. Google services</h2>
+        <p>
+          Workspace Dashboard uses Google Sign-In and Google Drive for selected features.
+          Your use of Google services is also governed by Google's applicable terms and policies.
+          Availability of Google-dependent functionality may be affected by Google service availability,
+          OAuth authorization, account settings, or API changes.
+        </p>
+      </section>
+
+      <section id="acceptable">
+        <h2>5. Acceptable use</h2>
+        <p>You agree not to:</p>
+        <ul>
+          <li>Use Workspace Dashboard for unlawful, fraudulent, abusive, or harmful activities.</li>
+          <li>Attempt to bypass authentication, authorization, account blocks, or session restrictions.</li>
+          <li>Interfere with the application, its data, its Google Drive integration, or another user's access.</li>
+          <li>Use the service in a way that violates applicable Google terms or applicable law.</li>
+        </ul>
+      </section>
+
+      <section id="content">
+        <h2>6. User content and responsibility</h2>
+        <p>
+          You remain responsible for the content and information you create, store, import, or manage through
+          Workspace Dashboard. You should maintain appropriate backups of important information.
+        </p>
+      </section>
+
+      <section id="availability">
+        <h2>7. Availability and changes to the service</h2>
+        <p>
+          Workspace Dashboard may be updated, modified, temporarily unavailable, or discontinued.
+          Features that depend on third-party services may stop working if those services change or become unavailable.
+        </p>
+      </section>
+
+      <section id="liability">
+        <h2>8. Disclaimer and limitation of liability</h2>
+        <p>
+          Workspace Dashboard is provided on an "as is" and "as available" basis, to the extent permitted by law.
+          No guarantee is made that the service will always be uninterrupted, error-free, or suitable for every purpose.
+        </p>
+        <p>
+          To the extent permitted by applicable law, the developer is not liable for indirect, incidental,
+          consequential, or special losses resulting from use of, or inability to use, the application.
+        </p>
+      </section>
+
+      <section id="termination">
+        <h2>9. Suspension or termination</h2>
+        <p>
+          Access may be suspended, blocked, or terminated when necessary to protect the application,
+          enforce these terms, address security concerns, or maintain administrative control.
+        </p>
+      </section>
+
+      <section id="changes">
+        <h2>10. Changes to these terms</h2>
+        <p>
+          These Terms of Service may be updated as Workspace Dashboard evolves.
+          Continued use after an updated version is published means you accept the revised terms.
+        </p>
+      </section>
+
+      <section id="contact">
+        <h2>11. Contact</h2>
+        <p>
+          Questions about these Terms of Service can be sent to
+          <a href="mailto:tran.tantaiforwork@gmail.com">tran.tantaiforwork@gmail.com</a>.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <span>© 2026 Workspace Dashboard</span>
+    <span><a href="privacy.html">Privacy Policy</a></span>
+  </footer>
+</div>
+</body>
+</html>

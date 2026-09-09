@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Privacy Policy — Workspace Dashboard</title>
+<meta name="description" content="Privacy Policy for Workspace Dashboard.">
+<style>
+:root{
+  --bg:#0b1020;
+  --panel:rgba(17,24,39,.78);
+  --panel-2:rgba(255,255,255,.045);
+  --text:#e8ecf3;
+  --muted:#a8b0c0;
+  --line:rgba(255,255,255,.10);
+  --accent:#7c9cff;
+  --accent-2:#8b5cf6;
+  --ok:#34d399;
+  --shadow:0 24px 70px rgba(0,0,0,.30);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:
+    radial-gradient(circle at 15% 15%,rgba(124,156,255,.18),transparent 30%),
+    radial-gradient(circle at 90% 10%,rgba(139,92,246,.16),transparent 28%),
+    linear-gradient(180deg,#0a0f1e 0%,#0f172a 100%);
+  color:var(--text);
+  min-height:100vh;
+}
+a{color:#a9bbff;text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{width:min(1040px,calc(100% - 32px));margin:0 auto;padding:32px 0 64px}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-bottom:24px;
+}
+.brand{display:flex;align-items:center;gap:12px;font-weight:700}
+.logo{
+  width:42px;height:42px;border-radius:14px;
+  display:grid;place-items:center;
+  background:linear-gradient(135deg,var(--accent),var(--accent-2));
+  box-shadow:0 10px 30px rgba(124,156,255,.25);
+}
+.back{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 14px;border:1px solid var(--line);border-radius:12px;
+  background:rgba(255,255,255,.035);color:var(--text)
+}
+.hero{
+  border:1px solid var(--line);
+  background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.025));
+  border-radius:26px;padding:34px;box-shadow:var(--shadow);backdrop-filter:blur(16px);
+  margin-bottom:22px;
+}
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:13px;color:#c6d0ff;
+  padding:7px 10px;border-radius:999px;border:1px solid rgba(124,156,255,.28);
+  background:rgba(124,156,255,.08);margin-bottom:14px
+}
+h1{font-size:clamp(34px,6vw,54px);line-height:1.02;margin:0 0 14px;letter-spacing:-1.5px}
+.subtitle{font-size:17px;line-height:1.7;color:var(--muted);max-width:760px;margin:0}
+.meta{margin-top:18px;color:#c4cbda;font-size:14px}
+.layout{display:grid;grid-template-columns:230px minmax(0,1fr);gap:22px}
+.toc,.card{
+  border:1px solid var(--line);background:var(--panel);backdrop-filter:blur(14px);
+  border-radius:20px;
+}
+.toc{padding:18px;position:sticky;top:18px;height:max-content}
+.toc h3{font-size:13px;text-transform:uppercase;letter-spacing:.12em;color:#98a2b6;margin:0 0 12px}
+.toc a{display:block;padding:9px 10px;border-radius:10px;color:#cbd3e1;font-size:14px}
+.toc a:hover{background:rgba(255,255,255,.05);text-decoration:none;color:#fff}
+.card{padding:28px}
+section+section{border-top:1px solid var(--line);margin-top:28px;padding-top:28px}
+h2{font-size:23px;margin:0 0 12px;letter-spacing:-.3px}
+h3{font-size:17px;margin:18px 0 8px}
+p,li{color:#c3cad8;line-height:1.75}
+ul{padding-left:21px}
+.notice{
+  margin:16px 0;padding:16px 18px;border-radius:14px;
+  border:1px solid rgba(52,211,153,.22);background:rgba(52,211,153,.07);
+  color:#d6f8eb
+}
+.footer{
+  margin-top:22px;padding:18px 4px;color:#8f99aa;font-size:13px;
+  display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap
+}
+@media(max-width:780px){
+  .layout{grid-template-columns:1fr}
+  .toc{position:static}
+  .hero,.card{padding:22px}
+  .topbar{align-items:flex-start}
+}
+@media(prefers-color-scheme:light){
+  :root{
+    --bg:#f5f7fb;--panel:rgba(255,255,255,.88);--panel-2:#fff;
+    --text:#172033;--muted:#5e687a;--line:rgba(20,30,50,.10);
+    --shadow:0 20px 50px rgba(40,50,80,.10)
+  }
+  body{
+    background:
+      radial-gradient(circle at 15% 15%,rgba(124,156,255,.16),transparent 30%),
+      radial-gradient(circle at 90% 10%,rgba(139,92,246,.12),transparent 28%),
+      #f6f8fc;
+  }
+  .back{background:rgba(255,255,255,.75)}
+  .toc a{color:#4d5870}
+  .toc a:hover{background:rgba(35,55,90,.05);color:#172033}
+  .notice{color:#14532d}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand"><div class="logo">W</div><span>Workspace Dashboard</span></div>
+    <a class="back" href="./">← Back to app</a>
+  </div>
+
+  <header class="hero">
+    <div class="eyebrow">Privacy & Data Use</div>
+    <h1>Privacy Policy</h1>
+    <p class="subtitle">
+      This Privacy Policy explains what information Workspace Dashboard accesses,
+      why it is used, where it may be stored, and the choices available to users.
+    </p>
+    <div class="meta">Last updated: September 9, 2026</div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Table of contents">
+      <h3>Contents</h3>
+      <a href="#overview">1. Overview</a>
+      <a href="#data">2. Data we access</a>
+      <a href="#google">3. Google data use</a>
+      <a href="#storage">4. Storage & retention</a>
+      <a href="#sharing">5. Data sharing</a>
+      <a href="#security">6. Security</a>
+      <a href="#choices">7. Your choices</a>
+      <a href="#children">8. Children</a>
+      <a href="#changes">9. Changes</a>
+      <a href="#contact">10. Contact</a>
+    </nav>
+
+    <main class="card">
+      <section id="overview">
+        <h2>1. Overview</h2>
+        <p>
+          Workspace Dashboard is a web-based productivity dashboard that provides workspace
+          organization, synchronization, account access controls, and administrative features.
+          Some features use Google Sign-In and Google Drive APIs.
+        </p>
+        <div class="notice">
+          Workspace Dashboard uses Google user data only to provide and operate the features requested by the user.
+        </div>
+      </section>
+
+      <section id="data">
+        <h2>2. Information we access</h2>
+        <p>Depending on the features you use, Workspace Dashboard may access:</p>
+        <ul>
+          <li>Basic Google Account profile information, such as your name, email address, profile image, and account identifier.</li>
+          <li>OAuth access information required to connect the application to Google services during an active session.</li>
+          <li>Workspace data created or managed through the dashboard, such as links, notes, schedules, groups, settings, favorites, recent items, and related application state.</li>
+          <li>Application account-management information such as role, access status, session state, and administrative audit information.</li>
+        </ul>
+      </section>
+
+      <section id="google">
+        <h2>3. How Google user data is used</h2>
+        <h3>Google Sign-In</h3>
+        <p>
+          Google Sign-In is used to identify the signed-in account, display basic profile information,
+          associate workspace data with the correct user, and apply access-control rules.
+        </p>
+
+        <h3>Google Drive</h3>
+        <p>
+          Workspace Dashboard uses Google Drive to save, retrieve, synchronize, and maintain application data.
+          Workspace data may be stored in the application's private Google Drive application-data area.
+          The application also uses a shared Google Drive JSON registry file for account-management and
+          administrative functions, including user roles, block status, session state, and related records.
+        </p>
+
+        <p>
+          Google user data is not used for advertising, profiling for advertising, or sale to third parties.
+        </p>
+      </section>
+
+      <section id="storage">
+        <h2>4. Storage and retention</h2>
+        <p>
+          Workspace information may be stored in Google Drive and in browser storage such as localStorage
+          to support settings, session continuity, interface preferences, and application operation.
+        </p>
+        <p>
+          Data is retained for as long as needed to provide the application features, maintain account access,
+          or until it is deleted by the user or administrator where the application provides that capability.
+          Data stored in Google Drive remains subject to the user's or owner's Google Drive controls.
+        </p>
+      </section>
+
+      <section id="sharing">
+        <h2>5. Data sharing</h2>
+        <p>
+          Workspace Dashboard does not sell Google user data or personal information.
+          Data is not shared with third parties for advertising purposes.
+        </p>
+        <p>
+          Information may be processed by Google services when required to provide authentication
+          and Google Drive functionality. Administrative account information may be visible to authorized
+          Workspace Dashboard administrators where required for account-management features.
+        </p>
+      </section>
+
+      <section id="security">
+        <h2>6. Security</h2>
+        <p>
+          Reasonable technical measures are used to reduce unauthorized access to application data.
+          OAuth access tokens are used to communicate with Google APIs and should not be intentionally
+          exposed to other users. No internet-based system can guarantee absolute security.
+        </p>
+      </section>
+
+      <section id="choices">
+        <h2>7. Your choices and control</h2>
+        <p>You may stop using Workspace Dashboard at any time. You may also:</p>
+        <ul>
+          <li>Sign out or disconnect your Google Account from the application.</li>
+          <li>Revoke Workspace Dashboard's access from your Google Account security and third-party access settings.</li>
+          <li>Delete application data that you control in Google Drive where applicable.</li>
+          <li>Contact the developer regarding privacy questions or data-access concerns.</li>
+        </ul>
+      </section>
+
+      <section id="children">
+        <h2>8. Children's privacy</h2>
+        <p>
+          Workspace Dashboard is not specifically directed to children under 13.
+          The application should only be used by persons permitted to use the relevant Google Account and services.
+        </p>
+      </section>
+
+      <section id="changes">
+        <h2>9. Changes to this policy</h2>
+        <p>
+          This Privacy Policy may be updated when Workspace Dashboard features or data practices change.
+          The latest version will be published on this page with an updated revision date.
+        </p>
+      </section>
+
+      <section id="contact">
+        <h2>10. Contact</h2>
+        <p>
+          For questions about this Privacy Policy or Workspace Dashboard's handling of data, contact:
+          <a href="mailto:tran.tantaiforwork@gmail.com">tran.tantaiforwork@gmail.com</a>.
+        </p>
+      </section>
+    </main>
+  </div>
+
+  <footer class="footer">
+    <span>© 2026 Workspace Dashboard</span>
+    <span><a href="terms.html">Terms of Service</a></span>
+  </footer>
+</div>
+</body>
+</html>
