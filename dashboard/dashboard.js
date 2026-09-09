@@ -4715,7 +4715,7 @@ function renderTrashModal() {
             </div>
             <div class="trash-actions">
                 <button class="btn-success" onclick="restoreTrashItemAt(${index})">Restore</button>
-                <button class="btn-real-danger" onclick="removeTrashItemAt(${index})">Delete permanently</button>
+                <button class="btn-real-danger" onclick="removeTrashItemAt(${index})">Delete</button>
             </div>
         </div>`).join('');
 }
