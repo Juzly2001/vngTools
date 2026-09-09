@@ -12335,3 +12335,91 @@ body.light-mode .kanban-card-meta span { background: rgba(15,23,42,.045); }
     }
     .kanban-card-footer-actions button { width: 100% !important; justify-content: center !important; }
 }
+
+/* ========================================================================== 
+   PINNED ITEM — FLOATING PIN BADGE
+   Small floating pushpin badge, slightly outside the top-right corner.
+   ========================================================================== */
+.item-wrapper.item-pinned {
+    position: relative;
+    overflow: visible !important;
+    z-index: 3;
+}
+
+/* Floating pin - clean */
+.item-wrapper.item-pinned::after {
+    content: '📌';
+    position: absolute;
+
+    top: -9px;
+    right: -4px;
+
+    width: 22px;
+    height: 22px;
+
+    display: grid;
+    place-items: center;
+
+    font-size: 14px;
+    line-height: 1;
+
+    transform: rotate(-12deg);
+    transform-origin: center;
+
+    z-index: 20;
+    pointer-events: none;
+}
+
+.item-wrapper.item-pinned > .link-button,
+.item-wrapper.item-pinned > .note-button,
+.item-wrapper.item-pinned > .schedule-button {
+    overflow: visible;
+}
+
+/* Schedule rows cannot use the wrapper badge, so pin the task cell instead. */
+.schedule-row.item-pinned .schedule-name {
+    position: relative;
+    overflow: visible;
+    padding-right: 28px;
+}
+
+.schedule-row.item-pinned .schedule-name::after {
+    content: '📌';
+    position: absolute;
+    top: -9px;
+    right: -7px;
+    width: 21px;
+    height: 21px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    font-size: 12px;
+    line-height: 1;
+    background: color-mix(in srgb, var(--card-bg, var(--bg-card, #fff)) 84%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-color) 28%, rgba(255,255,255,.55));
+    box-shadow: 0 4px 9px rgba(0,0,0,.15), inset 0 1px 0 rgba(255,255,255,.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transform: rotate(-16deg);
+    z-index: 20;
+    pointer-events: none;
+}
+
+@media (max-width: 640px) {
+    .item-wrapper.item-pinned::after {
+        top: -8px;
+        right: -6px;
+        width: 20px;
+        height: 20px;
+        font-size: 12px;
+    }
+
+    .schedule-row.item-pinned .schedule-name::after {
+        top: -7px;
+        right: -5px;
+        width: 19px;
+        height: 19px;
+        font-size: 11px;
+    }
+}
+

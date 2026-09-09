@@ -659,6 +659,14 @@ function sortGroupsForRender(groups) {
     return [...groups].sort((a, b) => Number(Boolean(b.favorite)) - Number(Boolean(a.favorite)));
 }
 
+// Keep the original array index for every item, but render pinned items first.
+// This prevents Edit/Delete/Move/context-menu actions from targeting the wrong item.
+function getPinnedItemsForRender(items = []) {
+    return (Array.isArray(items) ? items : [])
+        .map((item, originalIndex) => ({ item, originalIndex }))
+        .sort((a, b) => Number(Boolean(b.item?.pinned)) - Number(Boolean(a.item?.pinned)));
+}
+
 function applyAutoSortUI() {
     const grid = getEl('groupsContainer');
     grid?.classList.remove('auto-sort-layout');
@@ -757,10 +765,10 @@ function renderDashboard() {
         if (group.type === 'link') {
             if (!group.links?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a link...</span>`;
             else {
-                group.links.forEach((link, idx) => {
+                getPinnedItemsForRender(group.links).forEach(({ item: link, originalIndex: idx }) => {
                     const lEmoji = (link.emoji && link.emoji !== "NONE") ? `<span>${link.emoji}</span> ` : '';
                     contentArea.innerHTML += `
-                        <div class="item-wrapper" data-index="${idx}">
+                        <div class="item-wrapper ${link.pinned ? 'item-pinned' : ''}" data-index="${idx}">
                             <a href="${escapeHTML(link.url)}" target="_blank" class="link-button" oncontextmenu="openContextMenu(event, 'link', '${group.id}', ${idx})">
                                 ${lEmoji}${escapeHTML(link.name)}
                             </a>
@@ -771,17 +779,16 @@ function renderDashboard() {
         else if (group.type === 'note') {
             if (!group.notes?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a note...</span>`;
             else {
-                group.notes.forEach((note, idx) => {
+                getPinnedItemsForRender(group.notes).forEach(({ item: note, originalIndex: idx }) => {
                     const nEmoji = (note.emoji && note.emoji !== "NONE") ? `<span>${note.emoji}</span> ` : '';
                     const item = document.createElement('div');
-                    item.className = 'item-wrapper';
+                    item.className = `item-wrapper ${note.pinned ? 'item-pinned' : ''}`;
                     item.setAttribute('data-index', idx);
-                    const pinMark = note.pinned ? '📌 ' : '';
                     const noteTags = normalizeNoteTags(note);
                     const tagPreview = noteTags.length
                         ? `<span class="note-button-tags">${noteTags.slice(0, 2).map(tag => `<span class="note-button-tag">${escapeHTML(noteTagLabel(tag))}</span>`).join('')}${noteTags.length > 2 ? `<span class="note-button-tag more">+${noteTags.length - 2}</span>` : ''}</span>`
                         : '';
-                    item.innerHTML = `<div class="note-button note-button-with-tags" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})"><span class="note-button-title">${pinMark}${nEmoji}${escapeHTML(note.title || "Note")}</span>${tagPreview}</div>`;
+                    item.innerHTML = `<div class="note-button note-button-with-tags" oncontextmenu="openContextMenu(event, 'note', '${group.id}', ${idx})"><span class="note-button-title">${nEmoji}${escapeHTML(note.title || "Note")}</span>${tagPreview}</div>`;
                     item.querySelector('.note-button').onclick = () => showContentDetail(group.id, idx, 'note');
                     contentArea.appendChild(item);
                 });
@@ -799,7 +806,7 @@ function renderDashboard() {
                 const tbody = table.querySelector('tbody');
                 const dayLabels = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-                group.schedules.forEach((sch, idx) => {
+                getPinnedItemsForRender(group.schedules).forEach(({ item: sch, originalIndex: idx }) => {
                     const row = document.createElement('tr');
                     const now = new Date();
                     const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -813,7 +820,7 @@ function renderDashboard() {
                     else if (todayTime > endDateObj) activeDateStr = sch.endDate || sch.date;
 
                     const finalScheduleTime = new Date(`${sch.endDate || sch.date} ${sch.endTime || sch.time || "00:00"}`);
-                    row.className = `schedule-row ${sch.important ? 'important' : ''} ${finalScheduleTime < now ? 'past' : ''}`;
+                    row.className = `schedule-row ${sch.pinned ? 'item-pinned' : ''} ${sch.important ? 'important' : ''} ${finalScheduleTime < now ? 'past' : ''}`;
                     row.onclick = () => showContentDetail(group.id, idx, 'schedule');
                     row.oncontextmenu = (e) => openContextMenu(e, 'schedule', group.id, idx);
                     
@@ -4546,12 +4553,73 @@ function renderSmartPanels() {
     renderSmartUpcoming();
 }
 
+function collectFavoriteEntries(limit = Infinity) {
+    const entries = [];
+    state.dashboardData.forEach(group => {
+        if (group.favorite) {
+            entries.push({
+                kind: 'group',
+                icon: group.emoji && group.emoji !== 'NONE' ? group.emoji : '⭐',
+                title: group.title || 'Untitled group',
+                subtitle: `Group · ${group.type || ''}`,
+                groupId: group.id
+            });
+        }
+
+        // Do not expose pinned content from a currently locked group.
+        if (group.pinKey && group.pinKey !== '' && group.isLocked) return;
+
+        (group.links || []).forEach((item, index) => {
+            if (item?.pinned === true) entries.push({
+                kind: 'link', icon: '🔗', title: item.name || item.title || 'Untitled link',
+                subtitle: group.title || '', groupId: group.id, index, url: item.url || ''
+            });
+        });
+        (group.notes || []).forEach((item, index) => {
+            if (item?.pinned === true) entries.push({
+                kind: 'note', icon: '📝', title: item.title || 'Untitled note',
+                subtitle: group.title || '', groupId: group.id, index
+            });
+        });
+        (group.schedules || []).forEach((item, index) => {
+            if (item?.pinned === true) entries.push({
+                kind: 'schedule', icon: '📅', title: item.title || 'Untitled schedule',
+                subtitle: group.title || '', groupId: group.id, index
+            });
+        });
+    });
+    return entries.slice(0, limit);
+}
+
+function openFavoriteEntry(kind, groupId, index = null) {
+    if (kind === 'group') {
+        scrollToGroup(groupId);
+        return;
+    }
+    if (kind === 'link') {
+        const group = getGroup(groupId);
+        const item = group?.links?.[index];
+        const targetUrl = item?.url || '';
+        if (targetUrl) window.open(targetUrl, '_blank');
+        return;
+    }
+    if (kind === 'note' || kind === 'schedule') {
+        showContentDetail(groupId, Number(index), kind);
+    }
+}
+
+function renderFavoriteEntryHTML(entry, closeSidebar = false) {
+    const closeCode = closeSidebar ? "closeModal('sidebarPanelModal'); " : '';
+    const indexArg = entry.index == null ? 'null' : Number(entry.index);
+    return `<div class="smart-item" onclick="${closeCode}openFavoriteEntry('${entry.kind}','${entry.groupId}',${indexArg})"><span>${entry.icon} ${escapeHTML(entry.title)}</span><small>${escapeHTML(entry.subtitle || '')}</small></div>`;
+}
+
 function renderSmartFavorites() {
     const el = getEl('smartFavorites'); if (!el) return;
-    const favs = state.dashboardData.filter(g => g.favorite).slice(0, 8);
-    if (!favs.length) { el.className = 'smart-list empty'; el.textContent = 'No favorite groups yet.'; return; }
+    const favs = collectFavoriteEntries(8);
+    if (!favs.length) { el.className = 'smart-list empty'; el.textContent = 'No favorite groups or pinned items yet.'; return; }
     el.className = 'smart-list';
-    el.innerHTML = favs.map(g => `<div class="smart-item" onclick="scrollToGroup('${g.id}')"><span>${g.emoji && g.emoji !== 'NONE' ? g.emoji : '⭐'} ${escapeHTML(g.title)}</span><small>${g.type}</small></div>`).join('');
+    el.innerHTML = favs.map(item => renderFavoriteEntryHTML(item, false)).join('');
 }
 
 function renderSmartRecent() {
@@ -4684,17 +4752,29 @@ openContextMenu = function(e, targetType, groupId, index = null) {
     const menuContent = getEl('menuItemsContent');
     if (!menuContent) return;
     if (['link','note','schedule'].includes(targetType)) {
-        menuContent.insertAdjacentHTML('afterbegin', `<div class="context-menu-item" onclick="favoriteSingleItem('${targetType}','${groupId}',${index})">⭐ Pin this item</div>`);
+        const group = getGroup(groupId);
+        const item = group?.[`${targetType}s`]?.[index];
+        const isPinned = item?.pinned === true;
+        const pinLabel = isPinned ? '📍 Unpin this item' : '📌 Pin this item';
+        menuContent.insertAdjacentHTML('afterbegin', `<div class="context-menu-item ${isPinned ? 'active' : ''}" onclick="favoriteSingleItem('${targetType}','${groupId}',${index})">${pinLabel}</div>`);
     }
 };
 
+// Legacy function name kept so existing inline handlers remain compatible.
+// Pin state now uses one shared `pinned` property for Link, Note and Schedule.
 function favoriteSingleItem(type, groupId, index) {
     const group = getGroup(groupId);
     const item = group?.[`${type}s`]?.[index];
     if (!item) return;
-    item.favorite = !item.favorite;
+
+    item.pinned = !item.pinned;
+    // Clean up the old incomplete flag from earlier builds if present.
+    if (Object.prototype.hasOwnProperty.call(item, 'favorite')) delete item.favorite;
+
     saveData();
-    getEl('customContextMenu').style.display = 'none';
+    const menu = getEl('customContextMenu');
+    if (menu) menu.style.display = 'none';
+    renderDashboard();
 }
 
 function showUndoToast(label) {
@@ -5051,9 +5131,9 @@ function openSidebarPanel(type) {
 
 function renderSidebarPanelContent(type) {
     if (type === 'favorites') {
-        const favs = state.dashboardData.filter(g => g.favorite).slice(0, 30);
-        if (!favs.length) return '<div class="smart-list empty">No favorite groups yet.</div>';
-        return `<div class="smart-list">${favs.map(g => `<div class="smart-item" onclick="closeModal('sidebarPanelModal'); scrollToGroup('${g.id}')"><span>${g.emoji && g.emoji !== 'NONE' ? g.emoji : '⭐'} ${escapeHTML(g.title)}</span><small>${escapeHTML(g.type || '')}</small></div>`).join('')}</div>`;
+        const favs = collectFavoriteEntries(30);
+        if (!favs.length) return '<div class="smart-list empty">No favorite groups or pinned items yet.</div>';
+        return `<div class="smart-list">${favs.map(item => renderFavoriteEntryHTML(item, true)).join('')}</div>`;
     }
     if (type === 'recent') {
         const recent = readJSONStore(RECENT_KEY, []);
