@@ -91,6 +91,10 @@ let registryOwnerInfo = null;
 let currentAccountAccess = { checked: false, role: 'user', blocked: false, sessionRevoked: false };
 let adminCurrentUserRole = null;
 let adminActiveTab = 'users';
+const AUDIT_LOG_LIMIT = 500;
+const AUDIT_PAGE_SIZE = 50;
+let adminAuditPage = 1;
+let adminAuditLastQuery = '';
 let dashboardWebSessionId = sessionStorage.getItem(WEB_SESSION_ID_KEY) || (() => {
     const id = (crypto.randomUUID ? crypto.randomUUID() : `session-${Date.now()}-${Math.random().toString(16).slice(2)}`);
     sessionStorage.setItem(WEB_SESSION_ID_KEY, id);
@@ -2722,7 +2726,7 @@ function normalizeRegistry(raw) {
         revision: Number(obj.revision || 0),
         updated_at: obj.updated_at || null,
         accounts: Array.isArray(obj.accounts) ? obj.accounts : [],
-        audit_log: Array.isArray(obj.audit_log) ? obj.audit_log : []
+        audit_log: Array.isArray(obj.audit_log) ? obj.audit_log.slice(0, AUDIT_LOG_LIMIT) : []
     };
 }
 
@@ -2844,7 +2848,7 @@ function appendAudit(registry, { action, actor = googleAccountProfile, target = 
         detail:String(detail || '').slice(0,500),
         session_id:session_id || ''
     });
-    registry.audit_log = registry.audit_log.slice(0,600);
+    registry.audit_log = registry.audit_log.slice(0, AUDIT_LOG_LIMIT);
 }
 
 function findCurrentAccount(registry) {
@@ -3119,7 +3123,7 @@ async function refreshAdminAccounts(showError = false) {
         const registry = await readAccountRegistry();
         adminRegistryCache = registry;
         adminAccountsCache = normalizeAdminAccounts(registry.accounts);
-        adminAuditCache = Array.isArray(registry.audit_log) ? registry.audit_log : [];
+        adminAuditCache = Array.isArray(registry.audit_log) ? registry.audit_log.slice(0, AUDIT_LOG_LIMIT) : [];
         renderAdminAccounts();
         renderAdminAuditLog();
         updateAdminSummary();
@@ -3201,24 +3205,172 @@ function renderAdminAccounts() {
     }).join('');
 }
 
+function ensureAdminAuditControls() {
+    const pane = getEl('adminAuditPane');
+    const wrap = getEl('adminAuditList');
+    if (!pane || !wrap) return null;
+
+    const toolbar = pane.querySelector('.admin-toolbar-row');
+    if (toolbar && !getEl('adminClearAuditBtn')) {
+        const clearBtn = document.createElement('button');
+        clearBtn.id = 'adminClearAuditBtn';
+        clearBtn.type = 'button';
+        clearBtn.className = 'btn-real-danger';
+        clearBtn.textContent = '🗑 Clear Audit Log';
+        clearBtn.onclick = adminClearAuditLog;
+        toolbar.appendChild(clearBtn);
+    }
+
+    let pager = getEl('adminAuditPagination');
+    if (!pager) {
+        pager = document.createElement('div');
+        pager.id = 'adminAuditPagination';
+        pager.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;padding:8px 2px;color:var(--text-sub);font-size:12px;font-weight:700;';
+        wrap.insertAdjacentElement('afterend', pager);
+    }
+    return pager;
+}
+
+function renderAdminAuditPagination(totalRows) {
+    const pager = ensureAdminAuditControls();
+    if (!pager) return;
+
+    const totalPages = Math.max(1, Math.ceil(totalRows / AUDIT_PAGE_SIZE));
+    adminAuditPage = Math.min(Math.max(1, adminAuditPage), totalPages);
+    const start = totalRows ? ((adminAuditPage - 1) * AUDIT_PAGE_SIZE) + 1 : 0;
+    const end = totalRows ? Math.min(adminAuditPage * AUDIT_PAGE_SIZE, totalRows) : 0;
+
+    pager.innerHTML = `
+        <span>${start}–${end} of ${totalRows} logs · max ${AUDIT_LOG_LIMIT}</span>
+        <div style="display:flex;align-items:center;gap:7px;">
+            <button class="btn-secondary admin-mini-btn" type="button" onclick="changeAdminAuditPage(-1)" ${adminAuditPage <= 1 ? 'disabled' : ''}>← Previous</button>
+            <span style="min-width:86px;text-align:center;">Page ${adminAuditPage} / ${totalPages}</span>
+            <button class="btn-secondary admin-mini-btn" type="button" onclick="changeAdminAuditPage(1)" ${adminAuditPage >= totalPages ? 'disabled' : ''}>Next →</button>
+        </div>`;
+}
+
+function changeAdminAuditPage(delta) {
+    adminAuditPage = Math.max(1, adminAuditPage + Number(delta || 0));
+    renderAdminAuditLog();
+}
+
 function renderAdminAuditLog() {
     const wrap = getEl('adminAuditList');
     if (!wrap) return;
+    ensureAdminAuditControls();
+
     const q = (getEl('adminAuditSearch')?.value || '').trim().toLowerCase();
+    if (q !== adminAuditLastQuery) {
+        adminAuditLastQuery = q;
+        adminAuditPage = 1;
+    }
+
     const rows = adminAuditCache.filter(e =>
         !q || `${e.action || ''} ${e.actor_email || ''} ${e.actor_name || ''} ${e.target_email || ''} ${e.detail || ''}`.toLowerCase().includes(q)
     );
+
+    const totalPages = Math.max(1, Math.ceil(rows.length / AUDIT_PAGE_SIZE));
+    adminAuditPage = Math.min(Math.max(1, adminAuditPage), totalPages);
+
     if (!rows.length) {
         wrap.innerHTML = '<div class="admin-empty-cell">No matching audit events.</div>';
+        renderAdminAuditPagination(0);
         return;
     }
-    wrap.innerHTML = rows.slice(0,300).map(e => `
+
+    const start = (adminAuditPage - 1) * AUDIT_PAGE_SIZE;
+    const pageRows = rows.slice(start, start + AUDIT_PAGE_SIZE);
+
+    wrap.innerHTML = pageRows.map(e => `
         <div class="admin-audit-item">
             <time>${escapeHTML(e.at ? new Date(e.at).toLocaleString() : '—')}</time>
             <div class="admin-audit-actor"><strong>${escapeHTML(e.actor_name || e.actor_email || 'System')}</strong><small>${escapeHTML(e.actor_email || '—')}</small></div>
             <div class="admin-audit-event"><strong>${escapeHTML(String(e.action || 'event').replaceAll('_',' '))}</strong><span>${escapeHTML(e.detail || (e.target_email ? `Target: ${e.target_email}` : ''))}</span></div>
+            <button
+                class="admin-mini-btn danger admin-audit-delete-btn"
+                type="button"
+                title="Delete this audit log"
+                aria-label="Delete this audit log"
+                onclick="adminDeleteAuditLog('${escapeHTML(String(e.id || ''))}')"
+                ${e.id ? '' : 'disabled'}
+            >🗑</button>
         </div>
     `).join('');
+
+    renderAdminAuditPagination(rows.length);
+}
+
+async function adminDeleteAuditLog(auditId) {
+    if (!canCurrentAccountOpenAdmin()) {
+        alert('You do not have permission to delete Audit Log entries.');
+        return;
+    }
+
+    const id = String(auditId || '');
+    if (!id) return;
+
+    const target = adminAuditCache.find(entry => String(entry?.id || '') === id);
+    if (!target) {
+        alert('This audit log no longer exists. Refreshing Audit Log.');
+        return refreshAdminAccounts(true);
+    }
+
+    const label = String(target.action || 'event').replaceAll('_', ' ');
+    const when = target.at ? new Date(target.at).toLocaleString() : 'Unknown time';
+    const ok = await customConfirm(
+        `Delete this audit log permanently?\n\n${label} · ${when}`,
+        '🗑 Delete Audit Log',
+        { confirmLabel: 'Delete Log', cancelLabel: 'Cancel', confirmClass: 'btn-real-danger', cancelClass: 'btn-secondary' }
+    );
+    if (!ok) return;
+
+    try {
+        await mutateAccountRegistry(reg => {
+            const list = Array.isArray(reg.audit_log) ? reg.audit_log : [];
+            const index = list.findIndex(entry => String(entry?.id || '') === id);
+            if (index < 0) throw new Error('This audit log no longer exists.');
+            list.splice(index, 1);
+            reg.audit_log = list.slice(0, AUDIT_LOG_LIMIT);
+            // Intentionally do not append another audit event here.
+        });
+
+        await refreshAdminAccounts(true);
+    } catch (error) {
+        console.error('Could not delete Audit Log entry:', error);
+        alert(error?.message || 'Could not delete this Audit Log entry.');
+    }
+}
+
+async function adminClearAuditLog() {
+    if (!canCurrentAccountOpenAdmin()) {
+        alert('You do not have permission to clear the Audit Log.');
+        return;
+    }
+
+    const ok = await customConfirm(
+        'This will permanently delete the current audit history. One new event will be kept to record who cleared it.',
+        '🗑 Clear Audit Log',
+        { confirmLabel: 'Clear Audit Log', cancelLabel: 'Cancel', confirmClass: 'btn-real-danger', cancelClass: 'btn-secondary' }
+    );
+    if (!ok) return;
+
+    try {
+        await mutateAccountRegistry(reg => {
+            reg.audit_log = [];
+            appendAudit(reg, {
+                action: 'audit_log_cleared',
+                actor: googleAccountProfile,
+                detail: 'Previous audit history was cleared from Admin Console.'
+            });
+        });
+        adminAuditPage = 1;
+        adminAuditLastQuery = '';
+        if (getEl('adminAuditSearch')) getEl('adminAuditSearch').value = '';
+        await refreshAdminAccounts(true);
+    } catch (error) {
+        console.error('Could not clear Audit Log:', error);
+        alert(error?.message || 'Could not clear Audit Log.');
+    }
 }
 
 async function adminSetRole(userId, role) {
