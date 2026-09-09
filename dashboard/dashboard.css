@@ -12346,26 +12346,26 @@ body.light-mode .kanban-card-meta span { background: rgba(15,23,42,.045); }
     z-index: 3;
 }
 
-/* Floating pin - clean */
+/* Compact floating pin badge */
 .item-wrapper.item-pinned::after {
     content: '📌';
     position: absolute;
-
-    top: -9px;
-    right: -4px;
-
+    top: -10px;
+    right: -8px;
     width: 22px;
     height: 22px;
-
     display: grid;
     place-items: center;
-
-    font-size: 14px;
+    border-radius: 50%;
+    font-size: 13px;
     line-height: 1;
-
-    transform: rotate(-12deg);
+    background: color-mix(in srgb, var(--card-bg, var(--bg-card, #fff)) 84%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent-color) 28%, rgba(255,255,255,.55));
+    box-shadow: 0 4px 10px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.45);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    transform: rotate(-16deg);
     transform-origin: center;
-
     z-index: 20;
     pointer-events: none;
 }
@@ -12423,3 +12423,51 @@ body.light-mode .kanban-card-meta span { background: rgba(15,23,42,.045); }
     }
 }
 
+
+/* ========================================================================== 
+   AUDIT LOG — DELETE ACTION LAYOUT
+   Desktop: delete button is the 4th grid column.
+   Mobile: delete button floats at the top-right and does not consume a row.
+   ========================================================================== */
+
+/* Desktop / tablet landscape */
+.admin-audit-item {
+    grid-template-columns: 150px minmax(170px, .8fr) minmax(240px, 1.4fr) 38px !important;
+    align-items: start;
+}
+
+.admin-audit-delete-btn {
+    grid-column: 4;
+    justify-self: end;
+    align-self: center;
+    width: 32px;
+    height: 32px;
+    min-width: 32px;
+    padding: 0 !important;
+    display: inline-grid;
+    place-items: center;
+    border-radius: 9px;
+    line-height: 1;
+}
+
+/* Mobile: overlay the trash action, keep content full width. */
+@media (max-width: 900px) {
+    .admin-audit-item {
+        position: relative;
+        grid-template-columns: 1fr !important;
+        gap: 4px;
+        padding-right: 50px !important;
+    }
+
+    .admin-audit-delete-btn {
+        position: absolute;
+        top: 9px;
+        right: 9px;
+        grid-column: auto;
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+        margin: 0;
+        z-index: 2;
+    }
+}
