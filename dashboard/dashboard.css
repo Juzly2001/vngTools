@@ -12346,26 +12346,26 @@ body.light-mode .kanban-card-meta span { background: rgba(15,23,42,.045); }
     z-index: 3;
 }
 
-/* Compact floating pin badge */
+/* Floating pin - clean */
 .item-wrapper.item-pinned::after {
     content: '📌';
     position: absolute;
-    top: -10px;
-    right: -8px;
+
+    top: -9px;
+    right: -4px;
+
     width: 22px;
     height: 22px;
+
     display: grid;
     place-items: center;
-    border-radius: 50%;
-    font-size: 13px;
+
+    font-size: 14px;
     line-height: 1;
-    background: color-mix(in srgb, var(--card-bg, var(--bg-card, #fff)) 84%, transparent);
-    border: 1px solid color-mix(in srgb, var(--accent-color) 28%, rgba(255,255,255,.55));
-    box-shadow: 0 4px 10px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.45);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    transform: rotate(-16deg);
+
+    transform: rotate(-12deg);
     transform-origin: center;
+
     z-index: 20;
     pointer-events: none;
 }
