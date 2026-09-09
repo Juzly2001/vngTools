@@ -317,28 +317,71 @@ window.alert = function(message, title = "⚠️ Notice") {
     }
 };
 
-function customConfirm(message, title = "❓ Confirm action") {
+function getConfirmActionConfig(message = '', title = '', options = {}) {
+    const text = `${title} ${message}`.toLowerCase();
+    let confirmLabel = 'Continue';
+    let cancelLabel = 'Cancel';
+    let confirmClass = 'btn-primary';
+    let cancelClass = 'btn-secondary';
+
+    if (/clear.*trash|trash.*clear/.test(text)) {
+        confirmLabel = 'Clear Trash';
+        confirmClass = 'btn-real-danger';
+    } else if (/delete|deletion/.test(text)) {
+        confirmLabel = 'Delete';
+        confirmClass = 'btn-real-danger';
+    } else if (/restore/.test(text)) {
+        confirmLabel = 'Restore backup';
+    } else if (/reset/.test(text)) {
+        confirmLabel = 'Reset';
+        confirmClass = 'btn-real-danger';
+    } else if (/sign out|log out|logout/.test(text)) {
+        confirmLabel = 'Sign out';
+        confirmClass = 'btn-real-danger';
+    } else if (/remove/.test(text)) {
+        confirmLabel = 'Remove';
+        confirmClass = 'btn-real-danger';
+    }
+
+    return {
+        confirmLabel: options.confirmLabel || confirmLabel,
+        cancelLabel: options.cancelLabel || cancelLabel,
+        confirmClass: options.confirmClass || confirmClass,
+        cancelClass: options.cancelClass || cancelClass
+    };
+}
+
+function applyConfirmActionConfig(confirmBtn, cancelBtn, message, title, options = {}) {
+    const config = getConfirmActionConfig(message, title, options);
+    confirmBtn.textContent = config.confirmLabel;
+    cancelBtn.textContent = config.cancelLabel;
+    confirmBtn.className = config.confirmClass;
+    cancelBtn.className = config.cancelClass;
+}
+
+function customConfirm(message, title = "❓ Confirm action", options = {}) {
     return new Promise((resolve) => {
         const confirmModal = getEl('confirmModal');
         const confirmTitle = getEl('confirmTitle');
         const confirmMsg = getEl('confirmMessage');
         const confirmBtn = getEl('confirmDeleteBtn');
         const cancelBtn = getEl('confirmCancelBtn');
-        
+
         if (!confirmModal || !confirmMsg || !confirmBtn || !cancelBtn) {
             resolve(window.confirm(message));
             return;
         }
-        
+
         if (confirmTitle) confirmTitle.innerText = title;
-        confirmMsg.innerHTML = message.replace(/\n/g, '<br>');
+        confirmMsg.innerHTML = String(message).replace(/\n/g, '<br>');
+        applyConfirmActionConfig(confirmBtn, cancelBtn, message, title, options);
         openModal('confirmModal');
-        
+
         confirmBtn.onclick = function() {
             closeModal('confirmModal');
             resolve(true);
         };
-        
+
         cancelBtn.onclick = function() {
             closeModal('confirmModal');
             resolve(false);
@@ -827,6 +870,8 @@ function openGroupModal(editGroupId = false, defaultType = 'link') {
 
     const titleEl = getEl('groupModalTitle');
     const nameInput = getEl('groupNameInput');
+    const submitBtn = getEl('submitGroupBtn');
+    if (submitBtn) submitBtn.textContent = state.isEditMode ? 'Save changes' : 'Create group';
 
     if (state.isEditMode) {
         const group = getGroup(editGroupId);
@@ -1532,6 +1577,8 @@ function openItemModal(type, groupId, index = false) {
 
     if (type === 'link') {
         getEl('linkModalTitle').innerText = state.isEditMode ? "📝 Edit Button" : "➕ Add New Link";
+        const submitBtn = getEl('submitLinkBtn');
+        if (submitBtn) submitBtn.textContent = state.isEditMode ? 'Save changes' : 'Add link';
         getEl('linkNameInput').value = item ? item.name : '';
         getEl('linkUrlInput').value = item ? item.url : '';
         buildEmojiPicker('linkEmojiGrid', item ? item.emoji : "NONE");
@@ -3511,7 +3558,11 @@ async function fetchFileFromGoogleDrive() {
             googleFileId = files[0].id;
             const cloudData = (await gapi.client.drive.files.get({ fileId: googleFileId, alt: 'media' })).result;
             if (cloudData && Array.isArray(cloudData)) {
-                if (await customConfirm("Download newer cloud data to this device [Confirm], or overwrite cloud data with local data [Keep]?", "⚠️ DATA CONFLICT")) {
+                if (await customConfirm(
+                    "Cloud data is newer than the data on this device. Choose which version you want to keep.",
+                    "⚠️ DATA CONFLICT",
+                    { confirmLabel: 'Use cloud data', cancelLabel: 'Keep local data', confirmClass: 'btn-primary', cancelClass: 'btn-secondary' }
+                )) {
                     state.dashboardData = cloudData;
                     state.dashboardData.forEach(g => { if (g.pinKey) g.isLocked = true; });
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
@@ -4302,6 +4353,8 @@ function handleLockMenuAction(groupId) {
     
     getEl('keyModalTitle').textContent = hasPin ? '🔓 Remove group lock' : '🔒 Set New PIN';
     getEl('keyModalDesc').textContent = hasPin ? 'Enter the current PIN to remove protection.' : 'Create a PIN for this group. Settings will sync automatically.';
+    const submitBtn = getEl('submitKeyBtn');
+    if (submitBtn) submitBtn.textContent = hasPin ? 'Remove lock' : 'Set PIN';
     openModal('keyModal');
 }
 
@@ -4314,6 +4367,8 @@ function triggerUnlockGroup(groupId) {
     
     getEl('keyModalTitle').textContent = '🔒 Enter PIN';
     getEl('keyModalDesc').textContent = 'This group is locked. Please verify the PIN to access it.';
+    const submitBtn = getEl('submitKeyBtn');
+    if (submitBtn) submitBtn.textContent = 'Unlock';
     openModal('keyModal');
 }
 
@@ -5636,8 +5691,9 @@ fetchFileFromGoogleDrive = async function() {
             const isValid = Array.isArray(cloudData) || (cloudData && Array.isArray(cloudData.dashboardData));
             if (isValid) {
                 const ok = await customConfirm(
-                    'Download newer cloud data to this device [Confirm], or overwrite cloud data with local data [Keep]?\n\nNew cloud data may include Dashboard + Trash + Backups.',
-                    '⚠️ DATA CONFLICT'
+                    'Cloud data is newer than the data on this device. Choose which version you want to keep.\n\nCloud data may include Dashboard + Trash + Backups.',
+                    '⚠️ DATA CONFLICT',
+                    { confirmLabel: 'Use cloud data', cancelLabel: 'Keep local data', confirmClass: 'btn-primary', cancelClass: 'btn-secondary' }
                 );
 
                 if (ok) {
@@ -6324,8 +6380,8 @@ function closeKanbanTopModal(id) {
     if (box) box.style.zIndex = '';
 }
 
-// Override confirm so deletion confirm always appears above Kanban fullscreen modal.
-function customConfirm(message, title = "❓ Confirm action") {
+// Override confirm so confirmation always appears above Kanban fullscreen modal.
+function customConfirm(message, title = "❓ Confirm action", options = {}) {
     return new Promise((resolve) => {
         const confirmModal = getEl('confirmModal');
         const confirmTitle = getEl('confirmTitle');
@@ -6338,6 +6394,7 @@ function customConfirm(message, title = "❓ Confirm action") {
         }
         if (confirmTitle) confirmTitle.innerText = title;
         confirmMsg.innerHTML = String(message).replace(/\n/g, '<br>');
+        applyConfirmActionConfig(confirmBtn, cancelBtn, message, title, options);
         openKanbanTopModal('confirmModal');
         confirmBtn.onclick = function() {
             closeKanbanTopModal('confirmModal');
@@ -12769,3 +12826,245 @@ document.addEventListener('DOMContentLoaded', () => {
     const start=()=>{ scan(document); obs.observe(document.body,{childList:true,subtree:true}); };
     if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',start,{once:true}); else start();
 })();
+
+// ============================================================================
+// KANBAN UX REFRESH V2 — safer drag/drop + responsive workspace/card editor
+// ============================================================================
+function ensureKanbanWorkspaceModal() {
+    let modal = getEl('kanbanWorkspaceModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.className = 'modal-overlay kanban-workspace-overlay';
+        modal.id = 'kanbanWorkspaceModal';
+        document.body.appendChild(modal);
+    }
+    modal.innerHTML = `
+        <div class="kanban-workspace-box" role="dialog" aria-modal="true" aria-labelledby="kanbanWorkspaceTitle">
+            <div class="kanban-workspace-head">
+                <div>
+                    <h3 id="kanbanWorkspaceTitle">📌 Kanban Workspace</h3>
+                    <p id="kanbanWorkspaceSubtitle">Boards, columns and cards</p>
+                </div>
+                <button class="modal-close-soft" type="button" onclick="closeModal('kanbanWorkspaceModal')" aria-label="Close Kanban">✕</button>
+            </div>
+            <div class="kanban-workspace-actions">
+                <div class="kanban-action-group kanban-action-primary">
+                    <button class="btn-primary" type="button" onclick="addKanbanBoard()">＋ Board</button>
+                    <button class="btn-secondary" type="button" onclick="renameKanbanBoard()" title="Rename active board">✎ Rename</button>
+                    <button class="btn-secondary" type="button" id="kanbanLayoutToggleBtn" onclick="toggleKanbanLayoutMode()">⇄ Row view</button>
+                    <button class="btn-real-danger" type="button" onclick="deleteKanbanBoard()" title="Delete board">Delete board</button>
+                </div>
+                <div class="kanban-search-shell">
+                    <input id="kanbanWorkspaceSearch" type="search" aria-label="Search cards" oninput="renderKanbanWorkspaceBody()">
+                    <button class="kanban-search-clear" type="button" onclick="clearKanbanWorkspaceSearch()" aria-label="Clear search">✕</button>
+                </div>
+            </div>
+            <div class="kanban-workspace-layout">
+                <aside id="kanbanBoardList" class="kanban-board-list" aria-label="Kanban boards"></aside>
+                <main id="kanbanWorkspaceBody" class="kanban-workspace-body"></main>
+            </div>
+        </div>
+    `;
+}
+
+function clearKanbanWorkspaceSearch() {
+    const input = getEl('kanbanWorkspaceSearch');
+    if (!input) return;
+    input.value = '';
+    renderKanbanWorkspaceBody();
+    input.focus();
+}
+
+function renderKanbanWorkspaceBody() {
+    const group = getGroup(kanbanWorkspaceState.groupId);
+    if (!group) return;
+    const workspace = normalizeKanbanGroup(group);
+    const activeBoard = getKanbanBoard(group, kanbanWorkspaceState.boardId);
+    if (!activeBoard) return;
+    kanbanWorkspaceState.boardId = activeBoard.id;
+
+    const keyword = (getEl('kanbanWorkspaceSearch')?.value || '').trim().toLowerCase();
+    const isSearching = !!keyword;
+    const layoutMode = kanbanLayoutMode === 'row' ? 'row' : 'column';
+    const layoutBtn = getEl('kanbanLayoutToggleBtn');
+    if (layoutBtn) layoutBtn.textContent = layoutMode === 'row' ? '▦ Columns' : '⇄ Rows';
+
+    const boardList = getEl('kanbanBoardList');
+    if (boardList) {
+        boardList.innerHTML = `
+            <div class="kanban-board-list-head"><span>Boards</span><button class="btn-secondary" type="button" onclick="addKanbanBoard()" title="New board">＋</button></div>
+            ${workspace.boards.map(board => `
+                <button type="button" class="kanban-board-tab ${board.id === activeBoard.id ? 'active' : ''}" onclick="kanbanWorkspaceState.boardId='${board.id}';renderKanbanWorkspaceBody()" title="${escapeHTML(board.title)}">
+                    <span>${escapeHTML(board.title)}</span>
+                    <small>${getKanbanCardCount(group, board.id)} cards · ${board.columns.length} cols</small>
+                    <i class="kanban-board-dot" aria-hidden="true"></i>
+                </button>
+            `).join('')}
+        `;
+    }
+
+    const subtitle = getEl('kanbanWorkspaceSubtitle');
+    if (subtitle) subtitle.textContent = `${workspace.boards.length} boards · ${getKanbanCardCount(group)} cards · ${activeBoard.title}`;
+
+    const body = getEl('kanbanWorkspaceBody');
+    if (!body) return;
+    body.innerHTML = `
+        ${isSearching ? '<div class="kanban-search-note">Search is active. Drag & drop is temporarily disabled to protect card order.</div>' : ''}
+        <div class="kanban-full-board ${layoutMode === 'row' ? 'kanban-row-mode' : 'kanban-column-mode'} ${isSearching ? 'is-searching' : ''}" data-group-id="${group.id}" data-board-id="${activeBoard.id}">
+            ${activeBoard.columns.map(col => {
+                const filteredCards = isSearching
+                    ? col.cards.filter(card => [card.title, card.content, card.priority, card.deadline].filter(Boolean).join(' ').toLowerCase().includes(keyword))
+                    : col.cards;
+                return `
+                    <section class="kanban-full-column" data-column-id="${col.id}">
+                        <div class="kanban-full-column-head">
+                            <strong title="${escapeHTML(col.title)}">${escapeHTML(col.title)}</strong>
+                            <span>${isSearching ? `${filteredCards.length}/${col.cards.length}` : col.cards.length}</span>
+                        </div>
+                        <div class="kanban-full-column-actions">
+                            <button type="button" onclick="openKanbanCardModal('${group.id}','${col.id}',null,'${activeBoard.id}')">＋ Card</button>
+                            <button type="button" onclick="renameKanbanColumn('${group.id}','${col.id}','${activeBoard.id}')">Rename</button>
+                            <button type="button" onclick="deleteKanbanColumn('${group.id}','${col.id}','${activeBoard.id}')">Delete</button>
+                        </div>
+                        <div class="kanban-workspace-card-list" data-group-id="${group.id}" data-board-id="${activeBoard.id}" data-column-id="${col.id}" data-searching="${isSearching ? '1' : '0'}">
+                            ${filteredCards.length ? filteredCards.map(card => renderKanbanWorkspaceCardHTML(group.id, activeBoard.id, card)).join('') : `<div class="kanban-empty-column">${isSearching ? 'No matching cards' : 'Drop a card here or add one'}</div>`}
+                        </div>
+                    </section>
+                `;
+            }).join('')}
+            <button type="button" class="kanban-full-column add-column" onclick="addKanbanColumn('${group.id}', '${activeBoard.id}')">＋ Add column</button>
+        </div>
+    `;
+    initKanbanWorkspaceDragAndDrop();
+}
+
+function openKanbanCardModal(groupId = kanbanWorkspaceState.groupId, columnId = null, cardId = null, boardId = kanbanWorkspaceState.boardId) {
+    const group = getGroup(groupId);
+    if (!group) return;
+    const board = getKanbanBoard(group, boardId);
+    if (!board) return;
+    const found = cardId ? findKanbanCard(group, cardId, board.id) : null;
+    const firstColumn = board.columns[0];
+    kanbanCardEditState = {
+        groupId: group.id,
+        boardId: found?.board?.id || board.id,
+        columnId: found?.column?.id || columnId || firstColumn?.id,
+        cardId: found?.card?.id || null
+    };
+
+    const titleInput = getEl('kanbanCardTitleInput');
+    if (titleInput) {
+        titleInput.value = found?.card?.title || '';
+        titleInput.classList.remove('kanban-field-error');
+        titleInput.removeAttribute('aria-invalid');
+    }
+    getEl('kanbanCardPriorityInput').value = found?.card?.priority || 'normal';
+    getEl('kanbanCardDeadlineInput').value = found?.card?.deadline || '';
+    getEl('kanbanCardContentInput').value = found?.card?.content || '';
+
+    const columnSelect = getEl('kanbanCardColumnInput');
+    if (columnSelect) {
+        columnSelect.innerHTML = board.columns.map(col => `<option value="${col.id}">${escapeHTML(col.title)}</option>`).join('');
+        columnSelect.value = kanbanCardEditState.columnId || firstColumn?.id || '';
+    }
+
+    const titleEl = getEl('kanbanCardModalTitle');
+    const subtitleEl = getEl('kanbanCardModalSubtitle');
+    if (titleEl) titleEl.textContent = found ? 'Edit card' : 'New card';
+    if (subtitleEl) subtitleEl.textContent = found ? `Update this card in ${board.title}.` : `Create a card in ${board.title}.`;
+
+    const deleteBtn = getEl('kanbanCardDeleteBtn');
+    if (deleteBtn) deleteBtn.style.display = found ? 'inline-flex' : 'none';
+
+    openKanbanTopModal('kanbanCardModal');
+    setTimeout(() => titleInput?.focus(), 40);
+}
+
+function submitKanbanCardForm() {
+    const group = getGroup(kanbanCardEditState.groupId);
+    if (!group) return;
+    const titleInput = getEl('kanbanCardTitleInput');
+    const title = (titleInput?.value || '').trim();
+    if (!title) {
+        titleInput?.classList.add('kanban-field-error');
+        titleInput?.setAttribute('aria-invalid', 'true');
+        titleInput?.focus();
+        return;
+    }
+    titleInput?.classList.remove('kanban-field-error');
+    titleInput?.removeAttribute('aria-invalid');
+
+    const targetColumnId = getEl('kanbanCardColumnInput')?.value || kanbanCardEditState.columnId;
+    const data = {
+        id: kanbanCardEditState.cardId || `card_${Date.now()}_${Math.random().toString(16).slice(2, 6)}`,
+        title,
+        priority: getEl('kanbanCardPriorityInput')?.value || 'normal',
+        deadline: getEl('kanbanCardDeadlineInput')?.value || '',
+        content: getEl('kanbanCardContentInput')?.value || ''
+    };
+
+    if (kanbanCardEditState.cardId) {
+        const found = findKanbanCard(group, kanbanCardEditState.cardId, kanbanCardEditState.boardId);
+        if (!found) return;
+        if (found.column.id === targetColumnId) {
+            found.column.cards[found.index] = data;
+        } else {
+            found.column.cards.splice(found.index, 1);
+            const targetColumn = getKanbanColumn(group, targetColumnId, kanbanCardEditState.boardId);
+            if (targetColumn) targetColumn.cards.push(data);
+            else found.column.cards.splice(found.index, 0, data);
+        }
+    } else {
+        const targetColumn = getKanbanColumn(group, targetColumnId, kanbanCardEditState.boardId);
+        if (!targetColumn) return;
+        targetColumn.cards.push(data);
+    }
+
+    closeKanbanTopModal('kanbanCardModal');
+    refreshKanbanAfterChange(group.id, kanbanCardEditState.boardId);
+}
+
+function initKanbanWorkspaceDragAndDrop() {
+    if (typeof Sortable === 'undefined') return;
+    document.querySelectorAll('.kanban-workspace-card-list').forEach(list => {
+        const previous = Sortable.get(list);
+        if (previous) previous.destroy();
+        if (list.dataset.searching === '1') return;
+
+        Sortable.create(list, {
+            group: `kanban-board-${list.dataset.groupId}-${list.dataset.boardId}`,
+            animation: 170,
+            ghostClass: 'sortable-ghost-link',
+            chosenClass: 'sortable-chosen',
+            draggable: '.kanban-card',
+            filter: '.kanban-empty-column',
+            delay: window.innerWidth <= 768 ? 220 : 0,
+            delayOnTouchOnly: true,
+            touchStartThreshold: 5,
+            fallbackTolerance: 5,
+            forceFallback: window.innerWidth <= 768,
+            onEnd: event => {
+                const group = getGroup(event.from.dataset.groupId);
+                if (!group) return;
+                const boardId = event.from.dataset.boardId;
+                const cardId = event.item?.dataset?.cardId;
+                if (!cardId) return renderKanbanWorkspaceBody();
+
+                const fromColumn = getKanbanColumn(group, event.from.dataset.columnId, boardId);
+                const toColumn = getKanbanColumn(group, event.to.dataset.columnId, boardId);
+                if (!fromColumn || !toColumn) return renderKanbanWorkspaceBody();
+
+                const sourceIndex = fromColumn.cards.findIndex(card => card.id === cardId);
+                if (sourceIndex < 0) return renderKanbanWorkspaceBody();
+                const [moved] = fromColumn.cards.splice(sourceIndex, 1);
+
+                const requestedIndex = Number.isInteger(event.newDraggableIndex)
+                    ? event.newDraggableIndex
+                    : event.newIndex;
+                const targetIndex = Math.max(0, Math.min(requestedIndex ?? toColumn.cards.length, toColumn.cards.length));
+                toColumn.cards.splice(targetIndex, 0, moved);
+                refreshKanbanAfterChange(group.id, boardId);
+            }
+        });
+    });
+}

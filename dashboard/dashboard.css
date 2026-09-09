@@ -11487,3 +11487,851 @@ input[type="search"]::-webkit-search-cancel-button {
         max-height: 52dvh !important;
     }
 }
+
+/* ========================================================================== */
+/* SAFE MODAL REDESIGN — scoped to original DOM only — 2026-09-10           */
+/* Group / Link / Schedule / Important Today / Details / Calendar Day / Kanban */
+/* ========================================================================== */
+
+/* ---------- shared shell: ONLY these modal ids ---------- */
+#groupModal .modal-box,
+#linkModal .modal-box,
+#scheduleModal .modal-box,
+#todayImportantModal .modal-box,
+#readModal .modal-box,
+#calendarDayModal .modal-box,
+#kanbanCardModal .modal-box {
+    box-sizing: border-box !important;
+    width: min(92vw, 680px) !important;
+    max-width: 680px !important;
+    max-height: calc(100dvh - 40px) !important;
+    margin: 0 auto !important;
+    border-radius: 22px !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--modal-bg) !important;
+    box-shadow: 0 28px 80px rgba(0,0,0,.38) !important;
+}
+
+#scheduleModal .modal-box { width: min(92vw, 780px) !important; max-width: 780px !important; }
+#todayImportantModal .modal-box { width: min(92vw, 700px) !important; max-width: 700px !important; }
+#readModal .modal-box { width: min(92vw, 620px) !important; max-width: 620px !important; }
+#calendarDayModal .modal-box { width: min(92vw, 720px) !important; max-width: 720px !important; }
+#kanbanCardModal .modal-box { width: min(92vw, 640px) !important; max-width: 640px !important; }
+
+/* ---------- Group Settings ---------- */
+#groupModal .modal-box {
+    padding: 0 !important;
+    overflow: auto !important;
+}
+#groupModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 18px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 14%, transparent), transparent 72%) !important;
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+}
+#groupModal .modal-box > label,
+#groupModal .modal-box > input,
+#groupModal .modal-box > .emoji-picker-container {
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+    width: calc(100% - 40px) !important;
+    box-sizing: border-box !important;
+}
+#groupModal .modal-box > label {
+    margin-top: 14px !important;
+    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+#groupModal .modal-box > input {
+    min-height: 42px !important;
+    margin-bottom: 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 11px !important;
+}
+#groupModal .emoji-picker-container {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+    padding: 10px !important;
+    border-radius: 13px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--inner-bg) 72%, transparent) !important;
+}
+#groupModal .modal-footer {
+    margin: 0 !important;
+    padding: 14px 20px 16px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Button Settings ---------- */
+#linkModal .modal-box {
+    padding: 0 !important;
+    overflow: auto !important;
+}
+#linkModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 18px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 14%, transparent), transparent 72%) !important;
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+}
+#linkModal .modal-box > label,
+#linkModal .modal-box > input,
+#linkModal .modal-box > .emoji-picker-container {
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+    width: calc(100% - 40px) !important;
+    box-sizing: border-box !important;
+}
+#linkModal .modal-box > label {
+    margin-top: 14px !important;
+    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+#linkModal .modal-box > input {
+    min-height: 42px !important;
+    margin-bottom: 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 11px !important;
+}
+#linkModal .emoji-picker-container {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+    padding: 10px !important;
+    border-radius: 13px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--inner-bg) 72%, transparent) !important;
+}
+#linkModal .modal-footer {
+    margin: 0 !important;
+    padding: 14px 20px 16px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Schedule Milestone Settings ---------- */
+#scheduleModal .modal-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#scheduleModal .modal-box > div:first-child {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 16px 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 14px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, #10b981 14%, transparent), color-mix(in srgb, var(--accent-color) 5%, transparent)) !important;
+}
+#scheduleModal #scheduleModalTitle {
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+}
+#scheduleModal #addScheduleBlockBtn {
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    min-height: 38px !important;
+    padding: 8px 12px !important;
+    border-radius: 10px !important;
+    white-space: nowrap !important;
+}
+#scheduleModal #scheduleBlocksWrapper {
+    box-sizing: border-box !important;
+    padding: 16px 18px !important;
+    max-height: calc(100dvh - 220px) !important;
+    overflow-y: auto !important;
+}
+#scheduleModal .schedule-block-item {
+    box-sizing: border-box !important;
+    margin: 0 0 14px !important;
+    padding: 14px !important;
+    border-radius: 15px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--inner-bg) 76%, transparent) !important;
+}
+#scheduleModal .schedule-block-item:last-child { margin-bottom: 0 !important; }
+#scheduleModal .schedule-block-header {
+    box-sizing: border-box !important;
+    margin: 0 0 12px !important;
+    padding: 9px 10px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--modal-bg) 74%, var(--inner-bg)) !important;
+}
+#scheduleModal .form-input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-height: 42px !important;
+    margin-bottom: 0 !important;
+    padding: 10px 11px !important;
+    border-radius: 10px !important;
+}
+#scheduleModal textarea.form-input { min-height: 88px !important; }
+#scheduleModal .datetime-row {
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+    gap: 10px !important;
+}
+#scheduleModal .modal-footer {
+    margin: 0 !important;
+    padding: 13px 18px 15px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Important tasks today ---------- */
+#todayImportantModal .modal-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#todayImportantModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 17px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--danger-color) 14%, transparent), transparent 72%) !important;
+    font-size: 17px !important;
+}
+#todayImportantModal #todayImportantContent {
+    box-sizing: border-box !important;
+    padding: 16px 20px !important;
+    max-height: calc(100dvh - 210px) !important;
+    overflow-y: auto !important;
+}
+#todayImportantModal .modal-footer {
+    margin: 0 !important;
+    padding: 13px 20px 15px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Details ---------- */
+#readModal .modal-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#readModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 17px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 13%, transparent), transparent 72%) !important;
+    font-size: 17px !important;
+}
+#readModal #readModalBody {
+    box-sizing: border-box !important;
+    padding: 17px 20px !important;
+    max-height: calc(100dvh - 210px) !important;
+    overflow-y: auto !important;
+}
+#readModal .modal-footer {
+    margin: 0 !important;
+    padding: 13px 20px 15px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Calendar Day ---------- */
+#calendarDayModal .calendar-day-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#calendarDayModal .command-head {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 16px 18px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 13%, transparent), transparent 72%) !important;
+}
+#calendarDayModal .calendar-day-body {
+    box-sizing: border-box !important;
+    padding: 16px 18px 18px !important;
+    max-height: calc(100dvh - 170px) !important;
+    overflow-y: auto !important;
+}
+#calendarDayModal .calendar-day-timeline-item {
+    box-sizing: border-box !important;
+    border-radius: 13px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--inner-bg) 76%, transparent) !important;
+}
+
+/* ---------- Kanban Card ---------- */
+#kanbanCardModal .modal-box {
+    padding: 0 !important;
+    overflow: auto !important;
+}
+#kanbanCardModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 17px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, #f97316 14%, transparent), color-mix(in srgb, var(--accent-color) 4%, transparent)) !important;
+    font-size: 17px !important;
+}
+#kanbanCardModal .modal-box > label,
+#kanbanCardModal .modal-box > input,
+#kanbanCardModal .modal-box > select,
+#kanbanCardModal .modal-box > textarea {
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+    width: calc(100% - 40px) !important;
+    box-sizing: border-box !important;
+}
+#kanbanCardModal .modal-box > label {
+    margin-top: 13px !important;
+    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+#kanbanCardModal .modal-box > input,
+#kanbanCardModal .modal-box > select,
+#kanbanCardModal .modal-box > textarea {
+    min-height: 42px !important;
+    margin-bottom: 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+}
+#kanbanCardModal .modal-box > textarea {
+    min-height: 110px !important;
+    resize: vertical !important;
+}
+#kanbanCardModal .modal-footer {
+    margin: 16px 0 0 !important;
+    padding: 13px 20px 15px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Mobile safety ---------- */
+@media (max-width: 768px) {
+    #groupModal,
+    #linkModal,
+    #scheduleModal,
+    #todayImportantModal,
+    #readModal,
+    #calendarDayModal,
+    #kanbanCardModal {
+        padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+    }
+
+    #groupModal .modal-box,
+    #linkModal .modal-box,
+    #scheduleModal .modal-box,
+    #todayImportantModal .modal-box,
+    #readModal .modal-box,
+    #calendarDayModal .modal-box,
+    #kanbanCardModal .modal-box {
+        width: 100% !important;
+        max-width: none !important;
+        max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+        border-radius: 19px !important;
+    }
+
+    #groupModal .modal-box > h3,
+    #linkModal .modal-box > h3,
+    #todayImportantModal .modal-box > h3,
+    #readModal .modal-box > h3,
+    #kanbanCardModal .modal-box > h3 {
+        padding: 14px !important;
+        font-size: 15px !important;
+    }
+
+    #groupModal .modal-box > label,
+    #groupModal .modal-box > input,
+    #groupModal .modal-box > .emoji-picker-container,
+    #linkModal .modal-box > label,
+    #linkModal .modal-box > input,
+    #linkModal .modal-box > .emoji-picker-container,
+    #kanbanCardModal .modal-box > label,
+    #kanbanCardModal .modal-box > input,
+    #kanbanCardModal .modal-box > select,
+    #kanbanCardModal .modal-box > textarea {
+        margin-left: 14px !important;
+        margin-right: 14px !important;
+        width: calc(100% - 28px) !important;
+    }
+
+    #groupModal .modal-footer,
+    #linkModal .modal-footer,
+    #scheduleModal .modal-footer,
+    #todayImportantModal .modal-footer,
+    #readModal .modal-footer,
+    #kanbanCardModal .modal-footer {
+        padding: 11px 14px 13px !important;
+    }
+
+    #scheduleModal .modal-box > div:first-child {
+        padding: 13px 14px !important;
+        align-items: flex-start !important;
+        flex-wrap: wrap !important;
+    }
+    #scheduleModal #scheduleModalTitle { font-size: 15px !important; }
+    #scheduleModal #addScheduleBlockBtn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    #scheduleModal #scheduleBlocksWrapper {
+        padding: 12px 14px !important;
+        max-height: calc(100dvh - 205px) !important;
+    }
+    #scheduleModal .schedule-block-item { padding: 12px !important; }
+
+    #todayImportantModal #todayImportantContent,
+    #readModal #readModalBody,
+    #calendarDayModal .calendar-day-body {
+        padding: 14px !important;
+    }
+    #calendarDayModal .command-head { padding: 14px !important; }
+}
+
+@media (max-width: 430px) {
+    #scheduleModal .datetime-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    #groupModal .modal-footer,
+    #linkModal .modal-footer,
+    #scheduleModal .modal-footer,
+    #kanbanCardModal .modal-footer {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    #todayImportantModal .modal-footer,
+    #readModal .modal-footer {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    #groupModal .modal-footer button,
+    #linkModal .modal-footer button,
+    #scheduleModal .modal-footer button,
+    #todayImportantModal .modal-footer button,
+    #readModal .modal-footer button,
+    #kanbanCardModal .modal-footer button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
+/* ========================================================================== 
+   KANBAN UX REFRESH V2 — desktop + mobile
+   ========================================================================== */
+.kanban-workspace-overlay {
+    padding: clamp(10px, 2vw, 24px) !important;
+    background: rgba(2, 6, 23, .72);
+    backdrop-filter: blur(10px);
+}
+.kanban-workspace-box {
+    width: min(1540px, 100%) !important;
+    height: min(940px, calc(100dvh - 2 * clamp(10px, 2vw, 24px))) !important;
+    max-height: 100dvh;
+    border-radius: 24px !important;
+    overflow: hidden;
+}
+.kanban-workspace-head {
+    min-height: 76px;
+    padding: 16px 20px !important;
+}
+.kanban-workspace-head > div { min-width: 0; }
+.kanban-workspace-head h3 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.kanban-workspace-head p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.kanban-workspace-actions {
+    display: grid !important;
+    grid-template-columns: auto auto minmax(220px, 1fr);
+    align-items: center;
+    gap: 10px !important;
+    padding: 10px 16px !important;
+    background: rgba(255,255,255,.018);
+}
+.kanban-action-group {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    min-width: 0;
+}
+.kanban-action-group button {
+    height: 40px;
+    padding: 8px 11px !important;
+    white-space: nowrap;
+}
+.kanban-search-shell {
+    min-width: 0;
+    margin-left: auto;
+    position: relative;
+}
+.kanban-search-shell::before {
+    content: "⌕";
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-sub);
+    pointer-events: none;
+    font-size: 18px;
+}
+.kanban-workspace-actions .kanban-search-shell input {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin: 0 !important;
+    height: 40px;
+    padding: 9px 38px 9px 38px !important;
+}
+.kanban-search-clear {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 30px;
+    height: 30px !important;
+    min-width: 30px;
+    padding: 0 !important;
+    justify-content: center;
+    border-radius: 8px !important;
+    background: transparent !important;
+    color: var(--text-sub) !important;
+    border: 0 !important;
+}
+.kanban-workspace-layout {
+    grid-template-columns: 244px minmax(0,1fr) !important;
+}
+.kanban-board-list {
+    padding: 12px !important;
+}
+.kanban-board-list-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 3px 4px 10px;
+    color: var(--text-sub);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+.kanban-board-list-head button {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 8px;
+}
+.kanban-board-tab {
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) auto;
+    gap: 2px 8px !important;
+    align-items: center !important;
+    padding: 10px 11px !important;
+    min-height: 58px;
+}
+.kanban-board-tab span { grid-column: 1; font-weight: 700; max-width: 100%; }
+.kanban-board-tab small { grid-column: 1; }
+.kanban-board-tab .kanban-board-dot {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: transparent;
+}
+.kanban-board-tab.active .kanban-board-dot { background: var(--accent-color); box-shadow: 0 0 0 4px rgba(99,102,241,.13); }
+.kanban-workspace-body {
+    padding: 14px !important;
+    overscroll-behavior: contain;
+}
+.kanban-full-board { gap: 12px !important; }
+.kanban-full-column {
+    width: 100% !important;
+    max-height: calc(100dvh - 190px) !important;
+    border-radius: 16px !important;
+}
+.kanban-full-column-head { padding: 11px 12px !important; }
+.kanban-full-column-head strong { font-size: 13px; }
+.kanban-full-column-actions {
+    padding: 7px 9px !important;
+    gap: 5px !important;
+}
+.kanban-full-column-actions button {
+    min-width: 0;
+    padding: 6px !important;
+}
+.kanban-full-column-actions button:first-child { flex: 1.35; }
+.kanban-workspace-card-list {
+    padding: 9px !important;
+    min-height: 120px !important;
+}
+.kanban-full-column .kanban-card {
+    position: relative;
+    padding: 12px 12px 11px 14px !important;
+    cursor: grab !important;
+    touch-action: pan-y;
+}
+.kanban-full-column .kanban-card:active { cursor: grabbing !important; }
+.kanban-card-title { padding-right: 4px; }
+.kanban-card-meta span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 22px;
+    padding: 2px 7px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.045);
+}
+body.light-mode .kanban-card-meta span { background: rgba(15,23,42,.045); }
+.kanban-empty-column {
+    display: grid;
+    place-items: center;
+    min-height: 82px;
+    padding: 14px;
+    color: var(--text-sub);
+    border: 1px dashed var(--border-color);
+    border-radius: 11px;
+    text-align: center;
+    font-size: 12px;
+}
+.kanban-search-note {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    margin: 0 0 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(245,158,11,.28);
+    border-radius: 10px;
+    background: rgba(245,158,11,.08);
+    color: var(--text-sub);
+    font-size: 12px;
+}
+.kanban-full-board.is-searching .kanban-card { cursor: pointer !important; }
+.kanban-full-column.add-column {
+    width: 220px !important;
+    min-width: 220px;
+    min-height: 118px !important;
+    max-height: 118px !important;
+    align-self: flex-start;
+    border-width: 1px;
+}
+
+/* Card editor */
+.kanban-card-modal-box {
+    width: min(620px, 94vw) !important;
+    max-width: 620px !important;
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 20px !important;
+}
+.kanban-card-modal-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border-color);
+}
+.kanban-card-modal-head h3 { margin: 2px 0 0; }
+.kanban-card-modal-head p { margin: 4px 0 0; color: var(--text-sub); font-size: 12px; }
+.kanban-modal-kicker {
+    color: var(--text-sub);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: .11em;
+}
+.kanban-card-modal-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    padding: 18px 20px;
+    max-height: min(66vh, 590px);
+    overflow-y: auto;
+}
+.kanban-card-field {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+.kanban-card-field-wide { grid-column: 1 / -1; }
+.kanban-card-field label {
+    margin: 0 !important;
+    color: var(--text-sub);
+    font-size: 12px;
+    font-weight: 700;
+}
+.kanban-card-field input,
+.kanban-card-field select,
+.kanban-card-field textarea {
+    width: 100% !important;
+    margin: 0 !important;
+}
+.kanban-card-field textarea {
+    min-height: 150px;
+    resize: vertical;
+    line-height: 1.5;
+}
+.kanban-card-field .kanban-field-error {
+    border-color: var(--danger-color) !important;
+    box-shadow: 0 0 0 3px rgba(239,68,68,.11);
+}
+.kanban-card-footer {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    margin: 0 !important;
+    padding: 13px 20px 17px !important;
+    border-top: 1px solid var(--border-color);
+}
+.kanban-card-footer-actions { display: flex; gap: 8px; margin-left: auto; }
+#kanbanCardDeleteBtn { margin-right: 0 !important; }
+
+/* Small name modal */
+.kanban-text-modal-box {
+    width: min(430px, 92vw) !important;
+    padding: 20px !important;
+    border-radius: 18px !important;
+}
+.kanban-text-modal-box h3 { margin: 0 0 16px; }
+.kanban-text-modal-box label { display: block; margin-bottom: 7px; color: var(--text-sub); font-size: 12px; font-weight: 700; }
+
+@media (max-width: 980px) {
+    .kanban-workspace-actions {
+        grid-template-columns: 1fr !important;
+    }
+    .kanban-action-group { overflow-x: auto; padding-bottom: 1px; scrollbar-width: none; }
+    .kanban-action-group::-webkit-scrollbar { display: none; }
+    .kanban-search-shell { width: 100%; }
+}
+
+@media (max-width: 768px) {
+    .kanban-workspace-overlay { padding: 0 !important; backdrop-filter: none; }
+    .kanban-workspace-box {
+        width: 100vw !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+    }
+    .kanban-workspace-head {
+        min-height: 64px;
+        padding: 11px 13px !important;
+    }
+    .kanban-workspace-head h3 { font-size: 17px !important; }
+    .kanban-workspace-head p { font-size: 11px !important; max-width: 74vw; }
+    .kanban-workspace-actions {
+        padding: 8px 10px !important;
+        gap: 7px !important;
+    }
+    .kanban-action-group button {
+        flex: 0 0 auto;
+        height: 36px;
+        padding: 7px 10px !important;
+        font-size: 12px;
+    }
+    .kanban-workspace-actions .kanban-search-shell input { height: 38px; }
+    .kanban-workspace-layout {
+        display: flex !important;
+        flex-direction: column;
+        min-height: 0;
+    }
+    .kanban-board-list {
+        flex: 0 0 auto;
+        display: flex !important;
+        align-items: stretch;
+        gap: 7px !important;
+        padding: 7px 10px !important;
+        border-right: 0 !important;
+        border-bottom: 1px solid var(--border-color);
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        scroll-snap-type: x proximity;
+    }
+    .kanban-board-list-head { display: none; }
+    .kanban-board-tab {
+        flex: 0 0 152px !important;
+        width: 152px !important;
+        min-height: 50px;
+        margin: 0 !important;
+        padding: 8px 10px !important;
+        scroll-snap-align: start;
+    }
+    .kanban-board-tab small { font-size: 10px !important; }
+    .kanban-workspace-body {
+        flex: 1;
+        padding: 10px !important;
+        overflow: auto !important;
+    }
+    .kanban-full-board.kanban-column-mode {
+        gap: 10px !important;
+        min-height: 100%;
+    }
+    .kanban-full-column {
+        width: min(84vw, 320px) !important;
+        max-height: calc(100dvh - 220px) !important;
+        min-height: 220px !important;
+        scroll-snap-align: start;
+    }
+    .kanban-full-board.kanban-column-mode { scroll-snap-type: x proximity; }
+    .kanban-full-column.add-column {
+        width: min(70vw, 260px) !important;
+        min-width: min(70vw, 260px) !important;
+        min-height: 96px !important;
+        max-height: 96px !important;
+    }
+    .kanban-full-board.kanban-row-mode .kanban-full-column {
+        width: 100% !important;
+        max-height: none !important;
+    }
+    .kanban-card-modal-box {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        max-height: 100dvh !important;
+        border-radius: 18px 18px 0 0 !important;
+        position: absolute !important;
+        left: 0;
+        right: 0;
+        bottom: 0;
+    }
+    #kanbanCardModal { align-items: flex-end !important; padding: 0 !important; }
+    .kanban-card-modal-head { padding: 14px 15px 12px; }
+    .kanban-card-modal-body {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        padding: 14px 15px;
+        max-height: calc(100dvh - 190px);
+    }
+    .kanban-card-field-wide { grid-column: auto; }
+    .kanban-card-field textarea { min-height: 120px; }
+    .kanban-card-footer {
+        padding: 11px 15px max(12px, env(safe-area-inset-bottom)) !important;
+    }
+}
+
+@media (max-width: 430px) {
+    #kanbanCardModal .kanban-card-footer {
+        display: flex !important;
+        flex-wrap: wrap;
+        grid-template-columns: none !important;
+    }
+    #kanbanCardModal .kanban-card-footer > #kanbanCardDeleteBtn {
+        width: auto !important;
+    }
+    .kanban-card-footer-actions {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-left: 0;
+    }
+    .kanban-card-footer-actions button { width: 100% !important; justify-content: center !important; }
+}
