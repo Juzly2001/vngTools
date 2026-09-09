@@ -18,6 +18,7 @@ const DISCOVERY_DOC = 'https://www.googleapis.com/discovery/v1/apis/drive/v3/res
 // Shared account registry stored in one Google Drive JSON file.
 const ACCOUNT_REGISTRY_FILE_ID = '1RALrPeij_phHv0xXJ7EYSOdwS4CdbcHp';
 const ACCOUNT_HEARTBEAT_MS = 30000;
+const ACCOUNT_ACCESS_CHECK_MS = 5000;
 const WEB_SESSION_ID_KEY = 'dashboardWebSessionId';
 
 
@@ -2915,13 +2916,55 @@ async function trackCurrentWebAccount(forceNewSession = false) {
     }
 }
 
+async function checkCurrentAccountAccessOnly() {
+    if (!isGoogleConnected() || !googleAccountProfile?.id || !hasRequiredGoogleScopes() || !isAccountRegistryConfigured()) return null;
+
+    try {
+        const owner = await getRegistryOwnerInfo();
+        const registry = await readAccountRegistry();
+        const account = findCurrentAccount(registry);
+        const session = findCurrentSession(account);
+
+        currentAccountAccess = {
+            checked:true,
+            role:owner.is_owner ? 'owner' : (account?.role || 'user'),
+            blocked:!owner.is_owner && account?.role === 'blocked',
+            sessionRevoked:!!session?.revoked
+        };
+
+        adminCurrentUserRole = currentAccountAccess.role;
+        updateGoogleAccountUI();
+        updateGooglePermissionGate();
+
+        if (currentAccountAccess.blocked || currentAccountAccess.sessionRevoked) {
+            stopAccountHeartbeat();
+        }
+
+        return currentAccountAccess;
+    } catch (error) {
+        console.warn('Google Drive account access check failed:', error);
+        return null;
+    }
+}
+
 function startAccountHeartbeat() {
     stopAccountHeartbeat();
     if (!isGoogleConnected() || !googleAccountProfile?.id || !isAccountRegistryConfigured()) return;
+
     trackCurrentWebAccount(true);
-    accountHeartbeatTimer = setInterval(() => {
-        if (document.visibilityState === 'visible') trackCurrentWebAccount(false);
-    }, ACCOUNT_HEARTBEAT_MS);
+
+    let lastHeartbeatWrite = Date.now();
+    accountHeartbeatTimer = setInterval(async () => {
+        if (document.visibilityState !== 'visible') return;
+
+        const access = await checkCurrentAccountAccessOnly();
+        if (!access || access.blocked || access.sessionRevoked) return;
+
+        if (Date.now() - lastHeartbeatWrite >= ACCOUNT_HEARTBEAT_MS) {
+            lastHeartbeatWrite = Date.now();
+            trackCurrentWebAccount(false);
+        }
+    }, ACCOUNT_ACCESS_CHECK_MS);
 }
 
 function stopAccountHeartbeat() {
@@ -3142,6 +3185,22 @@ async function adminSetRole(userId, role) {
             if (!account || account.role === 'owner') throw new Error('Owner role cannot be changed.');
             const oldRole = account.role || 'user';
             account.role = role;
+
+            if (role === 'blocked') {
+                const now = new Date().toISOString();
+                (account.sessions || []).forEach(session => {
+                    session.revoked = true;
+                    session.revoked_at = now;
+                    session.revoked_by = googleAccountProfile?.email || googleAccountProfile?.name || 'Admin';
+                });
+            } else if (oldRole === 'blocked') {
+                (account.sessions || []).forEach(session => {
+                    session.revoked = false;
+                    session.revoked_at = null;
+                    session.revoked_by = '';
+                });
+            }
+
             appendAudit(reg, { action:'role_changed', target:account, detail:`${oldRole} → ${role}` });
         });
         await refreshAdminAccounts(false);
