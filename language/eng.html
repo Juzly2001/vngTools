@@ -61,7 +61,7 @@ html[data-theme] .alert{color:var(--text);background:var(--card2);border-color:v
 .feature-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.feature-tab{border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:999px;padding:9px 13px;font-weight:800}.feature-tab.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .feature-panel{display:none}.feature-panel.active{display:block}.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.field-label{font-size:.78rem;font-weight:800;color:var(--muted);margin-bottom:5px}.tag-pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:var(--primary-soft);color:var(--primary);font-size:.72rem;font-weight:850}.flash-stage{min-height:420px;display:grid;place-items:center}.flash-large{width:min(620px,100%);height:360px;perspective:1300px;cursor:pointer}.flash-large-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:.55s}.flash-large.flipped .flash-large-inner{transform:rotateY(180deg)}.flash-side{position:absolute;inset:0;backface-visibility:hidden;border:1px solid var(--line);border-radius:28px;background:linear-gradient(145deg,var(--card),var(--card2));padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;box-shadow:var(--shadow)}.flash-back{transform:rotateY(180deg)}.flash-word{font-size:clamp(2.5rem,8vw,5rem);font-weight:900}.flash-meaning{font-size:clamp(1.6rem,5vw,3rem);font-weight:850}.flash-example{margin-top:18px;color:var(--muted);font-size:1.05rem}.flash-controls{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:14px}
 .quiz-option{display:block;width:100%;text-align:left;border:1px solid var(--line);background:var(--card);color:var(--text);padding:11px 13px;border-radius:14px;margin-top:8px;font-weight:700}.quiz-option.selected{border-color:var(--primary);background:var(--primary-soft)}.quiz-option.correct{border-color:var(--success);background:rgba(22,163,74,.14)}.quiz-option.wrong{border-color:var(--danger);background:rgba(239,68,68,.14)}
-.game-board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.memory-card{min-height:92px;border:1px solid var(--line);border-radius:16px;background:var(--primary);color:var(--on-primary);font-weight:850;padding:10px;display:grid;place-items:center;text-align:center}.memory-card.open,.memory-card.matched{background:var(--card2);color:var(--text)}.memory-card.matched{opacity:.48}.voice-box{border:1px dashed var(--line);border-radius:18px;padding:18px;text-align:center;background:var(--primary-soft)}.voice-live{font-size:1.2rem;font-weight:850;margin:10px 0}.voice-status{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:6px 11px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.8rem;font-weight:850;color:var(--muted)}.voice-status.recording{color:var(--danger);border-color:var(--danger)}.voice-status-dot{width:9px;height:9px;border-radius:50%;background:currentColor}.voice-status.recording .voice-status-dot{animation:voicePulse 1s infinite}.voice-wave{height:62px;display:flex;align-items:center;justify-content:center;gap:4px;margin:14px auto 8px;padding:8px 12px;border-radius:16px;background:var(--card);border:1px solid var(--line);overflow:hidden}.voice-wave span{display:block;width:5px;height:6px;border-radius:999px;background:var(--primary);transition:height .08s linear,opacity .08s linear;opacity:.35}.voice-wave.active span{opacity:1}.voice-record-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.voice-record-actions .btn:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.25)}.voice-playback{width:min(440px,100%);margin-top:10px}.voice-help{font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.45}@keyframes voicePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.72)}}@media(max-width:600px){.voice-box{padding:14px}.voice-wave{height:70px;gap:3px}.voice-wave span{width:4px}.voice-record-actions .btn{flex:1 1 140px}}.ai-result{border:1px solid var(--line);border-radius:18px;padding:16px;background:var(--card2);min-height:100px}.ai-summary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-bottom:14px}.ai-summary-item,.ai-content-card{border:1px solid var(--line);border-radius:15px;background:var(--card);padding:13px}.ai-summary-label,.ai-line-label{font-size:.75rem;font-weight:900;letter-spacing:.03em;text-transform:uppercase;color:var(--muted);margin-bottom:4px}.ai-summary-value{font-weight:800;line-height:1.45}.ai-content-list{display:grid;gap:13px}.ai-card-title{font-size:1rem;font-weight:900;color:var(--primary);padding-bottom:9px;margin-bottom:10px;border-bottom:1px solid var(--line)}.ai-line{padding:8px 0}.ai-line+.ai-line{border-top:1px dashed var(--line)}.ai-line-text{line-height:1.58;overflow-wrap:anywhere}.ai-source-note{margin-top:12px;padding:10px 12px;border-radius:12px;background:var(--primary-soft);font-size:.82rem;color:var(--muted)}@media(max-width:700px){.ai-summary{grid-template-columns:1fr}.ai-result{padding:11px}.ai-content-card{padding:11px}.ai-line-text{font-size:.94rem}}.modal-xl-custom{max-width:920px}.word-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.example-mini{font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.35}.theme-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.theme-choice{border:1px solid var(--line);border-radius:13px;padding:10px 6px;background:var(--card2);color:var(--text);font-size:.75rem;font-weight:800}.theme-choice.active{outline:2px solid var(--primary)}
+.game-board{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.memory-card{min-height:92px;border:1px solid var(--line);border-radius:16px;background:var(--primary);color:var(--on-primary);font-weight:850;padding:10px;display:grid;place-items:center;text-align:center}.memory-card.open,.memory-card.matched{background:var(--card2);color:var(--text)}.memory-card.matched{opacity:.48}.voice-box{border:1px dashed var(--line);border-radius:18px;padding:18px;text-align:center;background:var(--primary-soft)}.voice-live{font-size:1.2rem;font-weight:850;margin:10px 0}.voice-status{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:6px 11px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:.8rem;font-weight:850;color:var(--muted)}.voice-status.recording{color:var(--danger);border-color:var(--danger)}.voice-status-dot{width:9px;height:9px;border-radius:50%;background:currentColor}.voice-status.recording .voice-status-dot{animation:voicePulse 1s infinite}.voice-wave{height:62px;display:flex;align-items:center;justify-content:center;gap:4px;margin:14px auto 8px;padding:8px 12px;border-radius:16px;background:var(--card);border:1px solid var(--line);overflow:hidden}.voice-wave span{display:block;width:5px;height:6px;border-radius:999px;background:var(--primary);transition:height .08s linear,opacity .08s linear;opacity:.35}.voice-wave.active span{opacity:1}.voice-record-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.voice-record-actions .btn:disabled{opacity:.48;cursor:not-allowed;filter:grayscale(.25)}.voice-playback{width:min(440px,100%);margin-top:10px}.voice-help{font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.45}@keyframes voicePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.72)}}@media(max-width:600px){.voice-box{padding:14px}.voice-wave{height:70px;gap:3px}.voice-wave span{width:4px}.voice-record-actions .btn{flex:1 1 140px}}.modal-xl-custom{max-width:920px}.word-meta{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.example-mini{font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.35}.theme-picker{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.theme-choice{border:1px solid var(--line);border-radius:13px;padding:10px 6px;background:var(--card2);color:var(--text);font-size:.75rem;font-weight:800}.theme-choice.active{outline:2px solid var(--primary)}
 @media(max-width:768px){.settings-grid{grid-template-columns:1fr}.game-board{grid-template-columns:repeat(3,minmax(0,1fr))}.flash-large{height:330px}.feature-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px}.feature-tab{white-space:nowrap}.theme-picker{grid-template-columns:repeat(2,1fr)}}
 
 /* ===== EXPANDED THEME COLLECTION ===== */
@@ -156,12 +156,11 @@ body{background:radial-gradient(circle at top left,var(--theme-glow),transparent
 
 <div class="modal fade" id="learningHubModal" tabindex="-1" aria-hidden="true"><div class="modal-dialog modal-dialog-centered modal-xl modal-xl-custom"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">🚀 Vocabulary Studio</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body">
   <div class="feature-tabs" id="featureTabs">
-    <button class="feature-tab" data-panel="flashcard">🃏 Flashcard</button><button class="feature-tab" data-panel="game">🎮 Mini Game</button><button class="feature-tab" data-panel="voice">🎙️ Voice</button><button class="feature-tab" data-panel="ai">✨ AI</button><button class="feature-tab" data-panel="settings">🎨 Setting</button>
+    <button class="feature-tab" data-panel="flashcard">🃏 Flashcard</button><button class="feature-tab" data-panel="game">🎮 Mini Game</button><button class="feature-tab" data-panel="voice">🎙️ Voice</button><button class="feature-tab" data-panel="settings">🎨 Setting</button>
   </div>
   <section class="feature-panel" id="panel-flashcard"><div class="flash-stage"><div class="flash-large" id="bigFlashcard"><div class="flash-large-inner"><div class="flash-side"><div class="tag-pill" id="flashType">word</div><div class="flash-word" id="flashWord">Hello</div><div class="muted" id="flashPhonetic"></div><div class="mt-3">Chạm để lật thẻ</div></div><div class="flash-side flash-back"><div class="flash-meaning" id="flashMeaning">Xin chào</div><div class="flash-example" id="flashExample"></div></div></div></div></div><div class="flash-controls"><button class="btn btn-outline-secondary" id="flashPrev">← Trước</button><button class="btn btn-primary" id="flashSpeak">🔊 Nghe</button><button class="btn btn-outline-secondary" id="flashNext">Sau →</button></div></section>
   <section class="feature-panel" id="panel-game"><div class="d-flex justify-content-between align-items-center mb-3"><div><b>Ghép từ với nghĩa</b><div class="muted">Mở đúng hai thẻ tương ứng.</div></div><button class="btn btn-success" id="newMemoryGame">Ván mới</button></div><div id="gameStatus" class="mb-2 fw-bold"></div><div class="game-board" id="memoryBoard"></div></section>
   <section class="feature-panel" id="panel-voice"><div class="voice-box"><div class="muted">Từ cần đọc</div><div class="flash-word" id="voiceTarget">hello</div><div class="voice-status" id="voiceStatus"><span class="voice-status-dot"></span><span>Sẵn sàng</span></div><div class="voice-wave" id="voiceWave" aria-label="Mức âm thanh"></div><div class="voice-record-actions"><button class="btn btn-primary" id="voiceListen">🔊 Nghe mẫu</button><button class="btn btn-success" id="voiceStart">🎙️ Bắt đầu nói</button><button class="btn btn-danger" id="voiceStop" style="display:none">⏹ Dừng</button><button class="btn btn-outline-secondary" id="voiceNext">Từ khác</button></div><div class="voice-live" id="voiceTranscript">...</div><div id="voiceFeedback"></div><audio id="voicePlayback" class="voice-playback" controls style="display:none"></audio><div class="voice-help">Khi đang nhận diện, nút Nghe mẫu sẽ tạm khóa để tránh xung đột âm thanh trên Android. Hãy nghe mẫu trước, đợi đọc xong rồi mới bấm Bắt đầu nói.</div></div></section>
-  <section class="feature-panel" id="panel-ai"><div><div class="field-label">Chọn từ</div><select id="aiWordSelect" class="form-select"></select></div><div class="d-flex gap-2 flex-wrap my-3"><button class="btn btn-primary" id="generateLocalAI">✨ Tạo nội dung thông minh</button></div><div class="ai-result" id="aiResult"><div class="muted">Chọn một từ rồi bấm “Tạo nội dung thông minh”.</div></div><div class="muted mt-2">Nội dung ưu tiên ví dụ từ từ điển; bản dịch tiếng Việt dùng dịch vụ miễn phí và có thể phụ thuộc kết nối mạng.</div></section>
   <section class="feature-panel" id="panel-settings"><div class="section-title">🌙 Chế độ giao diện</div><div class="theme-picker" id="themePicker">
 <button class="theme-choice" data-theme-choice="light"><span class="theme-preview" style="--p1:#f5f7fb;--p2:#fff;--p3:#2563eb"></span><span class="theme-name">☀️ Light</span></button>
 <button class="theme-choice" data-theme-choice="dark"><span class="theme-preview" style="--p1:#0f172a;--p2:#182235;--p3:#60a5fa"></span><span class="theme-name">🌙 Dark</span></button>
@@ -370,91 +369,343 @@ async function fetchWithTimeout(url,{signal,timeoutMs=8000,...options}={}){
   }
 }
 
-function buildContextualExample(item, level = 'A1-A2') {
-  const word = String(item?.word || '').trim();
-  const meaning = String(item?.meaning || '').trim();
-  const type = String(item?.type || '').toLowerCase();
-
-  if (!word) return '';
-
-  if (type.includes('động từ') || type.includes('verb')) {
-    return `I usually ${word} when I have free time.`;
-  }
-
-  if (type.includes('tính từ') || type.includes('adjective')) {
-    return `This is a very ${word} situation.`;
-  }
-
-  if (type.includes('trạng từ') || type.includes('adverb')) {
-    return `She completed the task ${word}.`;
-  }
-
-  if (type.includes('danh từ') || type.includes('noun')) {
-    return `The ${word} is important in everyday life.`;
-  }
-
-  if (meaning) {
-    return `The word "${word}" is useful in everyday English.`;
-  }
-
-  return `I am learning how to use the word "${word}".`;
+function buildContextualExample(){
+  // Không tự sinh câu ví dụ bằng template nữa vì dễ sai ngữ pháp/ngữ cảnh.
+  // Chỉ dùng câu thật từ Wiktionary hoặc Tatoeba.
+  return '';
 }
 
-async function addWordToTable(inputWord, signal){
-  inputWord = String(inputWord||'').trim().toLowerCase();
-  if(!inputWord || quizData.some(i=>i.word===inputWord)) return false;
-  if(signal?.aborted) throw new DOMException('Đã dừng','AbortError');
+function cleanDictionaryText(text=''){
+  return String(text||'')
+    .replace(/\[[^\]]*\]/g,' ')
+    .replace(/\s+/g,' ')
+    .replace(/^[-–—:;,.\s]+|[-–—:;,.\s]+$/g,'')
+    .trim();
+}
 
-  let phonetic='N/A', audio=null, meaning='Không tìm thấy nghĩa', type='', definition='', dictionaryExample='';
-  let dictionaryFound=false;
+function normalizeAudioUrl(url=''){
+  if(!url) return null;
+  if(url.startsWith('//')) return 'https:'+url;
+  return url;
+}
+
+function getEnglishWiktionarySection(html=''){
+  const host=document.createElement('div');
+  host.innerHTML=html;
+  const marker=host.querySelector('#English');
+  if(!marker) return null;
+  const h2=marker.closest('h2') || (marker.tagName==='H2' ? marker : null);
+  if(!h2) return null;
+  const section=document.createElement('div');
+  let node=h2.nextSibling;
+  while(node){
+    if(node.nodeType===1 && node.tagName==='H2') break;
+    section.appendChild(node.cloneNode(true));
+    node=node.nextSibling;
+  }
+  return section;
+}
+
+function wiktionaryPosToVi(label=''){
+  const x=String(label||'').replace(/\[edit\]/gi,'').trim().toLowerCase();
+  const map={
+    noun:'danh từ', verb:'động từ', adjective:'tính từ', adverb:'trạng từ',
+    pronoun:'đại từ', preposition:'giới từ', conjunction:'liên từ', interjection:'thán từ',
+    determiner:'từ hạn định', article:'mạo từ', numeral:'số từ', proper_noun:'danh từ riêng',
+    'proper noun':'danh từ riêng', particle:'tiểu từ', prefix:'tiền tố', suffix:'hậu tố'
+  };
+  return map[x] || '';
+}
+
+function extractDefinitionAndExample(section,inputWord){
+  const headings=[...section.querySelectorAll('h3,h4,h5,h6')];
+  const posHeading=headings.find(h=>wiktionaryPosToVi(h.textContent));
+  if(!posHeading) return {type:'',definition:'',example:''};
+
+  const level=Number(posHeading.tagName.slice(1));
+  const bucket=document.createElement('div');
+  let node=posHeading.nextSibling;
+  while(node){
+    if(node.nodeType===1 && /^H[2-6]$/.test(node.tagName)){
+      const nodeLevel=Number(node.tagName.slice(1));
+      if(nodeLevel<=level) break;
+    }
+    bucket.appendChild(node.cloneNode(true));
+    node=node.nextSibling;
+  }
+
+  const defLi=bucket.querySelector('ol > li');
+  let definition='';
+  let example='';
+
+  if(defLi){
+    const clone=defLi.cloneNode(true);
+    clone.querySelectorAll('ul,dl,ol,table,sup,.reference,.HQToggle,.nyms-toggle').forEach(el=>el.remove());
+    definition=cleanDictionaryText(clone.textContent);
+
+    const candidates=[...defLi.querySelectorAll('ul li, dl dd')]
+      .map(el=>cleanDictionaryText(el.textContent))
+      .filter(Boolean);
+    const wordRe=new RegExp(`\\b${String(inputWord).replace(/[.*+?^${}()|[\\]\\]/g,'\\$&')}\\b`,'i');
+    example=candidates.find(t=>t.length>=15 && t.length<=220 && wordRe.test(t)) ||
+            candidates.find(t=>t.length>=15 && t.length<=220) || '';
+  }
+
+  return {
+    type:wiktionaryPosToVi(posHeading.textContent),
+    definition,
+    example
+  };
+}
+
+function cleanWiktionaryMarkup(text=''){
+  let s=String(text||'');
+  s=s.replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g,'$2')
+     .replace(/\[\[([^\]]+)\]\]/g,'$1');
+  s=s.replace(/\{\{(?:l|m|link|mention)\|en\|([^}|]+)(?:\|[^}]*)?\}\}/gi,'$1')
+     .replace(/\{\{(?:gloss|non-gloss definition)\|([^}]*)\}\}/gi,'$1')
+     .replace(/\{\{(?:lb|label|qualifier|q|i)\|[^}]*\}\}/gi,' ')
+     .replace(/\{\{[^{}]*\}\}/g,' ')
+     .replace(/'''?/g,'')
+     .replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi,' ')
+     .replace(/<[^>]+>/g,' ')
+     .replace(/\s+/g,' ')
+     .trim();
+  return cleanDictionaryText(s);
+}
+
+function extractEnglishWikitext(wt=''){
+  const text=String(wt||'').replace(/\r\n?/g,'\n');
+  const m=text.match(/^==\s*English\s*==\s*$([\s\S]*?)(?=^==[^=].*==\s*$|\Z)/mi);
+  return m?.[1] || '';
+}
+
+function extractWiktionaryIpa(english=''){
+  const ipa=[];
+  const re=/\{\{IPA\|en\|([^}\n]+)\}\}/gi;
+  let m;
+  while((m=re.exec(english))){
+    const parts=String(m[1]||'').split('|').map(x=>x.trim()).filter(Boolean);
+    for(const part of parts){
+      if(part.includes('=') && !/^[/\[]/.test(part)) continue;
+      if(/^\/.+\/$/.test(part) || /^\[.+\]$/.test(part)) ipa.push(part);
+    }
+  }
+  return ipa[0] || 'N/A';
+}
+
+function extractWiktionaryPosAndDefinition(english=''){
+  const posNames=['Noun','Verb','Adjective','Adverb','Pronoun','Preposition','Conjunction','Interjection','Determiner','Article','Numeral','Proper noun','Particle','Prefix','Suffix'];
+  const escaped=posNames.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')).join('|');
+  const headingRe=new RegExp(`^(={3,5})\\s*(${escaped})\\s*\\1\\s*$`,'gmi');
+  let match;
+  while((match=headingRe.exec(english))){
+    const level=match[1].length;
+    const pos=match[2];
+    const rest=english.slice(headingRe.lastIndex);
+    const stopRe=new RegExp(`^={2,${level}}[^=].*={2,${level}}\\s*$`,'m');
+    const stop=rest.search(stopRe);
+    const section=stop>=0 ? rest.slice(0,stop) : rest;
+    const lines=section.split('\n');
+    for(const line of lines){
+      if(/^#(?![#*:])\s+\S/.test(line)){
+        const definition=cleanWiktionaryMarkup(line.replace(/^#\s*/,''));
+        if(definition) return {type:wiktionaryPosToVi(pos),definition};
+      }
+    }
+    return {type:wiktionaryPosToVi(pos),definition:''};
+  }
+  return {type:'',definition:''};
+}
+
+async function lookupWiktionaryWord(inputWord,signal){
+  let phonetic='N/A', audio=null, type='', definition='', example='';
+
   try{
-    const dictRes = await fetchWithTimeout(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(inputWord)}`,{signal,timeoutMs:30000,cache:'no-store'});
-    if(dictRes.ok){
-      const d=await dictRes.json();
-      const e=d[0];
-      dictionaryFound=!!e;
-      phonetic=e?.phonetics?.find(p=>p.text)?.text || e?.phonetic || 'N/A';
-      const au=e?.phonetics?.find(p=>p.audio);
-      audio=au?.audio || null;
-      const meaningBlock=e?.meanings?.find(m=>m.partOfSpeech) || e?.meanings?.[0];
-      type=normalizePartOfSpeech(meaningBlock?.partOfSpeech || '');
-      const def=meaningBlock?.definitions?.find(x=>x.example) || meaningBlock?.definitions?.[0];
-      definition=def?.definition || '';
-      dictionaryExample=def?.example || '';
+    const rawUrl=`https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(inputWord)}&prop=wikitext&format=json&formatversion=2&origin=*`;
+    const rawRes=await fetchWithTimeout(rawUrl,{signal,timeoutMs:10000,cache:'no-store'});
+    if(rawRes.ok){
+      const raw=await rawRes.json();
+      const wt=String(raw?.parse?.wikitext||'');
+      const english=extractEnglishWikitext(wt);
+      if(english){
+        phonetic=extractWiktionaryIpa(english);
+        const posInfo=extractWiktionaryPosAndDefinition(english);
+        type=posInfo.type || type;
+        definition=posInfo.definition || definition;
+        const audioMatch=english.match(/\{\{audio\|en\|([^}|]+)(?:\|[^}]*)?\}\}/i);
+        if(audioMatch?.[1]){
+          audio=`https://commons.wikimedia.org/wiki/Special:Redirect/file/${encodeURIComponent(audioMatch[1].trim())}`;
+        }
+      }
     }
   }catch(e){
     if(e.name==='AbortError') throw e;
-    console.warn('Dictionary lookup failed:',e);
+    console.warn('Wiktionary wikitext lookup failed:',e);
   }
 
-  if(signal?.aborted) throw new DOMException('Đã dừng','AbortError');
   try{
-    const transData=await translateText(inputWord,'en','vi',signal);
-    meaning=transData || meaning;
+    const url=`https://en.wiktionary.org/api/rest_v1/page/definition/${encodeURIComponent(inputWord)}`;
+    const res=await fetchWithTimeout(url,{signal,timeoutMs:7000,cache:'no-store'});
+    if(res.ok){
+      const data=await res.json();
+      const entries=Array.isArray(data?.en) ? data.en : [];
+      const entry=entries.find(x=>x?.partOfSpeech) || entries[0];
+      if(entry){
+        type=type || wiktionaryPosToVi(entry?.partOfSpeech||'');
+        const defs=Array.isArray(entry?.definitions) ? entry.definitions : [];
+        const firstDef=defs.map(d=>firstUsefulText(d?.definition||'')).find(Boolean);
+        if(firstDef) definition=firstDef;
+        const examples=[];
+        for(const d of defs){
+          if(Array.isArray(d?.examples)) examples.push(...d.examples);
+          if(d?.example) examples.push(d.example);
+        }
+        example=examples.map(firstUsefulText).find(t=>t && t.length>=15 && t.length<=240) || '';
+      }
+    }
+  }catch(e){
+    if(e.name==='AbortError') throw e;
+  }
+
+  if(phonetic==='N/A' && !type && !definition && !example && !audio) return null;
+  return {phonetic,audio,type,definition,example};
+}
+
+async function lookupTatoebaExample(inputWord,signal){
+  try{
+    const params=new URLSearchParams({
+      lang:'eng',
+      q:inputWord,
+      word_count:'5-18',
+      sort:'relevance',
+      limit:'20'
+    });
+    const url=`https://api.tatoeba.org/v1/sentences?${params.toString()}`;
+    const res=await fetchWithTimeout(url,{signal,timeoutMs:9000,cache:'no-store'});
+    if(!res.ok) return '';
+    const data=await res.json();
+    const rows=Array.isArray(data?.sentences) ? data.sentences : [];
+    if(!rows.length) return '';
+
+    const escaped=String(inputWord).replace(/[.*+?^${}()|[\\]\\]/g,'\\$&');
+    const wordRe=new RegExp(`\\b${escaped}\\b`,'i');
+
+    const candidates=rows
+      .map(x=>cleanDictionaryText(x?.text||''))
+      .filter(t=>t && t.length>=15 && t.length<=180 && wordRe.test(t));
+
+    // Ưu tiên câu đủ ngữ cảnh, không quá ngắn và không phải câu hỏi cụt.
+    candidates.sort((a,b)=>{
+      const score=t=>{
+        const words=t.split(/\s+/).length;
+        let s=0;
+        if(words>=7 && words<=14) s+=5;
+        if(/[.!]$/.test(t)) s+=2;
+        if(/\b(I|you|we|they|he|she|it|the|a|an)\b/i.test(t)) s+=1;
+        return s;
+      };
+      return score(b)-score(a);
+    });
+    return candidates[0] || '';
+  }catch(e){
+    if(e.name==='AbortError') throw e;
+    console.warn('Tatoeba example lookup failed:',e);
+    return '';
+  }
+}
+
+async function addWordToTable(inputWord, signal){
+  inputWord=String(inputWord||'').trim().toLowerCase();
+  if(!inputWord) return false;
+  const existingIndex=quizData.findIndex(i=>String(i?.word||'').toLowerCase()===inputWord);
+  if(signal?.aborted) throw new DOMException('Đã dừng','AbortError');
+
+  let phonetic='N/A';
+  let audio=null;
+  let meaning='';
+  let type='';
+  let definition='';
+  let dictionaryExample='';
+
+  // 1) Nghĩa tiếng Việt.
+  try{
+    const translated=await translateText(inputWord,'en','vi',signal);
+    meaning=String(translated||'').trim();
   }catch(e){
     if(e.name==='AbortError') throw e;
     console.warn('Word translation failed:',e);
   }
+  if(!meaning) meaning='Chưa có nghĩa';
 
-  if(!dictionaryFound && meaning==='Không tìm thấy nghĩa') return false;
-
-let exampleEn = dictionaryExample || '';
-
-if (!exampleEn && typeof buildContextualExample === 'function') {
-  exampleEn = buildContextualExample(
-    { word: inputWord, meaning, type, definition },
-    'A1-A2'
-  );
-}
-  let exampleVi='';
-  if(exampleEn){
-    try{ exampleVi=await translateText(exampleEn,'en','vi',signal); }
-    catch(e){ if(e.name==='AbortError') throw e; }
-  }
   if(signal?.aborted) throw new DOMException('Đã dừng','AbortError');
 
-  quizData.push({id:Date.now()+Math.random(),word:inputWord,meaning,audio,phonetic,type,definition,exampleEn,exampleVi,synonyms:'',antonyms:'',questionEn:'',questionVi:''});
-  saveData(); renderTable(); return true;
+  // 2) IPA / loại từ / định nghĩa / ví dụ từ Wiktionary.
+  // MediaWiki hỗ trợ CORS với origin=* nên dùng trực tiếp được trên Vercel và Live Server.
+  try{
+    const meta=await lookupWiktionaryWord(inputWord,signal);
+    if(meta){
+      phonetic=meta.phonetic || phonetic;
+      audio=meta.audio || audio;
+      type=meta.type || type;
+      definition=meta.definition || definition;
+      dictionaryExample=meta.example || dictionaryExample;
+    }
+  }catch(e){
+    if(e.name==='AbortError') throw e;
+    console.warn('Wiktionary metadata lookup failed:',e);
+  }
+
+  if(!type) type='chưa xác định';
+
+  // 3) Ví dụ: ưu tiên ví dụ thật từ Wiktionary; nếu thiếu thì lấy câu thật từ Tatoeba.
+  let exampleEn=dictionaryExample || '';
+  if(!exampleEn){
+    try{
+      exampleEn=await lookupTatoebaExample(inputWord,signal);
+    }catch(e){
+      if(e.name==='AbortError') throw e;
+      console.warn('Tatoeba example failed:',e);
+    }
+  }
+
+  // Không tự bịa câu bằng template. Nếu hai nguồn đều thiếu thì để trống.
+  exampleEn=String(exampleEn||'').trim();
+
+  let exampleVi='';
+  if(exampleEn){
+    try{
+      exampleVi=await translateText(exampleEn,'en','vi',signal);
+    }catch(e){
+      if(e.name==='AbortError') throw e;
+      console.warn('Example translation failed:',e);
+    }
+  }
+
+  if(signal?.aborted) throw new DOMException('Đã dừng','AbortError');
+
+  const freshItem={
+    id:existingIndex>=0 ? quizData[existingIndex].id : Date.now()+Math.random(),
+    word:inputWord,
+    meaning,
+    audio,
+    phonetic,
+    type,
+    definition,
+    exampleEn,
+    exampleVi,
+    synonyms:existingIndex>=0 ? (quizData[existingIndex].synonyms||'') : '',
+    antonyms:existingIndex>=0 ? (quizData[existingIndex].antonyms||'') : '',
+    questionEn:existingIndex>=0 ? (quizData[existingIndex].questionEn||'') : '',
+    questionVi:existingIndex>=0 ? (quizData[existingIndex].questionVi||'') : ''
+  };
+
+  if(existingIndex>=0) quizData[existingIndex]=freshItem;
+  else quizData.push(freshItem);
+
+  saveData();
+  renderTable();
+  return true;
 }
 
 function normalizePartOfSpeech(pos=''){
@@ -741,13 +992,13 @@ window.addEventListener('load',()=>{
 function toggleTheme(){ openLearningHub('settings'); }
 function applySavedTheme(){ const t=localStorage.getItem('vocabTheme')||'light'; document.documentElement.setAttribute('data-theme',t); const b=document.getElementById('themeBtn');if(b)b.textContent='🎨 Setting'; }
 // ===== Vocabulary Studio Upgrade =====
-let flashIndex=0, plusQuestions=[], memoryState={open:[],matched:0,moves:0}, voiceIndex=0, latestAI=null;
+let flashIndex=0, plusQuestions=[], memoryState={open:[],matched:0,moves:0}, voiceIndex=0;
 function ensureWordFields(){ quizData=quizData.map(x=>({type:'',exampleEn:'',exampleVi:'',synonyms:'',antonyms:'',questionEn:'',questionVi:'',definition:'',...x})); saveData(); }
 function openLearningHub(panel='flashcard'){
   refreshHubData(); activatePanel(panel); bootstrap.Modal.getOrCreateInstance(document.getElementById('learningHubModal')).show();
 }
 function activatePanel(name){ document.querySelectorAll('.feature-tab').forEach(b=>b.classList.toggle('active',b.dataset.panel===name)); document.querySelectorAll('.feature-panel').forEach(p=>p.classList.toggle('active',p.id==='panel-'+name)); if(name==='flashcard')renderBigFlash(); if(name==='game')newMemoryGame(); if(name==='voice')renderVoiceTarget(); }
-function refreshHubData(){ const sel=document.getElementById('aiWordSelect'); if(sel)sel.innerHTML=quizData.map((x,i)=>`<option value="${i}">${escapeHtml(x.word)}</option>`).join(''); syncVoiceControls(); updateThemeChoices(); }
+function refreshHubData(){ syncVoiceControls(); updateThemeChoices(); }
 document.addEventListener('click',e=>{ const t=e.target.closest('.feature-tab'); if(t)activatePanel(t.dataset.panel); const th=e.target.closest('[data-theme-choice]'); if(th)setTheme(th.dataset.themeChoice); });
 function setTheme(t){ document.documentElement.setAttribute('data-theme',t); localStorage.setItem('vocabTheme',t); updateThemeChoices(); }
 function toggleMoreThemes(force){
@@ -986,127 +1237,6 @@ document.getElementById('voiceStart')?.addEventListener('click',async()=>{
   }
 });
 buildVoiceWave();
-const synonymBank={good:['great','fine','excellent'],bad:['poor','awful','negative'],big:['large','huge','great'],small:['little','tiny','minor'],happy:['glad','pleased','cheerful'],sad:['unhappy','sorrowful','down'],fast:['quick','rapid','swift'],slow:['unhurried','gradual','sluggish'],smart:['clever','bright','intelligent'],beautiful:['pretty','lovely','attractive']};
-const antonymBank={good:['bad'],bad:['good'],big:['small'],small:['big'],happy:['sad'],sad:['happy'],fast:['slow'],slow:['fast'],hot:['cold'],cold:['hot'],easy:['difficult'],difficult:['easy']};
-
-function cleanMeaningText(text=''){
-  return String(text||'').replace(/[.;]+$/,'').trim();
-}
-
-function pickRandom(list){ return list[Math.floor(Math.random()*list.length)]; }
-
-function normalizeDefinitionForSentence(definition){
-  let d=cleanMeaningText(definition||'').trim();
-  if(!d) return '';
-  d=d.replace(/^to\s+/i,'').replace(/[.;]+$/,'');
-  return d.charAt(0).toLowerCase()+d.slice(1);
-}
-
-function buildDefinitionSentence(item){
-  const w=String(item.word||'').trim();
-  const d=normalizeDefinitionForSentence(item.definition||'');
-  const m=cleanMeaningText(item.meaning||'').trim();
-  const t=(item.type||'').toLowerCase();
-  if(!d) return m ? `“${w}” means “${m}”.` : '';
-  if(t.includes('động từ')) return `To ${w} means to ${d}.`;
-  if(t.includes('tính từ')) return `Someone or something described as ${w} is ${d}.`;
-  if(t.includes('trạng từ')) return `“${w}” describes an action done in a way that is ${d}.`;
-  if(t.includes('danh từ')) return `A ${w} is ${d}.`;
-  return `“${w}” means ${d}.`;
-}
-
-async function fetchDictionaryExamples(word){
-  try{
-    const res=await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${encodeURIComponent(word)}`);
-    if(!res.ok) return [];
-    const data=await res.json();
-    const out=[];
-    for(const entry of data||[]){
-      for(const meaning of entry.meanings||[]){
-        for(const def of meaning.definitions||[]){
-          if(def.example && !out.includes(def.example.trim())) out.push(def.example.trim());
-        }
-      }
-    }
-    return out.slice(0,3);
-  }catch(e){ return []; }
-}
-
-function buildGroundedQuestion(item,example,index=0,isDefinitionSentence=false){
-  const w=String(item.word||'').trim();
-  if(isDefinitionSentence){
-    return index===0
-      ? `How would you explain “${w}” in your own words?`
-      : `What is the key idea in the definition of “${w}”?`;
-  }
-  const qs=[
-    `Which meaning of “${w}” is used in this sentence?`,
-    `What context clue helps you understand “${w}” here?`,
-    `Rewrite the sentence using a phrase with the same meaning as “${w}”.`
-  ];
-  return qs[index%qs.length];
-}
-
-function makeClozeSentence(example,word){
-  const escaped=String(word||'').replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-  return String(example||'').replace(new RegExp(`\\b${escaped}\\b`,'i'),'_____');
-}
-
-
-async function generateSmartContent(){
-  const i=+document.getElementById('aiWordSelect').value,x=quizData[i];
-  if(!x)return;
-  const button=document.getElementById('generateLocalAI');
-  const result=document.getElementById('aiResult');
-  const syn=synonymBank[x.word]||[],ant=antonymBank[x.word]||[];
-
-  button.disabled=true; button.textContent='⏳ Đang lấy ví dụ đáng tin cậy...';
-  result.textContent='Đang tìm ví dụ thật từ từ điển và tạo nội dung bám sát nghĩa...';
-
-  let examples=await fetchDictionaryExamples(x.word);
-  if(x.exampleEn?.trim() && !examples.includes(x.exampleEn.trim())) examples.unshift(x.exampleEn.trim());
-  examples=[...new Set(examples)].slice(0,3);
-  const definitionSentence=buildDefinitionSentence(x);
-  let usedDefinitionFallback=false;
-  if(!examples.length && definitionSentence){ examples=[definitionSentence]; usedDefinitionFallback=true; }
-
-  if(!examples.length){
-    button.disabled=false; button.textContent='✨ Tạo nội dung thông minh';
-    result.textContent='Không tìm thấy ví dụ hoặc định nghĩa đủ tin cậy cho từ này. Hệ thống không tự bịa câu để tránh tạo nội dung vô nghĩa.';
-    return;
-  }
-
-  const questions=examples.map((e,idx)=>buildGroundedQuestion(x,e,idx,usedDefinitionFallback));
-  const answers=examples.map((e,idx)=> idx===0 ? (x.meaning || x.definition || 'Dựa vào định nghĩa của từ.') : (x.definition || x.meaning || 'Dựa vào ngữ cảnh của câu.'));
-  let exampleTranslations=[],questionTranslations=[];
-  try{
-    exampleTranslations=await Promise.all(examples.map(e=>translateText(e,'en','vi')));
-    questionTranslations=await Promise.all(questions.map(q=>translateText(q,'en','vi')));
-  }catch(error){
-    console.error(error);
-    exampleTranslations=examples.map(()=> 'Không thể dịch lúc này.');
-    questionTranslations=questions.map(()=> 'Không thể dịch lúc này.');
-  }finally{
-    button.disabled=false; button.textContent='✨ Tạo nội dung thông minh';
-  }
-
-  latestAI={index:i,exampleEn:examples[0],exampleVi:exampleTranslations[0],synonyms:syn.join(', '),antonyms:ant.join(', '),questionEn:questions[0],questionVi:questionTranslations[0]};
-  const sourceLabel=usedDefinitionFallback?'Câu giải nghĩa dựa trên định nghĩa':'Ví dụ từ từ điển';
-  const cards=examples.map((e,idx)=>`<article class="ai-content-card">
-    <div class="ai-card-title">Ví dụ ${idx+1}</div>
-    <div class="ai-line"><div class="ai-line-label">Câu tiếng Anh</div><div class="ai-line-text">${escapeHtml(e)}</div></div>
-    <div class="ai-line"><div class="ai-line-label">Dịch tiếng Việt</div><div class="ai-line-text">${escapeHtml(exampleTranslations[idx])}</div></div>
-  </article>`).join('');
-  result.innerHTML=`<div class="ai-summary">
-    <div class="ai-summary-item"><div class="ai-summary-label">Từ vựng</div><div class="ai-summary-value">${escapeHtml(x.word)}</div></div>
-    <div class="ai-summary-item"><div class="ai-summary-label">Loại từ</div><div class="ai-summary-value">${escapeHtml(x.type||'Chưa xác định')}</div></div>
-    <div class="ai-summary-item"><div class="ai-summary-label">Nghĩa</div><div class="ai-summary-value">${escapeHtml(x.meaning||'Chưa có')}</div></div>
-  </div>
-  <div class="ai-content-card mb-3"><div class="ai-card-title">Định nghĩa</div><div class="ai-line-text">${escapeHtml(x.definition||'Chưa có định nghĩa.')}</div></div>
-  <div class="ai-content-list">${cards}</div>
-  <div class="ai-source-note">Nguồn nội dung: ${escapeHtml(sourceLabel)}.</div>`;
-}
-document.getElementById('generateLocalAI')?.addEventListener('click',generateSmartContent);document.getElementById('saveAIResult')?.addEventListener('click',()=>{if(!latestAI)return showModal('Hãy tạo nội dung trước.');Object.assign(quizData[latestAI.index],latestAI);delete quizData[latestAI.index].index;saveData();renderTable();showModal('Đã lưu ví dụ và dữ liệu bổ sung vào từ.')});
 window.addEventListener('load',()=>{ensureWordFields();syncVoiceControls();document.getElementById('inputArea')?.classList.add('controls-collapsed');});
 
 </script>
