@@ -13300,3 +13300,164 @@ function initKanbanWorkspaceDragAndDrop() {
         });
     });
 }
+
+// ============================================================================
+// DURABLE GOOGLE SESSION V5 — Vercel backend + refresh token
+// Keeps Drive writes locked until the cloud workspace has been hydrated.
+// ============================================================================
+(() => {
+    const BACKUP_KEY = 'workspaceEmergencyBackupsV5';
+    const MAX_BACKUPS = 8;
+    let durableRestoreStarted = false;
+
+    function emergencyBackup(reason = 'manual') {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            const data = raw ? JSON.parse(raw) : state.dashboardData;
+            const backups = JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]');
+            backups.unshift({ at: new Date().toISOString(), reason, data });
+            localStorage.setItem(BACKUP_KEY, JSON.stringify(backups.slice(0, MAX_BACKUPS)));
+            return true;
+        } catch (e) {
+            console.warn('Emergency backup failed:', e);
+            return false;
+        }
+    }
+
+    function lockDriveWritesV5() {
+        try {
+            if (typeof __driveAutoSyncReady !== 'undefined') __driveAutoSyncReady = false;
+            if (typeof __driveAutoSaveTimer !== 'undefined') clearTimeout(__driveAutoSaveTimer);
+        } catch (_) {}
+    }
+
+    async function getDurableAccessTokenV5() {
+        const res = await fetch('/api/auth/token', { credentials: 'same-origin', cache: 'no-store' });
+        if (res.status === 401) return null;
+        if (!res.ok) throw new Error(`Durable token endpoint failed (${res.status})`);
+        return res.json();
+    }
+
+    async function restoreDurableGoogleSessionV5() {
+        if (durableRestoreStarted) return false;
+        durableRestoreStarted = true;
+        lockDriveWritesV5();
+
+        try {
+            const token = await getDurableAccessTokenV5();
+            if (!token?.access_token) return false;
+
+            const expiresIn = Number(token.expires_in || 3600);
+            const gapiToken = {
+                access_token: token.access_token,
+                token_type: token.token_type || 'Bearer',
+                expires_in: expiresIn,
+                scope: token.scope || SCOPES
+            };
+            gapi.client.setToken(gapiToken);
+
+            localStorage.setItem('google_oauth_token', JSON.stringify({
+                ...gapiToken,
+                saved_at: Date.now(),
+                expires_at: Date.now() + expiresIn * 1000
+            }));
+
+            currentAccountAccess = { checked:false, role:'user', blocked:false, sessionRevoked:false };
+            updateGoogleAccountUI();
+            updateGooglePermissionGate();
+
+            emergencyBackup('before-durable-cloud-hydration');
+            await fetchGoogleAccountProfile();
+
+            if (!currentAccountAccess.blocked && !currentAccountAccess.sessionRevoked) {
+                const ok = await fetchFileFromGoogleDrive();
+                if (ok === false) lockDriveWritesV5();
+            }
+            return true;
+        } catch (e) {
+            lockDriveWritesV5();
+            console.warn('Durable Google session restore failed; cloud auto-save stays locked:', e);
+            return false;
+        }
+    }
+
+    // Interactive connect now uses Authorization Code flow on the backend.
+    handleAuthClick = function(forceAccountChooser = false, forceConsent = false) {
+        emergencyBackup('before-google-connect');
+        lockDriveWritesV5();
+        const returnTo = location.pathname + location.search + location.hash;
+        const qs = new URLSearchParams({ returnTo });
+        if (forceAccountChooser) qs.set('selectAccount', '1');
+        if (forceConsent) qs.set('forceConsent', '1');
+        location.href = `/api/auth/google/start?${qs.toString()}`;
+    };
+
+    const oldDisconnectV5 = disconnectGoogleAccount;
+    disconnectGoogleAccount = async function(options = {}) {
+        emergencyBackup('before-google-disconnect');
+        lockDriveWritesV5();
+        try { await fetch('/api/auth/logout', { method:'POST', credentials:'same-origin' }); } catch (_) {}
+        return oldDisconnectV5.call(this, options);
+    };
+
+    switchGoogleAccount = async function() {
+        emergencyBackup('before-google-account-switch');
+        lockDriveWritesV5();
+        try { await fetch('/api/auth/logout', { method:'POST', credentials:'same-origin' }); } catch (_) {}
+        try { if (gapiInited) gapi.client.setToken(null); } catch (_) {}
+        localStorage.removeItem('google_oauth_token');
+        localStorage.removeItem(GOOGLE_ACCOUNT_PROFILE_KEY);
+        googleAccountProfile = null;
+        googleFileId = null;
+        const returnTo = location.pathname + location.search + location.hash;
+        location.href = `/api/auth/google/start?selectAccount=1&forceConsent=1&returnTo=${encodeURIComponent(returnTo)}`;
+    };
+
+    // Add a final backup immediately before any cloud hydration replaces local state.
+    const fetchDriveBeforeDurableWrapV5 = fetchFileFromGoogleDrive;
+    fetchFileFromGoogleDrive = async function() {
+        emergencyBackup('before-drive-load');
+        return fetchDriveBeforeDurableWrapV5.apply(this, arguments);
+    };
+
+    function waitForGoogleLibrariesV5() {
+        let attempts = 0;
+        const timer = setInterval(() => {
+            attempts++;
+            if (gapiInited && gisInited && tokenClient && gapi?.client) {
+                clearInterval(timer);
+                restoreDurableGoogleSessionV5();
+            } else if (attempts >= 60) {
+                clearInterval(timer);
+                lockDriveWritesV5();
+            }
+        }, 200);
+    }
+
+    window.addEventListener('load', waitForGoogleLibrariesV5, { once:true });
+
+    window.workspaceRecovery = {
+        list() {
+            try { return JSON.parse(localStorage.getItem(BACKUP_KEY) || '[]'); }
+            catch (_) { return []; }
+        },
+        backup(reason = 'manual') { return emergencyBackup(reason); },
+        restore(index = 0) {
+            const item = this.list()[index];
+            if (!item || !Array.isArray(item.data)) return false;
+            lockDriveWritesV5();
+            state.dashboardData = item.data;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(item.data));
+            renderDashboard();
+            updateScheduleUI?.();
+            return true;
+        },
+        status() {
+            return {
+                googleConnected: !!gapi?.client?.getToken?.()?.access_token,
+                driveAutoSaveReady: typeof __driveAutoSyncReady !== 'undefined' ? __driveAutoSyncReady : false,
+                backups: this.list().length
+            };
+        }
+    };
+})();
