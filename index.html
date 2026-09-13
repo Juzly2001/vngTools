@@ -1,6 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        // The GitHub Pages root is legacy. Redirect only the old Dashboard
+        // entry point to Vercel so it cannot start the old OAuth flow and
+        // accidentally revoke the durable Google session. Other /vngTools/*
+        // utility pages remain untouched.
+        (() => {
+            const legacyDashboardPaths = new Set(['/vngTools', '/vngTools/', '/vngTools/index.html']);
+            if (location.hostname === 'juzly2001.github.io' && legacyDashboardPaths.has(location.pathname)) {
+                location.replace('https://july27.vercel.app/' + location.search + location.hash);
+            }
+        })();
+    </script>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workspace Dashboard</title>

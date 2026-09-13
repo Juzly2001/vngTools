@@ -9,8 +9,10 @@ module.exports = async (req, res) => {
       client_id: env('GOOGLE_CLIENT_ID'), redirect_uri: `${baseUrl(req)}/api/auth/google/callback`,
       response_type: 'code', access_type: 'offline', include_granted_scopes: 'true', scope: SCOPES, state
     });
-    if (req.query.forceConsent === '1') p.set('prompt', 'consent');
-    else if (req.query.selectAccount === '1') p.set('prompt', 'select_account');
+    // Every explicit connection must return a refresh token for the durable
+    // backend session. Page reloads do not come through this route, so this
+    // consent screen is shown only when the user intentionally connects again.
+    p.set('prompt', req.query.selectAccount === '1' ? 'select_account consent' : 'consent');
     res.redirect(302, `https://accounts.google.com/o/oauth2/v2/auth?${p.toString()}`);
   } catch (e) { res.status(500).json({ error: e.message }); }
 };
