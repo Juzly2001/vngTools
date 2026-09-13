@@ -9499,9 +9499,24 @@ fetchFileFromGoogleDrive = async function() {
                     return false;
                 }
 
+                // Giữ trạng thái Collapse/Expand hiện tại trước khi Drive ghi dữ liệu xuống
+                const collapsedState = new Map(
+                    state.dashboardData.map(group => [
+                        String(group.id),
+                        Boolean(group.collapsed)
+                    ])
+                );
+
                 applyDrivePayload(cloudData);
 
+                // Khôi phục lại trạng thái Collapse/Expand vừa thao tác
                 state.dashboardData.forEach(group => {
+                    const id = String(group.id);
+
+                    if (collapsedState.has(id)) {
+                        group.collapsed = collapsedState.get(id);
+                    }
+
                     if (group.pinKey) group.isLocked = true;
                 });
 
