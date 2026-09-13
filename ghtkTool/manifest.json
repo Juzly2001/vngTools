@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "GHTK Support",
+  "version": "0.2.0",
+  "description": "GHTK Tool Center",
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "00-runtime.js",
+        "01-auto-click.js",
+        "02-delay-picker.js",
+        "03-mini-ghtk-excel.js",
+        "04-giao-dau-ngay.js",
+        "10-master-control.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
