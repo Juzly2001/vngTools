@@ -254,7 +254,7 @@
             *{box-sizing:border-box}
             :host{all:initial}
             .wrap{
-              position:fixed;z-index:2147483647;top:24px;left:24px;
+              position:fixed;z-index: 2147483646;top:24px;left:24px;
               width:min(1180px,calc(100vw - 48px));height:min(780px,calc(100vh - 48px));
               background:#fff;color:#1f2937;border:1px solid #cbd5e1;border-radius:14px;
               box-shadow:0 20px 60px rgba(15,23,42,.25);font:13px/1.4 Arial,sans-serif;

@@ -368,7 +368,7 @@
             position: fixed !important;
             top: 15px !important;
             right: 15px !important;
-            z-index: 2147483647 !important;
+            z-index: 2147483646; !important;
             width: 270px !important;
             padding: 12px !important;
             background: #111827 !important;

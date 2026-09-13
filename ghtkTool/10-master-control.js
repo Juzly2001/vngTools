@@ -23,7 +23,8 @@
   style.textContent = `
     #${PANEL_ID}, #${PANEL_ID} * { box-sizing: border-box; }
     #${PANEL_ID} {
-      position: fixed; top: 78px; right: 0; width: 360px; z-index: 2147483647;
+       isolation: isolate;
+      position: fixed; top: 78px; right: 0; width: 360px; z-index: 2147483647 !important;
        transform: translateX(100%); transition: transform .24s cubic-bezier(.4,0,.2,1); overflow: visible;
       font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       color: #e5e7eb; background: rgba(11,18,32,.96); border: 1px solid rgba(148,163,184,.18);
@@ -59,12 +60,12 @@
     #${PANEL_ID} .gt-footer { display:flex; gap:8px; padding:10px 12px 12px; border-top:1px solid rgba(148,163,184,.10); }
     #${PANEL_ID} .gt-footer button { flex:1; height:34px; border-radius:10px; border:1px solid rgba(148,163,184,.15); background:rgba(255,255,255,.035); color:#cbd5e1; font-size:10px; font-weight:800; cursor:pointer; }
     #${PANEL_ID} .gt-footer button:hover { background:rgba(255,255,255,.07); }
-    #${PANEL_ID} .gt-toast { position:absolute; left:50%; bottom:12px; transform:translate(-50%,14px); padding:7px 10px; border-radius:9px; background:#0f172a; border:1px solid rgba(148,163,184,.18); color:#e2e8f0; font-size:10px; opacity:0; pointer-events:none; transition:.2s ease; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+    #${PANEL_ID} .gt-toast { position:absolute; z-index:2147483647; left:50%; bottom:12px; transform:translate(-50%,14px); padding:7px 10px; border-radius:9px; background:#0f172a; border:1px solid rgba(148,163,184,.18); color:#e2e8f0; font-size:10px; opacity:0; pointer-events:none; transition:.2s ease; box-shadow:0 10px 30px rgba(0,0,0,.35); }
     #${PANEL_ID} .gt-toast.show { opacity:1; transform:translate(-50%,0); }
 
     #${PANEL_ID}.gt-open { transform: translateX(0); }
     #${PANEL_ID} .gt-drawer-handle {
-      position:absolute; left:-24px; top:22px; width:24px; height:44px;
+      position:absolute; left:-24px; top:22px; width:24px; height:44px; z-index:2147483647;
       border:1px solid rgba(148,163,184,.16); border-right:0;
       border-radius:9px 0 0 9px;
       background:rgba(11,18,32,.96); color:#94a3b8;
