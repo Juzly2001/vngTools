@@ -634,7 +634,21 @@ function groupMatchesKeyword(group, keyword) {
     return chunks.filter(Boolean).join(' ').toLowerCase().includes(keyword);
 }
 
+let dashboardSearchTimer = null;
+
+function scheduleDashboardSearch(event) {
+    clearTimeout(dashboardSearchTimer);
+    dashboardSearchTimer = null;
+    if (event?.isComposing || event?.type === 'compositionstart') return;
+    dashboardSearchTimer = setTimeout(() => {
+        dashboardSearchTimer = null;
+        renderDashboard();
+    }, 150);
+}
+
 function clearDashboardSearch() {
+    clearTimeout(dashboardSearchTimer);
+    dashboardSearchTimer = null;
     const input = getEl('globalSearch');
     if (input) input.value = '';
     renderDashboard();
@@ -689,11 +703,38 @@ function getGroupContentAreaClass(type) {
     return type === 'kanban' ? 'kanban-area' : `${type}s-area`;
 }
 
+// Preserve unchanged link/note cards, including their focus and scroll state.
+const dashboardCardSnapshots = new WeakMap();
+
+function disposeDashboardCard(card) {
+    if (typeof Sortable !== 'undefined') {
+        [card, ...card.querySelectorAll('*')].forEach(element => {
+            Sortable.get(element)?.destroy();
+        });
+    }
+    card.remove();
+}
+
+function reconcileDashboardCards(container, cards) {
+    const retained = new Set(cards);
+    Array.from(container.children).forEach(card => {
+        if (!retained.has(card)) disposeDashboardCard(card);
+    });
+    let cursor = container.firstElementChild;
+    cards.forEach(card => {
+        if (card === cursor) cursor = cursor.nextElementSibling;
+        else container.insertBefore(card, cursor);
+    });
+}
+
 function renderDashboard() {
     const container = getEl('groupsContainer'); 
     if (!container) return;
     updateDashboardStats();
-    container.innerHTML = '';
+    const previousCards = new Map(Array.from(container.children)
+        .filter(card => card.classList.contains('group-card'))
+        .map(card => [card.dataset.id, card]));
+    const nextCards = [];
     const keyword = getDashboardKeyword();
     const groupsToRender = sortGroupsForRender(
         [...state.dashboardData].filter(group => groupMatchesKeyword(group, keyword) && groupMatchesActiveTag(group))
@@ -701,10 +742,12 @@ function renderDashboard() {
     applyAutoSortUI();
     
     if (state.dashboardData.length === 0) {
+        reconcileDashboardCards(container, []);
         container.innerHTML = `<p style="grid-column: 1/-1; text-align:center; color: var(--text-sub)">No groups yet.</p>`; 
         return;
     }
     if (groupsToRender.length === 0) {
+        reconcileDashboardCards(container, []);
         container.innerHTML = `<div class="empty-search-state">🔎 No matching data found.<br><button class="btn-secondary" onclick="clearDashboardSearch()">Clear search</button></div>`;
         return;
     }
@@ -715,7 +758,17 @@ function renderDashboard() {
         }
         if (!group.type) group.type = group.notes ? 'note' : (group.schedules ? 'schedule' : 'link');
         
+        // Schedule and Kanban views also depend on time or workspace state.
+        // Keep their existing render path; reuse only data-driven link/note cards.
+        const canReuse = group.type === 'link' || group.type === 'note';
+        const snapshot = canReuse ? JSON.stringify(group) : null;
+        const previousCard = previousCards.get(String(group.id));
+        if (canReuse && previousCard && dashboardCardSnapshots.get(previousCard) === snapshot) {
+            nextCards.push(previousCard);
+            return;
+        }
         const groupCard = document.createElement('div');
+        if (canReuse) dashboardCardSnapshots.set(groupCard, snapshot);
         let cardClassName = `group-card type-${group.type}`;
         let lockOverlayHTML = '';
         const isLockedCheck = group.pinKey && group.pinKey !== "" && group.isLocked;
@@ -732,8 +785,7 @@ function renderDashboard() {
         const gEmoji = (group.emoji && group.emoji !== "NONE") ? `<span>${group.emoji}</span> ` : '';
         const tags = { link: 'Links', note: 'Notes', schedule: 'Schedule', kanban: 'Kanban' };
         const isCollapsed = group.collapsed || false;
-        const mobileLite = typeof isMobileLiteView === 'function' && isMobileLiteView();
-        const shouldLazyRenderContent = mobileLite && isCollapsed;
+        const shouldLazyRenderContent = isCollapsed;
         const safeTitle = escapeHTML(group.title || 'Untitled');
         const areaClass = getGroupContentAreaClass(group.type);
 
@@ -755,29 +807,29 @@ function renderDashboard() {
         const contentArea = groupCard.querySelector(`.${areaClass}`);
         if (isLockedCheck) {
             contentArea.innerHTML = `<span class="no-data-text" style="display:flex; justify-content:center; align-items:center; gap:5px;">🔒 Content hidden</span>`;
-            container.appendChild(groupCard);
+            nextCards.push(groupCard);
             return; 
         }
 
         if (shouldLazyRenderContent) {
             const count = (group.links?.length || 0) + (group.notes?.length || 0) + (group.schedules?.length || 0) + getKanbanCardCount(group);
-            contentArea.innerHTML = `<span class="no-data-text mobile-lite-placeholder">📱 Hidden ${count} items for better performance. Expand the group to load content.</span>`;
-            container.appendChild(groupCard);
+            contentArea.innerHTML = `<span class="no-data-text mobile-lite-placeholder">${count} items. Expand the group to load content.</span>`;
+            nextCards.push(groupCard);
             return;
         }
 
         if (group.type === 'link') {
             if (!group.links?.length) contentArea.innerHTML = `<span class="no-data-text">Right-click to add a link...</span>`;
             else {
-                getPinnedItemsForRender(group.links).forEach(({ item: link, originalIndex: idx }) => {
+                contentArea.innerHTML = getPinnedItemsForRender(group.links).map(({ item: link, originalIndex: idx }) => {
                     const lEmoji = (link.emoji && link.emoji !== "NONE") ? `<span>${link.emoji}</span> ` : '';
-                    contentArea.innerHTML += `
+                    return `
                         <div class="item-wrapper ${link.pinned ? 'item-pinned' : ''}" data-index="${idx}">
                             <a href="${escapeHTML(link.url)}" target="_blank" class="link-button" oncontextmenu="openContextMenu(event, 'link', '${group.id}', ${idx})">
                                 ${lEmoji}${escapeHTML(link.name)}
                             </a>
                         </div>`;
-                });
+                }).join('');
             }
         } 
         else if (group.type === 'note') {
@@ -853,8 +905,9 @@ function renderDashboard() {
                 renderKanbanBoard(group, contentArea);
             }
         }
-        container.appendChild(groupCard);
+        nextCards.push(groupCard);
     });
+    reconcileDashboardCards(container, nextCards);
     if (typeof initDragAndDrop === 'function') initDragAndDrop();
 }
 
@@ -2375,7 +2428,7 @@ function triggerExcelImport(groupId) {
         if (gocBtn) gocBtn.style.display = 'none';
 
         footer.innerHTML = `
-            <button class="btn-secondary" style="background-color:var(--accent-color);color:#fff!important;padding:10px 16px" onclick="downloadExcelTemplate()">📥 Download Template</button>
+            <button class="btn-secondary" style="background-color:var(--accent-color);color:#fff!important;padding:10px 16px" onclick="downloadExcelTemplate(this)">📥 Download Template</button>
             <button class="btn-success" style="padding:10px 16px" id="btnConfirmExcelSelect">🎯 Choose Excel File</button>
         `;
 
@@ -2384,8 +2437,53 @@ function triggerExcelImport(groupId) {
     openModal('alertModal');
 }
 
-function downloadExcelTemplate() {
+// Share one in-flight request. A failed load can be retried on the next action.
+let excelLibraryPromise = null;
+function ensureExcelLibrary() {
+    if (typeof XLSX !== 'undefined') return Promise.resolve(XLSX);
+    if (excelLibraryPromise) return excelLibraryPromise;
+    excelLibraryPromise = new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+        script.async = true;
+        let settled = false;
+        const finish = error => {
+            if (settled) return;
+            settled = true;
+            clearTimeout(timer);
+            script.onload = script.onerror = null;
+            if (error) {
+                script.remove();
+                reject(error);
+            } else resolve(XLSX);
+        };
+        const timer = setTimeout(() => finish(new Error('Excel loading timed out. Check your connection and try again.')), 20000);
+        script.onload = () => finish(typeof XLSX === 'undefined' ? new Error('Excel could not start. Please try again.') : null);
+        script.onerror = () => finish(new Error('Could not load Excel. Check your connection and try again.'));
+        document.head.appendChild(script);
+    }).catch(error => {
+        excelLibraryPromise = null;
+        throw error;
+    });
+    return excelLibraryPromise;
+}
+
+async function withExcelLibrary(button, action) {
+    if (button?.disabled) return;
+    const label = button?.textContent;
+    if (button) { button.disabled = true; button.textContent = 'Loading Excel…'; }
     try {
+        await ensureExcelLibrary();
+        await action();
+    } catch (error) {
+        alert(error.message || 'Excel could not complete this action. Please try again.');
+    } finally {
+        if (button) { button.disabled = false; button.textContent = label; }
+    }
+}
+
+async function downloadExcelTemplate(button) {
+    return withExcelLibrary(button, () => {
         const sampleData = [
             { "Date": "2026-06-16", "Time": "18:00", "EndDate": "2026-06-16", "EndTime": "22:00", "Task": "GHTK Evening Shift", "Important": "FALSE", "Content": "Operations shift" },
             { "Date": "2026-06-17", "Time": "08:30", "EndDate": "2026-06-17", "EndTime": "11:30", "Task": "Daily Standup", "Important": "TRUE", "Content": "Progress report" }
@@ -2394,20 +2492,33 @@ function downloadExcelTemplate() {
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "LichTrinhMau");
         XLSX.writeFile(wb, "mau_import_lich_trinh_countdown.xlsx");
-    } catch (e) { alert("Error creating template file!"); }
+    });
 }
 
-getEl('excelScheduleInput')?.addEventListener('change', function(event) {
+getEl('excelScheduleInput')?.addEventListener('change', async function(event) {
     const file = event.target.files[0];
     if (!file) return;
-    if (typeof XLSX === 'undefined') return alert("Excel library has not loaded!");
-
-    const group = getGroup(this.getAttribute('data-target-group-id') || state.activeGroupId);
-    if (!group) return;
+    const targetGroupId = this.getAttribute('data-target-group-id') || state.activeGroupId;
+    const group = getGroup(targetGroupId);
+    if (!group) { this.value = ''; return; }
+    try {
+        this.disabled = true;
+        await ensureExcelLibrary();
+    } catch (error) {
+        this.value = '';
+        alert(error.message);
+        return;
+    } finally {
+        this.disabled = false;
+    }
+    // Do not import into a deleted/replaced group after an asynchronous load.
+    if (getGroup(targetGroupId) !== group) { this.value = ''; return; }
 
     const reader = new FileReader();
+    reader.onerror = () => { event.target.value = ''; alert('Could not read this file. Please try again.'); };
     reader.onload = function(e) {
         try {
+            if (getGroup(targetGroupId) !== group) return;
             const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
             const rawData = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
             if (!rawData?.length) return alert("Excel file is empty!");
@@ -2470,7 +2581,6 @@ getEl('excelScheduleInput')?.addEventListener('change', function(event) {
             
             sortSchedulesSmart(group.schedules);
             saveData();
-            renderDashboard();
             alert(`📥 Import successful: ${newSchedules.length} schedules.`);
         } catch (err) { alert("Error parsing Excel file!"); }
         finally { event.target.value = ''; }
@@ -3828,7 +3938,9 @@ function initDragAndDrop() {
         const type = area.classList.contains('links-area') ? 'link' : (area.classList.contains('notes-area') ? 'note' : 'schedule');
         if (type === 'schedule') return;
 
-        if (Sortable.get(area)) Sortable.get(area).destroy();
+        const existing = Sortable.get(area);
+        if (existing && existing.option('forceFallback') === isMobile) return;
+        if (existing) existing.destroy();
         Sortable.create(area, {
             animation: 150, ghostClass: 'sortable-ghost-link', delay: isMobile ? 300 : 0, delayOnTouchOnly: true, forceFallback: isMobile, fallbackTolerance: 4,
             onEnd: () => {
@@ -5507,10 +5619,9 @@ toggleCollapseGroup = function(groupId) {
     const wasCollapsed = !!group?.collapsed;
     __mobileLiteToggleCollapseGroup(groupId);
 
-    // Nếu mobile đang mở một group đã lazy render, render lại riêng một lần để tạo nội dung thật.
+    // The first render already expands lazy content; only scroll it into view.
     if (isMobileLiteView() && wasCollapsed) {
         queueMicrotask(() => {
-            renderDashboard();
             const card = document.querySelector(`.group-card[data-id="${groupId}"]`);
             if (card) card.scrollIntoView({ block: 'nearest' });
         });
