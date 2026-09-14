@@ -5269,6 +5269,156 @@ function changeCalendarMonth(offset) {
     renderCalendarView();
 }
 
+// ==========================================================================
+// VIETNAMESE CALENDAR EVENTS — V2 TRIAL
+// Mixes official public holidays with popular Gregorian observances and
+// Vietnamese lunar/traditional festivals. These are display-only and are
+// NEVER written into dashboardData / Upcoming / Past / Trash.
+// ==========================================================================
+const VN_HOLIDAY_CACHE_PREFIX = 'dashboardVnHolidayCacheV2:';
+const VN_HOLIDAY_API_BASE = 'https://date.nager.at/api/v3/PublicHolidays';
+let vnHolidayRenderToken = 0;
+
+const VN_EVENT_META = {
+    public:      { icon: '🇻🇳', label: 'Ngày nghỉ lễ' },
+    traditional: { icon: '🏮', label: 'Lễ truyền thống' },
+    culture:     { icon: '✨', label: 'Ngày kỷ niệm' },
+    love:        { icon: '💝', label: 'Tình yêu' }
+};
+
+function makeVnEvent(date, localName, category = 'culture', note = '') {
+    return { date, localName, name: note || localName, category, source: 'calendar-v2' };
+}
+
+function getVietnamFixedEvents(year) {
+    const y = String(year);
+    return [
+        makeVnEvent(`${y}-01-01`, 'Tết Dương lịch', 'public'),
+        makeVnEvent(`${y}-02-14`, 'Lễ Tình nhân · Valentine', 'love'),
+        makeVnEvent(`${y}-02-27`, 'Ngày Thầy thuốc Việt Nam', 'culture'),
+        makeVnEvent(`${y}-03-08`, 'Quốc tế Phụ nữ', 'culture'),
+        makeVnEvent(`${y}-03-26`, 'Ngày thành lập Đoàn TNCS Hồ Chí Minh', 'culture'),
+        makeVnEvent(`${y}-04-01`, 'Cá tháng Tư', 'culture'),
+        makeVnEvent(`${y}-04-30`, 'Ngày Giải phóng miền Nam', 'public'),
+        makeVnEvent(`${y}-05-01`, 'Quốc tế Lao động', 'public'),
+        makeVnEvent(`${y}-06-01`, 'Quốc tế Thiếu nhi', 'culture'),
+        makeVnEvent(`${y}-06-28`, 'Ngày Gia đình Việt Nam', 'culture'),
+        makeVnEvent(`${y}-07-27`, 'Ngày Thương binh - Liệt sĩ', 'culture'),
+        makeVnEvent(`${y}-08-19`, 'Cách mạng Tháng Tám', 'culture'),
+        makeVnEvent(`${y}-09-02`, 'Quốc khánh Việt Nam', 'public'),
+        makeVnEvent(`${y}-10-10`, 'Ngày Giải phóng Thủ đô', 'culture'),
+        makeVnEvent(`${y}-10-13`, 'Ngày Doanh nhân Việt Nam', 'culture'),
+        makeVnEvent(`${y}-10-20`, 'Ngày Phụ nữ Việt Nam', 'culture'),
+        makeVnEvent(`${y}-10-31`, 'Halloween', 'culture'),
+        makeVnEvent(`${y}-11-09`, 'Ngày Pháp luật Việt Nam', 'culture'),
+        makeVnEvent(`${y}-11-20`, 'Ngày Nhà giáo Việt Nam', 'culture'),
+        makeVnEvent(`${y}-12-22`, 'Ngày thành lập QĐND Việt Nam', 'culture'),
+        makeVnEvent(`${y}-12-24`, 'Đêm Giáng Sinh', 'culture'),
+        makeVnEvent(`${y}-12-25`, 'Giáng Sinh · Christmas', 'culture')
+    ];
+}
+
+// Lunar -> Gregorian anchors for the V2 trial.
+// 2026/2027 are the primary test years; 2028 includes the major movable festivals.
+const VN_LUNAR_EVENTS = {
+    2026: [
+        ['2026-02-10', 'Ông Công Ông Táo · 23/12 ÂL'],
+        ['2026-02-17', 'Tết Nguyên Đán · Mùng 1 Tết'],
+        ['2026-03-03', 'Tết Nguyên Tiêu · Rằm tháng Giêng'],
+        ['2026-04-19', 'Tết Hàn Thực · 3/3 ÂL'],
+        ['2026-04-26', 'Giỗ Tổ Hùng Vương · 10/3 ÂL'],
+        ['2026-05-31', 'Lễ Phật Đản · Rằm tháng Tư'],
+        ['2026-06-19', 'Tết Đoan Ngọ · 5/5 ÂL'],
+        ['2026-08-19', 'Thất Tịch · 7/7 ÂL'],
+        ['2026-08-27', 'Vu Lan Báo Hiếu · Rằm tháng Bảy'],
+        ['2026-09-25', 'Tết Trung Thu · Rằm tháng Tám']
+    ],
+    2027: [
+        ['2027-01-30', 'Ông Công Ông Táo · 23/12 ÂL'],
+        ['2027-02-06', 'Tết Nguyên Đán · Mùng 1 Tết'],
+        ['2027-02-20', 'Tết Nguyên Tiêu · Rằm tháng Giêng'],
+        ['2027-04-09', 'Tết Hàn Thực · 3/3 ÂL'],
+        ['2027-04-16', 'Giỗ Tổ Hùng Vương · 10/3 ÂL'],
+        ['2027-05-20', 'Lễ Phật Đản · Rằm tháng Tư'],
+        ['2027-06-09', 'Tết Đoan Ngọ · 5/5 ÂL'],
+        ['2027-08-16', 'Vu Lan Báo Hiếu · Rằm tháng Bảy'],
+        ['2027-09-15', 'Tết Trung Thu · Rằm tháng Tám']
+    ],
+    2028: [
+        ['2028-01-19', 'Ông Công Ông Táo · 23/12 ÂL'],
+        ['2028-01-26', 'Tết Nguyên Đán · Mùng 1 Tết'],
+        ['2028-05-28', 'Tết Đoan Ngọ · 5/5 ÂL'],
+        ['2028-09-03', 'Vu Lan Báo Hiếu · Rằm tháng Bảy'],
+        ['2028-10-03', 'Tết Trung Thu · Rằm tháng Tám']
+    ]
+};
+
+function getVietnamLunarEvents(year) {
+    return (VN_LUNAR_EVENTS[year] || []).map(([date, name]) => makeVnEvent(date, name, 'traditional'));
+}
+
+function normalizeVietnamHoliday(item) {
+    if (!item || !/^\d{4}-\d{2}-\d{2}$/.test(String(item.date || ''))) return null;
+    return {
+        date: String(item.date),
+        localName: String(item.localName || item.name || 'Ngày lễ'),
+        name: String(item.name || item.localName || 'Public holiday'),
+        category: item.category || 'public',
+        source: item.source || 'api'
+    };
+}
+
+function mergeVietnamEvents(...lists) {
+    const out = [];
+    const seen = new Set();
+    lists.flat().forEach(raw => {
+        const item = normalizeVietnamHoliday(raw);
+        if (!item) return;
+        const key = `${item.date}|${item.localName.toLocaleLowerCase('vi')}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        out.push(item);
+    });
+    return out.sort((a, b) => a.date.localeCompare(b.date) || a.localName.localeCompare(b.localName, 'vi'));
+}
+
+async function getVietnamHolidays(year) {
+    const fixed = getVietnamFixedEvents(year);
+    const lunar = getVietnamLunarEvents(year);
+    const key = VN_HOLIDAY_CACHE_PREFIX + year;
+    let official = [];
+
+    try {
+        const cached = JSON.parse(localStorage.getItem(key) || 'null');
+        if (Array.isArray(cached)) official = cached.map(normalizeVietnamHoliday).filter(Boolean);
+    } catch (_) {}
+
+    if (!official.length) {
+        try {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 5000);
+            const response = await fetch(`${VN_HOLIDAY_API_BASE}/${year}/VN`, { signal: controller.signal });
+            clearTimeout(timer);
+            if (!response.ok) throw new Error(`Holiday API ${response.status}`);
+            official = (await response.json()).map(x => normalizeVietnamHoliday({ ...x, category: 'public' })).filter(Boolean);
+            localStorage.setItem(key, JSON.stringify(official));
+        } catch (error) {
+            console.warn('Official Vietnam holiday API unavailable; using built-in calendar events:', error);
+        }
+    }
+
+    return mergeVietnamEvents(official, fixed, lunar);
+}
+
+function getVietnamHolidaysForDay(holidays, year, month, day) {
+    const date = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    return (holidays || []).filter(h => h.date === date);
+}
+
+function getVietnamEventMeta(event) {
+    return VN_EVENT_META[event?.category] || VN_EVENT_META.culture;
+}
+
 
 function getCalendarItemsForDay(year, month, day) {
     const targetStart = new Date(year, month, day, 0, 0, 0);
@@ -5293,19 +5443,30 @@ function getCalendarItemsForDay(year, month, day) {
     });
 }
 
-function openCalendarDayModal(year, month, day) {
+async function openCalendarDayModal(year, month, day) {
     const title = getEl('calendarDayTitle');
     const body = getEl('calendarDayBody');
     if (!title || !body) return;
 
     const items = getCalendarItemsForDay(year, month, day);
+    const holidays = getVietnamHolidaysForDay(await getVietnamHolidays(year), year, month, day);
     const dateLabel = `${String(day).padStart(2, '0')}/${String(month + 1).padStart(2, '0')}/${year}`;
     title.textContent = `📅 Date ${dateLabel}`;
 
+    const holidayHTML = holidays.length ? `
+        <div class="calendar-day-holidays">
+            ${holidays.map(h => { const meta = getVietnamEventMeta(h); return `
+                <div class="calendar-day-holiday-item category-${h.category}">
+                    <span>${meta.icon}</span>
+                    <div><strong>${escapeHTML(h.localName)}</strong><small>${escapeHTML(meta.label)}${h.name && h.name !== h.localName ? ' · ' + escapeHTML(h.name) : ''}</small></div>
+                </div>`; }).join('')}
+        </div>` : '';
+
     if (!items.length) {
-        body.innerHTML = `<div class="calendar-day-empty">No schedules on this day.</div>`;
+        body.innerHTML = `${holidayHTML}<div class="calendar-day-empty">${holidays.length ? 'No schedules on this day.' : 'No schedules or public holidays on this day.'}</div>`;
     } else {
         body.innerHTML = `
+            ${holidayHTML}
             <div class="calendar-day-count">${items.length} schedule milestones on this day</div>
             <div class="calendar-day-timeline">
                 ${items.map(x => `
@@ -5327,7 +5488,7 @@ function openCalendarDayModal(year, month, day) {
     if (dayModal) dayModal.classList.add('modal-on-top');
 }
 
-function renderCalendarView() {
+async function renderCalendarView() {
     const label = getEl('calendarMonthLabel');
     const grid = getEl('calendarGrid');
     if (!label || !grid) return;
@@ -5335,8 +5496,11 @@ function renderCalendarView() {
     const y = currentCalendarDate.getFullYear();
     const m = currentCalendarDate.getMonth();
     const today = new Date();
+    const renderToken = ++vnHolidayRenderToken;
 
     label.textContent = `Month ${m + 1}/${y}`;
+    const holidays = await getVietnamHolidays(y);
+    if (renderToken !== vnHolidayRenderToken) return;
 
     const first = new Date(y, m, 1);
     const last = new Date(y, m + 1, 0);
@@ -5352,16 +5516,27 @@ function renderCalendarView() {
 
     for (let day = 1; day <= last.getDate(); day++) {
         const items = getCalendarItemsForDay(y, m, day);
+        const dayHolidays = getVietnamHolidaysForDay(holidays, y, m, day);
         const hasEvents = items.length > 0;
+        const hasHoliday = dayHolidays.length > 0;
         const isToday = today.getFullYear() === y && today.getMonth() === m && today.getDate() === day;
+        const titleParts = [];
+        if (dayHolidays.length) titleParts.push(dayHolidays.map(h => h.localName).join(', '));
+        if (items.length) titleParts.push(`${items.length} schedules`);
 
         html += `
-            <div class="calendar-cell ${hasEvents ? 'has-events' : ''} ${isToday ? 'is-today' : ''}"
+            <div class="calendar-cell ${hasEvents ? 'has-events' : ''} ${hasHoliday ? 'has-holiday' : ''} ${isToday ? 'is-today' : ''}"
                  onclick="openCalendarDayModal(${y}, ${m}, ${day})"
-                 title="${hasEvents ? `${items.length} schedules` : 'No schedules'}">
+                 title="${escapeHTML(titleParts.join(' · ') || 'No schedules')}">
                 <div class="calendar-day-number">${day}</div>
                 ${hasEvents ? `<span class="calendar-mobile-count">${items.length}</span>` : ''}
                 <div class="calendar-events-wrap">
+                    ${dayHolidays.map(h => { const meta = getVietnamEventMeta(h); return `
+                        <div class="calendar-holiday category-${h.category}" title="${escapeHTML(meta.label + ' · ' + h.localName)}">
+                            <span class="calendar-holiday-flag">${meta.icon}</span>
+                            <span>${escapeHTML(h.localName)}</span>
+                        </div>
+                    `; }).join('')}
                     ${items.map(x => `
                         <button class="calendar-event ${x.sch.important ? 'important' : ''}"
                             onclick="event.stopPropagation(); openCalendarScheduleDetail('${x.group.id}', ${x.index})">

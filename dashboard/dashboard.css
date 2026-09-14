@@ -12471,3 +12471,148 @@ body.light-mode .kanban-card-meta span { background: rgba(15,23,42,.045); }
         z-index: 2;
     }
 }
+
+
+/* ==========================================================================
+   VIETNAM HOLIDAYS — TRIAL LAYER
+   ========================================================================== */
+.calendar-cell.has-holiday {
+    border-color: rgba(239, 68, 68, .45);
+    background: linear-gradient(180deg, rgba(239,68,68,.09), rgba(239,68,68,.025));
+}
+.calendar-cell.has-holiday .calendar-day-number {
+    color: #f87171;
+    font-weight: 800;
+}
+.calendar-holiday {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    min-width: 0;
+    padding: 4px 6px;
+    border: 1px solid rgba(239,68,68,.32);
+    border-radius: 7px;
+    background: rgba(239,68,68,.12);
+    color: #fecaca;
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.25;
+}
+.calendar-holiday > span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.calendar-holiday-flag { flex: 0 0 auto; }
+body.light-mode .calendar-cell.has-holiday {
+    border-color: #fca5a5;
+    background: linear-gradient(180deg, #fff1f2, #fff);
+}
+body.light-mode .calendar-holiday {
+    color: #991b1b;
+    background: #fee2e2;
+    border-color: #fecaca;
+}
+.calendar-day-holidays {
+    display: grid;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.calendar-day-holiday-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 12px;
+    border: 1px solid rgba(239,68,68,.32);
+    border-radius: 11px;
+    background: rgba(239,68,68,.10);
+}
+.calendar-day-holiday-item > span { font-size: 21px; }
+.calendar-day-holiday-item div { display: grid; gap: 2px; }
+.calendar-day-holiday-item strong { color: #fca5a5; }
+.calendar-day-holiday-item small { color: var(--text-sub); }
+body.light-mode .calendar-day-holiday-item { background: #fff1f2; border-color: #fecaca; }
+body.light-mode .calendar-day-holiday-item strong { color: #b91c1c; }
+@media (max-width: 700px) {
+    .calendar-cell.has-holiday::after {
+        content: 'Holiday';
+        margin-left: auto;
+        padding: 2px 6px;
+        border-radius: 999px;
+        background: rgba(239,68,68,.13);
+        color: #f87171;
+        font-size: 9px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .04em;
+    }
+}
+
+/* ===== Vietnamese Calendar Events V2 category accents ===== */
+.calendar-holiday.category-traditional { border-color: rgba(245,158,11,.38); background: rgba(245,158,11,.12); color: #fde68a; }
+.calendar-holiday.category-love { border-color: rgba(236,72,153,.38); background: rgba(236,72,153,.12); color: #fbcfe8; }
+.calendar-holiday.category-culture { border-color: rgba(59,130,246,.34); background: rgba(59,130,246,.11); color: #bfdbfe; }
+.calendar-day-holiday-item.category-traditional { border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.09); }
+.calendar-day-holiday-item.category-traditional strong { color: #fcd34d; }
+.calendar-day-holiday-item.category-love { border-color: rgba(236,72,153,.35); background: rgba(236,72,153,.09); }
+.calendar-day-holiday-item.category-love strong { color: #f9a8d4; }
+.calendar-day-holiday-item.category-culture { border-color: rgba(59,130,246,.32); background: rgba(59,130,246,.08); }
+.calendar-day-holiday-item.category-culture strong { color: #93c5fd; }
+body.light-mode .calendar-holiday.category-traditional { background:#fffbeb; border-color:#fde68a; color:#92400e; }
+body.light-mode .calendar-holiday.category-love { background:#fdf2f8; border-color:#fbcfe8; color:#9d174d; }
+body.light-mode .calendar-holiday.category-culture { background:#eff6ff; border-color:#bfdbfe; color:#1e40af; }
+body.light-mode .calendar-day-holiday-item.category-traditional { background:#fffbeb; border-color:#fde68a; }
+body.light-mode .calendar-day-holiday-item.category-traditional strong { color:#92400e; }
+body.light-mode .calendar-day-holiday-item.category-love { background:#fdf2f8; border-color:#fbcfe8; }
+body.light-mode .calendar-day-holiday-item.category-love strong { color:#9d174d; }
+body.light-mode .calendar-day-holiday-item.category-culture { background:#eff6ff; border-color:#bfdbfe; }
+body.light-mode .calendar-day-holiday-item.category-culture strong { color:#1e40af; }
+
+/* ========================================================================== 
+   MOBILE HOLIDAY CALENDAR — compact indicator
+   On small screens the full HOLIDAY label does not fit inside 7-column cells.
+   Keep the calendar compact and use a small marker; details remain on tap.
+   ========================================================================== */
+@media (max-width: 640px) {
+    #calendarModal .calendar-cell.has-holiday {
+        background: color-mix(in srgb, #ef4444 7%, var(--modal-bg)) !important;
+        border-color: color-mix(in srgb, #ef4444 28%, var(--border-color)) !important;
+    }
+
+    #calendarModal .calendar-cell.has-holiday .calendar-day-number {
+        color: var(--text-main) !important;
+    }
+
+    /* Replace the old text badge “HOLIDAY” with a tiny dot. */
+    #calendarModal .calendar-cell.has-holiday::after {
+        content: '' !important;
+        position: absolute !important;
+        left: 50% !important;
+        bottom: 4px !important;
+        width: 5px !important;
+        height: 5px !important;
+        min-width: 5px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: 0 !important;
+        border-radius: 50% !important;
+        background: #f87171 !important;
+        box-shadow: 0 0 0 2px color-mix(in srgb, #f87171 12%, transparent) !important;
+        transform: translateX(-50%) !important;
+        text-indent: -9999px !important;
+        overflow: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Keep schedule count and holiday marker from colliding. */
+    #calendarModal .calendar-cell.has-holiday .calendar-mobile-count {
+        top: 3px !important;
+        right: 3px !important;
+    }
+
+    /* Full holiday chips belong in the tapped-day detail, not the month grid. */
+    #calendarModal .calendar-holiday {
+        display: none !important;
+    }
+}
