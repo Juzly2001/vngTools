@@ -5,6 +5,7 @@
   const STYLE_ID = 'ghtk-tool-center-style';
   const STATE_KEY = '__ghtk_tool_center_state_v2__';
   const POS_KEY = '__ghtk_tool_center_position_v1__';
+  const HANDLE_KEY = '__ghtk_tool_center_handle_v1__';
 
   document.getElementById(PANEL_ID)?.remove();
   document.getElementById(STYLE_ID)?.remove();
@@ -17,6 +18,7 @@
   ].map(x => ({ ...x, ...GHTKTools.getMeta(x.id) }));
 
   const saved = JSON.parse(localStorage.getItem(STATE_KEY) || '{}');
+  const savedHandle = JSON.parse(localStorage.getItem(HANDLE_KEY) || 'null');
 
   const style = document.createElement('style');
   style.id = STYLE_ID;
@@ -64,20 +66,20 @@
     #${PANEL_ID} .gt-toast.show { opacity:1; transform:translate(-50%,0); }
 
     #${PANEL_ID}.gt-open { transform: translateX(0); }
+    #${PANEL_ID}.gt-side-left { left:0; right:auto; transform:translateX(-100%); border-radius:0 18px 18px 0; }
+    #${PANEL_ID}.gt-side-left.gt-open { transform:translateX(0); }
     #${PANEL_ID} .gt-drawer-handle {
       position:absolute; left:-24px; top:22px; width:24px; height:44px; z-index:2147483647;
-      border:1px solid rgba(148,163,184,.16); border-right:0;
-      border-radius:9px 0 0 9px;
-      background:rgba(11,18,32,.96); color:#94a3b8;
-      display:grid; place-items:center; cursor:pointer;
-      font-size:17px; line-height:1; font-weight:800;
-      box-shadow:-3px 5px 12px rgba(0,0,0,.14);
-      backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
-      transition:background .16s ease,color .16s ease,box-shadow .16s ease;
+      border:1px solid rgba(148,163,184,.16); border-right:0; border-radius:9px 0 0 9px;
+      background:rgba(11,18,32,.96); color:#94a3b8; display:grid; place-items:center; cursor:grab;
+      font-size:17px; line-height:1; font-weight:800; box-shadow:-3px 5px 12px rgba(0,0,0,.14);
+      backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); touch-action:none; user-select:none;
     }
-    #${PANEL_ID} .gt-drawer-handle:hover { color:#e2e8f0; background:rgba(17,27,45,.98); box-shadow:-4px 6px 14px rgba(0,0,0,.18); }
-    #${PANEL_ID}.gt-open .gt-drawer-handle { transform:none; }
-    #${PANEL_ID} .gt-shell { overflow:hidden; border-radius:18px 0 0 18px; }
+    #${PANEL_ID} .gt-drawer-handle:active { cursor:grabbing; }
+    #${PANEL_ID} .gt-drawer-handle:hover { color:#e2e8f0; background:rgba(17,27,45,.98); }
+    #${PANEL_ID}.gt-side-left .gt-drawer-handle { left:auto; right:-24px; border-left:0; border-right:1px solid rgba(148,163,184,.16); border-radius:0 9px 9px 0; box-shadow:3px 5px 12px rgba(0,0,0,.14); }
+    #${PANEL_ID}.gt-side-left .gt-shell { border-radius:0 18px 18px 0; }
+    #${PANEL_ID}:not(.gt-side-left) .gt-shell { border-radius:18px 0 0 18px; }
   `;
   document.head.appendChild(style);
 
@@ -162,21 +164,81 @@
 
   window.addEventListener('ghtk-tools:change', render);
 
-  // Drawer cố định bên phải: mặc định ẩn, bấm ‹ để mở/đóng.
+  // Nút drawer có thể kéo lên/xuống và đổi giữa cạnh trái/phải.
   const drawerHandle = panel.querySelector('.gt-drawer-handle');
+  let drawerSide = savedHandle?.side === 'left' ? 'left' : 'right';
+  let handleTop = Number.isFinite(savedHandle?.top) ? savedHandle.top : 22;
+
+  function clampHandleTop(top) {
+    const h = drawerHandle.offsetHeight || 44;
+    return Math.max(8, Math.min(window.innerHeight - h - 8, top));
+  }
+  function updateArrow() {
+    const open = panel.classList.contains('gt-open');
+    drawerHandle.textContent = drawerSide === 'right' ? (open ? '›' : '‹') : (open ? '‹' : '›');
+    drawerHandle.title = open ? 'Bấm để ẩn • Kéo để di chuyển' : 'Bấm để hiện • Kéo để di chuyển';
+  }
+  function applyDrawerPosition() {
+    panel.classList.toggle('gt-side-left', drawerSide === 'left');
+
+    // handleTop luôn là tọa độ theo viewport.
+    handleTop = clampHandleTop(handleTop);
+
+    // Cho panel đi theo vị trí nút, nhưng vẫn giữ toàn bộ panel trong màn hình.
+    const panelHeight = panel.offsetHeight || 420;
+    const maxPanelTop = Math.max(8, window.innerHeight - panelHeight - 8);
+    const panelTop = Math.max(8, Math.min(maxPanelTop, handleTop - 22));
+
+    panel.style.top = panelTop + 'px';
+
+    // Nút là con của panel nên phải đổi từ tọa độ viewport sang tọa độ tương đối.
+    drawerHandle.style.top = (handleTop - panelTop) + 'px';
+
+    if (drawerSide === 'left') {
+      panel.style.left = '0';
+      panel.style.right = 'auto';
+    } else {
+      panel.style.right = '0';
+      panel.style.left = 'auto';
+    }
+
+    updateArrow();
+  }
   function toggleDrawer(force) {
     const open = typeof force === 'boolean' ? force : !panel.classList.contains('gt-open');
-    panel.classList.toggle('gt-open', open);
-    drawerHandle.textContent = open ? '›' : '‹';
-    drawerHandle.title = open ? 'Ẩn GHTK Tool Center' : 'Mở GHTK Tool Center';
+    panel.classList.toggle('gt-open', open); updateArrow();
   }
-  drawerHandle.addEventListener('click', () => toggleDrawer());
+
+  let handleDrag = null;
+  drawerHandle.addEventListener('pointerdown', e => {
+    if (e.button !== undefined && e.button !== 0) return;
+    handleDrag = { id:e.pointerId, x:e.clientX, y:e.clientY, moved:false };
+    drawerHandle.setPointerCapture?.(e.pointerId); e.preventDefault();
+  });
+  drawerHandle.addEventListener('pointermove', e => {
+    if (!handleDrag || e.pointerId !== handleDrag.id) return;
+    if (!handleDrag.moved && Math.hypot(e.clientX-handleDrag.x, e.clientY-handleDrag.y) < 5) return;
+    handleDrag.moved = true;
+    handleTop = clampHandleTop(e.clientY - drawerHandle.offsetHeight/2);
+    drawerSide = e.clientX < window.innerWidth/2 ? 'left' : 'right';
+    applyDrawerPosition();
+  });
+  drawerHandle.addEventListener('pointerup', e => {
+    if (!handleDrag || e.pointerId !== handleDrag.id) return;
+    const moved = handleDrag.moved; handleDrag = null;
+    if (moved) localStorage.setItem(HANDLE_KEY, JSON.stringify({side:drawerSide, top:handleTop}));
+    else toggleDrawer();
+  });
+  drawerHandle.addEventListener('pointercancel', () => { handleDrag = null; });
+  window.addEventListener('resize', () => { handleTop=clampHandleTop(handleTop); applyDrawerPosition(); });
+  applyDrawerPosition();
 
   // Khôi phục trạng thái tool sau khi reload extension/trang.
   tools.filter(t => t.type === 'toggle').forEach(t => {
     if (saved[t.id]) GHTKTools.start(t.id);
   });
   render();
+  requestAnimationFrame(applyDrawerPosition);
 
   // Ctrl+Shift+G: mở / ẩn drawer.
   document.addEventListener('keydown', e => {

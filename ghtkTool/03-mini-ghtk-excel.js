@@ -265,6 +265,25 @@
               display:flex;align-items:center;gap:8px;padding:9px 12px;
               background:#0f172a;color:#fff;cursor:move;user-select:none
             }
+            .wrap.minimized{
+              width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
+              top:auto!important;left:auto!important;right:16px!important;bottom:16px!important;
+              border-radius:12px;overflow:visible
+            }
+            .wrap.minimized .topbar{
+              border-radius:12px;padding:8px 10px;cursor:pointer
+            }
+            .wrap.minimized .topbar > *{display:none!important}
+            .wrap.minimized .topbar .mini-restore{
+              display:inline-flex!important;align-items:center;gap:7px;
+              border:0;border-radius:8px;background:#0f172a;color:#fff;
+              padding:7px 10px;cursor:pointer;font-weight:700
+            }
+            .wrap.minimized .tabsbar,
+            .wrap.minimized .body,
+            .wrap.minimized .resize-handle{display:none!important}
+            .mini-restore{display:none}
+
             .title{font-weight:700;flex:1;font-size:14px}
             button{font:inherit}
             .btn{border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:7px 10px;cursor:pointer}
@@ -728,12 +747,14 @@
           <div class="wrap">
             <div class="topbar">
               <div class="title">Mini Excel - Multi Tab</div>
+              <button class="mini-restore" data-act="restore-mini" data-tip="Mở lại bảng">▦ Mini Excel</button>
               <button class="topbtn" data-act="toggle-search" data-tip="Tìm kiếm dữ liệu trong tab hiện tại" data-shortcut="Search">⌕ Search</button>
               <button class="topbtn" data-act="zoom-out" data-tip="Thu nhỏ nội dung bảng">−</button>
               <button class="topbtn" data-act="zoom-reset" data-tip="Đưa tỷ lệ hiển thị về 100%"><span id="zoomLabel">100%</span></button>
               <button class="topbtn" data-act="zoom-in" data-tip="Phóng to nội dung bảng">＋</button>
               <button class="topbtn" data-act="save">Lưu</button>
               <button class="topbtn" data-act="reset">Reset</button>
+              <button class="topbtn" data-act="minimize" data-tip="Thu gọn Mini Excel xuống góc phải">▣</button>
               <button class="topbtn close" data-act="close">✕</button>
             </div>
             <div class="tabsbar" id="tabsbar"></div>
@@ -1667,8 +1688,26 @@
           cells.forEach((row,rr) => row.forEach((v,cc) => {
             tab.rows[startR+rr][startC+cc] = v;
           }));
+
+          // Paste nhiều ô không phát sinh event "input" cho từng cell,
+          // nên phải chủ động chạy lại lookup cho các dòng vừa dán.
+          if (tab.type === 'input' && Array.isArray(tab.lookupRules)) {
+            const pastedStartC = startC;
+            const pastedEndC = startC + Math.max(...cells.map(r => r.length)) - 1;
+
+            tab.lookupRules.forEach(rule => {
+              // Chỉ cần chạy rule nếu vùng paste chạm vào cột nguồn của rule.
+              if (rule.sourceCol < pastedStartC || rule.sourceCol > pastedEndC) return;
+
+              for (let rr = 0; rr < cells.length; rr++) {
+                lookupRowRule(tab, rule, startR + rr, false);
+              }
+            });
+          }
+
           ensureBlankRow(tab);
-          saveState(); render();
+          saveState();
+          render();
         }
 
         function focusCell(tab, r, c) {
@@ -2187,6 +2226,14 @@
           const tab = getActiveTab();
 
           if (act === 'close') host.remove();
+          if (act === 'minimize') {
+            $('.wrap')?.classList.add('minimized');
+            return;
+          }
+          if (act === 'restore-mini') {
+            $('.wrap')?.classList.remove('minimized');
+            return;
+          }
           if (act === 'undo') { undoAction(); return; }
           if (act === 'redo') { redoAction(); return; }
           if (act === 'toggle-search') {
