@@ -2842,7 +2842,7 @@
                 <div id="matchCustomWrap" hidden><input id="matchCustom" type="number" min="1" value="12" class="form-control mb-2" placeholder="Nhập số từ"></div>
                 <label class="small text-muted mb-2 d-block">Kiểu trộn</label>
                 <select id="matchLayout" class="form-select mb-2">
-                  <option value="grid">Trộn toàn màn hình</option><option value="columns">Hai cột: Từ / Nghĩa</option><option value="swap">Hai cột trộn vị trí Từ / Nghĩa</option>
+                  <option value="grid">Trộn toàn màn hình</option><option value="columns">Hai cột: Từ / Nghĩa</option><option value="swap">Hai cột trộn ngẫu nhiên Từ và Nghĩa</option>
                 </select>
                 <button class="btn btn-primary w-100 mt-2" onclick="startMatching()">Bắt đầu nối từ</button>
               </div>
@@ -2943,7 +2943,7 @@
               <div id="matchSettingsPanel" class="match-settings-panel" hidden>
                 <div class="match-settings-fields">
                   <div><label for="matchLiveCount">Số cặp từ</label><select id="matchLiveCount" class="form-select" onchange="document.getElementById('matchLiveCustomWrap').hidden=this.value!=='custom'"><option value="10">10 từ</option><option value="15">15 từ</option><option value="20">20 từ</option><option value="random">Ngẫu nhiên số từ</option><option value="custom">Tự chọn số từ</option></select><div id="matchLiveCustomWrap" class="mt-2" hidden><input id="matchLiveCustom" type="number" min="1" value="12" class="form-control" placeholder="Nhập số từ"></div></div>
-                  <div><label for="matchLiveLayout">Kiểu trộn</label><select id="matchLiveLayout" class="form-select"><option value="grid">Trộn toàn màn hình</option><option value="columns">Hai cột: Từ / Nghĩa</option><option value="swap">Hai cột trộn vị trí Từ / Nghĩa</option></select></div>
+                  <div><label for="matchLiveLayout">Kiểu trộn</label><select id="matchLiveLayout" class="form-select"><option value="grid">Trộn toàn màn hình</option><option value="columns">Hai cột: Từ / Nghĩa</option><option value="swap">Hai cột trộn ngẫu nhiên Từ và Nghĩa</option></select></div>
                 </div>
                 <p class="small text-muted mt-2 mb-2">Đổi kiểu trộn sẽ giữ các cặp đã nối đúng. Đổi số từ sẽ bắt đầu lượt mới.</p>
                 <div class="d-flex gap-2 flex-wrap"><button type="button" class="btn btn-primary" onclick="applyMatchSettings()">Áp dụng</button><button type="button" class="btn btn-outline-secondary" onclick="toggleMatchSettings(false)">Đóng</button></div>
@@ -4750,8 +4750,17 @@ function renderMatching(){
  if(g.layout==='grid'){matchShuffle(cards).forEach(c=>board.appendChild(createCard(c)));}
  else{const left=document.createElement('div'),right=document.createElement('div');left.className=right.className='match-column';
  let words=matchShuffle(cards.filter(c=>c.side==='word')),meanings=matchShuffle(cards.filter(c=>c.side==='meaning'));
- if(g.layout==='swap'&&Math.random()<.5)[words,meanings]=[meanings,words];
- const makeHeading=(side)=>{const h=document.createElement('div');h.className='match-column-heading '+(side==='word'?'match-heading-word':'match-heading-meaning');h.textContent=side==='word'?'中文 · TIẾNG TRUNG':'VI · TIẾNG VIỆT';return h;};left.appendChild(makeHeading(words[0]?.side||'word'));right.appendChild(makeHeading(meanings[0]?.side||'meaning'));words.forEach(c=>left.appendChild(createCard(c)));meanings.forEach(c=>right.appendChild(createCard(c)));board.append(left,right);}
+ if(g.layout==='swap'){
+  // Trộn toàn bộ thẻ rồi chia đều vào hai cột: mỗi cột có thể chứa cả từ và nghĩa.
+  const mixed=matchShuffle(cards);
+  const midpoint=Math.ceil(mixed.length/2);
+  mixed.slice(0,midpoint).forEach(c=>left.appendChild(createCard(c)));
+  mixed.slice(midpoint).forEach(c=>right.appendChild(createCard(c)));
+ }else{
+  words.forEach(c=>left.appendChild(createCard(c)));
+  meanings.forEach(c=>right.appendChild(createCard(c)));
+ }
+ board.append(left,right);}
  document.getElementById('matchMessage').textContent=g.done.size===g.chosen.length?`🎉 Hoàn thành ${g.chosen.length} cặp! Bạn chọn sai ${g.errors} lần.`:'Chọn một từ và nghĩa tương ứng để ghép cặp.';updateMatchingStats();
 }
 function updateMatchingStats(){if(!matchGame)return;const g=matchGame;document.getElementById('matchStats').textContent=`Đúng ${g.done.size}/${g.chosen.length} cặp · Chọn sai ${g.errors} lần`;document.getElementById('matchProgress').style.width=(100*g.done.size/g.chosen.length)+'%';}
