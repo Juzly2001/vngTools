@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="vi">
 
@@ -2115,7 +2116,514 @@
         }
 
     </style>
-</head>
+<style>
+/* Dedicated study view, available on desktop and mobile. */
+#flashcardSection { max-width:1200px !important; }
+#fcLayout { display:grid; grid-template-columns:minmax(0,1fr) 270px; gap:22px; align-items:start; }
+#fcLayout.list-hidden { grid-template-columns:minmax(0,1fr); max-width:860px; margin:auto; }
+.fc-study-column { min-width:0; }
+.fc-top-actions { display:flex; gap:8px; flex-wrap:wrap; }
+#fcCard { cursor:pointer; }
+#fcListPanel { border:1px solid var(--line); border-radius:20px; background:var(--card-bg); padding:18px; position:sticky; top:20px; }
+.fc-list-heading { display:flex; flex-direction:column; gap:5px; margin-bottom:14px; }
+.fc-list-heading small, .fc-meaning-toggle { color:var(--text-muted); font-size:.8rem; }
+.fc-meaning-toggle { display:flex; gap:8px; align-items:center; margin:14px 0; cursor:pointer; }
+#fcWordList { max-height:510px; overflow-y:auto; display:grid; gap:8px; }
+.fc-list-item { display:flex; flex-direction:column; gap:4px; text-align:left; width:100%; border:1px solid var(--line); border-radius:12px; padding:12px; background:var(--card-bg); color:var(--text-main); cursor:pointer; overflow-wrap:anywhere; }
+.fc-list-item strong { font-size:1.15rem; font-weight:600; }
+.fc-list-item span { color:var(--primary); font-size:.88rem; }
+.fc-list-item small { color:var(--text-muted); }
+.fc-list-item[aria-current="true"] { border-color:var(--primary); background:var(--primary-soft); box-shadow:inset 3px 0 var(--primary); }
+.fc-list-item:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+@media(max-width:1000px) { #fcLayout { grid-template-columns:minmax(0,1fr); } #fcListPanel { position:static; } #fcWordList { max-height:300px; } }
+[hidden] { display: none !important; }
+.study-view-bar { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px; padding:18px 22px; border:1px solid var(--line); border-radius:20px; background:var(--card-bg); }
+.study-view-bar strong { display:block; font-size:1.15rem; }
+.study-view-bar small { color:var(--text-muted); }
+.study-view-switch { display:flex; padding:5px; border-radius:14px; background:var(--page-bg); gap:4px; }
+.study-view-switch button, .fc-button { border:1px solid var(--line); background:var(--card-bg); color:var(--text-main); padding:11px 18px; border-radius:11px; font-weight:700; cursor:pointer; }
+.study-view-switch button { border-color:transparent; background:transparent; }
+.study-view-switch button[aria-pressed="true"] { color:white; background:#2563eb; box-shadow:0 4px 12px #2563eb25; }
+.fc-button:disabled { opacity:.4; cursor:default; }
+.fc-button:focus-visible, .study-view-switch button:focus-visible { outline:3px solid var(--primary); outline-offset:4px; }
+#flashcardSection { max-width:860px; margin:0 auto; padding:10px 0 24px; }
+.fc-topline { display:flex; justify-content:space-between; align-items:center; gap:16px; margin-bottom:12px; color:var(--text-muted); }
+#fcCount { font-weight:750; color:var(--text-main); }
+#fcProgress { display:block; width:100%; height:5px; margin-bottom:22px; accent-color:var(--primary); }
+#fcCard { background:var(--card-bg); border:1px solid var(--line); border-radius:28px; box-shadow:var(--shadow-card); padding:30px clamp(20px,5vw,56px); min-height:450px; overflow-wrap:anywhere; }
+#fcSide { color:var(--text-muted); font-size:.72rem; letter-spacing:.13em; font-weight:800; text-align:center; margin-bottom:26px; }
+#fcFront { text-align:center; }
+#fcWord { font-family:'Microsoft YaHei','PingFang SC',sans-serif; font-size:clamp(44px,7vw,76px); font-weight:500; line-height:1.4; margin:0; }
+#fcPinyin { font-size:1.4rem; color:var(--primary); margin:8px 0 18px; }
+.fc-meta { display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:12px; }
+.fc-example-box { margin-top:30px; padding:22px; border-radius:18px; background:var(--example-bg); border:1px solid var(--line); text-align:left; }
+.fc-example-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--text-muted); font-size:.8rem; }
+#fcExample { font-size:clamp(22px,3vw,30px); line-height:1.65; margin:12px 0 6px; }
+#fcExamplePinyin { color:var(--primary); line-height:1.8; }
+#fcBack { text-align:center; padding:35px 0; }
+#fcMeaning { font-size:clamp(28px,4vw,44px); font-weight:750; line-height:1.5; }
+#fcTranslationWrap { margin-top:32px; padding-top:24px; border-top:1px solid var(--line); }
+#fcTranslationWrap small { color:var(--text-muted); }
+#fcTranslation { font-size:1.15rem; margin-top:10px; line-height:1.7; }
+#fcControls { display:flex; align-items:center; justify-content:center; gap:12px; margin-top:22px; }
+#fcFlip { background:#2563eb; border-color:#2563eb; color:#fff; min-width:210px; }
+.fc-hint { text-align:center; color:var(--text-muted); font-size:.82rem; margin-top:16px; }
+#fcEmpty { text-align:center; padding:65px 25px; border:1px dashed var(--line); border-radius:24px; background:var(--card-bg); }
+@media(max-width:600px) { .study-view-bar { padding:16px; } .study-view-switch { width:100%; } .study-view-switch button { flex:1; padding:10px; } #fcCard { padding:24px 18px; min-height:420px; } #fcControls { gap:7px; } #fcControls button { padding:12px 10px; } #fcFlip { min-width:0; flex:1; } .fc-hint { font-size:.75rem; } }
+
+/* Both faces participate in the same grid cell, so the taller face sets
+   the height before and after a flip without clipping long examples. */
+#fcCard { perspective:1400px; background:transparent; border:0; box-shadow:none; padding:0; min-height:0; }
+.fc-card-rotor { display:grid; transform-style:preserve-3d; transition:transform .58s cubic-bezier(.22,.68,.25,1); }
+#fcCard.is-flipped .fc-card-rotor { transform:rotateY(180deg); }
+#fcFront, #fcBack { grid-area:1 / 1; min-width:0; min-height:480px; padding:30px clamp(20px,4vw,46px); background:var(--card-bg); border:1px solid var(--line); border-radius:28px; box-shadow:var(--shadow-card); backface-visibility:hidden; -webkit-backface-visibility:hidden; }
+#fcFront { transform:rotateY(0deg); }
+#fcBack { transform:rotateY(180deg); }
+#fcFront[inert], #fcBack[inert] { pointer-events:none; }
+.fc-side-label { color:var(--text-muted); font-size:.72rem; letter-spacing:.13em; font-weight:800; text-align:center; margin-bottom:26px; }
+@media(max-width:600px) { #fcFront, #fcBack { padding:24px 18px; min-height:440px; } }
+@media(prefers-reduced-motion:reduce) { .fc-card-rotor { transition:none; } }
+
+</style>
+<style>
+@media(max-width:768px) {
+    .study-view-switch, #flashcardSection { display:none !important; }
+    .mobile-flip-card { height:auto; }
+    .mobile-flip-inner { display:grid; height:auto; }
+    .mobile-card-face { position:relative; inset:auto; grid-area:1 / 1; min-width:0; min-height:380px; overflow:visible; overflow-wrap:anywhere; }
+    .mobile-card-front, .mobile-card-back { padding:20px; }
+    .mobile-card-back { display:flex; flex-direction:column; justify-content:center; }
+    .mobile-example-pinyin { color:var(--primary); font-size:1rem; line-height:1.7; margin:10px 0 14px; }
+    .mobile-action-row { flex-wrap:wrap; }
+    .mobile-card-front .mobile-example-box { margin-top:20px; }
+    .mobile-tap-hint { margin-top:18px; }
+}
+@media(prefers-reduced-motion:reduce) { .mobile-flip-inner { transition:none; } }
+</style><style>
+@media(max-width:768px) {
+    .mobile-card-face.mobile-card-back {
+        padding:24px;
+        justify-content:flex-start;
+        text-align:left;
+        background:linear-gradient(155deg,var(--primary-soft) 0%,var(--card-bg) 42%);
+        border-color:var(--line);
+    }
+    .mb-answer-header { display:flex; align-items:center; justify-content:space-between; gap:12px; padding-bottom:22px; border-bottom:1px solid var(--line); }
+    .mb-answer-tag { display:inline-flex; align-items:center; gap:8px; font-size:.69rem; letter-spacing:.1em; font-weight:800; color:var(--primary); }
+    .mb-answer-tag > span { display:grid; place-items:center; width:26px; height:26px; border-radius:50%; background:var(--primary); color:var(--card-bg); font-size:.85rem; }
+
+    .mb-answer-content { flex:1; display:flex; flex-direction:column; justify-content:center; padding:30px 0; }
+    .mb-section-label { font-size:.65rem; letter-spacing:.12em; font-weight:800; color:var(--text-muted); margin-bottom:12px; }
+    .mb-word-meaning { font-size:clamp(25px,6.5vw,34px); line-height:1.45; font-weight:750; letter-spacing:-.025em; color:var(--text-main); white-space:pre-line; overflow-wrap:anywhere; }
+    .mb-translation { margin-top:28px; padding:18px 20px; background:var(--card-bg); border:1px solid var(--line); border-left:3px solid var(--primary); border-radius:4px 16px 16px 4px; }
+    .mb-translation .mb-section-label { margin-bottom:9px; }
+    .mb-translation-text { font-size:1rem; line-height:1.75; color:var(--text-main); white-space:pre-line; }
+    .mb-answer-footer { display:flex; align-items:center; justify-content:space-between; gap:10px; padding-top:18px; border-top:1px solid var(--line); }
+    .mb-answer-footer > span { color:var(--text-muted); font-size:.76rem; }
+    .mb-return { display:inline-flex; align-items:center; justify-content:center; gap:7px; min-height:44px; padding:10px 14px; background:var(--primary-soft); color:var(--primary); border:1px solid var(--line); border-radius:12px; font-size:.82rem; font-weight:750; cursor:pointer; }
+    .mb-return:focus-visible { outline:2px solid var(--primary); outline-offset:3px; }
+    .mb-return:active { transform:scale(.97); }
+}
+@media(max-width:360px) { .mobile-card-face.mobile-card-back { padding:18px; } .mb-answer-footer { flex-wrap:wrap; } }
+
+</style><style>
+@media(max-width:768px) {
+    .mobile-card-front .mobile-card-topline { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+    .mobile-card-front .mobile-card-topline > div:first-child { min-width:0; flex:1; }
+    .mobile-card-front .mobile-corner-actions { display:flex; flex-wrap:nowrap; flex:0 0 auto; gap:8px; margin:0; }
+    .mobile-corner-actions .btn-audio, .mobile-corner-actions .draw-btn, .mobile-example-heading .btn-audio { width:40px; height:40px; flex:0 0 40px; padding:0; }
+    .mobile-example-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:8px; }
+    .mobile-example-heading .mobile-card-title { margin:0; }
+}
+
+</style><style>
+@media(max-width:768px) {
+    .mobile-card-front .mobile-card-topline {
+        display:grid;
+        grid-template-columns:minmax(0,1fr) auto;
+        align-items:center;
+        gap:0 12px;
+        margin:0 0 22px;
+    }
+    .mobile-card-front .mobile-word-identity { display:contents; }
+    .mobile-word-eyebrow { grid-area:1 / 1; color:var(--text-muted); font-size:.65rem; font-weight:800; letter-spacing:.16em; }
+    .mobile-card-front .mobile-corner-actions { grid-area:1 / 2; justify-self:end; }
+    .mobile-card-front .mobile-word-main {
+        grid-area:2 / 1 / 3 / -1;
+        margin:16px 0 0;
+        font-size:clamp(36px,10vw,48px);
+        font-weight:500;
+        line-height:1.45;
+        letter-spacing:.035em;
+        overflow-wrap:anywhere;
+    }
+    .mobile-card-front .mobile-pinyin {
+        grid-area:3 / 1 / 4 / -1;
+        margin:6px 0 0;
+        color:var(--primary);
+        font-size:1.15rem;
+        font-weight:500;
+        line-height:1.65;
+        letter-spacing:.015em;
+        overflow-wrap:anywhere;
+    }
+    .mobile-word-type { grid-area:4 / 1 / 5 / -1; display:flex; align-items:baseline; gap:10px; margin-top:18px; flex-wrap:wrap; }
+    .mobile-word-type > span:first-child { color:var(--text-muted); font-size:.75rem; }
+    .mobile-type-value { display:inline-block; padding:5px 11px; border:1px solid var(--line); border-radius:8px; color:var(--text-main); background:var(--example-bg); font-size:.78rem; font-weight:650; line-height:1.5; }
+    .mobile-card-front .mobile-example-box { margin-top:0; }
+}
+
+</style><style>
+/* Desktop study cards share the typography and hierarchy of the mobile list. */
+#fcFront, #fcBack { display:flex; flex-direction:column; text-align:left; padding:30px clamp(24px,3vw,40px); min-height:540px; }
+.fc-face-header { display:flex; align-items:center; justify-content:space-between; gap:16px; min-height:44px; }
+#fcSide { margin:0; text-align:left; font-size:.68rem; letter-spacing:.16em; }
+.fc-corner-actions { display:flex; align-items:center; gap:8px; }
+.fc-icon-button { display:inline-grid; place-items:center; flex:0 0 42px; width:42px; height:42px; border:1px solid var(--line); border-radius:50%; color:var(--primary); background:var(--primary-soft); cursor:pointer; font-size:1rem; transition:transform .18s,box-shadow .18s; }
+.fc-write-button { color:var(--success); background:var(--example-bg); }
+.fc-icon-button:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 4px 12px #2563eb18; }
+.fc-icon-button:disabled { opacity:.35; cursor:default; }
+.fc-icon-button:focus-visible, .fc-return-button:focus-visible { outline:2px solid var(--primary); outline-offset:4px; }
+.fc-word-content { flex:1; padding:22px 0 26px; }
+#fcWord { font-size:clamp(44px,5vw,64px); line-height:1.4; letter-spacing:.04em; font-weight:500; }
+#fcPinyin { margin:8px 0 20px; font-size:1.35rem; line-height:1.7; font-weight:500; }
+#fcFront .fc-meta { justify-content:flex-start; gap:10px; }
+.fc-type-label { color:var(--text-muted); font-size:.78rem; }
+#fcType { border:1px solid var(--line); border-radius:8px; background:var(--example-bg); color:var(--text-main); font-weight:650; font-size:.8rem; padding:5px 11px; }
+#fcFront .fc-example-box { margin-top:26px; padding:18px 22px 22px; border-radius:18px; }
+.fc-example-heading > span { font-size:.67rem; letter-spacing:.12em; font-weight:800; }
+#fcExample { margin:8px 0; font-size:clamp(23px,2.5vw,29px); line-height:1.75; }
+#fcExamplePinyin { font-size:1rem; line-height:1.8; }
+.fc-face-footer { display:flex; justify-content:space-between; align-items:center; gap:12px; border-top:1px solid var(--line); padding-top:18px; color:var(--text-muted); font-size:.76rem; min-height:60px; flex-wrap:wrap; }
+.fc-face-footer > span:last-child { color:var(--primary); font-weight:650; }
+#fcBack { background:linear-gradient(155deg,var(--primary-soft),var(--card-bg) 45%); }
+.fc-answer-header { display:flex; gap:10px; align-items:center; min-height:44px; padding-bottom:22px; border-bottom:1px solid var(--line); font-size:.68rem; letter-spacing:.12em; font-weight:800; color:var(--primary); }
+.fc-answer-check { display:grid; place-items:center; width:28px; height:28px; border-radius:50%; color:var(--card-bg); background:var(--primary); font-size:.9rem; }
+.fc-answer-content { display:flex; flex:1; flex-direction:column; justify-content:center; padding:34px 0; }
+.fc-answer-label, #fcTranslationWrap small { font-size:.66rem; font-weight:800; letter-spacing:.12em; color:var(--text-muted); }
+#fcMeaning { font-size:clamp(28px,3.3vw,40px); line-height:1.5; letter-spacing:-.025em; font-weight:750; margin-top:12px; white-space:pre-line; }
+#fcTranslationWrap { margin-top:28px; padding:20px 24px; background:var(--card-bg); border:1px solid var(--line); border-left:3px solid var(--primary); border-radius:4px 16px 16px 4px; }
+#fcTranslation { font-size:1.08rem; line-height:1.8; margin-top:10px; white-space:pre-line; }
+.fc-return-button { min-height:42px; padding:10px 16px; color:var(--primary); background:var(--primary-soft); border:1px solid var(--line); border-radius:12px; font-weight:700; font-size:.82rem; cursor:pointer; }
+#fcListPanel { padding:20px; border-radius:22px; }
+.fc-list-heading { gap:7px; margin-bottom:18px; }
+.fc-list-heading strong { font-size:1rem; letter-spacing:-.02em; }
+#fcListSearch { font-size:.88rem; }
+.fc-list-item { padding:13px 14px; gap:5px; }
+.fc-list-item strong { line-height:1.5; }
+#fcControls { margin-top:24px; }
+
+</style><style>
+/* Compact desktop flashcards without changing the mobile word list. */
+@media(min-width:769px) {
+    #flashcardSection { max-width:1040px !important; }
+    #fcLayout { grid-template-columns:minmax(0,1fr) 250px; gap:18px; }
+    #fcLayout.list-hidden { grid-template-columns:minmax(0,1fr); max-width:680px; }
+    #fcFront, #fcBack { min-height:420px; padding:22px 28px; border-radius:22px; }
+    .fc-word-content { padding:14px 0 18px; }
+    #fcWord { font-size:46px; line-height:1.35; }
+    #fcPinyin { font-size:1.12rem; margin:5px 0 13px; line-height:1.6; }
+    #fcFront .fc-example-box { margin-top:18px; padding:12px 16px 16px; border-radius:14px; }
+    #fcExample { font-size:23px; line-height:1.6; margin:6px 0; }
+    #fcExamplePinyin { font-size:.92rem; line-height:1.65; }
+    .fc-icon-button { width:36px; height:36px; flex-basis:36px; font-size:.9rem; }
+    .fc-face-header { min-height:36px; }
+    .fc-face-footer { min-height:48px; padding-top:12px; font-size:.72rem; }
+    .fc-answer-header { padding-bottom:16px; min-height:36px; }
+    .fc-answer-content { padding:24px 0; }
+    #fcMeaning { font-size:30px; line-height:1.45; margin-top:10px; }
+    #fcTranslationWrap { margin-top:20px; padding:16px 18px; }
+    #fcTranslation { font-size:.98rem; line-height:1.7; }
+    #fcControls { margin-top:16px; gap:9px; }
+    #fcControls .fc-button { padding:10px 14px; font-size:.88rem; }
+    #fcFlip { min-width:180px; }
+    .fc-hint { margin-top:12px; font-size:.75rem; }
+    #fcProgress { margin-bottom:16px; }
+}
+@media(min-width:769px) and (max-width:1000px) {
+    #fcLayout { grid-template-columns:minmax(0,1fr); }
+}
+
+</style><style>#wordTable tbody tr.page-hidden { display:none !important; }
+.vocab-pagination { position:sticky; left:0; padding:16px 20px; background:var(--card-bg); border-bottom:1px solid var(--line); color:var(--text-main); font-size:.82rem; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:14px; }
+.vocab-pagination:last-child { border-top:1px solid var(--line); border-bottom:0; }
+.vocab-page-settings,.vocab-page-settings form,.vocab-page-presets,.vocab-page-navigation,.vocab-page-navigation > div { display:flex; align-items:center; gap:8px; }
+.vocab-page-settings { flex-wrap:wrap; }
+.vocab-pagination button,.vocab-page-size { min-height:38px; border:1px solid var(--line); border-radius:9px; padding:7px 11px; color:var(--text-main); background:var(--card-bg); }
+.vocab-pagination button { cursor:pointer; font-weight:650; }
+.vocab-pagination button[aria-pressed="true"] { background:var(--primary-soft); color:var(--primary); border-color:var(--primary); }
+.vocab-pagination button:disabled { opacity:.35; cursor:default; }
+.vocab-page-size { width:70px; }
+.vocab-page-position { white-space:nowrap; }
+.vocab-page-summary { color:var(--text-muted); }
+.vocab-page-navigation { flex-wrap:wrap; gap:14px; }
+.vocab-pagination :focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+@media(max-width:768px) { .vocab-pagination { padding:14px; } .vocab-page-settings,.vocab-page-navigation { width:100%; justify-content:space-between; } .vocab-pagination button { min-height:42px; } }
+</style><style>
+/* Mobile pagination: clear settings and a separate navigation row. */
+@media(max-width:768px) {
+    #tableContainer .vocab-pagination {
+        position:static;
+        display:flex;
+        flex-direction:column;
+        align-items:stretch;
+        gap:0;
+        padding:16px;
+        margin:0;
+        background:var(--card-bg);
+        border-bottom:1px solid var(--line);
+        font-size:.8rem;
+    }
+    .vocab-pagination .vocab-page-settings {
+        display:grid;
+        grid-template-columns:auto minmax(0,1fr);
+        gap:12px;
+        align-items:center;
+    }
+    .vocab-page-settings > span {
+        color:var(--text-muted);
+        font-size:.72rem;
+        font-weight:650;
+        letter-spacing:.01em;
+    }
+    .vocab-page-settings .vocab-page-presets {
+        justify-self:end;
+        display:flex;
+        padding:3px;
+        gap:3px;
+        background:var(--example-bg);
+        border:1px solid var(--line);
+        border-radius:12px;
+    }
+    .vocab-page-presets button {
+        min-width:54px;
+        min-height:40px;
+        padding:7px 16px;
+        border:0;
+        border-radius:9px;
+        background:transparent;
+        font-size:.86rem;
+    }
+    .vocab-page-presets button[aria-pressed="true"] {
+        color:var(--primary);
+        background:var(--card-bg);
+        box-shadow:0 2px 6px rgba(15,23,42,.08);
+    }
+    .vocab-page-settings form {
+        grid-column:1 / -1;
+        display:flex;
+        gap:8px;
+        align-items:center;
+    }
+    .vocab-page-settings form::before {
+        content:'Tùy chỉnh';
+        color:var(--text-muted);
+        font-size:.72rem;
+        margin-right:auto;
+    }
+    .vocab-page-settings .vocab-page-size {
+        width:76px;
+        min-height:42px;
+        text-align:center;
+        border-radius:10px;
+        background:var(--example-bg);
+        font-size:.88rem;
+        font-weight:650;
+        font-variant-numeric:tabular-nums;
+    }
+    .vocab-page-settings form button {
+        min-height:42px;
+        padding:9px 15px;
+        border-radius:10px;
+        background:var(--primary-soft);
+        color:var(--primary);
+        border-color:transparent;
+        font-size:.78rem;
+    }
+    .vocab-pagination .vocab-page-navigation {
+        display:flex;
+        flex-wrap:wrap;
+        justify-content:space-between;
+        align-items:center;
+        gap:10px;
+        margin-top:14px;
+        padding-top:14px;
+        border-top:1px solid var(--line);
+    }
+    .vocab-page-summary {
+        font-size:.72rem;
+        line-height:1.5;
+        font-variant-numeric:tabular-nums;
+    }
+    .vocab-page-navigation > div {
+        display:flex;
+        gap:4px;
+        align-items:center;
+        margin-left:auto;
+    }
+    .vocab-page-navigation button {
+        width:42px;
+        min-height:42px;
+        padding:0;
+        display:grid;
+        place-items:center;
+        background:var(--example-bg);
+        border:1px solid var(--line);
+        border-radius:12px;
+        color:var(--primary);
+        font-size:1.1rem;
+    }
+    .vocab-page-navigation button:disabled { opacity:.3; }
+    .vocab-page-position {
+        min-width:78px;
+        text-align:center;
+        color:var(--text-main);
+        font-size:.76rem;
+        font-weight:700;
+        font-variant-numeric:tabular-nums;
+    }
+    #tableContainer .vocab-pagination:last-child .vocab-page-settings { display:none; }
+    #tableContainer .vocab-pagination:last-child .vocab-page-navigation { margin:0; padding:0; border:0; }
+    #tableContainer .vocab-pagination:last-child { border-top:1px solid var(--line); border-bottom:0; }
+}
+@media(max-width:360px) {
+    .vocab-pagination .vocab-page-navigation { flex-direction:column; align-items:stretch; }
+    .vocab-page-navigation > div { width:100%; margin:0; justify-content:space-between; }
+    .vocab-page-summary { text-align:center; }
+}
+
+</style><style>
+/* One-line mobile pagination with a compact, rounded surface. */
+@media(max-width:768px) {
+    #tableContainer .vocab-pagination,
+    #tableContainer .vocab-pagination:last-child {
+        display:flex;
+        flex-direction:row;
+        flex-wrap:nowrap;
+        align-items:center;
+        justify-content:space-between;
+        gap:6px;
+        padding:10px;
+        margin:0 0 16px;
+        border:1px solid var(--line);
+        border-radius:16px;
+        min-width:0;
+    }
+    .vocab-pagination .vocab-page-settings {
+        display:flex;
+        flex-wrap:nowrap;
+        width:auto;
+        gap:5px;
+        flex:0 0 auto;
+    }
+    .vocab-page-settings > span,
+    .vocab-page-settings form::before,
+    .vocab-pagination .vocab-page-summary { display:none; }
+    .vocab-page-settings .vocab-page-presets { padding:2px; gap:1px; border-radius:10px; }
+    .vocab-page-presets button { min-width:30px; min-height:36px; padding:5px; font-size:.72rem; }
+    .vocab-page-settings form { display:flex; gap:3px; margin:0; }
+    .vocab-page-settings .vocab-page-size { width:40px; min-height:38px; padding:4px 2px; font-size:.75rem; appearance:textfield; }
+    .vocab-page-size::-webkit-inner-spin-button,.vocab-page-size::-webkit-outer-spin-button { -webkit-appearance:none; margin:0; }
+    .vocab-page-settings form button { min-height:38px; padding:5px 7px; font-size:0; }
+    .vocab-page-settings form button::after { content:'✓'; font-size:.9rem; }
+    .vocab-pagination .vocab-page-navigation,
+    #tableContainer .vocab-pagination:last-child .vocab-page-navigation {
+        display:flex; flex-direction:row; flex-wrap:nowrap; align-items:center;
+        width:auto; margin:0; padding:0; border:0; gap:0;
+    }
+    .vocab-page-navigation > div { width:auto; margin:0; gap:3px; flex-wrap:nowrap; }
+    .vocab-page-navigation button { width:32px; min-height:38px; border-radius:10px; font-size:.9rem; }
+    .vocab-page-position { min-width:0; font-size:0; }
+    .vocab-page-position::after { content:attr(data-compact); font-size:.7rem; font-weight:700; white-space:nowrap; padding:0 3px; }
+    #tableContainer .vocab-pagination:last-child { justify-content:center; }
+}
+
+</style><style>
+@media(max-width:768px) {
+ .vocab-page-settings form button {
+   display:inline-flex; align-items:center; justify-content:center;
+   width:30px; height:38px; min-height:38px; padding:0;
+   line-height:1; flex:0 0 30px;
+ }
+ .vocab-page-settings form button::after {
+   display:block; font-family:Arial,sans-serif; font-size:16px;
+   line-height:1; margin:0; padding:0;
+ }
+ .vocab-page-presets button { min-width:27px; padding:5px 4px; }
+}
+@media(max-width:360px) {
+ #tableContainer .vocab-pagination { padding:8px; gap:4px; }
+ .vocab-pagination .vocab-page-settings { gap:4px; }
+ .vocab-page-settings .vocab-page-size { width:35px; }
+ .vocab-page-navigation button { width:28px; }
+ .vocab-page-navigation > div { gap:2px; }
+}
+</style><style>
+#tableContainer .vocab-pagination:last-child { margin-top:16px; margin-bottom:16px; }
+</style><style>
+#practiceDialog { width:min(460px,calc(100% - 28px)); max-height:90vh; overflow:auto; padding:24px; border:1px solid var(--line); border-radius:24px; background:var(--card-bg); color:var(--text-main); box-shadow:var(--shadow-card); }
+#practiceDialog::backdrop { background:rgba(15,23,42,.6); }
+.practice-heading { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.practice-heading h3 { margin:0; font-size:1.2rem; }
+.practice-heading button { border:0; border-radius:50%; width:40px; height:40px; background:var(--example-bg); color:var(--text-main); font-size:24px; }
+#practiceTarget { font-size:44px; margin:20px 0; overflow-wrap:anywhere; }
+.practice-note { font-size:.78rem; line-height:1.6; color:var(--text-muted); margin:16px 0; }
+.practice-result { padding:18px; background:var(--example-bg); border:1px solid var(--line); border-radius:16px; }
+.practice-result small { font-size:.65rem; letter-spacing:.1em; color:var(--text-muted); }
+#practiceHeard { font-size:26px; margin:10px 0; overflow-wrap:anywhere; }
+#practiceStatus { font-size:.9rem; line-height:1.65; margin:0; }
+.practice-actions { display:flex; gap:10px; margin-top:18px; }
+#practiceStart { background:var(--primary-soft); color:var(--primary); }
+</style><style>
+.example-practice-actions { display:flex; align-items:center; gap:8px; }
+.mobile-example-heading .mobile-card-title { margin-right:auto; }
+#practiceTarget { font-size:clamp(26px,5vw,40px); line-height:1.6; }
+</style><style>#practiceDialog {
+    width:min(480px,calc(100% - 28px)); max-height:min(800px,90dvh);
+    padding:0; overflow:hidden; border-radius:26px;
+    border:1px solid var(--line); background:var(--card-bg);
+    box-shadow:0 28px 90px rgba(0,0,0,.32);
+}
+#practiceDialog[open] { display:flex; flex-direction:column; }
+#practiceDialog::backdrop { background:rgba(7,14,29,.68); backdrop-filter:blur(5px); }
+#practiceDialog .practice-heading { padding:20px 24px; border-bottom:1px solid var(--line); flex:0 0 auto; }
+.practice-title-group { display:flex; gap:12px; align-items:center; }
+.practice-title-icon { display:grid; place-items:center; width:42px; height:42px; border-radius:14px; background:var(--primary-soft); font-size:1.3rem; }
+.practice-eyebrow { color:var(--text-muted); font-size:.59rem; letter-spacing:.14em; font-weight:750; margin-bottom:4px; }
+#practiceDialog .practice-heading h3 { font-size:1.12rem; font-weight:750; letter-spacing:-.02em; }
+#practiceDialog .practice-close { width:34px; height:34px; flex:0 0 34px; display:grid; place-items:center; padding:0; font-size:24px; line-height:1; background:transparent; color:var(--text-muted); cursor:pointer; }
+#practiceDialog .practice-close:hover { background:var(--example-bg); color:var(--text-main); }
+.practice-scroll { min-height:0; overflow-y:auto; overscroll-behavior:contain; padding:22px 24px; scrollbar-width:thin; scrollbar-color:var(--example-line) transparent; }
+.practice-scroll::-webkit-scrollbar { width:5px; }
+.practice-scroll::-webkit-scrollbar-track { background:transparent; margin:14px 0; }
+.practice-scroll::-webkit-scrollbar-thumb { background:var(--example-line); border-radius:20px; }
+.practice-scroll::-webkit-scrollbar-button { display:none; width:0; height:0; }
+.practice-prompt { text-align:center; padding:4px 8px 22px; }
+.practice-section-label,#practiceDialog .practice-result small { font-size:.61rem; letter-spacing:.13em; font-weight:750; color:var(--text-muted); }
+#practiceDialog #practiceTarget { font-size:clamp(30px,6vw,44px); line-height:1.55; font-weight:500; margin:12px 0 16px; }
+#practiceDialog .practice-listen { min-height:38px; padding:8px 16px; border-radius:999px; background:var(--primary-soft); color:var(--primary); border-color:transparent; font-size:.82rem; }
+#practiceDialog .practice-result { border-radius:18px; padding:18px 20px; background:var(--example-bg); border:1px solid var(--line); }
+#practiceDialog #practiceHeard { font-size:26px; line-height:1.5; margin:10px 0; }
+#practiceDialog #practiceStatus { font-size:.86rem; line-height:1.75; }
+#practiceRecording { margin-top:16px; padding:17px 18px 12px; border:1px solid var(--line); border-radius:18px; }
+.practice-recording-heading { display:flex; align-items:center; gap:8px; font-size:.84rem; }
+.practice-recording-heading > span { color:var(--primary); }
+#practicePlayback { display:block; width:100%; height:40px; margin:14px 0 8px; border-radius:12px; }
+#practiceDialog .practice-note { font-size:.72rem; line-height:1.65; margin:9px 0 0; }
+.practice-info { margin-top:18px; color:var(--text-muted); font-size:.71rem; }
+.practice-info summary { cursor:pointer; padding:4px 0; }
+#practiceDialog .practice-actions { flex:0 0 auto; margin:0; padding:16px 24px; border-top:1px solid var(--line); gap:10px; background:var(--card-bg); }
+#practiceDialog .practice-actions .fc-button { min-height:44px; border-radius:13px; font-size:.87rem; }
+#practiceDialog #practiceStart { flex:1; background:#2563eb; color:white; border-color:#2563eb; }
+#practiceDialog #practiceStop { min-width:90px; background:var(--example-bg); }
+#practiceDialog button:focus-visible,#practiceDialog summary:focus-visible { outline:2px solid var(--primary); outline-offset:3px; }
+@media(max-width:480px) {
+    #practiceDialog { width:calc(100% - 24px); max-height:90dvh; border-radius:22px; }
+    #practiceDialog .practice-heading { padding:16px 18px; }
+    .practice-scroll { padding:18px; }
+    #practiceDialog .practice-actions { padding:14px 18px; }
+}
+</style><style>.practice-heard-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; } #practiceHeardAudio { width:34px; height:34px; flex-basis:34px; } </style></head>
 
 <body>
 
@@ -2305,6 +2813,51 @@
 
         <!-- Cột hiển thị -->
         <main id="contentArea">
+<div class="study-view-bar">
+    <div><strong>Góc học từ vựng</strong><small>Mỗi ngày một chút, nhớ thêm một từ.</small></div>
+    <div class="study-view-switch" role="group" aria-label="Chế độ học">
+        <button type="button" data-study-view="table" aria-pressed="true" onclick="setStudyView('table')">☷ Bảng từ vựng</button>
+        <button type="button" data-study-view="flashcard" aria-pressed="false" onclick="setStudyView('flashcard')">▣ Flashcard</button>
+    </div>
+</div>
+<section id="flashcardSection" aria-label="Học bằng flashcard" hidden>
+    <div class="fc-topline"><span id="fcCount" aria-live="polite">0 từ</span><div class="fc-top-actions"><button id="fcListToggle" class="fc-button" type="button" aria-expanded="true" aria-controls="fcListPanel" onclick="toggleFlashList()">☷ Ẩn danh sách</button><button id="fcShuffle" class="fc-button" type="button" onclick="shuffleFlashcards()">⇄ Trộn thẻ</button></div></div>
+    <progress id="fcProgress" value="0" max="1" aria-label="Vị trí thẻ"></progress>
+    <div id="fcLayout"><div class="fc-study-column">
+    <div id="fcEmpty" hidden><h3>Chưa có thẻ để học</h3><p>Thêm từ vào bảng từ vựng hoặc đổi bộ lọc để bắt đầu.</p></div>
+    <article id="fcCard" onclick="handleFlashcardClick(event)" aria-label="Thẻ từ vựng. Bấm vào thẻ hoặc dùng nút Lật thẻ để xem mặt còn lại.">
+        <div class="fc-card-rotor">
+        <div id="fcFront">
+            <div class="fc-face-header"><div id="fcSide" class="fc-side-label">TỪ VỰNG</div><div class="fc-corner-actions"><button type="button" class="fc-icon-button" title="Luyện đọc" aria-label="Luyện đọc từ" onclick="openPronunciation(this)">🎤</button><button class="fc-icon-button" type="button" onclick="playFlashcard()" title="Phát âm từ" aria-label="Nghe phát âm từ">🔊</button><button id="fcWrite" class="fc-icon-button fc-write-button" type="button" onclick="writeFlashcard()" title="Viết từ" aria-label="Viết từ" hidden>✍</button></div></div>
+            <div class="fc-word-content">
+            <h2 id="fcWord" lang="zh-CN"></h2><div id="fcPinyin" lang="zh-Latn"></div>
+            <div class="fc-meta"><span class="fc-type-label">Loại từ</span><span id="fcType" class="type-pill"></span></div>
+            <div class="fc-example-box"><div class="fc-example-heading"><span>VÍ DỤ</span><div class="example-practice-actions"><button id="fcExampleMic" class="fc-icon-button" type="button" title="Luyện đọc ví dụ" aria-label="Luyện đọc ví dụ" onclick="openPronunciation(this, true)">🎤</button><button id="fcExampleAudio" type="button" class="fc-icon-button" onclick="playFlashcard(true)" title="Nghe ví dụ" aria-label="Nghe ví dụ">🔊</button></div></div><p id="fcExample" lang="zh-CN"></p><div id="fcExamplePinyin" lang="zh-Latn"></div></div>
+            </div>
+            <div class="fc-face-footer"><span>Thử nhớ nghĩa trước khi lật</span><span aria-hidden="true">Chạm để lật ↻</span></div>
+        </div>
+        <div id="fcBack" inert aria-hidden="true">
+            <div class="fc-answer-header"><span class="fc-answer-check" aria-hidden="true">✓</span><span>GIẢI NGHĨA</span></div>
+            <div class="fc-answer-content"><div class="fc-answer-label">NGHĨA CỦA TỪ</div><div id="fcMeaning"></div><div id="fcTranslationWrap"><small>DỊCH NGHĨA VÍ DỤ</small><div id="fcTranslation"></div></div></div>
+            <div class="fc-face-footer"><span>Nhớ nghĩa rồi chứ?</span><button class="fc-return-button" type="button" onclick="flipFlashcard()">↶ Mặt trước</button></div>
+        </div>
+        </div>
+    </article>
+    <div id="fcControls"><button id="fcPrev" class="fc-button" type="button" onclick="moveFlashcard(-1)" aria-label="Thẻ trước">← Trước</button><button id="fcFlip" class="fc-button" type="button" onclick="flipFlashcard()" aria-controls="fcBack" aria-expanded="false">Lật thẻ · Xem nghĩa ↻</button><button id="fcNext" class="fc-button" type="button" onclick="moveFlashcard(1)" aria-label="Thẻ tiếp theo">Sau →</button></div>
+    <p class="fc-hint">Bấm vào thẻ để lật · Space để lật · ← → để chuyển thẻ</p>
+    </div>
+    <aside id="fcListPanel" aria-label="Danh sách flashcard">
+        <div class="fc-list-heading"><strong>Danh sách flashcard</strong><small id="fcListTotal"></small></div>
+        <input id="fcListSearch" type="search" class="form-control" placeholder="Tìm chữ Hán / pinyin…" aria-label="Tìm trong danh sách flashcard" oninput="renderFlashList()">
+        <label class="fc-meaning-toggle"><input id="fcListMeanings" type="checkbox" onchange="renderFlashList()"> Hiện nghĩa trong danh sách</label>
+        <div id="fcWordList"></div><p id="fcListEmpty" hidden>Không có từ phù hợp.</p>
+    </aside></div>
+</section>
+
+
+
+
+
             <div id="tableContainer" class="card p-3 table-responsive">
                 <table class="table table-hover" id="wordTable">
                     <thead>
@@ -2759,49 +3312,46 @@
             <span>${highlight(obj.word)}</span>${drawBtn}
            
         </div>
-        <div class="mobile-flip-card" onclick="this.classList.toggle('is-flipped')" title="Chạm để xem ví dụ">
+        <div class="mobile-flip-card" onclick="this.classList.toggle('is-flipped')" title="Chạm để xem nghĩa">
             <div class="mobile-flip-inner">
                 <div class="mobile-card-face mobile-card-front">
                     <div>
                         <div class="mobile-card-topline">
-                            <div>
-                                <div class="mobile-status-row">
-                                    <span class="mobile-status-badge type-badge-mobile">${typeText}</span>
-                                    ${obj.favorite ? `<span class="mobile-status-badge favorite-badge-mobile">⭐ Yêu thích</span>` : ""}
-                                    ${obj.mastered ? `<span class="mobile-status-badge mastered-badge-mobile">✅ Đã thuộc</span>` : `<span class="mobile-status-badge due-badge-mobile">🗓 ${dueText}</span>`}
-                                </div>
-                                <div class="mobile-word-main">${highlight(obj.word)}</div>
-                                <div class="mobile-pinyin">${highlight(obj.pinyin)}</div>
+                            <div class="mobile-word-identity">
+                                <div class="mobile-word-eyebrow">TỪ VỰNG</div>
+                                <div class="mobile-word-main" lang="zh-CN">${escapeHtml(obj.word)}</div>
+                                <div class="mobile-pinyin" lang="zh-Latn">${escapeHtml(obj.pinyin || '')}</div>
+                                <div class="mobile-word-type"><span>Loại từ</span><span class="mobile-type-value">${escapeHtml(typeText)}</span></div>
                             </div>
-                            <div class="mobile-action-row">
-                                <button class="btn-audio" title="Phát âm" onclick="event.stopPropagation(); speakChinese('${obj.word}')">🔊</button>
-                                ${isSingle ? `<span class="draw-btn" title="Luyện viết" onclick="event.stopPropagation(); openDrawModal('${obj.word}')">🖌️</span>` : ""}
+                            <div class="mobile-action-row mobile-corner-actions"><button type="button" class="btn-audio" title="Luyện đọc" aria-label="Luyện đọc từ" onclick="event.stopPropagation(); openPronunciation(this)">🎤</button>
+                                <button type="button" class="btn-audio" title="Phát âm" aria-label="Phát âm từ" onclick="event.stopPropagation(); speakChinese(this.closest('tr').dataset.word)">🔊</button>
+                                ${canWriteFlashcard(obj) ? `<button type="button" class="draw-btn" title="Viết từ" aria-label="Viết từ" onclick="event.stopPropagation(); openDrawModal(this.closest('tr').dataset.word)">✍</button>` : ''}
                             </div>
                         </div>
-                        <div class="mobile-meaning">${highlight(obj.meaning)}</div>
+                        <div class="mobile-example-box">
+                            <div class="mobile-example-heading">
+                                <div class="mobile-card-title">Ví dụ</div>
+                                ${exampleText ? `<button type="button" class="btn-audio" title="Luyện đọc ví dụ" aria-label="Luyện đọc ví dụ" onclick="event.stopPropagation(); openPronunciation(this, true)">🎤</button>` : ''}
+                                ${exampleText ? `<button type="button" class="btn-audio" title="Nghe ví dụ" aria-label="Nghe ví dụ" onclick="event.stopPropagation(); speakChinese(this.closest('.mobile-example-box').querySelector('.mobile-example-text').textContent)">🔊</button>` : ''}
+                            </div>
+                            <div class="mobile-example-text" lang="zh-CN">${escapeHtml(exampleText || 'Chưa có ví dụ')}</div>
+                            <div class="mobile-example-pinyin">${escapeHtml(examplePinyin)}</div>
+                        </div>
                     </div>
-                    <span class="mobile-tap-hint">Chạm để xem ví dụ ↻</span>
+                    <span class="mobile-tap-hint">Chạm để xem nghĩa ↻</span>
                 </div>
                 <div class="mobile-card-face mobile-card-back">
-                    <div class="mobile-card-title">Ví dụ</div>
-                    ${exampleText ? `
-                        <div class="mobile-example-box">
-                            <div class="mobile-example-text"><ruby>${highlightedExample}<rt>${examplePinyin}</rt></ruby></div>
-                            ${obj.trans ? `<div class="mobile-trans-text">${highlight(obj.trans)}</div>` : ""}
-                        </div>
-                    ` : `<div class="mobile-example-box"><div class="mobile-trans-text">Từ này chưa có ví dụ.</div></div>`}
-                    <div class="mobile-back-actions">
-                        <span class="mobile-back-note">Chạm lại để quay về</span>
-                        <div class="mobile-action-row">
-                            <button class="mobile-action-btn ${obj.favorite ? 'is-favorite' : ''}" type="button" title="Yêu thích" onclick="handleMobileCardAction(event, () => toggleFavorite('${obj.word}'))">${favoriteIcon}</button>
-                            <button class="mobile-action-btn ${obj.mastered ? 'is-mastered' : ''}" type="button" title="Đã thuộc" onclick="handleMobileCardAction(event, () => toggleMastered('${obj.word}'))">${masteredIcon}</button>
-                            ${exampleText ? `<button class="mobile-action-btn" type="button" title="Nghe ví dụ" onclick="handleMobileCardAction(event, () => speakChinese('${exampleText}'))">🔊</button>` : ""}
-                            <button class="mobile-action-btn mobile-delete-btn" type="button" title="Xóa từ" onclick="handleMobileCardAction(event, () => deleteWord('${obj.word}'))">🗑️</button>
-                        </div>
+                    <div class="mb-answer-header"><span class="mb-answer-tag"><span aria-hidden="true">✓</span> GIẢI NGHĨA</span></div>
+                    <div class="mb-answer-content">
+                        <div class="mb-section-label">NGHĨA CỦA TỪ</div>
+                        <div class="mb-word-meaning">${escapeHtml(obj.meaning || 'Chưa có nghĩa')}</div>
+                        ${obj.trans ? `<div class="mb-translation"><div class="mb-section-label">DỊCH NGHĨA VÍ DỤ</div><div class="mb-translation-text">${escapeHtml(obj.trans)}</div></div>` : ''}
                     </div>
+                    <div class="mb-answer-footer"><span>Nhớ nghĩa rồi chứ?</span><button type="button" class="mb-return" onclick="event.stopPropagation(); this.closest('.mobile-flip-card').classList.remove('is-flipped')"><span aria-hidden="true">↶</span> Mặt trước</button></div>
                 </div>
             </div>
         </div>`;
+
     row.insertCell(1).innerHTML = `<span class="pinyin-cell">${highlight(obj.pinyin)}</span>`;
     row.insertCell(2).innerHTML = `<button class="btn-audio" title="Phát âm" onclick="speakChinese('${obj.word}')">🔊</button>`;
     row.insertCell(3).innerHTML = `<span class="type-pill">${typeText}</span>`;
@@ -2965,6 +3515,7 @@ function startQuiz(sourceWords = null) {
 
     const quiz = document.getElementById("quizSection");
     quiz.style.display = "block";
+    document.getElementById('flashcardSection').hidden = true;
 
     renderQuizQuestions(currentQuizWords, mode);
 
@@ -3644,5 +4195,421 @@ document.addEventListener("hide.bs.modal", function (event) {
             setQuizMode(document.getElementById("quizMode")?.value || "zh-vi");
         });
     </script>
-</body>
+<script>
+// Flashcards share the notebook's saved vocabulary, filters and sorting.
+let studyView = 'table';
+let flashWords = [];
+let flashIndex = 0;
+let flashBack = false;
+const fc = id => document.getElementById(id);
+
+function setStudyView(view) {
+    studyView = view;
+    fc('quizSection').style.display = 'none';
+    fc('inputArea').style.display = '';
+    fc('tableContainer').style.display = view === 'table' ? '' : 'none';
+    fc('flashcardSection').hidden = view !== 'flashcard';
+    document.querySelectorAll('[data-study-view]').forEach(button => {
+        button.setAttribute('aria-pressed', String(button.dataset.studyView === view));
+    });
+    if (view === 'flashcard') refreshFlashcards();
+}
+
+function refreshFlashcards() {
+    const previousWord = flashWords[flashIndex]?.word;
+    const keyword = removeTone((fc('tableSearch')?.value || '').trim().toLowerCase());
+    flashWords = sortWords(vocabData).filter(item => {
+        const text = removeTone(`${item.word} ${item.pinyin} ${item.meaning} ${item.fromType || ''} ${item.example || ''} ${item.trans || ''}`.toLowerCase());
+        return matchesQuickFilter(item) && (!keyword || text.includes(keyword));
+    });
+    flashIndex = Math.max(0, flashWords.findIndex(item => item.word === previousWord));
+    flashBack = false;
+    renderFlashcard();
+}
+
+function renderFlashcard() {
+    const item = flashWords[flashIndex];
+    fc('fcEmpty').hidden = !!item;
+    fc('fcCard').hidden = !item;
+    fc('fcControls').hidden = !item;
+    fc('fcShuffle').disabled = flashWords.length < 2;
+    fc('fcCount').textContent = item ? `${flashIndex + 1} / ${flashWords.length} từ` : '0 từ';
+    fc('fcProgress').value = item ? flashIndex + 1 : 0;
+    fc('fcProgress').max = flashWords.length || 1;
+    renderFlashList();
+    if (!item) return;
+    fc('fcCard').classList.toggle('is-flipped', flashBack);
+    fc('fcFront').inert = flashBack;
+    fc('fcBack').inert = !flashBack;
+    fc('fcFront').setAttribute('aria-hidden', String(flashBack));
+    fc('fcBack').setAttribute('aria-hidden', String(!flashBack));
+    fc('fcWord').textContent = item.word;
+    fc('fcPinyin').textContent = item.pinyin || safeFlashPinyin(item.word);
+    fc('fcType').textContent = item.fromType || 'Chưa có loại từ';
+    fc('fcWrite').hidden = !canWriteFlashcard(item);
+    fc('fcExample').textContent = item.example || 'Chưa có ví dụ';
+    fc('fcExamplePinyin').textContent = item.examplePinyin || (item.example ? safeFlashPinyin(item.example) : '');
+    fc('fcMeaning').textContent = item.meaning || 'Chưa có nghĩa';
+    fc('fcTranslation').textContent = item.trans || '';
+    fc('fcTranslationWrap').hidden = !item.trans;
+    fc('fcExampleAudio').disabled = !item.example;
+    document.getElementById('fcExampleMic').disabled = !item.example;
+    fc('fcFlip').textContent = flashBack ? '↶ Xem mặt trước' : 'Lật thẻ · Xem nghĩa ↻';
+    fc('fcFlip').setAttribute('aria-expanded', String(flashBack));
+    fc('fcPrev').disabled = flashIndex === 0;
+    fc('fcNext').disabled = flashIndex === flashWords.length - 1;
+}
+
+function safeFlashPinyin(text) {
+    return typeof pinyinPro !== 'undefined' ? pinyinPro.pinyin(text, { toneType: 'symbol' }) : 'Cần kết nối mạng để tải công cụ pinyin';
+}
+function handleFlashcardClick(event) {
+    if (event.target.closest('button, a, input, select, textarea')) return;
+    if (window.getSelection?.().toString()) return;
+    flipFlashcard();
+}
+function toggleFlashList() {
+    const panel = fc('fcListPanel');
+    panel.hidden = !panel.hidden;
+    fc('fcListToggle').setAttribute('aria-expanded', String(!panel.hidden));
+    fc('fcListToggle').textContent = panel.hidden ? '☷ Xem danh sách' : '☷ Ẩn danh sách';
+    fc('fcLayout').classList.toggle('list-hidden', panel.hidden);
+}
+function selectFlashcard(index) {
+    if (index < 0 || index >= flashWords.length) return;
+    flashIndex = index;
+    flashBack = false;
+    renderFlashcard();
+}
+function renderFlashList() {
+    const list = fc('fcWordList');
+    const query = removeTone(fc('fcListSearch').value.trim().toLowerCase());
+    const showMeaning = fc('fcListMeanings').checked;
+    list.replaceChildren();
+    let count = 0;
+    flashWords.forEach((item, index) => {
+        if (query && !removeTone(`${item.word} ${item.pinyin || ''}`.toLowerCase()).includes(query)) return;
+        count++;
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'fc-list-item';
+        button.setAttribute('aria-current', index === flashIndex ? 'true' : 'false');
+        button.onclick = () => selectFlashcard(index);
+        const word = document.createElement('strong');
+        word.textContent = `${index + 1}. ${item.word}`;
+        const pinyin = document.createElement('span');
+        pinyin.textContent = item.pinyin || '';
+        button.append(word, pinyin);
+        if (showMeaning) {
+            const meaning = document.createElement('small');
+            meaning.textContent = item.meaning || 'Chưa có nghĩa';
+            button.append(meaning);
+        }
+        list.append(button);
+    });
+    fc('fcListTotal').textContent = `${count} / ${flashWords.length} từ`;
+    fc('fcListEmpty').hidden = count > 0;
+}
+function flipFlashcard() {
+    if (!flashWords.length) return;
+    flashBack = !flashBack;
+    renderFlashcard();
+}
+function moveFlashcard(offset) {
+    const next = flashIndex + offset;
+    if (next < 0 || next >= flashWords.length) return;
+    flashIndex = next;
+    flashBack = false;
+    renderFlashcard();
+}
+function shuffleFlashcards() {
+    for (let i = flashWords.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [flashWords[i], flashWords[j]] = [flashWords[j], flashWords[i]];
+    }
+    flashIndex = 0;
+    flashBack = false;
+    renderFlashcard();
+}
+function playFlashcard(example = false) {
+    const item = flashWords[flashIndex];
+    if (!item) return;
+    if (!('speechSynthesis' in window)) return showModal('Trình duyệt này chưa hỗ trợ phát âm.');
+    window.speechSynthesis.cancel();
+    speakChinese(example ? item.example : item.word);
+}
+function canWriteFlashcard(item) {
+    return !!item && /^\p{Script=Han}$/u.test(String(item.word || ''));
+}
+function writeFlashcard() {
+    const item = flashWords[flashIndex];
+    if (canWriteFlashcard(item)) openDrawModal(item.word);
+}
+document.addEventListener('keydown', event => {
+    if (studyView !== 'flashcard' || fc('flashcardSection').hidden || document.querySelector('.modal.show, dialog[open]')) return;
+    if (event.target.closest('input, textarea, select, button, [contenteditable="true"]') || event.ctrlKey || event.altKey || event.metaKey) return;
+    if (event.code === 'Space') { event.preventDefault(); flipFlashcard(); }
+    if (event.key === 'ArrowLeft') { event.preventDefault(); moveFlashcard(-1); }
+    if (event.key === 'ArrowRight') { event.preventDefault(); moveFlashcard(1); }
+});
+
+const originalApplyTableFilter = applyTableFilter;
+applyTableFilter = function() { originalApplyTableFilter(); if (studyView === 'flashcard') refreshFlashcards(); };
+</script>
+<script>
+const mobileStudyScreen = window.matchMedia('(max-width: 768px)');
+const desktopSetStudyView = setStudyView;
+setStudyView = function(view) {
+    desktopSetStudyView(mobileStudyScreen.matches ? 'table' : view);
+};
+mobileStudyScreen.addEventListener('change', event => {
+    if (event.matches && studyView === 'flashcard') setStudyView('table');
+});
+</script><script>let vocabPage = 1;
+let vocabPageSize = 20;
+let vocabPageCount = 1;
+let vocabFilterKey = '';
+const pageFilterBase = applyTableFilter;
+applyTableFilter = function() {
+    pageFilterBase();
+    const filterKey = `${document.getElementById('tableSearch')?.value || ''}|${currentQuickFilter}|${document.getElementById('sortMode')?.value || ''}`;
+    if (filterKey !== vocabFilterKey) vocabPage = 1;
+    vocabFilterKey = filterKey;
+    paginateVocabulary();
+};
+function paginateVocabulary() {
+    const rows = [...document.querySelectorAll('#wordTable tbody tr')];
+    const matches = rows.filter(row => !row.classList.contains('word-hidden'));
+    vocabPageCount = Math.max(1, Math.ceil(matches.length / vocabPageSize));
+    vocabPage = Math.min(Math.max(1, vocabPage), vocabPageCount);
+    const start = (vocabPage - 1) * vocabPageSize;
+    rows.forEach(row => row.classList.add('page-hidden'));
+    matches.slice(start, start + vocabPageSize).forEach(row => row.classList.remove('page-hidden'));
+    document.querySelectorAll('.vocab-page-summary').forEach(el => {
+        el.textContent = matches.length ? `${start + 1}–${Math.min(start + vocabPageSize, matches.length)} / ${matches.length} từ` : 'Không có từ phù hợp';
+    });
+    document.querySelectorAll('.vocab-page-position').forEach(el => { el.textContent = `Trang ${vocabPage} / ${vocabPageCount}`; el.setAttribute('data-compact', `${vocabPage}/${vocabPageCount}`); });
+    document.querySelectorAll('[data-page-step]').forEach(button => button.disabled = Number(button.dataset.pageStep) < 0 ? vocabPage === 1 : vocabPage === vocabPageCount);
+}
+function changeVocabularyPage(step) {
+    vocabPage += step;
+    paginateVocabulary();
+    document.getElementById('tableContainer').scrollIntoView({behavior:'smooth', block:'start'});
+}
+function setVocabularyPageSize(value) {
+    const size = Number(value);
+    if (!Number.isInteger(size) || size < 1 || size > 100) return false;
+    vocabPageSize = size;
+    vocabPage = 1;
+    document.querySelectorAll('.vocab-page-size').forEach(input => input.value = String(size));
+    document.querySelectorAll('[data-page-size]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.pageSize) === size)));
+    paginateVocabulary();
+    return true;
+}
+function submitVocabularyPageSize(event) {
+    event.preventDefault();
+    const input = event.target.querySelector('input');
+    if (!setVocabularyPageSize(input.value)) input.reportValidity();
+}
+const pagerMarkup = `
+    <div class="vocab-page-settings"><span>Số từ / trang</span><div class="vocab-page-presets"><button type="button" data-page-size="10" aria-pressed="false" onclick="setVocabularyPageSize(10)">10</button><button type="button" data-page-size="20" aria-pressed="true" onclick="setVocabularyPageSize(20)">20</button><button type="button" data-page-size="50" aria-pressed="false" onclick="setVocabularyPageSize(50)">50</button></div>
+    <form onsubmit="submitVocabularyPageSize(event)"><input class="vocab-page-size" type="number" min="1" max="100" step="1" required value="20" aria-label="Số từ mỗi trang, từ 1 đến 100"><button type="submit" title="Áp dụng số từ mỗi trang" aria-label="Áp dụng số từ mỗi trang">Áp dụng</button></form></div>
+    <div class="vocab-page-navigation"><span class="vocab-page-summary" aria-live="polite"></span><div><button type="button" data-page-step="-1" aria-label="Trang trước" onclick="changeVocabularyPage(-1)">←</button><span class="vocab-page-position"></span><button type="button" data-page-step="1" aria-label="Trang sau" onclick="changeVocabularyPage(1)">→</button></div></div>`;
+for (const position of ['afterbegin', 'beforeend']) {
+    const pager = document.createElement('div');
+    pager.className = 'vocab-pagination';
+    pager.innerHTML = pagerMarkup;
+    document.getElementById('tableContainer').insertAdjacentElement(position, pager);
+}
+</script><dialog id="practiceDialog" aria-labelledby="practiceTitle">
+    <header class="practice-heading">
+        <div class="practice-title-group"><span class="practice-title-icon" aria-hidden="true">🎙</span><div><div class="practice-eyebrow">GÓC LUYỆN NÓI</div><h3 id="practiceTitle">Luyện đọc</h3></div></div>
+        <button type="button" class="practice-close" aria-label="Đóng luyện đọc" onclick="document.getElementById('practiceDialog').close()">×</button>
+    </header>
+    <div class="practice-scroll">
+        <section class="practice-prompt"><div class="practice-section-label">NỘI DUNG CẦN ĐỌC</div><div id="practiceTarget" lang="zh-CN"></div><button type="button" class="fc-button practice-listen" onclick="stopPractice(); speakChinese(practiceWord)">🔊 Nghe mẫu</button></section>
+        <section class="practice-result"><div class="practice-heard-heading"><small>MÁY NGHE ĐƯỢC</small><button id="practiceHeardAudio" type="button" class="fc-icon-button" title="Nghe nội dung máy nhận dạng" aria-label="Nghe nội dung máy nhận dạng" disabled onclick="playRecognizedPractice()">🔊</button></div><div id="practiceHeard" lang="zh-CN">—</div><p id="practiceStatus" role="status" aria-live="polite"></p></section>
+        <section id="practiceRecording" hidden><div class="practice-recording-heading"><span aria-hidden="true">◉</span><strong>Bản thu của bạn</strong></div><audio id="practicePlayback" controls preload="metadata"></audio><p class="practice-note">Nghe lại để so sánh với giọng mẫu. Bản thu được thay khi bạn đọc lại.</p></section>
+        <details class="practice-info"><summary>Thông tin nhận dạng & quyền riêng tư</summary><p class="practice-note">Nhận dạng tiếng Trung phổ thông, không chấm chính xác từng thanh điệu. Âm thanh có thể được gửi tới dịch vụ nhận dạng của trình duyệt và cần Internet. Bản thu nghe lại chỉ được giữ tạm trong trang.</p></details>
+    </div>
+    <footer class="practice-actions"><button id="practiceStart" type="button" class="fc-button" onclick="startPractice()">🎤 Bắt đầu đọc</button><button id="practiceStop" type="button" class="fc-button" disabled onclick="stopPractice(); document.getElementById('practiceStatus').textContent='Đã dừng nghe.'">■ Dừng</button></footer>
+</dialog>
+
+<script>let speechPractice = null;
+let speechPracticeTimer = null;
+let practiceWord = '';
+let practiceRecorder = null;
+let practiceStream = null;
+let practiceAudioURL = null;
+let practiceRun = 0;
+function clearPracticeAudio() {
+    const audio = document.getElementById('practicePlayback');
+    audio.pause();
+    audio.removeAttribute('src');
+    audio.load();
+    if (practiceAudioURL) URL.revokeObjectURL(practiceAudioURL);
+    practiceAudioURL = null;
+    document.getElementById('practiceRecording').hidden = true;
+}
+function normalizeSpokenWord(text) {
+    return String(text).normalize('NFKC').replace(/[\p{P}\p{Z}\s]/gu, '').toLowerCase();
+}
+function stopPractice() {
+    practiceRun++;
+    if (practiceRecorder && practiceRecorder.state !== 'inactive') practiceRecorder.stop();
+    practiceRecorder = null;
+    if (practiceStream) practiceStream.getTracks().forEach(track => track.stop());
+    practiceStream = null;
+    clearTimeout(speechPracticeTimer);
+    const active = speechPractice;
+    speechPractice = null;
+    if (active) active.abort();
+    document.getElementById('practiceStart').disabled = false;
+    document.getElementById('practiceStop').disabled = true;
+}
+function openPronunciation(button, example = false) {
+    stopPractice();
+    clearPracticeAudio();
+    const row = button.closest('tr');
+    practiceWord = example
+        ? (row ? vocabData.find(item => item.word === row.dataset.word)?.example : flashWords[flashIndex]?.example) || ''
+        : row?.dataset.word || flashWords[flashIndex]?.word || '';
+    document.getElementById('practiceTitle').textContent = example ? 'Luyện đọc ví dụ' : 'Luyện đọc từ';
+    if (!practiceWord) return;
+    document.getElementById('practiceTarget').textContent = practiceWord;
+    document.getElementById('practiceHeard').textContent = '—';
+    document.getElementById('practiceStatus').textContent = 'Bấm Bắt đầu, rồi đọc nội dung bên trên bằng tiếng Trung phổ thông.';
+    document.getElementById('practiceDialog').showModal();
+}
+async function startPractice() {
+    stopPractice();
+    clearPracticeAudio();
+    const run = practiceRun;
+    const status = document.getElementById('practiceStatus');
+    const API = window.SpeechRecognition || window.webkitSpeechRecognition;
+    document.getElementById('practiceStart').disabled = true;
+    document.getElementById('practiceStop').disabled = false;
+    status.textContent = 'Đang mở micro để thu giọng đọc…';
+    window.speechSynthesis?.cancel();
+    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
+        status.textContent = 'Trình duyệt này chưa hỗ trợ thu âm. Hãy mở trang bằng trình duyệt có hỗ trợ, qua HTTPS hoặc localhost.';
+        stopPractice(); return;
+    }
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+        if (run !== practiceRun) { stream.getTracks().forEach(track => track.stop()); return; }
+        practiceStream = stream;
+        const recorder = new MediaRecorder(stream);
+        practiceRecorder = recorder;
+        const chunks = [];
+        recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+        recorder.onstop = () => {
+            // A stopped recording may complete asynchronously; never overwrite a newer attempt.
+            if (practiceRun !== run + 1 || !document.getElementById('practiceDialog').open || !chunks.length) return;
+            const blob = new Blob(chunks, {type:recorder.mimeType || chunks[0].type});
+            practiceAudioURL = URL.createObjectURL(blob);
+            document.getElementById('practicePlayback').src = practiceAudioURL;
+            document.getElementById('practiceRecording').hidden = false;
+        };
+        recorder.onerror = () => { if (run === practiceRun) { status.textContent = 'Không thu được âm thanh. Hãy thử lại.'; stopPractice(); } };
+        recorder.start();
+    } catch (error) {
+        if (run !== practiceRun) return;
+        status.textContent = error.name === 'NotAllowedError' ? 'Micro chưa được cho phép. Kiểm tra quyền micro trong cài đặt của trang.' : 'Không mở được micro để thu âm. Kiểm tra thiết bị rồi thử lại.';
+        stopPractice(); return;
+    }
+    if (!API) {
+        status.textContent = 'Đang thu âm. Trình duyệt chưa hỗ trợ đối chiếu giọng nói; bạn vẫn có thể nghe lại. Bấm Dừng khi đọc xong.';
+        speechPracticeTimer = setTimeout(stopPractice, 30000);
+        return;
+    }
+    const recognition = new API();
+    speechPractice = recognition;
+    recognition.lang = 'zh-CN';
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
+    document.getElementById('practiceStart').disabled = true;
+    document.getElementById('practiceStop').disabled = false;
+    document.getElementById('practiceHeard').textContent = '—';
+    status.textContent = 'Đang mở micro… Cho phép truy cập micro nếu trình duyệt yêu cầu.';
+    recognition.onstart = () => { if (speechPractice === recognition) status.textContent = 'Đang nghe… Hãy đọc nội dung bên trên, sau đó ngừng một chút.'; };
+    recognition.onresult = event => {
+        if (speechPractice !== recognition) return;
+        const heard = event.results[0][0].transcript;
+        document.getElementById('practiceHeard').textContent = heard;
+        const exact = normalizeSpokenWord(heard) === normalizeSpokenWord(practiceWord);
+        let sameSound = false;
+        if (!exact && typeof pinyinPro !== 'undefined') {
+            sameSound = normalizeSpokenWord(pinyinPro.pinyin(heard, {toneType:'symbol'})) === normalizeSpokenWord(pinyinPro.pinyin(practiceWord, {toneType:'symbol'}));
+        }
+        status.textContent = exact ? '✓ Máy nhận đúng nội dung đang học! Đây là đối chiếu nhận dạng, chưa xác nhận độ chuẩn của từng thanh điệu.' : sameSound ? '≈ Máy nghe được từ có pinyin trùng với nội dung cần đọc. Có thể là từ đồng âm; nghe mẫu và thử lại nhé.' : 'Chưa khớp với nội dung đang học. Nghe mẫu rồi thử đọc lại chậm, rõ hơn nhé.';
+        stopPractice();
+    };
+    recognition.onerror = event => {
+        if (speechPractice !== recognition) return;
+        const errors = {'not-allowed':'Micro bị chặn. Cho phép micro trong cài đặt trang; nếu đang mở tệp HTML, hãy thử trang qua HTTPS hoặc localhost.', 'service-not-allowed':'Dịch vụ nhận giọng nói không được phép trên trình duyệt này.', 'audio-capture':'Không tìm thấy micro hoặc micro đang không khả dụng.', 'network':'Không kết nối được dịch vụ nhận giọng nói. Kiểm tra mạng rồi thử lại.', 'no-speech':'Chưa nghe được giọng nói. Bấm Bắt đầu để thử lại.', 'language-not-supported':'Dịch vụ này chưa hỗ trợ nhận tiếng Trung.'};
+        status.textContent = errors[event.error] || 'Không nhận được giọng nói. Hãy thử lại.';
+        stopPractice();
+    };
+    recognition.onend = () => {
+        if (speechPractice !== recognition) return;
+        status.textContent = 'Đã dừng nghe nhưng chưa có kết quả. Hãy thử lại.';
+        stopPractice();
+    };
+    try {
+        recognition.start();
+        speechPracticeTimer = setTimeout(() => { if(speechPractice === recognition) { status.textContent = 'Đã hết thời gian nghe. Bấm Bắt đầu để thử lại.'; stopPractice(); } }, 30000);
+    } catch (_) { status.textContent = 'Không thể mở micro. Kiểm tra quyền micro hoặc thử trình duyệt khác.'; stopPractice(); }
+}
+document.getElementById('practiceDialog').addEventListener('close', stopPractice);
+document.getElementById('practiceDialog').addEventListener('cancel', stopPractice);
+window.addEventListener('pagehide', stopPractice);
+document.addEventListener('visibilitychange', () => { if(document.hidden) stopPractice(); });
+</script><script>
+// Only dismiss when both the press and release occur outside the dialog.
+{
+    const dialog = document.getElementById('practiceDialog');
+    let pressedOutside = false;
+    const outside = event => {
+        const rect = dialog.getBoundingClientRect();
+        return event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+    };
+    dialog.addEventListener('pointerdown', event => {
+        pressedOutside = event.target === dialog && outside(event);
+    });
+    dialog.addEventListener('click', event => {
+        if (pressedOutside && event.target === dialog && outside(event)) {
+            stopPractice();
+            document.getElementById('practicePlayback').pause();
+            dialog.close();
+        }
+        pressedOutside = false;
+    });
+    dialog.addEventListener('pointercancel', () => { pressedOutside = false; });
+    dialog.addEventListener('close', () => { document.getElementById('practicePlayback').pause(); });
+}
+</script><script>
+function playRecognizedPractice() {
+ const text = document.getElementById('practiceHeard').textContent.trim();
+ if (!text || text === '—') return;
+ stopPractice();
+ document.getElementById('practicePlayback').pause();
+ window.speechSynthesis?.cancel();
+ speakChinese(text);
+}
+const heardOutput = document.getElementById('practiceHeard');
+function syncHeardAudio() {
+ const text = heardOutput.textContent.trim();
+ document.getElementById('practiceHeardAudio').disabled = !text || text === '—';
+}
+new MutationObserver(syncHeardAudio).observe(heardOutput, {childList:true, characterData:true, subtree:true});
+syncHeardAudio();
+</script></body>
 </html>
+
+
+
+
+
+
