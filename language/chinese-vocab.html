@@ -2115,6 +2115,47 @@
             }
         }
 
+
+/* Trò chơi nối từ */
+.match-settings-panel{margin:14px 0;padding:16px;border:1px solid var(--line);border-radius:16px;background:var(--table-bg)}
+.match-settings-panel[hidden]{display:none!important}
+.match-settings-fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.match-settings-fields label{display:block;font-size:.84rem;font-weight:750;margin-bottom:6px}
+@media(max-width:600px){.match-settings-fields{grid-template-columns:1fr}}
+
+#matchSection[hidden]{display:none!important}
+#matchSection{width:100%;max-width:1250px;margin:22px auto}
+.match-top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.match-board{display:grid;gap:12px}
+.match-board.grid-mode{grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr))}
+.match-board.column-mode{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+.match-column{display:grid;gap:10px;min-width:0}
+.match-card{width:100%;min-height:65px;padding:12px 10px;border:2px solid var(--line);border-radius:15px;background:var(--table-bg);color:var(--text-main);font-weight:750;overflow-wrap:anywhere;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+.match-card[data-side="word"]{font-size:1.4rem;font-family:"Microsoft YaHei","Noto Sans SC",sans-serif}
+.match-card:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.match-card.selected{background:var(--primary-soft);border-color:var(--primary);transform:translateY(-2px)}
+.match-card.matched{background:rgba(5,150,105,.13);border-color:var(--success);color:var(--success);cursor:default;opacity:.58}
+.match-card.mismatch{border-color:var(--danger);background:var(--danger-soft)}
+@media(max-width:600px){#matchSection{padding:14px!important}.match-board.grid-mode{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.match-board.column-mode{gap:8px}.match-column{gap:8px}.match-card{min-height:58px;padding:9px 6px;font-size:.87rem}.match-card[data-side="word"]{font-size:1.2rem}}
+
+
+/* Clear bilingual visual grouping for matching mode. */
+.match-board{gap:16px}
+.match-board.column-mode{column-gap:22px}
+.match-column{padding:12px;border:1px solid var(--line);border-radius:18px;background:var(--table-bg);align-content:start}
+.match-column-heading{padding:10px 12px;border-radius:11px;font-size:.78rem;font-weight:850;letter-spacing:.065em;text-align:center}
+.match-heading-word{background:#dbeafe;color:#1e40af}
+.match-heading-meaning{background:#fef3c7;color:#92400e}
+.match-card{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:82px;padding:12px 10px;box-shadow:0 2px 5px rgba(15,23,42,.05);line-height:1.35}
+.match-card-label{display:block;font-size:.65rem;line-height:1.1;letter-spacing:.09em;font-weight:850;opacity:.85}
+.match-card-text{display:block;width:100%;overflow-wrap:anywhere}
+.match-card[data-side="word"]{background:#eff6ff;border-color:#93c5fd;color:#1e3a8a;font-size:1.5rem}
+.match-card[data-side="meaning"]{background:#fffbeb;border-color:#fcd34d;color:#78350f;font-size:1.02rem}
+.match-card.selected{background:#ede9fe!important;border-color:#7c3aed!important;color:#4c1d95!important;box-shadow:0 0 0 3px rgba(124,58,237,.18);transform:translateY(-2px)}
+.match-card.matched{background:#dcfce7!important;border-color:#22c55e!important;color:#166534!important;opacity:.65;box-shadow:none}
+.match-card.mismatch{background:#fee2e2!important;border-color:#ef4444!important;color:#991b1b!important}
+@media(max-width:600px){.match-board.column-mode{gap:8px}.match-column{padding:6px;gap:7px}.match-column-heading{padding:8px 3px;font-size:.63rem;letter-spacing:0}.match-card{min-height:73px;padding:9px 5px;gap:5px}.match-card-label{font-size:.56rem}.match-card[data-side="word"]{font-size:1.22rem}.match-card[data-side="meaning"]{font-size:.86rem}}
+
     </style>
 <style>
 /* Dedicated study view, available on desktop and mobile. */
@@ -2790,6 +2831,22 @@
                 </div>
             </details>
 
+
+            <details class="card control-fold" id="foldMatching">
+              <summary class="control-fold-head"><span class="control-fold-title">🧩 Nối từ với nghĩa</span><span class="control-fold-caret">▼</span></summary>
+              <div class="control-fold-body">
+                <label class="small text-muted mb-2 d-block">Số cặp từ</label>
+                <select id="matchCount" class="form-select mb-2" onchange="document.getElementById('matchCustomWrap').hidden=this.value!=='custom'">
+                  <option value="10">10 từ</option><option value="15">15 từ</option><option value="20">20 từ</option><option value="random">Ngẫu nhiên số từ</option><option value="custom">Tự chọn số từ</option>
+                </select>
+                <div id="matchCustomWrap" hidden><input id="matchCustom" type="number" min="1" value="12" class="form-control mb-2" placeholder="Nhập số từ"></div>
+                <label class="small text-muted mb-2 d-block">Kiểu trộn</label>
+                <select id="matchLayout" class="form-select mb-2">
+                  <option value="grid">Trộn toàn màn hình</option><option value="columns">Hai cột: Từ / Nghĩa</option><option value="swap">Hai cột trộn vị trí Từ / Nghĩa</option>
+                </select>
+                <button class="btn btn-primary w-100 mt-2" onclick="startMatching()">Bắt đầu nối từ</button>
+              </div>
+            </details>
             <details class="control-fold" id="foldSpeech">
                 <summary class="control-fold-head">
                     <span class="control-fold-title">🔊 Tốc độ nghe</span>
@@ -2880,6 +2937,22 @@
                 </table>
             </div>
 
+
+            <section id="matchSection" class="card p-4" hidden>
+              <div class="match-top"><div><h2 class="mb-1">🧩 Nối từ với nghĩa</h2><div id="matchStats" class="text-muted" aria-live="polite"></div></div><div class="d-flex gap-2 flex-wrap"><button type="button" class="btn btn-outline-primary" id="matchSettingsToggle" aria-expanded="false" aria-controls="matchSettingsPanel" onclick="toggleMatchSettings()">⚙️ Cài đặt</button><button type="button" class="btn btn-outline-secondary" onclick="exitMatching()">Quay lại</button></div></div>
+              <div id="matchSettingsPanel" class="match-settings-panel" hidden>
+                <div class="match-settings-fields">
+                  <div><label for="matchLiveCount">Số cặp từ</label><select id="matchLiveCount" class="form-select" onchange="document.getElementById('matchLiveCustomWrap').hidden=this.value!=='custom'"><option value="10">10 từ</option><option value="15">15 từ</option><option value="20">20 từ</option><option value="random">Ngẫu nhiên số từ</option><option value="custom">Tự chọn số từ</option></select><div id="matchLiveCustomWrap" class="mt-2" hidden><input id="matchLiveCustom" type="number" min="1" value="12" class="form-control" placeholder="Nhập số từ"></div></div>
+                  <div><label for="matchLiveLayout">Kiểu trộn</label><select id="matchLiveLayout" class="form-select"><option value="grid">Trộn toàn màn hình</option><option value="columns">Hai cột: Từ / Nghĩa</option><option value="swap">Hai cột trộn vị trí Từ / Nghĩa</option></select></div>
+                </div>
+                <p class="small text-muted mt-2 mb-2">Đổi kiểu trộn sẽ giữ các cặp đã nối đúng. Đổi số từ sẽ bắt đầu lượt mới.</p>
+                <div class="d-flex gap-2 flex-wrap"><button type="button" class="btn btn-primary" onclick="applyMatchSettings()">Áp dụng</button><button type="button" class="btn btn-outline-secondary" onclick="toggleMatchSettings(false)">Đóng</button></div>
+              </div>
+              <div class="word-progress my-3"><div id="matchProgress" style="height:100%;width:0;background:var(--success);transition:width .2s"></div></div>
+              <div id="matchBoard" class="match-board"></div>
+              <div id="matchMessage" class="mt-3" aria-live="polite"></div>
+              <div class="d-flex gap-2 flex-wrap mt-3"><button class="btn btn-primary" onclick="startMatching()">Bộ từ mới</button><button class="btn btn-outline-primary" onclick="restartMatching()">Chơi lại bộ này</button></div>
+            </section>
             <div id="quizSection" class="card p-4" style="display:none;">
                 <h2>Bài kiểm tra</h2>
                 <div id="quizForm"></div>
@@ -4619,7 +4692,82 @@ function syncHeardAudio() {
 }
 new MutationObserver(syncHeardAudio).observe(heardOutput, {childList:true, characterData:true, subtree:true});
 syncHeardAudio();
-</script></body>
+</script>
+<script>
+// Match pairs use unique round IDs, so repeated words/meanings remain independently matchable.
+let matchGame=null;
+function toggleMatchSettings(force){
+ const panel=document.getElementById('matchSettingsPanel');
+ const show=typeof force==='boolean'?force:panel.hidden;
+ if(show){document.getElementById('matchLiveCount').value=document.getElementById('matchCount').value;document.getElementById('matchLiveCustom').value=document.getElementById('matchCustom').value;document.getElementById('matchLiveLayout').value=matchGame?.layout||document.getElementById('matchLayout').value;document.getElementById('matchLiveCustomWrap').hidden=document.getElementById('matchLiveCount').value!=='custom';}
+ panel.hidden=!show;document.getElementById('matchSettingsToggle').setAttribute('aria-expanded',String(show));
+}
+function applyMatchSettings(){
+ if(!matchGame)return;
+ const count=document.getElementById('matchLiveCount').value;
+ const custom=document.getElementById('matchLiveCustom').value;
+ const layout=document.getElementById('matchLiveLayout').value;
+ if(count==='custom'&&(!Number.isInteger(Number(custom))||Number(custom)<1)){if(typeof showModal==='function')showModal('Vui lòng nhập số từ nguyên lớn hơn 0.');return;}
+ const oldCount=document.getElementById('matchCount').value;
+ const oldCustom=document.getElementById('matchCustom').value;
+ const changeCount=count!==oldCount||(count==='custom'&&Number(custom)!==Number(oldCustom));
+ document.getElementById('matchCount').value=count;
+ document.getElementById('matchCustom').value=custom;
+ document.getElementById('matchCustomWrap').hidden=count!=='custom';
+ document.getElementById('matchLayout').value=layout;
+ toggleMatchSettings(false);
+ if(changeCount){startMatching();return;}
+ matchGame.layout=layout;
+ matchGame.selected=null;
+ matchGame.locked=false;
+ renderMatching();
+}
+
+function matchShuffle(items){const a=[...items];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function startMatching(){
+ const pool=(typeof vocabData!=='undefined'?vocabData:[]).filter(w=>String(w.word||'').trim()&&String(w.meaning||'').trim());
+ if(!pool.length){if(typeof showModal==='function')showModal('Hãy thêm từ và nghĩa trước khi chơi.');return;}
+ const option=document.getElementById('matchCount').value;
+ let count=option==='random'?1+Math.floor(Math.random()*pool.length):option==='custom'?Number(document.getElementById('matchCustom').value):Number(option);
+ if(!Number.isInteger(count)||count<1){if(typeof showModal==='function')showModal('Vui lòng nhập số từ nguyên lớn hơn 0.');return;}
+ count=Math.min(count,pool.length);
+ const chosen=matchShuffle(pool).slice(0,count).map((w,id)=>({id,word:String(w.word).trim(),meaning:String(w.meaning).trim()}));
+ matchGame={chosen,layout:document.getElementById('matchLayout').value,selected:null,done:new Set(),errors:0,locked:false};
+ renderMatching();
+ document.getElementById('matchSection').scrollIntoView({behavior:'smooth',block:'start'});
+}
+function restartMatching(){if(!matchGame)return;matchGame.selected=null;matchGame.done=new Set();matchGame.errors=0;matchGame.locked=false;renderMatching();}
+function renderMatching(){
+ const g=matchGame;if(!g)return;
+ document.getElementById('inputArea').style.display='none';document.getElementById('tableContainer').style.display='none';
+ const quiz=document.getElementById('quizSection');if(quiz)quiz.style.display='none';
+ const flash=document.getElementById('flashcardSection');if(flash)flash.hidden=true;
+ const section=document.getElementById('matchSection');section.hidden=false;
+ const board=document.getElementById('matchBoard');board.replaceChildren();
+ board.className='match-board '+(g.layout==='grid'?'grid-mode':'column-mode');
+ const cards=g.chosen.flatMap(w=>[{id:w.id,side:'word',text:w.word},{id:w.id,side:'meaning',text:w.meaning}]);
+ const createCard=c=>{const b=document.createElement('button');b.type='button';b.className='match-card';b.dataset.id=c.id;b.dataset.side=c.side;b.setAttribute('aria-label',(c.side==='word'?'Tiếng Trung: ':'Tiếng Việt: ')+c.text);const label=document.createElement('span');label.className='match-card-label';const content=document.createElement('span');content.className='match-card-text';content.textContent=c.text;b.append(label,content);if(g.done.has(c.id)){b.classList.add('matched');b.disabled=true;}b.addEventListener('click',()=>pickMatching(b));return b;};
+ if(g.layout==='grid'){matchShuffle(cards).forEach(c=>board.appendChild(createCard(c)));}
+ else{const left=document.createElement('div'),right=document.createElement('div');left.className=right.className='match-column';
+ let words=matchShuffle(cards.filter(c=>c.side==='word')),meanings=matchShuffle(cards.filter(c=>c.side==='meaning'));
+ if(g.layout==='swap'&&Math.random()<.5)[words,meanings]=[meanings,words];
+ const makeHeading=(side)=>{const h=document.createElement('div');h.className='match-column-heading '+(side==='word'?'match-heading-word':'match-heading-meaning');h.textContent=side==='word'?'中文 · TIẾNG TRUNG':'VI · TIẾNG VIỆT';return h;};left.appendChild(makeHeading(words[0]?.side||'word'));right.appendChild(makeHeading(meanings[0]?.side||'meaning'));words.forEach(c=>left.appendChild(createCard(c)));meanings.forEach(c=>right.appendChild(createCard(c)));board.append(left,right);}
+ document.getElementById('matchMessage').textContent=g.done.size===g.chosen.length?`🎉 Hoàn thành ${g.chosen.length} cặp! Bạn chọn sai ${g.errors} lần.`:'Chọn một từ và nghĩa tương ứng để ghép cặp.';updateMatchingStats();
+}
+function updateMatchingStats(){if(!matchGame)return;const g=matchGame;document.getElementById('matchStats').textContent=`Đúng ${g.done.size}/${g.chosen.length} cặp · Chọn sai ${g.errors} lần`;document.getElementById('matchProgress').style.width=(100*g.done.size/g.chosen.length)+'%';}
+function pickMatching(button){
+ const g=matchGame;if(!g||g.locked||button.disabled)return;
+ const card={id:Number(button.dataset.id),side:button.dataset.side,button};
+ if(!g.selected){g.selected=card;button.classList.add('selected');return;}
+ if(g.selected.button===button){button.classList.remove('selected');g.selected=null;return;}
+ if(g.selected.side===card.side){g.selected.button.classList.remove('selected');g.selected=card;button.classList.add('selected');return;}
+ const first=g.selected;g.selected=null;
+ if(first.id===card.id){g.done.add(card.id);[first.button,button].forEach(b=>{b.classList.remove('selected');b.classList.add('matched');b.disabled=true;});updateMatchingStats();if(g.done.size===g.chosen.length)document.getElementById('matchMessage').textContent=`🎉 Hoàn thành ${g.chosen.length} cặp! Bạn chọn sai ${g.errors} lần.`;else document.getElementById('matchMessage').textContent='✓ Ghép đúng!';}
+ else{g.errors++;g.locked=true;[first.button,button].forEach(b=>b.classList.add('mismatch'));document.getElementById('matchMessage').textContent='Chưa đúng, hãy thử lại.';updateMatchingStats();setTimeout(()=>{[first.button,button].forEach(b=>b.classList.remove('mismatch','selected'));g.locked=false;},550);}
+}
+function exitMatching(){toggleMatchSettings(false);matchGame=null;document.getElementById('matchSection').hidden=true;document.getElementById('inputArea').style.display='';document.getElementById('tableContainer').style.display='';const flash=document.getElementById('flashcardSection');if(flash)flash.hidden=true;window.scrollTo({top:0,behavior:'smooth'});}
+</script>
+</body>
 </html>
 
 
