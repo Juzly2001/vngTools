@@ -2623,7 +2623,14 @@
     .practice-scroll { padding:18px; }
     #practiceDialog .practice-actions { padding:14px 18px; }
 }
-</style><style>.practice-heard-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; } #practiceHeardAudio { width:34px; height:34px; flex-basis:34px; } </style></head>
+</style><style>.practice-heard-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; } #practiceHeardAudio { width:34px; height:34px; flex-basis:34px; } </style><style>
+#practiceDialog .practice-mode-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 0 16px; border-top:1px solid var(--line); }
+#practiceDialog .practice-mode-label { color:var(--text-muted); font-size:.75rem; white-space:nowrap; }
+#practiceDialog #practiceMode { width:auto; min-width:0; max-width:68%; min-height:38px; padding-top:7px; padding-bottom:7px; font-size:.8rem; border-radius:10px; background-color:var(--example-bg); }
+#practiceDialog .practice-prompt { padding-top:4px; padding-bottom:22px; }
+#practiceDialog .practice-info { padding-top:4px; margin-top:14px; }
+#practiceDialog .practice-scroll { scrollbar-gutter:stable; }
+</style></head>
 
 <body>
 
@@ -4429,47 +4436,46 @@ for (const position of ['afterbegin', 'beforeend']) {
     <div class="practice-scroll">
         <section class="practice-prompt"><div class="practice-section-label">NỘI DUNG CẦN ĐỌC</div><div id="practiceTarget" lang="zh-CN"></div><button type="button" class="fc-button practice-listen" onclick="stopPractice(); speakChinese(practiceWord)">🔊 Nghe mẫu</button></section>
         <section class="practice-result"><div class="practice-heard-heading"><small>MÁY NGHE ĐƯỢC</small><button id="practiceHeardAudio" type="button" class="fc-icon-button" title="Nghe nội dung máy nhận dạng" aria-label="Nghe nội dung máy nhận dạng" disabled onclick="playRecognizedPractice()">🔊</button></div><div id="practiceHeard" lang="zh-CN">—</div><p id="practiceStatus" role="status" aria-live="polite"></p></section>
-        <section id="practiceRecording" hidden><div class="practice-recording-heading"><span aria-hidden="true">◉</span><strong>Bản thu của bạn</strong></div><audio id="practicePlayback" controls preload="metadata"></audio><p class="practice-note">Nghe lại để so sánh với giọng mẫu. Bản thu được thay khi bạn đọc lại.</p></section>
-        <details class="practice-info"><summary>Thông tin nhận dạng & quyền riêng tư</summary><p class="practice-note">Nhận dạng tiếng Trung phổ thông, không chấm chính xác từng thanh điệu. Âm thanh có thể được gửi tới dịch vụ nhận dạng của trình duyệt và cần Internet. Bản thu nghe lại chỉ được giữ tạm trong trang.</p></details>
+        
+        <details class="practice-info"><summary>Hỗ trợ trình duyệt & thông tin nhận dạng</summary><p id="practiceSupport" class="practice-note" role="status"></p><p class="practice-note">Nhận dạng tiếng Trung phổ thông, không chấm chính xác từng thanh điệu. Âm thanh có thể được gửi tới dịch vụ nhận dạng của trình duyệt và cần Internet.</p></details>
     </div>
-    <footer class="practice-actions"><button id="practiceStart" type="button" class="fc-button" onclick="startPractice()">🎤 Bắt đầu đọc</button><button id="practiceStop" type="button" class="fc-button" disabled onclick="stopPractice(); document.getElementById('practiceStatus').textContent='Đã dừng nghe.'">■ Dừng</button></footer>
+    <footer class="practice-actions"><button id="practiceStart" type="button" class="fc-button" onclick="startPractice()">🎤 Bắt đầu đọc</button><button id="practiceStop" type="button" class="fc-button" disabled onclick="finishPractice()">■ Dừng</button></footer>
 </dialog>
 
 <script>let speechPractice = null;
 let speechPracticeTimer = null;
 let practiceWord = '';
-let practiceRecorder = null;
-let practiceStream = null;
-let practiceAudioURL = null;
-let practiceRun = 0;
-function clearPracticeAudio() {
-    const audio = document.getElementById('practicePlayback');
-    audio.pause();
-    audio.removeAttribute('src');
-    audio.load();
-    if (practiceAudioURL) URL.revokeObjectURL(practiceAudioURL);
-    practiceAudioURL = null;
-    document.getElementById('practiceRecording').hidden = true;
+function practiceCapabilities() {
+    return {
+        recognize: !!(window.SpeechRecognition || window.webkitSpeechRecognition),
+        secure: window.isSecureContext !== false
+    };
+}
+function configurePracticeSupport() {
+    const support = practiceCapabilities();
+    document.getElementById('practiceStart').disabled = !support.secure || !support.recognize;
+    const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    let note = support.recognize ? 'Có giao diện nhận dạng giọng nói; khả năng hoạt động còn phụ thuộc dịch vụ và quyền micro.' : 'Trình duyệt này chưa hỗ trợ nhận dạng giọng nói. Hãy thử trình duyệt khác.';
+    if (ios) note += ' Trên iPhone/iPad: thử Safari, cho phép micro và kiểm tra Siri đã bật.';
+    else if (/Android/.test(navigator.userAgent)) note += ' Trên Android: thử Chrome, cho phép micro và mở bằng trình duyệt chính.';
+    if (!support.secure) note = 'Trang chưa có kết nối an toàn. Mở bằng HTTPS để sử dụng micro.';
+    else if (location.protocol === 'file:') note += ' Bạn đang mở tệp HTML. Nên dùng địa chỉ HTTPS để kiểm tra trên điện thoại.';
+    document.getElementById('practiceSupport').textContent = note;
 }
 function normalizeSpokenWord(text) {
     return String(text).normalize('NFKC').replace(/[\p{P}\p{Z}\s]/gu, '').toLowerCase();
 }
 function stopPractice() {
-    practiceRun++;
-    if (practiceRecorder && practiceRecorder.state !== 'inactive') practiceRecorder.stop();
-    practiceRecorder = null;
-    if (practiceStream) practiceStream.getTracks().forEach(track => track.stop());
-    practiceStream = null;
     clearTimeout(speechPracticeTimer);
     const active = speechPractice;
     speechPractice = null;
     if (active) active.abort();
     document.getElementById('practiceStart').disabled = false;
     document.getElementById('practiceStop').disabled = true;
+    if (document.getElementById('practiceSupport')) configurePracticeSupport();
 }
 function openPronunciation(button, example = false) {
     stopPractice();
-    clearPracticeAudio();
     const row = button.closest('tr');
     practiceWord = example
         ? (row ? vocabData.find(item => item.word === row.dataset.word)?.example : flashWords[flashIndex]?.example) || ''
@@ -4481,54 +4487,25 @@ function openPronunciation(button, example = false) {
     document.getElementById('practiceStatus').textContent = 'Bấm Bắt đầu, rồi đọc nội dung bên trên bằng tiếng Trung phổ thông.';
     document.getElementById('practiceDialog').showModal();
 }
-async function startPractice() {
+function startPractice() {
     stopPractice();
-    clearPracticeAudio();
-    const run = practiceRun;
     const status = document.getElementById('practiceStatus');
     const API = window.SpeechRecognition || window.webkitSpeechRecognition;
     document.getElementById('practiceStart').disabled = true;
     document.getElementById('practiceStop').disabled = false;
-    status.textContent = 'Đang mở micro để thu giọng đọc…';
+    status.textContent = 'Đang mở micro để nhận dạng…';
     window.speechSynthesis?.cancel();
-    if (!navigator.mediaDevices?.getUserMedia || !window.MediaRecorder) {
-        status.textContent = 'Trình duyệt này chưa hỗ trợ thu âm. Hãy mở trang bằng trình duyệt có hỗ trợ, qua HTTPS hoặc localhost.';
-        stopPractice(); return;
-    }
-    try {
-        const stream = await navigator.mediaDevices.getUserMedia({audio:true});
-        if (run !== practiceRun) { stream.getTracks().forEach(track => track.stop()); return; }
-        practiceStream = stream;
-        const recorder = new MediaRecorder(stream);
-        practiceRecorder = recorder;
-        const chunks = [];
-        recorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
-        recorder.onstop = () => {
-            // A stopped recording may complete asynchronously; never overwrite a newer attempt.
-            if (practiceRun !== run + 1 || !document.getElementById('practiceDialog').open || !chunks.length) return;
-            const blob = new Blob(chunks, {type:recorder.mimeType || chunks[0].type});
-            practiceAudioURL = URL.createObjectURL(blob);
-            document.getElementById('practicePlayback').src = practiceAudioURL;
-            document.getElementById('practiceRecording').hidden = false;
-        };
-        recorder.onerror = () => { if (run === practiceRun) { status.textContent = 'Không thu được âm thanh. Hãy thử lại.'; stopPractice(); } };
-        recorder.start();
-    } catch (error) {
-        if (run !== practiceRun) return;
-        status.textContent = error.name === 'NotAllowedError' ? 'Micro chưa được cho phép. Kiểm tra quyền micro trong cài đặt của trang.' : 'Không mở được micro để thu âm. Kiểm tra thiết bị rồi thử lại.';
-        stopPractice(); return;
-    }
-    if (!API) {
-        status.textContent = 'Đang thu âm. Trình duyệt chưa hỗ trợ đối chiếu giọng nói; bạn vẫn có thể nghe lại. Bấm Dừng khi đọc xong.';
-        speechPracticeTimer = setTimeout(stopPractice, 30000);
-        return;
-    }
-    const recognition = new API();
+    document.getElementById('practiceHeard').textContent = '—';
+    if (!API) { status.textContent = 'Trình duyệt này chưa hỗ trợ nhận dạng giọng nói. Hãy thử trình duyệt khác.'; stopPractice(); return; }
+    let interimHeard = '';
+    let recognition;
+    try { recognition = new API(); }
+    catch (_) { status.textContent = 'Dịch vụ nhận dạng không khởi tạo được. Hãy kiểm tra quyền micro hoặc thử trình duyệt khác.'; stopPractice(); return; }
     speechPractice = recognition;
     recognition.lang = 'zh-CN';
     recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.maxAlternatives = 3;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
     document.getElementById('practiceStart').disabled = true;
     document.getElementById('practiceStop').disabled = false;
     document.getElementById('practiceHeard').textContent = '—';
@@ -4536,7 +4513,15 @@ async function startPractice() {
     recognition.onstart = () => { if (speechPractice === recognition) status.textContent = 'Đang nghe… Hãy đọc nội dung bên trên, sau đó ngừng một chút.'; };
     recognition.onresult = event => {
         if (speechPractice !== recognition) return;
-        const heard = event.results[0][0].transcript;
+        const parts = Array.from(event.results);
+        const heard = parts.map(result => result[0]?.transcript || '').join('').trim();
+        if (!heard) return;
+        interimHeard = heard;
+        if (!parts.every(result => result.isFinal)) {
+            document.getElementById('practiceHeard').textContent = heard;
+            status.textContent = 'Đang nghe… Nội dung này là kết quả tạm.';
+            return;
+        }
         document.getElementById('practiceHeard').textContent = heard;
         const exact = normalizeSpokenWord(heard) === normalizeSpokenWord(practiceWord);
         let sameSound = false;
@@ -4554,7 +4539,7 @@ async function startPractice() {
     };
     recognition.onend = () => {
         if (speechPractice !== recognition) return;
-        status.textContent = 'Đã dừng nghe nhưng chưa có kết quả. Hãy thử lại.';
+        status.textContent = interimHeard ? 'Trình duyệt chỉ trả kết quả tạm bên trên, chưa đủ để đối chiếu. Hãy thử lại.' : 'Trình duyệt đã ngừng nghe mà không trả kết quả. Hãy mở trang trong trình duyệt chính (không qua trình duyệt trong ứng dụng), kiểm tra mạng và quyền micro, rồi thử lại.';
         stopPractice();
     };
     try {
@@ -4566,6 +4551,38 @@ document.getElementById('practiceDialog').addEventListener('close', stopPractice
 document.getElementById('practiceDialog').addEventListener('cancel', stopPractice);
 window.addEventListener('pagehide', stopPractice);
 document.addEventListener('visibilitychange', () => { if(document.hidden) stopPractice(); });
+
+// Only dismiss when both the press and release occur outside the dialog.
+{
+    const dialog = document.getElementById('practiceDialog');
+    let pressedOutside = false;
+    const outside = event => {
+        const rect = dialog.getBoundingClientRect();
+        return event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom;
+    };
+    dialog.addEventListener('pointerdown', event => {
+        pressedOutside = event.target === dialog && outside(event);
+    });
+    dialog.addEventListener('click', event => {
+        if (pressedOutside && event.target === dialog && outside(event)) {
+            stopPractice();
+            dialog.close();
+        }
+        pressedOutside = false;
+    });
+    dialog.addEventListener('pointercancel', () => { pressedOutside = false; });
+}
+
+function finishPractice() {
+    if (speechPractice) {
+        document.getElementById('practiceStatus').textContent = 'Đang chờ kết quả nhận dạng…';
+        try { speechPractice.stop(); }
+        catch (_) { stopPractice(); document.getElementById('practiceStatus').textContent = 'Phiên nghe đã kết thúc. Bạn có thể thử lại.'; }
+    } else {
+        stopPractice();
+        document.getElementById('practiceStatus').textContent = 'Đã dừng nghe.';
+    }
+}
 </script><script>
 // Only dismiss when both the press and release occur outside the dialog.
 {
@@ -4581,20 +4598,17 @@ document.addEventListener('visibilitychange', () => { if(document.hidden) stopPr
     dialog.addEventListener('click', event => {
         if (pressedOutside && event.target === dialog && outside(event)) {
             stopPractice();
-            document.getElementById('practicePlayback').pause();
             dialog.close();
         }
         pressedOutside = false;
     });
     dialog.addEventListener('pointercancel', () => { pressedOutside = false; });
-    dialog.addEventListener('close', () => { document.getElementById('practicePlayback').pause(); });
 }
 </script><script>
 function playRecognizedPractice() {
  const text = document.getElementById('practiceHeard').textContent.trim();
  if (!text || text === '—') return;
  stopPractice();
- document.getElementById('practicePlayback').pause();
  window.speechSynthesis?.cancel();
  speakChinese(text);
 }
