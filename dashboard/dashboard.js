@@ -115,7 +115,7 @@ let animationFrameId = null;
 let stars = [];        
 let backgroundStars = []; 
 let clouds = [];
-let isCanvasEnabled = localStorage.getItem('canvas-enabled') === 'the-first-time' ? false : (localStorage.getItem('canvas-enabled') !== 'false');
+let isCanvasEnabled = localStorage.getItem('canvas-enabled') === 'true';
 
 function resizeCanvas() {
     if (!canvas) return;
@@ -6001,13 +6001,21 @@ function ensureDesktopBackgroundCanvas() {
     if (isDesktop) {
         // Không ép localStorage nếu người dùng tự tắt bằng nút,
         // nhưng nếu đang bị mobile-lite/patch cũ ẩn bằng style thì mở lại.
-        if (localStorage.getItem("canvas-enabled") !== "false") {
+        if (localStorage.getItem("canvas-enabled") === "true") {
             isCanvasEnabled = true;
             canvasEl.style.display = "block";
             resizeCanvas?.();
 
             if (!animationFrameId && typeof drawBackground === "function") {
                 animationFrameId = requestAnimationFrame(drawBackground);
+            }
+        } else {
+            isCanvasEnabled = false;
+            canvasEl.style.display = "none";
+
+            if (animationFrameId) {
+                cancelAnimationFrame(animationFrameId);
+                animationFrameId = null;
             }
         }
     }
