@@ -764,7 +764,7 @@ function openSequenceEditor(existing = null) {
     const heading = document.createElement("h3"); heading.textContent = existing ? "Sửa dòng gửi nhiều tin" : "Tạo dòng gửi nhiều tin"; panel.appendChild(heading);
     const label = (text, el) => { const wrap=document.createElement("label");wrap.style.cssText="display:block;margin:10px 0";wrap.append(document.createTextNode(text),el);panel.appendChild(wrap);return el; };
     const name = document.createElement("input"); name.placeholder="Nhập ID hiển thị ở cột 1"; name.value=existing?.id || ""; name.style.cssText="display:block;width:100%;box-sizing:border-box;padding:9px;margin-top:5px;border:1px solid #ccc;border-radius:6px";label("ID của dòng mới",name);
-    const delay = document.createElement("input"); delay.type="number";delay.min="300";delay.step="100";delay.value=existing?.delay || 1500;delay.style.cssText=name.style.cssText;label("Thời gian chờ giữa các tin (mili giây)",delay);
+    const delay = document.createElement("input"); delay.type="number";delay.min="300";delay.step="100";delay.value=existing?.delay || 1000;delay.style.cssText=name.style.cssText;label("Thời gian chờ giữa các tin (mili giây) => (1000ms = 1s)",delay);
     const search = document.createElement("input");search.placeholder="Tìm theo ID hoặc nội dung...";search.style.cssText=name.style.cssText;label("Chọn mẫu câu từ dữ liệu hiện tại",search);
     const choices = document.createElement("div");choices.style.cssText="max-height:190px;overflow:auto;border:1px solid #ddd;border-radius:6px";panel.appendChild(choices);
     const selectedTitle=document.createElement("h4");selectedTitle.textContent="Thứ tự gửi (dùng ↑ ↓ để sắp xếp)";panel.appendChild(selectedTitle);
