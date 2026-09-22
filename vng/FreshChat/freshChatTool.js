@@ -9,6 +9,55 @@ const rows=[
     {id:"HT - Hỗ trợ thêm",text:"Dạ Anh/chị còn cần em hỗ trợ thêm thông tin gì khác nữa không ạ?"} 
 ]; 
 
+// Các dòng gửi theo trình tự được lưu riêng, không mất khi tải lại Google Sheets.
+const SEQUENCE_KEY = "FRESHCHAT_SEND_SEQUENCES_V1";
+let sequences = [];
+try { sequences = JSON.parse(localStorage.getItem(SEQUENCE_KEY) || "[]"); if (!Array.isArray(sequences)) sequences = []; } catch (_) { sequences = []; }
+const saveSequences = () => localStorage.setItem(SEQUENCE_KEY, JSON.stringify(sequences));
+const sequenceText = item => item.steps.map((step, i) => `${i + 1}. ${step.id}\n${step.text}`).join("\n\n");
+const PIN_KEY = "FRESHCHAT_PINNED_ROWS_V1";
+let pinnedRows = [];
+try { pinnedRows = JSON.parse(localStorage.getItem(PIN_KEY) || "[]"); if (!Array.isArray(pinnedRows)) pinnedRows = []; } catch (_) { pinnedRows = []; }
+const rowKey = r => (r.sequence ? "sequence:" : "normal:") + r.id;
+const savePins = () => localStorage.setItem(PIN_KEY, JSON.stringify(pinnedRows));
+// Pinned rows follow the saved order; unpinned rows retain their original order.
+const allRows = () => [...rows, ...sequences.map(item => ({id:item.id, text:sequenceText(item), sequence:item}))]
+    .sort((a,b) => {
+        const ai=pinnedRows.indexOf(rowKey(a)), bi=pinnedRows.indexOf(rowKey(b));
+        if(ai !== -1 && bi !== -1) return ai-bi;
+        if(ai !== -1) return -1;
+        if(bi !== -1) return 1;
+        return 0;
+    });
+const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+let activeSequence = false;
+async function sendMessage(text) {
+    const input = document.querySelector(".msg-reply-box[contenteditable='true']") || document.querySelector(".msg-reply-box");
+    if (!input) throw new Error("Không tìm thấy ô nhập tin nhắn Freshchat.");
+    input.focus();
+    input.innerHTML = "";
+    input.textContent = String(text).replace(/\r\n?/g, "\n");
+    input.dispatchEvent(new InputEvent("input", {bubbles:true, cancelable:true}));
+    await wait(100);
+    const sendBtn = document.querySelector("div[data-test-fc-send-button='root']");
+    if (!sendBtn) throw new Error("Không tìm thấy nút gửi Freshchat.");
+    sendBtn.dispatchEvent(new MouseEvent("click", {bubbles:true, cancelable:true}));
+}
+async function runSequence(item, button) {
+    if (activeSequence) return;
+    activeSequence = true;
+    const original = button.textContent;
+    button.disabled = true;
+    try {
+        for (let i = 0; i < item.steps.length; i++) {
+            button.textContent = `${i + 1}/${item.steps.length}`;
+            await sendMessage(item.steps[i].text);
+            if (i < item.steps.length - 1) await wait(item.delay || 1500);
+        }
+    } catch (error) { alert(error.message + " Các bước còn lại chưa được gửi."); }
+    finally { button.textContent = original; button.disabled = false; activeSequence = false; }
+}
+
 // =========================
 // HÀM THÊM DÒNG
 // =========================
@@ -173,7 +222,7 @@ attachTooltip(keyboardToggle, "Bật/Tắt phím ảo");
 
 searchContainer.appendChild(searchInput);
 searchContainer.appendChild(clearBtn);
-searchContainer.appendChild(keyboardToggle);
+// Phím ảo được mở từ menu ⋯, không đặt trong ô tìm kiếm.
 
 // =========================
 // HÀM GÕ TIẾNG VIỆT TELEX (giống Unikey cơ bản)
@@ -426,7 +475,7 @@ addShortcutBtn.style.background = "transparent";
 addShortcutBtn.style.cursor = "pointer";
 // addShortcutBtn.title = "Tạo / Import Key";
 attachTooltip(addShortcutBtn, "Tạo / Import Key");
-searchContainer.appendChild(addShortcutBtn); // đưa vào cạnh input
+// Tạo / Import Key được mở từ menu ⋯, không đặt trong ô tìm kiếm.
 
 const shortcuts = [ 
     "HT",
@@ -654,6 +703,108 @@ renderShortcuts();
 
 
 
+// Tạo và sửa dòng gửi theo trình tự: chọn nội dung trực tiếp từ cột ID và nội dung.
+const sequenceAddBtn = document.createElement("button");
+sequenceAddBtn.type = "button";
+sequenceAddBtn.textContent = "Tạo dòng gửi nhiều tin";
+sequenceAddBtn.onclick = () => openSequenceEditor();
+
+const toolMenuBtn = document.createElement("button");
+toolMenuBtn.textContent = "⋯";
+toolMenuBtn.title = "Tùy chọn";
+toolMenuBtn.style.cssText = "position:absolute;right:5px;top:3px;width:28px;height:25px;border:0;border-radius:5px;background:transparent;color:#fff;font-size:21px;line-height:20px;cursor:pointer;z-index:2";
+const toolMenu = document.createElement("div");
+toolMenu.style.cssText = "display:none;position:absolute;right:5px;top:30px;min-width:205px;padding:5px;background:#fff;border:1px solid #dce4ef;border-radius:8px;box-shadow:0 6px 22px #0003;z-index:10;box-sizing:border-box";
+// Mọi mục menu sử dụng cùng chiều cao, khoảng cách, font, màu và hiệu ứng hover.
+const toolMenuItemStyle = "display:flex;align-items:center;gap:9px;width:100%;min-height:35px;padding:8px 10px;box-sizing:border-box;border:0;border-radius:5px;background:transparent;color:#24344a;text-align:left;cursor:pointer;font:13px Segoe UI,Arial,sans-serif;line-height:19px";
+function styleToolMenuItem(button, icon, label) {
+    button.style.cssText = toolMenuItemStyle;
+    button.replaceChildren();
+    const symbol = document.createElement("span");
+    symbol.textContent = icon;
+    symbol.style.cssText = "display:inline-flex;align-items:center;justify-content:center;flex:0 0 19px;width:19px;height:19px;font-size:15px;line-height:19px";
+    const text = document.createElement("span");
+    text.textContent = label;
+    button.append(symbol, text);
+    button.onmouseenter = () => button.style.background = "#e7f1ff";
+    button.onmouseleave = () => button.style.background = "transparent";
+    return text;
+}
+styleToolMenuItem(sequenceAddBtn, "+", "Tạo dòng gửi nhiều tin");
+toolMenu.appendChild(sequenceAddBtn);
+const keyMenuBtn = document.createElement("button");
+keyMenuBtn.type = "button";
+styleToolMenuItem(keyMenuBtn, "+", "Tạo / Import Key");
+keyMenuBtn.onclick = () => { toolMenu.style.display="none"; addShortcutBtn.click(); };
+toolMenu.appendChild(keyMenuBtn);
+const keyboardMenuBtn = document.createElement("button");
+keyboardMenuBtn.type = "button";
+const keyboardMenuLabel = styleToolMenuItem(keyboardMenuBtn, "⌨", "Hiện phím ảo");
+keyboardMenuBtn.onclick = () => { toolMenu.style.display="none"; keyboardToggle.click(); keyboardMenuLabel.textContent = keyboard.style.display === "none" ? "Hiện phím ảo" : "Ẩn phím ảo"; };
+toolMenu.appendChild(keyboardMenuBtn);
+container.style.position = "fixed";
+container.append(toolMenuBtn, toolMenu);
+toolMenuBtn.onclick = e => {e.stopPropagation();toolMenu.style.display = toolMenu.style.display === "none" ? "block" : "none";};
+sequenceAddBtn.addEventListener("click", () => {toolMenu.style.display = "none";});
+// Đóng menu ⋯ khi nhấp bất kỳ đâu bên ngoài, kể cả ngoài khung công cụ.
+document.addEventListener("pointerdown", e => {
+    if (!toolMenu.contains(e.target) && !toolMenuBtn.contains(e.target)) {
+        toolMenu.style.display = "none";
+    }
+}, true);
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") toolMenu.style.display = "none";
+});
+function openSequenceEditor(existing = null) {
+    const overlay = document.createElement("div");
+    overlay.style.cssText = "position:fixed;inset:0;background:#0007;z-index:2147483647;display:flex;align-items:center;justify-content:center;padding:12px;box-sizing:border-box";
+    const panel = document.createElement("div");
+    panel.style.cssText = "width:min(720px,100%);max-height:90vh;overflow:auto;background:white;border-radius:12px;padding:18px;box-sizing:border-box;color:#222;font:13px Segoe UI,Arial,sans-serif;box-shadow:0 12px 40px #0004";
+    overlay.appendChild(panel);
+    const heading = document.createElement("h3"); heading.textContent = existing ? "Sửa dòng gửi nhiều tin" : "Tạo dòng gửi nhiều tin"; panel.appendChild(heading);
+    const label = (text, el) => { const wrap=document.createElement("label");wrap.style.cssText="display:block;margin:10px 0";wrap.append(document.createTextNode(text),el);panel.appendChild(wrap);return el; };
+    const name = document.createElement("input"); name.placeholder="Nhập ID hiển thị ở cột 1"; name.value=existing?.id || ""; name.style.cssText="display:block;width:100%;box-sizing:border-box;padding:9px;margin-top:5px;border:1px solid #ccc;border-radius:6px";label("ID của dòng mới",name);
+    const delay = document.createElement("input"); delay.type="number";delay.min="300";delay.step="100";delay.value=existing?.delay || 1500;delay.style.cssText=name.style.cssText;label("Thời gian chờ giữa các tin (mili giây)",delay);
+    const search = document.createElement("input");search.placeholder="Tìm theo ID hoặc nội dung...";search.style.cssText=name.style.cssText;label("Chọn mẫu câu từ dữ liệu hiện tại",search);
+    const choices = document.createElement("div");choices.style.cssText="max-height:190px;overflow:auto;border:1px solid #ddd;border-radius:6px";panel.appendChild(choices);
+    const selectedTitle=document.createElement("h4");selectedTitle.textContent="Thứ tự gửi (dùng ↑ ↓ để sắp xếp)";panel.appendChild(selectedTitle);
+    const selectedList=document.createElement("div");selectedList.style.cssText="max-height:240px;overflow:auto";panel.appendChild(selectedList);
+    let steps = existing ? existing.steps.map(x=>({...x})) : [];
+    const makeBtn = (text, fn) => {const b=document.createElement("button");b.textContent=text;b.type="button";b.style.cssText="padding:5px 9px;margin:2px;border:1px solid #ccd4e0;border-radius:5px;background:white;cursor:pointer";b.onclick=fn;return b;};
+    function renderSelected() {
+        selectedList.replaceChildren();
+        steps.forEach((step,i)=>{
+            const row=document.createElement("div");row.style.cssText="border-bottom:1px solid #eee;padding:7px 0;display:flex;align-items:flex-start;gap:8px";
+            const content=document.createElement("div");content.style.cssText="flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere";
+            const id=document.createElement("b");id.textContent=`${i+1}. ${step.id}`;
+            const body=document.createElement("div");body.textContent=step.text;content.append(id,body);row.appendChild(content);
+            row.append(makeBtn("↑",()=>{if(i){[steps[i-1],steps[i]]=[steps[i],steps[i-1]];renderSelected();}}),makeBtn("↓",()=>{if(i<steps.length-1){[steps[i+1],steps[i]]=[steps[i],steps[i+1]];renderSelected();}}),makeBtn("×",()=>{steps.splice(i,1);renderSelected();}));selectedList.appendChild(row);
+        });
+    }
+    function renderChoices() {
+        choices.replaceChildren();const q=search.value.trim().toLowerCase();
+        rows.filter(r=>(r.id+" "+r.text).toLowerCase().includes(q)).forEach(r=>{
+            const row=document.createElement("div");row.style.cssText="display:flex;gap:10px;padding:8px;border-bottom:1px solid #eee;align-items:flex-start";
+            const info=document.createElement("div");info.style.cssText="flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere";
+            const id=document.createElement("b");id.textContent=r.id;const body=document.createElement("div");body.textContent=r.text;info.append(id,body);
+            row.append(info,makeBtn("+ Thêm",()=>{steps.push({id:r.id,text:r.text});renderSelected();}));choices.appendChild(row);
+        });
+    }
+    search.oninput=renderChoices;renderChoices();renderSelected();
+    const actions=document.createElement("div");actions.style.cssText="display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px;margin-top:16px";
+    actions.appendChild(makeBtn("Hủy",()=>overlay.remove()));
+    if(existing) actions.appendChild(makeBtn("Xóa dòng",()=>{if(!confirm("Xóa dòng gửi này?"))return;sequences=sequences.filter(x=>x!==existing);saveSequences();renderRows();overlay.remove();}));
+    const save=makeBtn("Lưu",()=>{
+        const id=name.value.trim();if(!id){alert("Vui lòng nhập ID.");name.focus();return;}
+        if(!steps.length){alert("Vui lòng chọn ít nhất một mẫu câu.");return;}
+        if(sequences.some(x=>x!==existing&&x.id.toLowerCase()===id.toLowerCase())){alert("ID này đã được dùng cho một dòng gửi nhiều tin khác.");return;}
+        const value={id,delay:Math.max(300,Number(delay.value)||1500),steps};
+        if(existing) Object.assign(existing,value);else sequences.push(value);
+        saveSequences();renderRows();overlay.remove();
+    });save.style.cssText+=";background:#0b74de;color:white";actions.appendChild(save);panel.appendChild(actions);
+    document.body.appendChild(overlay);
+}
+
 // =========================
 // Tooltip
 // =========================
@@ -749,12 +900,110 @@ function attachTooltip(el, text) {
 // Hàm render bảng
 // =========================
 let hideTooltipTimeout;
+// Menu chuột phải: ghim mọi dòng, sửa/xóa riêng dòng gửi nhiều tin.
+let draggingPinnedKey = null;
+// Gợi ý kéo thả riêng, không dùng title mặc định của trình duyệt.
+const pinDragHint = document.createElement("div");
+pinDragHint.setAttribute("role", "tooltip");
+pinDragHint.style.cssText = "position:fixed;z-index:2147483647;display:none;pointer-events:none;max-width:225px;padding:7px 10px;border:1px solid #bfdbfe;border-radius:8px;background:#f0f7ff;color:#174ea6;box-shadow:0 5px 18px #1e40af24;font:12px/1.45 Segoe UI,Arial,sans-serif;white-space:normal;";
+pinDragHint.textContent = "↕ Giữ và kéo để đổi thứ tự dòng đã ghim";
+document.body.appendChild(pinDragHint);
+let pinHintTimer = null;
+function hidePinDragHint(){clearTimeout(pinHintTimer);pinHintTimer=null;pinDragHint.style.display="none";}
+function showPinDragHint(event){
+    hidePinDragHint();
+    if(draggingPinnedKey || event.target.closest("button")) return;
+    const x=event.clientX,y=event.clientY;
+    pinHintTimer=setTimeout(()=>{
+        if(draggingPinnedKey) return;
+        pinDragHint.style.display="block";
+        pinDragHint.style.left=Math.max(6,Math.min(x+12,innerWidth-pinDragHint.offsetWidth-6))+"px";
+        pinDragHint.style.top=Math.max(6,Math.min(y+14,innerHeight-pinDragHint.offsetHeight-6))+"px";
+    },420);
+}
+
+function movePinnedRow(sourceKey, targetKey, insertAfter) {
+    if(sourceKey === targetKey || !pinnedRows.includes(sourceKey) || !pinnedRows.includes(targetKey)) return;
+    const next=pinnedRows.filter(k=>k!==sourceKey);
+    const targetIndex=next.indexOf(targetKey);
+    next.splice(targetIndex+(insertAfter?1:0),0,sourceKey);
+    pinnedRows=next;
+    savePins();
+    renderRows();
+}
+const rowMenu = document.createElement("div");
+rowMenu.style.cssText = "display:none;position:fixed;z-index:2147483646;min-width:170px;padding:5px;background:#fff;border:1px solid #dce4ef;border-radius:8px;box-shadow:0 8px 26px #0003;font:13px Segoe UI,Arial,sans-serif";
+document.body.appendChild(rowMenu);
+function hideRowMenu(){rowMenu.style.display="none";}
+function showRowMenu(event, r) {
+    event.preventDefault();event.stopPropagation();hideRowMenu();hidePinDragHint();tooltip.style.opacity=0;
+    rowMenu.replaceChildren();
+    const action=(label,callback)=>{const b=document.createElement("button");b.type="button";b.textContent=label;b.style.cssText="display:block;width:100%;padding:9px 11px;text-align:left;background:transparent;border:0;border-radius:5px;cursor:pointer;color:#24344a";b.onmouseenter=()=>b.style.background="#e7f1ff";b.onmouseleave=()=>b.style.background="transparent";b.onclick=()=>{hideRowMenu();callback();};rowMenu.appendChild(b);};
+    const key=rowKey(r), isPinned=pinnedRows.includes(key);
+    action(isPinned ? "Bỏ ghim dòng" : "Ghim dòng lên đầu",()=>{pinnedRows=isPinned?pinnedRows.filter(k=>k!==key):[...pinnedRows.filter(k=>k!==key),key];savePins();renderRows();});
+    if(r.sequence){
+        action("Sửa dòng gửi nhiều tin",()=>openSequenceEditor(r.sequence));
+        action("Xóa dòng gửi nhiều tin",()=>{if(!confirm("Xóa dòng gửi này?"))return;sequences=sequences.filter(x=>x!==r.sequence);pinnedRows=pinnedRows.filter(k=>k!==key);savePins();saveSequences();renderRows();});
+    }
+    rowMenu.style.display="block";
+    const left=Math.max(5,Math.min(event.clientX,innerWidth-rowMenu.offsetWidth-5));
+    const top=Math.max(5,Math.min(event.clientY,innerHeight-rowMenu.offsetHeight-5));
+    rowMenu.style.left=left+"px";rowMenu.style.top=top+"px";
+}
+document.addEventListener("click",hideRowMenu);
+document.addEventListener("keydown",e=>{if(e.key==="Escape")hideRowMenu();});
+window.addEventListener("scroll",hideRowMenu,true);
 function renderRows(){ 
     Array.from(table.querySelectorAll("tr[data-row='true']")).forEach(tr=>tr.remove()); 
-    rows.forEach(r=>{ 
+    allRows().forEach(r=>{ 
         const tr=document.createElement("tr"); 
         tr.setAttribute("data-row","true"); 
-        tr.setAttribute("data-id",r.id.toLowerCase()); 
+        tr.setAttribute("data-id",r.id.toLowerCase());
+        if (r.sequence) { tr.style.background = "#e7f1ff"; tr.style.color = "#174ea6"; }
+        const pinnedKey=rowKey(r);
+        if (pinnedRows.includes(pinnedKey)) {
+            tr.style.boxShadow = "inset 3px 0 #e3a008";
+            tr.draggable = true;
+            tr.removeAttribute("title");
+            tr.style.cursor = "grab";
+            tr.addEventListener("mouseenter",showPinDragHint);
+            tr.addEventListener("mouseleave",hidePinDragHint);
+            tr.addEventListener("mousedown",hidePinDragHint);
+            tr.addEventListener("dragstart", e => {
+                if (e.target.closest && e.target.closest("button")) {e.preventDefault();return;}
+                draggingPinnedKey=pinnedKey;
+                hidePinDragHint();
+                e.dataTransfer.effectAllowed="move";
+                e.dataTransfer.setData("text/plain",pinnedKey);
+                tr.style.opacity="0.55";
+                tooltip.style.opacity=0;
+                hideRowMenu();
+            });
+            tr.addEventListener("dragover", e => {
+                if(!draggingPinnedKey || draggingPinnedKey===pinnedKey) return;
+                e.preventDefault();
+                e.dataTransfer.dropEffect="move";
+                const after=e.clientY>tr.getBoundingClientRect().top+tr.getBoundingClientRect().height/2;
+                tr.style.outline=after?"2px solid #2563eb":"2px solid #0b74de";
+                tr.style.outlineOffset=after?"-2px":"2px";
+            });
+            tr.addEventListener("dragleave",()=>{tr.style.outline="";tr.style.outlineOffset="";});
+            tr.addEventListener("drop",e=>{
+                e.preventDefault();
+                const after=e.clientY>tr.getBoundingClientRect().top+tr.getBoundingClientRect().height/2;
+                tr.style.outline="";tr.style.outlineOffset="";
+                const source=draggingPinnedKey;
+                draggingPinnedKey=null;
+                if(source)movePinnedRow(source,pinnedKey,after);
+            });
+            tr.addEventListener("dragend",()=>{
+                draggingPinnedKey=null;
+                tr.style.opacity="";
+                tr.style.outline="";
+                tr.style.outlineOffset="";
+            });
+        }
+        tr.addEventListener("contextmenu", e => showRowMenu(e,r));
 
         const td1=document.createElement("td"); 
         td1.innerText=r.id; 
@@ -785,7 +1034,7 @@ function renderRows(){
             tooltip.appendChild(createFragmentFromText(r.text));
 
             const rect = td2.getBoundingClientRect();
-            tooltip.style.left = (rect.left - window.scrollX - tooltip.offsetWidth - 8) + "px";
+            tooltip.style.left = Math.max(8, rect.left + window.scrollX - tooltip.offsetWidth - 8) + "px";
             let topPos = rect.top + window.scrollY;
             if (topPos + tooltip.offsetHeight > window.scrollY + window.innerHeight)
                 topPos = window.scrollY + window.innerHeight - tooltip.offsetHeight - 8;
@@ -827,36 +1076,18 @@ function renderRows(){
         btn.style.cursor="pointer"; 
         btn.style.border="1px solid #2e8b57"; 
         btn.style.borderRadius="6px"; 
-        btn.style.background="#2e8b57"; 
+        btn.style.background=r.sequence ? "#0b74de" : "#2e8b57"; 
         btn.style.color="#fff"; 
-       btn.onclick=()=>{ 
-    const input=document.querySelector(".msg-reply-box[contenteditable='true']") 
-              || document.querySelector(".msg-reply-box"); 
-    if(!input){ 
-        alert("Không tìm thấy ô nhập tin nhắn (.msg-reply-box)."); 
-        return; 
-    } 
-
-    // Giữ nguyên \n trong text, đừng convert thành <br>
-    const text = r.text.replace(/\r\n?/g, "\n");
-
-    input.focus();
-    input.innerHTML = "";              // xoá trước
-    input.textContent = text;          // gán thẳng dạng text (giữ cả dòng trắng)
-
-    input.dispatchEvent(new InputEvent("input",{bubbles:true,cancelable:true})); 
-
-    setTimeout(()=>{ 
-        const sendBtn=document.querySelector("div[data-test-fc-send-button='root']"); 
-        if(sendBtn) sendBtn.dispatchEvent(new MouseEvent('click',{bubbles:true,cancelable:true})); 
-    },50); 
-};
-
-        td3.appendChild(btn); 
+       btn.draggable = false;
+       btn.addEventListener("mousedown",e=>e.stopPropagation());
+       btn.onclick = () => r.sequence ? runSequence(r.sequence, btn) : sendMessage(r.text).catch(e => alert(e.message));
+       td3.appendChild(btn);
         tr.appendChild(td3); 
 
         table.appendChild(tr); 
     }); 
+    const keyword=searchInput.value.toLowerCase();
+    Array.from(table.querySelectorAll("tr[data-row='true']")).forEach(tr=>{tr.style.display=!keyword||tr.getAttribute("data-id").includes(keyword)?"":"none";});
     container.style.height = "auto";
 } 
 renderRows(); 
