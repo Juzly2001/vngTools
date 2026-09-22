@@ -1,0 +1,363 @@
+/* ==========================================================================
+   NOTE DEADLINE CALENDAR
+   ========================================================================== */
+
+.note-deadline-button {
+    width: 100%;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 0 10px 10px 0;
+    background: transparent;
+    color: var(--text-sub);
+    cursor: pointer;
+    text-align: left;
+    font-size: 11px;
+}
+.note-deadline-button.has-value {
+    color: var(--text-main);
+    font-weight: 700;
+}
+.note-deadline-calendar-icon {
+    flex: 0 0 auto;
+    opacity: .82;
+}
+
+.note-calendar-modal {
+    width: min(470px, 94vw);
+    max-width: 470px;
+    padding: 18px !important;
+    border-radius: 18px;
+}
+
+.note-calendar-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.note-calendar-header h3 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 16px;
+}
+.note-calendar-header p {
+    margin: 3px 0 0;
+    color: var(--text-sub);
+    font-size: 10px;
+}
+
+.note-calendar-quick {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 12px;
+}
+.note-calendar-quick button {
+    min-height: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--inner-bg);
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 700;
+}
+.note-calendar-quick button:hover {
+    border-color: var(--accent-color);
+}
+.note-calendar-quick button.clear {
+    color: var(--danger-color);
+}
+
+.note-calendar-nav {
+    display: grid;
+    grid-template-columns: 36px 1fr 36px;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 9px;
+}
+.note-calendar-nav button {
+    min-height: 34px;
+    border: 1px solid var(--border-color);
+    border-radius: 9px;
+    background: var(--inner-bg);
+    color: var(--text-main);
+    cursor: pointer;
+}
+.note-calendar-nav .month-label {
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.note-calendar-weekdays,
+.note-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+.note-calendar-weekdays {
+    margin-bottom: 4px;
+}
+.note-calendar-weekdays span {
+    padding: 5px 0;
+    color: var(--text-sub);
+    text-align: center;
+    font-size: 9px;
+    font-weight: 800;
+}
+.note-calendar-day {
+    aspect-ratio: 1;
+    min-width: 0;
+    display: grid;
+    place-items: center;
+    border: 1px solid transparent;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-main);
+    cursor: pointer;
+    font-size: 11px;
+}
+.note-calendar-day:hover {
+    background: var(--inner-bg);
+    border-color: var(--border-color);
+}
+.note-calendar-day.outside {
+    color: var(--text-sub);
+    opacity: .42;
+}
+.note-calendar-day.today {
+    border-color: color-mix(in srgb, var(--accent-color) 50%, transparent);
+    color: var(--accent-color);
+    font-weight: 900;
+}
+.note-calendar-day.selected {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #ffffff;
+    font-weight: 900;
+    box-shadow: 0 5px 14px color-mix(in srgb, var(--accent-color) 22%, transparent);
+}
+
+.note-calendar-time {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 12px;
+    padding: 10px 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 11px;
+    background: var(--inner-bg);
+}
+.note-calendar-time-label {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--text-main);
+    font-size: 11px;
+    font-weight: 800;
+}
+.note-calendar-time-label small {
+    color: var(--text-sub);
+    font-size: 9px;
+    font-weight: 500;
+}
+.note-calendar-time-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.note-calendar-time-controls select {
+    width: 64px;
+    min-height: 34px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--modal-bg);
+    color: var(--text-main);
+    text-align: center;
+}
+
+.note-calendar-selected {
+    min-height: 34px;
+    display: flex;
+    align-items: center;
+    margin-top: 9px;
+    padding: 7px 10px;
+    border-radius: 9px;
+    background: color-mix(in srgb, var(--accent-color) 8%, var(--inner-bg));
+    color: var(--text-sub);
+    font-size: 10px;
+}
+
+.note-calendar-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+/* Light deadline calendar */
+body.light-mode .note-calendar-modal {
+    background: #ffffff !important;
+}
+body.light-mode .note-calendar-quick button,
+body.light-mode .note-calendar-nav button,
+body.light-mode .note-calendar-time,
+body.light-mode .note-calendar-time-controls select {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #334155 !important;
+}
+body.light-mode .note-calendar-day:hover {
+    background: #f1f5f9 !important;
+}
+body.light-mode .note-calendar-selected {
+    background: #eef2ff !important;
+    color: #4f46e5 !important;
+}
+
+/* Responsive */
+@media (max-width: 720px) {
+    .note-v4-meta {
+        grid-template-columns: 1fr 1fr !important;
+    }
+    .note-calendar-quick {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+@media (max-width: 480px) {
+    .note-v4-meta {
+        grid-template-columns: 1fr !important;
+    }
+    .note-calendar-modal {
+        width: 96vw;
+        padding: 14px !important;
+    }
+}
+
+
+/* ==========================================================================
+   NOTE V4.4 — BALANCED META ROW
+   Icon / Category / Deadline / Pin
+   ========================================================================== */
+
+/* Icon and Pin are compact actions.
+   Category and Deadline receive the useful horizontal space. */
+.note-v4-meta {
+    grid-template-columns:
+        92px
+        minmax(190px, 1.05fr)
+        minmax(245px, 1.35fr)
+        92px !important;
+    gap: 10px !important;
+    align-items: stretch !important;
+}
+
+/* Keep all four controls visually the same height. */
+.note-v4-meta-btn,
+.note-v4-meta-field {
+    min-height: 54px !important;
+    height: 54px !important;
+}
+
+/* Compact Icon / Pin buttons */
+.note-v4-meta-btn {
+    padding: 0 10px !important;
+    gap: 7px !important;
+    white-space: nowrap !important;
+}
+
+/* Category + Deadline: label on top, value below.
+   This uses the height much more naturally than putting both on one line. */
+.note-v4-meta-field {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 18px minmax(0, 1fr) !important;
+    gap: 0 !important;
+    padding: 5px 10px 4px !important;
+    box-sizing: border-box !important;
+}
+
+.note-v4-meta-field > span {
+    display: flex !important;
+    align-items: center !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    font-size: 9px !important;
+    line-height: 1 !important;
+    letter-spacing: .01em !important;
+}
+
+/* Remove the inner "second box" feeling. */
+.note-v4-meta-field select,
+.note-v4-meta-field input {
+    width: 100% !important;
+    min-height: 27px !important;
+    height: 27px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    font-size: 11px !important;
+}
+
+/* Deadline is a clean value row rather than a stretched button. */
+.note-deadline-button {
+    min-height: 27px !important;
+    height: 27px !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 11px !important;
+}
+
+.note-deadline-calendar-icon {
+    margin-left: auto !important;
+    padding-left: 8px !important;
+}
+
+/* Light theme — preserve the clean single-card appearance. */
+body.light-mode .note-v4-meta-field select,
+body.light-mode .note-v4-meta-field input,
+body.light-mode .note-deadline-button {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+
+/* Tablet: still keep Category/Deadline larger than action buttons. */
+@media (max-width: 900px) {
+    .note-v4-meta {
+        grid-template-columns:
+            82px
+            minmax(160px, 1fr)
+            minmax(205px, 1.2fr)
+            82px !important;
+        gap: 8px !important;
+    }
+}
+
+/* Once space is genuinely tight, use a balanced 2 × 2 layout. */
+@media (max-width: 700px) {
+    .note-v4-meta {
+        grid-template-columns: 1fr 1fr !important;
+    }
+
+    .note-v4-meta-btn,
+    .note-v4-meta-field {
+        width: 100% !important;
+    }
+}
+
+/* Mobile: one control per row for comfortable tapping. */
+@media (max-width: 430px) {
+    .note-v4-meta {
+        grid-template-columns: 1fr !important;
+    }
+}
+

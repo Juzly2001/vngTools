@@ -1,0 +1,394 @@
+/* ==========================================================================
+   8. UTILITIES & ANIMATIONS (Tiện ích Phụ & Hoạt ảnh)
+   ========================================================================== */
+
+.theme-fab {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 5000;
+    background: none;
+}
+
+.theme-canvas {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    font-size: 24px;
+    cursor: pointer;
+    z-index: 5000;
+    background: none;
+}
+
+#backToTop {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    display: none;
+    padding: 12px 16px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent-color);
+    color: white;
+    cursor: pointer;
+    font-size: 20px;
+    box-shadow: var(--shadow-main);
+    transition: 0.3s;
+    z-index: 10000;
+}
+#backToTop:hover { transform: scale(1.1); background: var(--accent-hover); }
+
+/* --- Giao diện Thẻ Nhóm bị khóa --- */
+.group-card.is-locked-status .group-content-wrapper {
+    filter: blur(8px);
+    pointer-events: none;
+    user-select: none;
+    opacity: 0.4;
+    transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+.group-card.is-locked-status {
+    position: relative;
+    border: 1px dashed var(--danger-color) !important;
+}
+
+/* Nút bấm để mở khóa phủ trên card */
+.lock-overlay-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 50;
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-main);
+    backdrop-filter: blur(5px);
+    padding: 12px 20px;
+    border-radius: 30px;
+    color: var(--text-main);
+    cursor: pointer;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+.lock-overlay-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+@keyframes smoothBlink {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+.blink-effect {
+    animation: smoothBlink 1.2s linear infinite;
+}
+
+
+/* ==========================================================================
+   9. RESPONSIVE / MEDIA QUERIES (Tương thích thiết bị)
+   ========================================================================== */
+
+@media screen and (max-width: 1024px) {
+    .groups-grid { column-count: 2; }
+}
+
+@media screen and (max-width: 768px) {
+    .toolbar { display: grid !important; grid-template-columns: 1fr !important; gap: 12px !important; }
+    .btn-group { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 8px !important; width: 100%; }
+    .toolbar .btn-group:last-child { grid-template-columns: 1fr 1fr !important; }
+    .btn-group button { width: 100%; min-height: 50px; padding: 6px 8px; justify-content: center; white-space: normal; text-align: center; font-size: 12px; }
+    .datetime-row { grid-template-columns: 1fr; gap: 0; }
+}
+
+@media screen and (max-width: 600px) {
+    .groups-grid { column-count: 1; }
+}
+
+/* ==========================================================================
+   CẤU HÌNH KÉO THẢ & CHẶN SELECT CHỮ TRÊN MOBILE (KHÔNG ẢNH HƯỞNG MODAL)
+   ========================================================================== */
+
+/* 1. Chỉ chặn bôi đen chữ trên các thành phần danh sách công việc */
+.group-card, 
+.group-title, 
+.link-item, 
+.note-item,
+.schedule-item {
+    -webkit-touch-callout: none !important; /* Chặn menu sao chép của iOS */
+    -webkit-user-select: none !important;   /* Chặn bôi đen chữ khi nhấn giữ */
+       -moz-user-select: none !important;
+        -ms-user-select: none !important;
+            user-select: none !important;
+}
+
+/* 2. Cấu hình touch-action: Thân nhóm và danh sách con vẫn cho cuộn mượt */
+.group-card,
+.links-area, 
+.notes-area {
+    touch-action: auto !important; 
+}
+.group-title {
+    touch-action: none !important; /* Chỉ chặn cuộn tại tiêu đề để phục vụ việc kéo nhóm */
+}
+
+/* 3. CẤU HÌNH ĐỘ NỔI VÀ KHÔI PHỤC TƯƠNG TÁC CHO MODAL TRÊN MOBILE */
+.modal {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(15, 23, 42, 0.8) !important; /* Nền tối mờ phía sau */
+    z-index: 99999 !important; /* QUAN TRỌNG: Phải cực cao để không bị SortableJS đè lên trên mobile */
+    display: none; /* Mặc định ẩn */
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Khi có class .active từ hàm openModal(id) gọi đến */
+.modal.active {
+    display: flex !important; /* Hiện modal dạng flex để căn giữa */
+    opacity: 1 !important;
+}
+
+/* 4. LOẠI TRỪ TUYỆT ĐỐI: Khôi phục quyền chọn text/gõ chữ cho Form trong Modal */
+.modal-content,
+.modal input, 
+.modal select, 
+.modal textarea,
+.modal button {
+    -webkit-touch-callout: default !important; /* Trả lại menu ngữ cảnh gốc */
+    -webkit-user-select: text !important;      /* Cho phép bôi đen, copy văn bản */
+       -moz-user-select: text !important;
+        -ms-user-select: text !important;
+            user-select: text !important;
+    touch-action: auto !important;             /* Cho phép nhấn chọn, cuộn tự do */
+}
+
+/* Đảm bảo nội dung modal co giãn đẹp trên màn hình điện thoại */
+.modal-content {
+    background: #1e293b; 
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    padding: 20px;
+    margin: auto;
+    position: relative;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.zindex-modal {
+    z-index: 99999;
+}
+
+/* ========================================================
+   🔥 FIX TRONG SUỐT ĐỒNG BỘ - GIỮ MÀU CHUẨN CHO CỘT GIỜ
+   ======================================================== */
+
+.schedule-row.past .schedule-date,
+.schedule-row.past .schedule-name,
+.schedule-row.past .schedule-time {
+    text-decoration: line-through !important;
+    color: rgba(154, 160, 166, 0.4) !important; /* Dùng màu chữ trong suốt để tạo hiệu ứng mờ */
+}
+
+/* 3. Đảm bảo toàn bộ hàng td đều có đường gạch ngang đồng bộ */
+.schedule-row.past td {
+    text-decoration: line-through !important;
+}
+
+@keyframes blink {
+  0% { opacity: 1; }
+  50% { opacity: 0.4; }
+  100% { opacity: 1; }
+}
+
+.blink-red {
+  color: #ff4d4f; /* Màu đỏ */
+  animation: blink 1s infinite; /* Nháy vô hạn */
+}
+
+/* Viền trái màu tím cho dòng "Đang chạy" trong Bảng Lịch Ngoài Dashboard */
+.schedule-table tbody tr.running-row td:first-child {
+    border-left: 4px solid #a855f7 !important;
+}
+
+/* Viền trái màu tím cho khối công việc "Đang chạy" trong Modal Đầu Lịch Hôm Nay */
+.today-important-item.running-modal-item {
+    border-left: 4px solid #a855f7 !important;
+    background: rgba(168, 85, 247, 0.08) !important; /* Tạo nền tím nhạt nhẹ cho đồng bộ */
+}
+/* ======================================================================
+   10. PROFESSIONAL DASHBOARD UPGRADE PACK
+   ====================================================================== */
+.hero-header {
+    position: relative;
+    padding: 18px 10px 8px;
+}
+.hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    color: var(--text-sub);
+    background: var(--panel-bg);
+    backdrop-filter: blur(10px);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+.hero-subtitle {
+    max-width: 720px;
+    margin: 0 auto;
+    color: var(--text-sub);
+    line-height: 1.5;
+}
+.dashboard-overview {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+    margin: 0 0 18px;
+}
+.overview-card {
+    min-height: 96px;
+    padding: 18px;
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.02)), var(--panel-bg);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-main);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+.overview-card span {
+    color: var(--text-sub);
+    font-size: 13px;
+    font-weight: 700;
+}
+.overview-card strong {
+    font-size: 2rem;
+    line-height: 1;
+}
+.overview-card.danger strong { color: var(--danger-color); }
+.command-bar {
+    display: grid;
+    grid-template-columns: minmax(280px, 1.2fr) auto auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 18px;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid var(--border-color);
+    background: var(--panel-bg);
+    backdrop-filter: blur(12px);
+    box-shadow: var(--shadow-main);
+}
+.search-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--inner-bg);
+}
+.search-box input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--text-main);
+    font: inherit;
+}
+.search-box button {
+    padding: 6px 9px;
+    background: transparent;
+    color: var(--text-sub);
+    border: 1px solid transparent;
+}
+.search-box button:hover {
+    border-color: var(--border-color);
+    color: var(--text-main);
+}
+.quick-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+}
+.group-header {
+    cursor: pointer;
+}
+.group-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+.favorite-btn {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 999px;
+    background: rgba(255,255,255,.04);
+    color: var(--text-sub);
+    border: 1px solid var(--border-color);
+}
+.favorite-btn.active {
+    background: var(--note-bg-opacity);
+    color: var(--note-accent);
+    border-color: rgba(234,179,8,.35);
+}
+.empty-search-state {
+    text-align: center;
+    color: var(--text-sub);
+    padding: 50px 20px;
+    border: 1px dashed var(--border-color);
+    border-radius: 20px;
+    background: var(--panel-bg);
+    break-inside: avoid;
+}
+body.light-mode .overview-card,
+body.light-mode .command-bar {
+    background: rgba(255,255,255,.78);
+}
+@media screen and (max-width: 1024px) {
+    .dashboard-overview { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .command-bar { grid-template-columns: 1fr; }
+    .quick-actions { width: 100%; justify-content: stretch; }
+    .quick-actions button { flex: 1; justify-content: center; }
+}
+@media screen and (max-width: 600px) {
+    body { padding: 24px 10px 90px; }
+    h1 { font-size: 1.7rem; }
+    .dashboard-overview { grid-template-columns: 1fr 1fr; gap: 10px; }
+    .overview-card { min-height: 78px; padding: 14px; }
+    .overview-card strong { font-size: 1.55rem; }
+    .command-bar { padding: 10px; }
+    .quick-actions { display: grid; grid-template-columns: 1fr 1fr; }
+    .quick-actions button:last-child { grid-column: 1 / -1; }
+    .group-card { padding: 18px; border-radius: 16px; }
+    .group-title { font-size: 1rem; }
+}
+
+

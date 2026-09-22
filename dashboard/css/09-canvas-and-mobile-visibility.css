@@ -1,0 +1,588 @@
+/* ==========================================================================
+   SIDEBAR PRO FINAL SMALL FIX
+   - Mobile ẩn nút << / >>
+   - Desktop mặc định thu nhỏ qua JS
+   - Desktop giữ canvas background
+   ========================================================================== */
+
+/* Đảm bảo canvas nền desktop không bị các bản mobile-lite cũ ẩn */
+@media (min-width: 769px) {
+    #bgCanvas {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+    }
+
+    /* Desktop vẫn cho hiện nút hiệu ứng nền nếu bạn muốn bật/tắt */
+    body.sidebar-pro-enabled #themeBtnCanvas {
+        display: flex !important;
+    }
+}
+
+/* Mobile tuyệt đối không hiện nút thu gọn/mở rộng của desktop */
+@media (max-width: 768px) {
+    #sidebarProToggle,
+    .sidebar-pro-toggle {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
+
+    /* Mobile vẫn giảm tải canvas nếu file trước có mobile-lite */
+    body.mobile-lite #bgCanvas {
+        display: none !important;
+    }
+}
+
+
+/* ==========================================================================
+   CALENDAR MOBILE NAV FIX
+   Đưa nút Tháng trước / Tháng sau nằm hai bên calendarMonthLabel trên mobile
+   ========================================================================== */
+@media (max-width: 640px) {
+    .calendar-toolbar {
+        display: grid !important;
+        grid-template-columns: 40px minmax(0, 1fr) 40px !important;
+        align-items: center !important;
+        gap: 8px !important;
+        text-align: center !important;
+        padding: 12px 12px !important;
+    }
+
+    .calendar-toolbar #calendarMonthLabel,
+    #calendarMonthLabel {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        min-width: 0 !important;
+        text-align: center !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .calendar-toolbar .btn-secondary {
+        width: 40px !important;
+        height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+        padding: 0 !important;
+        border-radius: 14px !important;
+        justify-content: center !important;
+        font-size: 0 !important;
+        white-space: nowrap !important;
+    }
+
+    .calendar-toolbar .btn-secondary:first-child {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+
+    .calendar-toolbar .btn-secondary:last-child {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+    }
+
+    .calendar-toolbar .btn-secondary:first-child::before {
+        content: "‹" !important;
+        font-size: 26px !important;
+        line-height: 1 !important;
+        font-weight: 900 !important;
+    }
+
+    .calendar-toolbar .btn-secondary:last-child::before {
+        content: "›" !important;
+        font-size: 26px !important;
+        line-height: 1 !important;
+        font-weight: 900 !important;
+    }
+}
+
+/* ==========================================================================
+   FINAL ALIGNMENT FIX - Calendar nav + desktop sidebar icons
+   ========================================================================== */
+
+/* Calendar: dùng icon thật trong span, không dùng ::before để tránh lệch glyph */
+.calendar-toolbar .calendar-nav-btn {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    max-width: 42px !important;
+    max-height: 42px !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    display: grid !important;
+    place-items: center !important;
+
+    position: relative !important;
+    overflow: hidden !important;
+
+    border-radius: 14px !important;
+    line-height: 1 !important;
+    font-size: 0 !important;
+    text-align: center !important;
+}
+
+.calendar-toolbar .calendar-nav-btn::before,
+.calendar-toolbar .calendar-nav-btn::after {
+    content: none !important;
+    display: none !important;
+}
+
+.calendar-toolbar .calendar-nav-icon {
+    width: 100% !important;
+    height: 100% !important;
+
+    display: grid !important;
+    place-items: center !important;
+
+    padding: 0 !important;
+    margin: 0 !important;
+
+    font-size: 28px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    font-family: Arial, "Segoe UI", system-ui, sans-serif !important;
+
+    transform: translateY(-1px) !important;
+    pointer-events: none !important;
+}
+
+/* Mobile calendar header: trái - label - phải */
+@media (max-width: 640px) {
+    #calendarModal .calendar-toolbar,
+    .calendar-toolbar {
+        display: grid !important;
+        grid-template-columns: 42px minmax(0, 1fr) 42px !important;
+        align-items: center !important;
+        justify-items: center !important;
+        gap: 8px !important;
+        padding: 12px !important;
+        text-align: center !important;
+    }
+
+    #calendarMonthLabel {
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        width: 100% !important;
+        min-width: 0 !important;
+        text-align: center !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        line-height: 42px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .calendar-prev-btn {
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+    }
+
+    .calendar-next-btn {
+        grid-column: 3 !important;
+        grid-row: 1 !important;
+    }
+}
+
+/* Desktop/sidebar: căn icon đúng giữa khi sidebar thu gọn */
+@media (min-width: 769px) {
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        width: 100% !important;
+        height: 44px !important;
+        min-height: 44px !important;
+        padding: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+
+        display: grid !important;
+        place-items: center !important;
+
+        text-align: center !important;
+        line-height: 1 !important;
+        font-size: 20px !important;
+        gap: 0 !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) span {
+        display: none !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .sidebar-pro-toggle {
+        display: grid !important;
+        place-items: center !important;
+        width: 100% !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        padding: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        text-align: center !important;
+        line-height: 1 !important;
+    }
+
+    body.sidebar-pro-enabled .sidebar-logo {
+        display: grid !important;
+        place-items: center !important;
+        line-height: 1 !important;
+        text-align: center !important;
+    }
+
+    body.sidebar-pro-enabled .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        line-height: 1 !important;
+    }
+
+    body.sidebar-pro-enabled .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) span {
+        line-height: 1.15 !important;
+    }
+}
+
+
+/* ==========================================================================
+   EMOJI TAB CLICK FIX
+   Bấm tab chọn chủ đề được, kéo ngang vẫn mượt
+   ========================================================================== */
+.emoji-tabs {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: pan-x;
+}
+
+.emoji-tabs.is-dragging {
+    cursor: grabbing;
+}
+
+.emoji-tab {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
+}
+
+/* ==========================================================================
+   BACKUP PIN UI
+   ========================================================================== */
+.backup-item.backup-pinned {
+    border-color: rgba(234, 179, 8, .45) !important;
+    background: linear-gradient(135deg, rgba(234, 179, 8, .12), rgba(255,255,255,.025)) !important;
+}
+
+.backup-pin-btn {
+    min-width: 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    padding: 0 !important;
+    justify-content: center !important;
+    border-radius: 999px !important;
+}
+
+.backup-pin-btn.active {
+    background: var(--note-accent) !important;
+    color: #111827 !important;
+    border-color: transparent !important;
+}
+
+@media (max-width: 640px) {
+    .backup-actions {
+        display: grid !important;
+        grid-template-columns: 42px 1fr 1fr !important;
+        width: 100% !important;
+    }
+
+    .backup-pin-btn {
+        width: 42px !important;
+        min-width: 42px !important;
+    }
+}
+
+
+/* ==========================================================================
+   SCHEDULE HUB + SIDEBAR ALIGNMENT
+   ========================================================================== */
+
+.schedule-hub-box {
+    max-width: 980px;
+    width: min(96vw, 980px);
+    padding: 0 !important;
+    overflow: hidden;
+}
+
+.schedule-hub-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.schedule-hub-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.schedule-hub-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.schedule-hub-tab {
+    flex: 0 0 auto;
+    padding: 9px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--inner-bg);
+    color: var(--text-sub);
+    font-size: 13px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.schedule-hub-tab.active {
+    background: var(--accent-color);
+    color: #fff;
+    border-color: transparent;
+}
+
+.schedule-hub-pane {
+    display: none;
+}
+
+.schedule-hub-pane.active {
+    display: block;
+}
+
+.schedule-hub-list {
+    max-height: 65vh;
+    overflow: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.schedule-hub-list.empty {
+    color: var(--text-sub);
+    font-size: 13px;
+    font-style: italic;
+    padding: 22px 16px;
+}
+
+.schedule-hub-item {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-align: left;
+    border: 1px solid var(--border-color);
+    background: var(--inner-bg);
+    color: var(--text-main);
+    border-radius: 16px;
+    padding: 12px;
+}
+
+.schedule-hub-item.important {
+    border-color: rgba(239, 68, 68, .35);
+    background: rgba(239, 68, 68, .08);
+}
+
+.schedule-hub-item.past {
+    justify-content: space-between;
+    padding: 0;
+    overflow: hidden;
+}
+
+.schedule-hub-item-view {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+    padding: 12px;
+    border-radius: 0;
+    background: transparent;
+    color: var(--text-main);
+    text-align: left;
+}
+
+.schedule-hub-item-icon {
+    width: 34px;
+    height: 34px;
+    flex: 0 0 34px;
+    display: grid;
+    place-items: center;
+    border-radius: 12px;
+    background: rgba(99,102,241,.12);
+}
+
+.schedule-hub-item-main {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.schedule-hub-item-main strong {
+    display: block;
+    font-size: 14px;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.schedule-hub-item-main small {
+    color: var(--text-sub);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.past-delete-btn {
+    margin-right: 10px;
+}
+
+.schedule-past-hint {
+    margin: 14px 16px 0;
+}
+
+/* Calendar nav dùng SVG nên căn giữa chuẩn hơn */
+.calendar-nav-icon {
+    width: 22px;
+    height: 22px;
+    display: grid !important;
+    place-items: center !important;
+    line-height: 0 !important;
+}
+
+.calendar-nav-icon svg {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+.calendar-nav-icon path {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+@media (max-width: 640px) {
+    .schedule-hub-tabs {
+        padding: 10px 12px;
+    }
+
+    .schedule-hub-tab {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+
+    .schedule-hub-list {
+        max-height: 68vh;
+        padding: 12px;
+    }
+
+    .calendar-toolbar {
+        display: grid !important;
+        grid-template-columns: 42px minmax(0, 1fr) 42px !important;
+        align-items: center !important;
+        gap: 8px !important;
+        padding: 12px !important;
+    }
+
+    .calendar-nav-btn {
+        width: 42px !important;
+        height: 42px !important;
+        min-width: 42px !important;
+        min-height: 42px !important;
+        padding: 0 !important;
+        display: grid !important;
+        place-items: center !important;
+        border-radius: 14px !important;
+        font-size: 0 !important;
+        line-height: 0 !important;
+    }
+
+    .calendar-nav-text {
+        display: none !important;
+    }
+
+    #calendarMonthLabel {
+        text-align: center !important;
+        font-size: 15px !important;
+        font-weight: 900 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+    }
+
+    .calendar-nav-icon,
+    .calendar-nav-icon svg {
+        width: 24px !important;
+        height: 24px !important;
+    }
+}
+
+/* Sidebar desktop mở rộng: icon nằm ngang với tên */
+.sidebar-menu-icon {
+    width: 24px;
+    height: 24px;
+    min-width: 24px;
+    display: grid !important;
+    place-items: center !important;
+    line-height: 1 !important;
+    font-size: 18px;
+    text-align: center;
+    flex: 0 0 24px;
+}
+
+@media (min-width: 769px) {
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 11px !important;
+        text-align: left !important;
+    }
+
+    body.sidebar-pro-enabled:not(.sidebar-pro-collapsed) .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) > span:not(.sidebar-menu-icon) {
+        display: inline-block !important;
+        max-width: 140px !important;
+        opacity: 1 !important;
+        line-height: 1.15 !important;
+        text-align: left !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) {
+        display: grid !important;
+        place-items: center !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) .sidebar-menu-icon {
+        width: 100% !important;
+        height: 100% !important;
+        min-width: 0 !important;
+        display: grid !important;
+        place-items: center !important;
+        font-size: 19px !important;
+    }
+
+    body.sidebar-pro-enabled.sidebar-pro-collapsed .app-sidebar button:not(.sidebar-pro-toggle):not(.sidebar-close) > span:not(.sidebar-menu-icon) {
+        display: none !important;
+    }
+}
+
+.calendar-toolbar .btn-secondary::before,.calendar-toolbar .btn-secondary::after{content:none!important;display:none!important;}
+
+

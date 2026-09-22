@@ -1,0 +1,504 @@
+/* ========================================================================== 
+   CALENDAR / SCHEDULE HUB — MOBILE FLUID HEIGHT PATCH 2026-09-10
+   Auto shrink/grow by content, but never leaves the viewport.
+   ========================================================================== */
+@media (max-width: 768px) {
+    #calendarModal {
+        padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+        align-items: center !important;
+        justify-content: center !important;
+        overflow: hidden !important;
+    }
+
+    #calendarModal .schedule-hub-box,
+    #calendarModal .calendar-box {
+        width: 100% !important;
+        max-width: none !important;
+
+        /* Fluid: do not force full-screen height */
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+
+        margin: auto 0 !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Header + tabs + month navigation keep their natural height */
+    #calendarModal .schedule-hub-head,
+    #calendarModal .schedule-hub-tabs,
+    #calendarModal .calendar-toolbar,
+    #calendarModal .calendar-nav,
+    #calendarModal .schedule-past-hint {
+        flex: 0 0 auto !important;
+    }
+
+    /* Calendar grows naturally, then scrolls before modal can leave viewport */
+    #calendarModal #calendarGrid.calendar-grid {
+        flex: 0 1 auto !important;
+        min-height: 0 !important;
+        max-height: min(58dvh, 520px) !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+    }
+
+    /* Upcoming / Past: content determines modal height until viewport limit */
+    #calendarModal .schedule-hub-list {
+        flex: 0 1 auto !important;
+        min-height: 0 !important;
+        max-height: min(62dvh, 560px) !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+    }
+
+    #calendarModal .schedule-hub-list.empty {
+        flex: 0 0 auto !important;
+        max-height: none !important;
+    }
+}
+
+/* Short phones / landscape: preserve the same fluid behavior with tighter limits */
+@media (max-width: 768px) and (max-height: 620px) {
+    #calendarModal .schedule-hub-box,
+    #calendarModal .calendar-box {
+        max-height: calc(100dvh - 12px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    }
+
+    #calendarModal #calendarGrid.calendar-grid,
+    #calendarModal .schedule-hub-list {
+        max-height: 52dvh !important;
+    }
+}
+
+/* ========================================================================== */
+/* SAFE MODAL REDESIGN — scoped to original DOM only — 2026-09-10           */
+/* Group / Link / Schedule / Important Today / Details / Calendar Day / Kanban */
+/* ========================================================================== */
+
+/* ---------- shared shell: ONLY these modal ids ---------- */
+#groupModal .modal-box,
+#linkModal .modal-box,
+#scheduleModal .modal-box,
+#todayImportantModal .modal-box,
+#readModal .modal-box,
+#calendarDayModal .modal-box,
+#kanbanCardModal .modal-box {
+    box-sizing: border-box !important;
+    width: min(92vw, 680px) !important;
+    max-width: 680px !important;
+    max-height: calc(100dvh - 40px) !important;
+    margin: 0 auto !important;
+    border-radius: 22px !important;
+    border: 1px solid var(--border-color) !important;
+    background: var(--modal-bg) !important;
+    box-shadow: 0 28px 80px rgba(0,0,0,.38) !important;
+}
+
+#scheduleModal .modal-box { width: min(92vw, 780px) !important; max-width: 780px !important; }
+#todayImportantModal .modal-box { width: min(92vw, 700px) !important; max-width: 700px !important; }
+#readModal .modal-box { width: min(92vw, 620px) !important; max-width: 620px !important; }
+#calendarDayModal .modal-box { width: min(92vw, 720px) !important; max-width: 720px !important; }
+#kanbanCardModal .modal-box { width: min(92vw, 640px) !important; max-width: 640px !important; }
+
+/* ---------- Group Settings ---------- */
+#groupModal .modal-box {
+    padding: 0 !important;
+    overflow: auto !important;
+}
+#groupModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 18px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 14%, transparent), transparent 72%) !important;
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+}
+#groupModal .modal-box > label,
+#groupModal .modal-box > input,
+#groupModal .modal-box > .emoji-picker-container {
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+    width: calc(100% - 40px) !important;
+    box-sizing: border-box !important;
+}
+#groupModal .modal-box > label {
+    margin-top: 14px !important;
+    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+#groupModal .modal-box > input {
+    min-height: 42px !important;
+    margin-bottom: 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 11px !important;
+}
+#groupModal .emoji-picker-container {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+    padding: 10px !important;
+    border-radius: 13px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--inner-bg) 72%, transparent) !important;
+}
+#groupModal .modal-footer {
+    margin: 0 !important;
+    padding: 14px 20px 16px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Button Settings ---------- */
+#linkModal .modal-box {
+    padding: 0 !important;
+    overflow: auto !important;
+}
+#linkModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 18px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 14%, transparent), transparent 72%) !important;
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+}
+#linkModal .modal-box > label,
+#linkModal .modal-box > input,
+#linkModal .modal-box > .emoji-picker-container {
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+    width: calc(100% - 40px) !important;
+    box-sizing: border-box !important;
+}
+#linkModal .modal-box > label {
+    margin-top: 14px !important;
+    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+#linkModal .modal-box > input {
+    min-height: 42px !important;
+    margin-bottom: 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 11px !important;
+}
+#linkModal .emoji-picker-container {
+    margin-top: 0 !important;
+    margin-bottom: 16px !important;
+    padding: 10px !important;
+    border-radius: 13px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--inner-bg) 72%, transparent) !important;
+}
+#linkModal .modal-footer {
+    margin: 0 !important;
+    padding: 14px 20px 16px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Schedule Milestone Settings ---------- */
+#scheduleModal .modal-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#scheduleModal .modal-box > div:first-child {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 16px 18px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 14px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, #10b981 14%, transparent), color-mix(in srgb, var(--accent-color) 5%, transparent)) !important;
+}
+#scheduleModal #scheduleModalTitle {
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    font-size: 17px !important;
+    line-height: 1.3 !important;
+}
+#scheduleModal #addScheduleBlockBtn {
+    flex: 0 0 auto !important;
+    margin: 0 !important;
+    min-height: 38px !important;
+    padding: 8px 12px !important;
+    border-radius: 10px !important;
+    white-space: nowrap !important;
+}
+#scheduleModal #scheduleBlocksWrapper {
+    box-sizing: border-box !important;
+    padding: 16px 18px !important;
+    max-height: calc(100dvh - 220px) !important;
+    overflow-y: auto !important;
+}
+#scheduleModal .schedule-block-item {
+    box-sizing: border-box !important;
+    margin: 0 0 14px !important;
+    padding: 14px !important;
+    border-radius: 15px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--inner-bg) 76%, transparent) !important;
+}
+#scheduleModal .schedule-block-item:last-child { margin-bottom: 0 !important; }
+#scheduleModal .schedule-block-header {
+    box-sizing: border-box !important;
+    margin: 0 0 12px !important;
+    padding: 9px 10px !important;
+    border-radius: 10px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--modal-bg) 74%, var(--inner-bg)) !important;
+}
+#scheduleModal .form-input {
+    box-sizing: border-box !important;
+    width: 100% !important;
+    min-height: 42px !important;
+    margin-bottom: 0 !important;
+    padding: 10px 11px !important;
+    border-radius: 10px !important;
+}
+#scheduleModal textarea.form-input { min-height: 88px !important; }
+#scheduleModal .datetime-row {
+    grid-template-columns: minmax(0,1fr) minmax(0,1fr) !important;
+    gap: 10px !important;
+}
+#scheduleModal .modal-footer {
+    margin: 0 !important;
+    padding: 13px 18px 15px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Important tasks today ---------- */
+#todayImportantModal .modal-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#todayImportantModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 17px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--danger-color) 14%, transparent), transparent 72%) !important;
+    font-size: 17px !important;
+}
+#todayImportantModal #todayImportantContent {
+    box-sizing: border-box !important;
+    padding: 16px 20px !important;
+    max-height: calc(100dvh - 210px) !important;
+    overflow-y: auto !important;
+}
+#todayImportantModal .modal-footer {
+    margin: 0 !important;
+    padding: 13px 20px 15px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Details ---------- */
+#readModal .modal-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#readModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 17px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 13%, transparent), transparent 72%) !important;
+    font-size: 17px !important;
+}
+#readModal #readModalBody {
+    box-sizing: border-box !important;
+    padding: 17px 20px !important;
+    max-height: calc(100dvh - 210px) !important;
+    overflow-y: auto !important;
+}
+#readModal .modal-footer {
+    margin: 0 !important;
+    padding: 13px 20px 15px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Calendar Day ---------- */
+#calendarDayModal .calendar-day-box {
+    padding: 0 !important;
+    overflow: hidden !important;
+}
+#calendarDayModal .command-head {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 16px 18px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent-color) 13%, transparent), transparent 72%) !important;
+}
+#calendarDayModal .calendar-day-body {
+    box-sizing: border-box !important;
+    padding: 16px 18px 18px !important;
+    max-height: calc(100dvh - 170px) !important;
+    overflow-y: auto !important;
+}
+#calendarDayModal .calendar-day-timeline-item {
+    box-sizing: border-box !important;
+    border-radius: 13px !important;
+    border: 1px solid var(--border-color) !important;
+    background: color-mix(in srgb, var(--inner-bg) 76%, transparent) !important;
+}
+
+/* ---------- Kanban Card ---------- */
+#kanbanCardModal .modal-box {
+    padding: 0 !important;
+    overflow: auto !important;
+}
+#kanbanCardModal .modal-box > h3 {
+    margin: 0 !important;
+    padding: 17px 20px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    background: linear-gradient(135deg, color-mix(in srgb, #f97316 14%, transparent), color-mix(in srgb, var(--accent-color) 4%, transparent)) !important;
+    font-size: 17px !important;
+}
+#kanbanCardModal .modal-box > label,
+#kanbanCardModal .modal-box > input,
+#kanbanCardModal .modal-box > select,
+#kanbanCardModal .modal-box > textarea {
+    margin-left: 20px !important;
+    margin-right: 20px !important;
+    width: calc(100% - 40px) !important;
+    box-sizing: border-box !important;
+}
+#kanbanCardModal .modal-box > label {
+    margin-top: 13px !important;
+    margin-bottom: 6px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+}
+#kanbanCardModal .modal-box > input,
+#kanbanCardModal .modal-box > select,
+#kanbanCardModal .modal-box > textarea {
+    min-height: 42px !important;
+    margin-bottom: 0 !important;
+    padding: 10px 12px !important;
+    border-radius: 10px !important;
+}
+#kanbanCardModal .modal-box > textarea {
+    min-height: 110px !important;
+    resize: vertical !important;
+}
+#kanbanCardModal .modal-footer {
+    margin: 16px 0 0 !important;
+    padding: 13px 20px 15px !important;
+    border-top: 1px solid var(--border-color) !important;
+}
+
+/* ---------- Mobile safety ---------- */
+@media (max-width: 768px) {
+    #groupModal,
+    #linkModal,
+    #scheduleModal,
+    #todayImportantModal,
+    #readModal,
+    #calendarDayModal,
+    #kanbanCardModal {
+        padding: max(8px, env(safe-area-inset-top)) 8px max(8px, env(safe-area-inset-bottom)) !important;
+    }
+
+    #groupModal .modal-box,
+    #linkModal .modal-box,
+    #scheduleModal .modal-box,
+    #todayImportantModal .modal-box,
+    #readModal .modal-box,
+    #calendarDayModal .modal-box,
+    #kanbanCardModal .modal-box {
+        width: 100% !important;
+        max-width: none !important;
+        max-height: calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+        border-radius: 19px !important;
+    }
+
+    #groupModal .modal-box > h3,
+    #linkModal .modal-box > h3,
+    #todayImportantModal .modal-box > h3,
+    #readModal .modal-box > h3,
+    #kanbanCardModal .modal-box > h3 {
+        padding: 14px !important;
+        font-size: 15px !important;
+    }
+
+    #groupModal .modal-box > label,
+    #groupModal .modal-box > input,
+    #groupModal .modal-box > .emoji-picker-container,
+    #linkModal .modal-box > label,
+    #linkModal .modal-box > input,
+    #linkModal .modal-box > .emoji-picker-container,
+    #kanbanCardModal .modal-box > label,
+    #kanbanCardModal .modal-box > input,
+    #kanbanCardModal .modal-box > select,
+    #kanbanCardModal .modal-box > textarea {
+        margin-left: 14px !important;
+        margin-right: 14px !important;
+        width: calc(100% - 28px) !important;
+    }
+
+    #groupModal .modal-footer,
+    #linkModal .modal-footer,
+    #scheduleModal .modal-footer,
+    #todayImportantModal .modal-footer,
+    #readModal .modal-footer,
+    #kanbanCardModal .modal-footer {
+        padding: 11px 14px 13px !important;
+    }
+
+    #scheduleModal .modal-box > div:first-child {
+        padding: 13px 14px !important;
+        align-items: flex-start !important;
+        flex-wrap: wrap !important;
+    }
+    #scheduleModal #scheduleModalTitle { font-size: 15px !important; }
+    #scheduleModal #addScheduleBlockBtn {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+    #scheduleModal #scheduleBlocksWrapper {
+        padding: 12px 14px !important;
+        max-height: calc(100dvh - 205px) !important;
+    }
+    #scheduleModal .schedule-block-item { padding: 12px !important; }
+
+    #todayImportantModal #todayImportantContent,
+    #readModal #readModalBody,
+    #calendarDayModal .calendar-day-body {
+        padding: 14px !important;
+    }
+    #calendarDayModal .command-head { padding: 14px !important; }
+}
+
+@media (max-width: 430px) {
+    #scheduleModal .datetime-row {
+        grid-template-columns: 1fr !important;
+    }
+
+    #groupModal .modal-footer,
+    #linkModal .modal-footer,
+    #scheduleModal .modal-footer,
+    #kanbanCardModal .modal-footer {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 8px !important;
+    }
+
+    #todayImportantModal .modal-footer,
+    #readModal .modal-footer {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+    }
+
+    #groupModal .modal-footer button,
+    #linkModal .modal-footer button,
+    #scheduleModal .modal-footer button,
+    #todayImportantModal .modal-footer button,
+    #readModal .modal-footer button,
+    #kanbanCardModal .modal-footer button {
+        width: 100% !important;
+        justify-content: center !important;
+    }
+}
+
