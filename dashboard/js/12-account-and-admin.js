@@ -400,6 +400,9 @@
         return getCustomAccountName() || googleAccountProfile?.name || googleAccountProfile?.email || 'Google account';
     }
 
+    // Single source of truth for account display across base UI and hover card.
+    window.getCurrentAccountDisplayName = effectiveAccountName;
+
     function injectInlineRenameStyles(){
         if (document.getElementById('currentAccountInlineRenameV4Styles')) return;
         const style = document.createElement('style');

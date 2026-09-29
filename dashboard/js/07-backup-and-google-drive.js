@@ -1040,7 +1040,7 @@ function updateGoogleAccountUI() {
     const adminBtn = getEl('accountAdminBtn');
 
     if (displayName && !displayName.classList.contains('account-name-editing-v2')) {
-        displayName.textContent = connected ? (profile?.name || 'Google account') : 'Not connected';
+        displayName.textContent = connected ? ((typeof window.getCurrentAccountDisplayName === 'function' && window.getCurrentAccountDisplayName()) || profile?.name || profile?.email || 'Google account') : 'Not connected';
     }
     if (email) email.textContent = connected ? (profile?.email || 'Profile information is loading…') : 'Connect Google to identify the account being used.';
     if (connectionText) {
