@@ -111,7 +111,7 @@
 </style>
 </head>
 <body>
-<div id="workspaceBoot" role="status" aria-live="polite"><div class="boot-panel"><div class="boot-orbit"><span class="boot-spark"></span><div class="boot-mark"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="10" stroke="#8BDFFF" stroke-width="1.6"/><path d="M14 31V25M22 31V19M30 31V14" stroke="#B5EDFF" stroke-width="3.5" stroke-linecap="round"/><path d="m14 18 8-5 8 3 5-5" stroke="#7C9EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="boot-eyebrow">Your personal space</div><div class="boot-title"><span>Workspace Dashboard</span></div><div class="boot-sub">Đang chuẩn bị không gian làm việc của bạn…</div><div class="boot-track"><div class="boot-progress"></div></div><div class="boot-foot">Preparing workspace</div></div></div>
+<div id="workspaceBoot" role="status" aria-live="polite"><div class="boot-panel"><div class="boot-orbit"><span class="boot-spark"></span><div class="boot-mark"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="10" stroke="#8BDFFF" stroke-width="1.6"/><path d="M14 31V25M22 31V19M30 31V14" stroke="#B5EDFF" stroke-width="3.5" stroke-linecap="round"/><path d="m14 18 8-5 8 3 5-5" stroke="#7C9EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="boot-eyebrow">Your personal space</div><div class="boot-title"><span>Workspace Dashboard</span></div><div class="boot-sub">Creating a space where ideas flourish…</div><div class="boot-track"><div class="boot-progress"></div></div><div class="boot-foot">Preparing workspace</div></div></div>
 <script>
 (() => {
   // Resolve theme before first paint; auto-by-time uses the same slots as the dashboard.
@@ -138,10 +138,37 @@
     boot.classList.add('boot-done');
     setTimeout(() => boot.remove(), 550);
   }
-  // Display a short, smooth first-paint transition, without waiting for Google OAuth.
-  window.addEventListener('load', () => setTimeout(finishBoot, 350), {once:true});
-  // An unreachable external SDK must never leave the dashboard behind a loading screen.
-  setTimeout(finishBoot, 4500);
+  // Wait for the initial cloud hydration to settle before revealing the workspace.
+  // Never treat a failed Drive read as successful synchronization.
+  window.addEventListener('load', () => {
+    const started = Date.now();
+    let sawDriveLoad = false;
+    const status = document.querySelector('#workspaceBoot .boot-foot');
+    const check = () => {
+      const connected = typeof isGoogleConnected === 'function' && isGoogleConnected();
+      const authReady = typeof gapiInited !== 'undefined' && gapiInited &&
+                        typeof gisInited !== 'undefined' && gisInited;
+      const pending = typeof __driveHydrationPromise !== 'undefined' && !!__driveHydrationPromise;
+      const hydrated = typeof __driveAutoSyncReady !== 'undefined' && __driveAutoSyncReady;
+      if (pending) sawDriveLoad = true;
+      if (connected && (pending || !hydrated)) {
+        if (status) status.textContent = 'Loading your workspace from Google Drive';
+        if (hydrated && !pending) return finishBoot();
+        if (Date.now() - started < 25000) return setTimeout(check, 120);
+        if (status) status.textContent = 'Drive is taking longer than expected';
+        return setTimeout(finishBoot, 1200); // The in-app sync status remains visible.
+      }
+      if (connected && hydrated && !pending) return finishBoot();
+      // Allow the restored token and asynchronous Google SDKs to initialize.
+      if (!authReady && Date.now() - started < 6000) return setTimeout(check, 120);
+      if (!connected && Date.now() - started < 1800) return setTimeout(check, 120);
+      if (sawDriveLoad && pending && Date.now() - started < 25000) return setTimeout(check, 120);
+      finishBoot(); // Local-only workspace, no connected Drive, or failed authorization.
+    };
+    setTimeout(check, 350);
+  }, {once:true});
+  // A stalled external SDK must not permanently block the app.
+  setTimeout(finishBoot, 30000);
 })();
 </script>
 
