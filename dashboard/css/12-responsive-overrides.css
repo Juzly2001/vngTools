@@ -398,3 +398,16 @@
 @media (max-width:900px) { .admin-summary-grid-v3 { grid-template-columns:repeat(2,minmax(0,1fr)); } .admin-audit-item { grid-template-columns:1fr; gap:4px; } }
 @media (max-width:560px) { .admin-summary-grid-v3 { grid-template-columns:1fr 1fr; } .admin-filter-select { width:100%; } .admin-console-footer { flex-direction:column; } }
 
+
+/* Compact, dismissible sign-in dialog */
+.google-permission-gate-card-v3 { position: relative; }
+.google-permission-close {
+    position:absolute; top:12px; right:12px; width:34px; height:34px;
+    display:grid; place-items:center; padding:0; border:0; border-radius:10px;
+    background:transparent; color:var(--text-sub); font-size:25px; line-height:1;
+    cursor:pointer; transition:background .15s,color .15s; z-index:1;
+}
+.google-permission-close:hover, .google-permission-close:focus-visible {
+    background:var(--inner-bg); color:var(--text-main); outline-offset:2px;
+}
+.google-permission-gate-brand { padding-right:30px; }

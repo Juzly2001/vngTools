@@ -1,11 +1,17 @@
 // 5. QUẢN LÝ DỮ LIỆU & CORE DASHBOARD RENDERING SYSTEM
 // ==========================================================================
+// Single persistence entry point: retain backup, mobile indicator, UI and Drive sync.
 function saveData() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
-    renderDashboard();
-    updateScheduleUI();
-    if (gapiInited && gisInited && gapi.client.getToken()) {
-        syncToGoogleDrive(true); 
+    if (typeof createDashboardBackup === 'function') createDashboardBackup('Automatic');
+    const mobileSaving = typeof isMobileLiteView === 'function' && isMobileLiteView();
+    if (mobileSaving) document.body.classList.add('mobile-lite-saving');
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.dashboardData));
+        renderDashboard();
+        updateScheduleUI();
+        if (gapiInited && gisInited && gapi.client.getToken()) syncToGoogleDrive(true);
+    } finally {
+        if (mobileSaving) setTimeout(() => document.body.classList.remove('mobile-lite-saving'), 180);
     }
 }
 

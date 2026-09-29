@@ -1740,3 +1740,67 @@ function initKanbanWorkspaceDragAndDrop() {
         }
     };
 })();
+
+// READ-ONLY FIRST V6: browsing never requires an interactive Google sign-in.
+// Existing V5 server session restoration still runs; backend remains the authority
+// for Drive writes, account permissions and session revocation.
+(() => {
+    let writeRequested = false;
+    const originalGate = updateGooglePermissionGate;
+    updateGooglePermissionGate = function (...args) {
+        const allowed = originalGate.apply(this, args);
+        const gate = document.getElementById('googlePermissionGate');
+        if (!gate) return allowed;
+        const restricted = !!(currentAccountAccess?.blocked || currentAccountAccess?.sessionRevoked);
+        // Never hide a blocked/revoked-session warning for an authenticated user.
+        if (!writeRequested && !restricted) gate.classList.add('is-hidden');
+        if (allowed) writeRequested = false;
+        return allowed;
+    };
+
+    function requireWriteLogin() {
+        if (isGoogleConnected() && hasRequiredGoogleScopes() &&
+            currentAccountAccess?.checked && !currentAccountAccess.blocked &&
+            !currentAccountAccess.sessionRevoked) return true;
+        writeRequested = true;
+        updateGooglePermissionGate();
+        const gate = document.getElementById('googlePermissionGate');
+        gate?.classList.remove('is-hidden');
+        return false;
+    }
+    // A dismissal closes this prompt only; it does not sign in, grant access,
+    // or bypass the write guard. The next edit can request login again.
+    window.dismissGooglePermissionGate = function () {
+        writeRequested = false;
+        document.getElementById('googlePermissionGate')?.classList.add('is-hidden');
+    };
+    // Close only when clicking the backdrop, not the dialog content.
+    document.getElementById('googlePermissionGate')?.addEventListener('click', event => {
+        if (event.target === event.currentTarget) dismissGooglePermissionGate();
+    });
+    window.requireWorkspaceWriteLogin = requireWriteLogin;
+
+    // Catch the actual create/edit/delete/save action before its inline handler.
+    // Browsing, opening notes, search, calendar navigation and account viewing stay free.
+    document.addEventListener('click', event => {
+        const target = event.target.closest('button,[role="button"]');
+        if (!target || target.closest('#googlePermissionGate') || target.closest('#accountModal')) return;
+        const handler = target.getAttribute('onclick') || '';
+        const name = (target.getAttribute('aria-label') || '') + ' ' + (target.getAttribute('title') || '');
+        const isMutation = /\b(?:save|delete|remove|create|add|duplicate|confirm(?:Delete|Remove)|submit|applyChanges|updateGroup|moveCard)\w*\s*\(/i.test(handler) ||
+            /^(?:save|delete|remove|create|add)\b/i.test(name.trim());
+        if (!isMutation || requireWriteLogin()) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }, true);
+
+    // Forms can also commit edits via Enter rather than a button click.
+    document.addEventListener('submit', event => {
+        if (event.target.closest('#accountModal,#googlePermissionGate')) return;
+        if (requireWriteLogin()) return;
+        event.preventDefault();
+        event.stopImmediatePropagation();
+    }, true);
+    // Hide the initial gate immediately, even before the Google SDK has loaded.
+    document.getElementById('googlePermissionGate')?.classList.add('is-hidden');
+})();

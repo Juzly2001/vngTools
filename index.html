@@ -46,8 +46,83 @@
     <link rel="stylesheet" href="./dashboard/css/25-card-editor.css">
     <link rel="stylesheet" href="./dashboard/css/26-pinned-items.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<style>
+#workspaceBoot{--boot-bg:#070e1c;--boot-primary:#58dcff;--boot-secondary:#9d91ff;--boot-text:#f4f8ff;--boot-sub:#a8bad2;--boot-glow-a:#203e695e;--boot-glow-b:#4e42a52b;--boot-grid:color-mix(in srgb,var(--boot-primary) 4%,transparent);--boot-orbit-soft:color-mix(in srgb,var(--boot-primary) 25%,transparent);--boot-orbit-inner:color-mix(in srgb,var(--boot-secondary) 18%,transparent);--boot-halo:color-mix(in srgb,var(--boot-primary) 14%,transparent);--boot-mark-border:color-mix(in srgb,var(--boot-primary) 35%,transparent);--boot-mark-a:color-mix(in srgb,var(--boot-bg) 65%,var(--boot-primary));--boot-mark-b:color-mix(in srgb,var(--boot-bg) 85%,var(--boot-secondary));--boot-spark:var(--boot-primary);--boot-spark-glow:var(--boot-primary);--boot-title-mid:color-mix(in srgb,var(--boot-primary) 65%,var(--boot-text));--boot-track:color-mix(in srgb,var(--boot-text) 10%,transparent);--boot-muted:var(--boot-sub)}
+#workspaceBoot[data-boot-theme="dark"]{--boot-bg:#070e1c;--boot-primary:#58dcff;--boot-secondary:#9d91ff;--boot-text:#f4f8ff;--boot-sub:#a8bad2;--boot-glow-a:#203e695e;--boot-glow-b:#4e42a52b}
+#workspaceBoot[data-boot-theme="light"]{--boot-bg:#eef3fc;--boot-primary:#376bd6;--boot-secondary:#8e65db;--boot-text:#1d3054;--boot-sub:#526581;--boot-glow-a:#b4d4ff9c;--boot-glow-b:#ddd0ff8c}
+#workspaceBoot[data-boot-theme="midnight"]{--boot-bg:#03081e;--boot-primary:#8baaff;--boot-secondary:#d7c3ff;--boot-text:#e5edff;--boot-sub:#a2b7dd;--boot-glow-a:#13275b9c;--boot-glow-b:#33246177}
+#workspaceBoot[data-boot-theme="oled"]{--boot-bg:#000000;--boot-primary:#f1f5f9;--boot-secondary:#9ca3af;--boot-text:#ffffff;--boot-sub:#b3b3b3;--boot-glow-a:#10101055;--boot-glow-b:#08080855}
+#workspaceBoot[data-boot-theme="forest"]{--boot-bg:#071d15;--boot-primary:#70d69a;--boot-secondary:#d4b76b;--boot-text:#e9ffed;--boot-sub:#a5cbb1;--boot-glow-a:#235c3970;--boot-glow-b:#77632a36}
+#workspaceBoot[data-boot-theme="ocean"]{--boot-bg:#052638;--boot-primary:#35d4e9;--boot-secondary:#4d94d7;--boot-text:#e1fcff;--boot-sub:#99d8e5;--boot-glow-a:#0c66807a;--boot-glow-b:#10539a55}
+#workspaceBoot[data-boot-theme="sunset"]{--boot-bg:#321624;--boot-primary:#ffb16d;--boot-secondary:#ee718c;--boot-text:#fff0dc;--boot-sub:#edb8a8;--boot-glow-a:#a64a456b;--boot-glow-b:#773b965c}
+#workspaceBoot[data-boot-theme="coffee"]{--boot-bg:#23170f;--boot-primary:#d9a36b;--boot-secondary:#b87843;--boot-text:#fff1de;--boot-sub:#d3b498;--boot-glow-a:#65412473;--boot-glow-b:#8c5c3a4a}
+#workspaceBoot[data-boot-theme="mint"]{--boot-bg:#e9fff6;--boot-primary:#129a78;--boot-secondary:#66cbb2;--boot-text:#124e42;--boot-sub:#48796a;--boot-glow-a:#b5f4d67d;--boot-glow-b:#c9f4ed9c}
+#workspaceBoot[data-boot-theme="sakura-night"]{--boot-bg:#241225;--boot-primary:#ff91bc;--boot-secondary:#ba8bd8;--boot-text:#ffe9f5;--boot-sub:#e4b5d3;--boot-glow-a:#71325173;--boot-glow-b:#68417b66}
+#workspaceBoot[data-boot-theme="sky"]{--boot-bg:#e4f5ff;--boot-primary:#2787c6;--boot-secondary:#76b9ea;--boot-text:#16486b;--boot-sub:#527e98;--boot-glow-a:#b0e2ff8c;--boot-glow-b:#d1f1ff9c}
+#workspaceBoot[data-boot-theme="cyber"]{--boot-bg:#090b1b;--boot-primary:#21e9e6;--boot-secondary:#ed4ef6;--boot-text:#e7ffff;--boot-sub:#91cfd9;--boot-glow-a:#006c8770;--boot-glow-b:#67228d70}
+#workspaceBoot[data-boot-theme="grape"]{--boot-bg:#230c3c;--boot-primary:#d5a0ff;--boot-secondary:#8e62ed;--boot-text:#fff0ff;--boot-sub:#d4b2e8;--boot-glow-a:#642a9477;--boot-glow-b:#a348b04c}
+#workspaceBoot[data-boot-theme="terminal"]{--boot-bg:#020b05;--boot-primary:#4ef18b;--boot-secondary:#b1d767;--boot-text:#d3ffda;--boot-sub:#82bc8d;--boot-glow-a:#12592c68;--boot-glow-b:#35651e42}
+
+/* First paint: keep the permission gate invisible until an explicit write request. */
+.google-permission-gate.is-hidden{display:none!important}
+#workspaceBoot{position:fixed;inset:0;z-index:2147483640;display:grid;place-items:center;overflow:hidden;isolation:isolate;background:var(--boot-bg);color:var(--boot-text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;transition:opacity .55s ease,visibility .55s ease}
+#workspaceBoot::before{content:"";position:absolute;inset:-30%;z-index:-2;background:radial-gradient(ellipse at 45% 45%,var(--boot-glow-a),transparent 42%),radial-gradient(ellipse at 70% 70%,var(--boot-glow-b),transparent 38%);animation:boot-ambient 8s ease-in-out infinite alternate}
+#workspaceBoot::after{content:"";position:absolute;inset:0;z-index:-1;background-image:linear-gradient(var(--boot-grid) 1px,transparent 1px),linear-gradient(90deg,var(--boot-grid) 1px,transparent 1px);background-size:42px 42px;mask-image:radial-gradient(ellipse at center,#000 5%,transparent 73%)}
+#workspaceBoot.boot-done{opacity:0;visibility:hidden;pointer-events:none}
+.boot-panel{width:min(400px,92vw);padding:34px 24px 28px;text-align:center;position:relative}
+.boot-orbit{position:relative;width:122px;height:122px;margin:0 auto 26px;display:grid;place-items:center}
+.boot-orbit::before,.boot-orbit::after{content:"";position:absolute;inset:0;border:1px solid var(--boot-orbit-soft);border-radius:50%;animation:boot-spin 7s linear infinite}
+.boot-orbit::before{border-top:2px solid var(--boot-primary);border-right-color:transparent;box-shadow:0 -4px 24px var(--boot-halo)}
+.boot-orbit::after{inset:12px;border-color:var(--boot-orbit-inner);border-bottom:2px solid var(--boot-secondary);animation-direction:reverse;animation-duration:5s}
+.boot-mark{width:70px;height:70px;border:1px solid var(--boot-mark-border);border-radius:22px;display:grid;place-items:center;background:linear-gradient(145deg,var(--boot-mark-a),var(--boot-mark-b) 80%);box-shadow:0 12px 36px #0008,inset 0 1px #ffffff38;transform:rotate(-8deg);position:relative}
+.boot-mark svg{width:39px;height:39px;transform:rotate(8deg);filter:drop-shadow(0 0 9px var(--boot-primary)80)}
+.boot-spark{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--boot-spark);box-shadow:0 0 15px var(--boot-spark-glow);top:7px;left:28px}
+.boot-eyebrow{font-size:10px;letter-spacing:3px;font-weight:750;color:var(--boot-primary);text-transform:uppercase;margin-bottom:12px}
+.boot-title{font-size:clamp(24px,6vw,30px);font-weight:800;letter-spacing:-1.1px;line-height:1.2}.boot-title span{background:linear-gradient(95deg,#fff 25%,var(--boot-title-mid) 75%,var(--boot-secondary));background-clip:text;-webkit-background-clip:text;color:transparent}
+.boot-sub{margin-top:12px;color:var(--boot-sub);font-size:13px;letter-spacing:.1px}
+.boot-track{height:3px;background:var(--boot-track);border-radius:20px;overflow:hidden;margin:29px auto 13px;width:min(235px,78vw)}
+.boot-progress{height:100%;width:35%;background:linear-gradient(90deg,transparent,var(--boot-primary),var(--boot-secondary));border-radius:20px;box-shadow:0 0 14px var(--boot-primary);animation:boot-slide 1.45s cubic-bezier(.4,0,.2,1) infinite}
+.boot-foot{font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--boot-muted)}
+@keyframes boot-slide{0%{transform:translateX(-110%)}100%{transform:translateX(390%)}}@keyframes boot-spin{to{transform:rotate(360deg)}}@keyframes boot-ambient{to{transform:translate(5%, -4%) scale(1.06)}}
+@media(prefers-reduced-motion:reduce){#workspaceBoot::before,.boot-orbit::before,.boot-orbit::after,.boot-progress{animation:none}.boot-progress{width:65%}}
+
+#workspaceBoot .boot-mark svg rect{stroke:var(--boot-primary)}#workspaceBoot .boot-mark svg path:nth-of-type(1){stroke:var(--boot-text)}#workspaceBoot .boot-mark svg path:nth-of-type(2){stroke:var(--boot-secondary)}
+</style>
 </head>
 <body>
+<div id="workspaceBoot" role="status" aria-live="polite"><div class="boot-panel"><div class="boot-orbit"><span class="boot-spark"></span><div class="boot-mark"><svg viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect x="7" y="7" width="34" height="34" rx="10" stroke="#8BDFFF" stroke-width="1.6"/><path d="M14 31V25M22 31V19M30 31V14" stroke="#B5EDFF" stroke-width="3.5" stroke-linecap="round"/><path d="m14 18 8-5 8 3 5-5" stroke="#7C9EFF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div></div><div class="boot-eyebrow">Your personal space</div><div class="boot-title"><span>Workspace Dashboard</span></div><div class="boot-sub">Đang chuẩn bị không gian làm việc của bạn…</div><div class="boot-track"><div class="boot-progress"></div></div><div class="boot-foot">Preparing workspace</div></div></div>
+<script>
+(() => {
+  // Resolve theme before first paint; auto-by-time uses the same slots as the dashboard.
+  const supported = new Set('dark light midnight oled forest ocean sunset coffee mint sakura-night sky cyber grape terminal'.split(' '));
+  let selected = 'dark';
+  try {
+    selected = localStorage.getItem('dashboardTheme') || 'dark';
+    if (localStorage.getItem('dashboardAutoTimeThemeV1') === 'true') {
+      const hour = new Date().getHours();
+      selected = hour >= 5 && hour < 10 ? 'sky' : hour >= 10 && hour < 14 ? 'light' : hour >= 14 && hour < 18 ? 'sunset' : hour >= 18 && hour < 22 ? 'coffee' : 'midnight';
+    }
+  } catch (_) {}
+  document.getElementById('workspaceBoot')?.setAttribute('data-boot-theme', supported.has(selected) ? selected : 'dark');
+})();
+</script>
+<script>
+(() => {
+  let finished = false;
+  function finishBoot() {
+    if (finished) return;
+    finished = true;
+    const boot = document.getElementById('workspaceBoot');
+    if (!boot) return;
+    boot.classList.add('boot-done');
+    setTimeout(() => boot.remove(), 550);
+  }
+  // Display a short, smooth first-paint transition, without waiting for Google OAuth.
+  window.addEventListener('load', () => setTimeout(finishBoot, 350), {once:true});
+  // An unreachable external SDK must never leave the dashboard behind a loading screen.
+  setTimeout(finishBoot, 4500);
+})();
+</script>
 
     <canvas id="bgCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none;"></canvas>
     <button id="backToTop" onclick="scrollToTop()">▲</button>
@@ -852,8 +927,9 @@
 
     <!-- GOOGLE REQUIRED PERMISSIONS GATE -->
 
-    <div id="googlePermissionGate" class="google-permission-gate" role="dialog" aria-modal="true" aria-labelledby="googlePermissionGateTitle">
+    <div id="googlePermissionGate" class="google-permission-gate is-hidden" role="dialog" aria-modal="true" aria-labelledby="googlePermissionGateTitle">
         <div class="google-permission-gate-card google-permission-gate-card-v3">
+            <button id="googlePermissionDismissButton" class="google-permission-close" type="button" onclick="dismissGooglePermissionGate()" aria-label="Đóng cửa sổ đăng nhập" title="Đóng">&times;</button>
             <div class="google-permission-gate-brand">
                 <div class="google-permission-gate-icon">🔐</div>
                 <div>
@@ -922,8 +998,20 @@
     <script src="./dashboard/js/08-context-menu-and-dragdrop.js"></script>
     <script src="./dashboard/js/09-security-and-events.js"></script>
     <script src="./dashboard/js/10-favorites-and-search.js"></script>
-    <script src="./dashboard/js/11-mobile-calendar-and-workspace.js"></script>
+    <script src="./dashboard/js/11a-workspace-part-01.js"></script>
+    <script src="./dashboard/js/11b-workspace-part-02.js"></script>
+    <script src="./dashboard/js/11c-workspace-part-03.js"></script>
+    <script src="./dashboard/js/11d-workspace-part-04.js"></script>
+    <script src="./dashboard/js/11e-workspace-part-05.js"></script>
+    <script src="./dashboard/js/11f-workspace-part-06.js"></script>
+    <script src="./dashboard/js/11g-workspace-part-07.js"></script>
+    <script src="./dashboard/js/11h-workspace-part-08.js"></script>
+    <script src="./dashboard/js/11i-workspace-part-09.js"></script>
+    <script src="./dashboard/js/11j-workspace-part-10.js"></script>
+    <script src="./dashboard/js/11k-workspace-part-11.js"></script>
+    <script src="./dashboard/js/11l-workspace-part-12.js"></script>
     <script src="./dashboard/js/12-account-and-admin.js"></script>
+    <script src="./dashboard/js/13-stability-enhancements.js"></script>
     <script async defer src="https://apis.google.com/js/api.js" onload="gapiLoaded()"></script>
     <script async defer src="https://accounts.google.com/gsi/client" onload="gisLoaded()"></script>
 
