@@ -35,7 +35,7 @@ function submitGroupForm() {
         const group = getGroup(state.activeGroupId);
         if (group) { group.title = name; group.emoji = state.selectedEmoji; group.tags = tags; }
     } else {
-        const newGroup = { id: 'g_' + Date.now(), title: name, emoji: state.selectedEmoji, type: state.currentGroupType, tags };
+        const newGroup = { id: 'g_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10), title: name, emoji: state.selectedEmoji, type: state.currentGroupType, tags };
         if (state.currentGroupType === 'kanban') {
             newGroup.kanban = createDefaultKanbanBoard();
         } else {
@@ -837,6 +837,7 @@ const submitLinkForm = () => submitItemForm('link');
 const submitNoteForm = () => submitItemForm('note');
 
 function duplicateItem(type, groupId, index) {
+    if (typeof window.requireWorkspaceWriteLogin === 'function' && !window.requireWorkspaceWriteLogin()) return;
     const group = getGroup(groupId);
     if (!group) return;
     
@@ -868,21 +869,35 @@ function moveItem(type, sourceGroupId, index, targetGroupId) {
 }
 
 function triggerDelete(type) {
-    const group = getGroup(state.activeGroupId);
+    // Freeze the exact target before the asynchronous confirmation opens.
+    // Context-menu/scroll actions can change activeGroupId and activeIndex meanwhile.
+    const groupId = state.activeGroupId;
+    const itemIndex = state.activeIndex;
+    const group = getGroup(groupId);
     if (!group) return;
-    let msg = "";
-    
-    if (type === 'Group') msg = `Are you sure you want to delete group "${group.title}" and all data inside?`;
-    else if (type === 'Link') msg = `Are you sure you want to delete button "${group.links?.[state.activeIndex]?.name}"?`;
-    else if (type === 'Note') msg = `Are you sure you want to delete note button "${group.notes?.[state.activeIndex]?.title}"?`;
-    else if (type === 'Schedule') msg = `Are you sure you want to delete schedule milestone "${group.schedules?.[state.activeIndex]?.title}"?`;
-
-    customConfirm(msg, "⚠️ Confirm deletion").then((confirmed) => {
-        if (confirmed) {
-            if (type === 'Group') state.dashboardData = state.dashboardData.filter(g => g.id !== state.activeGroupId);
-            else group[`${type.toLowerCase()}s`].splice(state.activeIndex, 1);
-            saveData(); 
+    const keys = {Link:'links', Note:'notes', Schedule:'schedules'};
+    const key = keys[type];
+    const item = key && Number.isInteger(itemIndex) ? group[key]?.[itemIndex] : null;
+    if (type !== 'Group' && !item) return;
+    const name = type === 'Group' ? group.title : (item.name || item.title || 'Untitled');
+    const msg = type === 'Group'
+        ? `Are you sure you want to delete group "${name}" and all data inside?`
+        : `Are you sure you want to delete ${type.toLowerCase()} "${name}"?`;
+    customConfirm(msg, '⚠️ Confirm deletion').then(confirmed => {
+        if (!confirmed) return;
+        const current = getGroup(groupId);
+        if (!current) return;
+        if (type === 'Group') {
+            // Delete only the selected object, not every group sharing an old ID.
+            const position = state.dashboardData.indexOf(group);
+            if (position < 0) return;
+            state.dashboardData.splice(position, 1);
+        } else {
+            const position = current[key]?.indexOf(item);
+            if (position < 0 || position === undefined) return;
+            current[key].splice(position, 1);
         }
+        saveData();
     });
 }
 

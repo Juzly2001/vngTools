@@ -14,6 +14,25 @@
         })();
     </script>
 
+    <script>
+    // Suppress browser input-history suggestions for workspace text fields, including
+    // inputs created dynamically by modal renderers. Password managers / OAuth stay intact.
+    (() => {
+      const editableTypes = new Set(['text', 'search', 'email', 'url', 'tel', 'number']);
+      const configure = (el) => {
+        if (!(el instanceof HTMLElement)) return;
+        if (el.matches('textarea') || (el.matches('input') && editableTypes.has(el.type))) {
+          el.setAttribute('autocomplete', 'off');
+        } else if (el.matches('form')) {
+          el.setAttribute('autocomplete', 'off');
+        }
+      };
+      document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('form,input,textarea').forEach(configure);
+      }, { once: true });
+      document.addEventListener('focusin', (event) => configure(event.target), true);
+    })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Workspace Dashboard</title>
@@ -45,6 +64,7 @@
     <link rel="stylesheet" href="./dashboard/css/24-calendar-responsive.css">
     <link rel="stylesheet" href="./dashboard/css/25-card-editor.css">
     <link rel="stylesheet" href="./dashboard/css/26-pinned-items.css">
+    <link rel="stylesheet" href="./dashboard/css/27-search-focus-polish.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
 <style>
 #workspaceBoot{--boot-bg:#070e1c;--boot-primary:#58dcff;--boot-secondary:#9d91ff;--boot-text:#f4f8ff;--boot-sub:#a8bad2;--boot-glow-a:#203e695e;--boot-glow-b:#4e42a52b;--boot-grid:color-mix(in srgb,var(--boot-primary) 4%,transparent);--boot-orbit-soft:color-mix(in srgb,var(--boot-primary) 25%,transparent);--boot-orbit-inner:color-mix(in srgb,var(--boot-secondary) 18%,transparent);--boot-halo:color-mix(in srgb,var(--boot-primary) 14%,transparent);--boot-mark-border:color-mix(in srgb,var(--boot-primary) 35%,transparent);--boot-mark-a:color-mix(in srgb,var(--boot-bg) 65%,var(--boot-primary));--boot-mark-b:color-mix(in srgb,var(--boot-bg) 85%,var(--boot-secondary));--boot-spark:var(--boot-primary);--boot-spark-glow:var(--boot-primary);--boot-title-mid:color-mix(in srgb,var(--boot-primary) 65%,var(--boot-text));--boot-track:color-mix(in srgb,var(--boot-text) 10%,transparent);--boot-muted:var(--boot-sub)}
@@ -168,7 +188,7 @@
         <section class="command-bar" aria-label="Quick action bar">
             <div class="search-box">
                 <span>🔎</span>
-                <input id="globalSearch" type="search" placeholder="Search groups, links, notes, schedules..." aria-label="Search workspace" oninput="scheduleDashboardSearch(event)" oncompositionstart="scheduleDashboardSearch(event)" oncompositionend="scheduleDashboardSearch(event)">
+                <input id="globalSearch" type="search" placeholder="Search groups, links, notes, schedules..." aria-label="Search workspace" oninput="scheduleDashboardSearch(event)" oncompositionstart="scheduleDashboardSearch(event)" oncompositionend="scheduleDashboardSearch(event)" autocomplete="off">
                 <button type="button" onclick="clearDashboardSearch()" title="Clear search">✕</button>
             </div>
             <div class="quick-actions">
@@ -306,9 +326,9 @@
         <div class="modal-box">
             <h3 id="groupModalTitle">📂 Group Settings</h3>
             <label>Group name:</label>
-            <input type="text" id="groupNameInput" placeholder="Enter group name...">
+            <input type="text" id="groupNameInput" placeholder="Enter group name..." autocomplete="off">
             <label>Group tags:</label>
-            <input type="text" id="groupTagsInput" placeholder="Example: work, sgv">
+            <input type="text" id="groupTagsInput" placeholder="Example: work, sgv" autocomplete="off">
             <label>Choose title emoji:</label>
             <div class="emoji-picker-container"><div class="emoji-grid" id="groupEmojiGrid"></div></div>
             <div class="modal-footer">
@@ -322,9 +342,9 @@
         <div class="modal-box">
             <h3 id="linkModalTitle">🔗 Button Settings</h3>
             <label>Display name:</label>
-            <input type="text" id="linkNameInput" placeholder="Example: Google...">
+            <input type="text" id="linkNameInput" placeholder="Example: Google..." autocomplete="off">
             <label>URL address:</label>
-            <input type="text" id="linkUrlInput" placeholder="Example: google.com">
+            <input type="text" id="linkUrlInput" placeholder="Example: google.com" autocomplete="off">
             <label>Choose emoji:</label>
             <div class="emoji-picker-container"><div class="emoji-grid" id="linkEmojiGrid"></div></div>
             <div class="modal-footer">
@@ -349,7 +369,7 @@
 
             <div class="note-v4-scroll">
                 <div class="note-v4-title-row">
-                    <input id="noteTitleInput" class="note-v4-title" type="text" placeholder="Note title">
+                    <input id="noteTitleInput" class="note-v4-title" type="text" placeholder="Note title" autocomplete="off">
                 </div>
 
                 <div class="note-v4-meta">
@@ -372,7 +392,7 @@
                             <div id="noteTagsPresetList" class="note-tags-preset-list"></div>
                             <div id="noteTagsSelected" class="note-tags-selected"></div>
                             <div class="note-tags-custom-row">
-                                <input id="noteCustomTagInput" type="text" maxlength="24" placeholder="Add custom tag..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomNoteTag();}">
+                                <input id="noteCustomTagInput" type="text" maxlength="24" placeholder="Add custom tag..." onkeydown="if(event.key==='Enter'){event.preventDefault();addCustomNoteTag();}" autocomplete="off">
                                 <button type="button" onclick="addCustomNoteTag()">Add</button>
                             </div>
                         </div>
@@ -514,7 +534,7 @@
             </div>
             <div class="note-v4-icon-search">
                 <span>🔎</span>
-                <input id="noteIconSearch" type="search" placeholder="Search icon..." oninput="renderNoteIconPicker()">
+                <input id="noteIconSearch" type="search" placeholder="Search icon..." oninput="renderNoteIconPicker()" autocomplete="off">
             </div>
             <div id="noteIconGrid" class="note-v4-icon-grid"></div>
         </div>
@@ -527,8 +547,8 @@
                 <button class="modal-close-soft" type="button" onclick="closeModal('noteTableModal')">✕</button>
             </div>
             <div class="note-v4-table-fields">
-                <label>Rows<input id="noteTableRows" type="number" min="1" max="20" value="3"></label>
-                <label>Columns<input id="noteTableCols" type="number" min="1" max="10" value="3"></label>
+                <label>Rows<input id="noteTableRows" type="number" min="1" max="20" value="3" autocomplete="off"></label>
+                <label>Columns<input id="noteTableCols" type="number" min="1" max="10" value="3" autocomplete="off"></label>
             </div>
             <div class="note-v4-dialog-actions">
                 <button class="note-v4-secondary-btn" onclick="closeModal('noteTableModal')">Cancel</button>
@@ -544,7 +564,7 @@
                 <button class="modal-close-soft" type="button" onclick="closeModal('noteLinkModal')">✕</button>
             </div>
             <label class="note-v4-dialog-field">URL
-                <input id="noteLinkUrlInput" type="text" placeholder="https://example.com">
+                <input id="noteLinkUrlInput" type="text" placeholder="https://example.com" autocomplete="off">
             </label>
             <div class="note-v4-dialog-actions">
                 <button class="note-v4-secondary-btn" onclick="closeModal('noteLinkModal')">Cancel</button>
@@ -640,7 +660,7 @@
                     <div class="admin-toolbar-row admin-toolbar-v3">
                         <div class="search-box admin-search-box">
                             <span>🔎</span>
-                            <input id="adminUserSearch" type="search" placeholder="Search name or email..." oninput="renderAdminAccounts()">
+                            <input id="adminUserSearch" type="search" placeholder="Search name or email..." oninput="renderAdminAccounts()" autocomplete="off">
                         </div>
                         <select id="adminRoleFilter" class="admin-filter-select" onchange="renderAdminAccounts()">
                             <option value="all">All roles</option>
@@ -680,7 +700,7 @@
                     <div class="admin-toolbar-row admin-toolbar-v3">
                         <div class="search-box admin-search-box">
                             <span>🔎</span>
-                            <input id="adminAuditSearch" type="search" placeholder="Search audit events..." oninput="renderAdminAuditLog()">
+                            <input id="adminAuditSearch" type="search" placeholder="Search audit events..." oninput="renderAdminAuditLog()" autocomplete="off">
                         </div>
                         <button class="btn-secondary" onclick="refreshAdminAccounts(true)">🔄 Refresh</button>
                     </div>
@@ -778,7 +798,7 @@
                 </div>
                 <button class="btn-secondary" onclick="closeModal('commandPaletteModal')">Close</button>
             </div>
-            <div class="command-search-wrap"><span>🔎</span><input id="commandInput" class="command-input" type="search" placeholder="Search links, notes, schedules, or type: create link / create note / create schedule..." oninput="renderCommandPalette()"></div>
+            <div class="command-search-wrap"><span>🔎</span><input id="commandInput" class="command-input" type="search" placeholder="Search links, notes, schedules, or type: create link / create note / create schedule..." oninput="renderCommandPalette()" autocomplete="off"></div>
             <div id="commandResults" class="command-results"></div>
         </div>
     </div>
@@ -911,7 +931,7 @@
                 </div>
                 <div class="kanban-card-field kanban-card-field-wide">
                     <label for="kanbanCardContentInput">Details</label>
-                    <textarea id="kanbanCardContentInput" rows="7"></textarea>
+                    <textarea id="kanbanCardContentInput" rows="7" autocomplete="off"></textarea>
                 </div>
             </div>
             <div class="modal-footer kanban-card-footer">

@@ -229,6 +229,7 @@ function submitKanbanCardForm() {
 }
 
 function duplicateKanbanCard(groupId, cardId) {
+    if (typeof window.requireWorkspaceWriteLogin === 'function' && !window.requireWorkspaceWriteLogin()) return;
     const group = getGroup(groupId);
     const found = findKanbanCard(group, cardId);
     if (!found) return;
@@ -678,6 +679,7 @@ function deleteKanbanColumn(groupId, columnId, boardId = kanbanWorkspaceState.bo
 }
 
 function duplicateKanbanCard(groupId, cardId) {
+    if (typeof window.requireWorkspaceWriteLogin === 'function' && !window.requireWorkspaceWriteLogin()) return;
     const group = getGroup(groupId);
     const found = findKanbanCard(group, cardId);
     if (!found) return;

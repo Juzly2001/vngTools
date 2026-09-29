@@ -1,0 +1,12 @@
+/* Keep the global search visually stable on focus, without changing other inputs. */
+.command-bar .search-box:focus-within,
+body.light-mode .command-bar .search-box:focus-within {
+    outline: none !important;
+    border-color: var(--border-color) !important;
+    box-shadow: none !important;
+}
+.command-bar #globalSearch:focus,
+.command-bar #globalSearch:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}

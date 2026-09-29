@@ -329,9 +329,13 @@ function renderDashboard() {
     const container = getEl('groupsContainer'); 
     if (!container) return;
     updateDashboardStats();
-    const previousCards = new Map(Array.from(container.children)
-        .filter(card => card.classList.contains('group-card'))
-        .map(card => [card.dataset.id, card]));
+    const previousCards = new Map();
+    const duplicateCardIds = new Set();
+    Array.from(container.children).filter(card => card.classList.contains('group-card')).forEach(card => {
+        if (previousCards.has(card.dataset.id)) duplicateCardIds.add(card.dataset.id);
+        else previousCards.set(card.dataset.id, card);
+    });
+    duplicateCardIds.forEach(id => previousCards.delete(id));
     const nextCards = [];
     const keyword = getDashboardKeyword();
     const groupsToRender = sortGroupsForRender(
@@ -350,6 +354,8 @@ function renderDashboard() {
         return;
     }
     
+    const groupIdCounts = new Map();
+    groupsToRender.forEach(g => groupIdCounts.set(String(g.id), (groupIdCounts.get(String(g.id)) || 0) + 1));
     groupsToRender.forEach(group => {
         if (group.type === 'schedule' && group.schedules) {
             sortSchedulesSmart(group.schedules);
@@ -358,7 +364,7 @@ function renderDashboard() {
         
         // Schedule and Kanban views also depend on time or workspace state.
         // Keep their existing render path; reuse only data-driven link/note cards.
-        const canReuse = group.type === 'link' || group.type === 'note';
+        const canReuse = (group.type === 'link' || group.type === 'note') && groupIdCounts.get(String(group.id)) === 1;
         const snapshot = canReuse ? JSON.stringify(group) : null;
         const previousCard = previousCards.get(String(group.id));
         if (canReuse && previousCard && dashboardCardSnapshots.get(previousCard) === snapshot) {
