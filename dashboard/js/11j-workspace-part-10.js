@@ -63,35 +63,25 @@
         const style = document.createElement('style');
         style.id = 'autoDriveV2Styles';
         style.textContent = `
-            /* Compact, theme-aware sync pill outside the desktop sidebar. */
+            /* Edge-mounted sync progress: never overlaps the desktop sidebar. */
             #driveAutoSaveIndicator{
-                position:fixed;left:14px;right:auto;bottom:16px;z-index:2400;
-                display:flex;align-items:center;gap:8px;width:max-content;max-width:min(245px,calc(100vw - 28px));
-                min-height:34px;box-sizing:border-box;padding:7px 11px 9px;border-radius:11px;
-                border:1px solid color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 24%,var(--border-color,transparent));
-                background:var(--bg-secondary,var(--bg-primary,#fff));color:var(--text-primary,#1f2937);
-                box-shadow:0 5px 18px rgba(0,0,0,.12);font-size:11px;font-weight:650;line-height:1.25;
-                transition:opacity .2s ease,transform .2s ease,left .24s ease;overflow:hidden;pointer-events:none;
+                position:fixed;left:0;right:0;bottom:0;z-index:2400;height:3px;
+                width:auto;max-width:none;min-height:0;padding:0;margin:0;border:0;border-radius:0;
+                display:block;box-shadow:none;background:transparent;overflow:hidden;pointer-events:none;
+                opacity:1;visibility:visible;transform:none;transition:opacity .2s ease;
+                --drive-progress-color:var(--accent-color,var(--primary-color,#648dff));
             }
-            body.sidebar-pro-enabled #driveAutoSaveIndicator{left:calc(var(--sidebar-expanded-width,226px) + 14px)}
-            body.sidebar-pro-enabled.sidebar-pro-collapsed #driveAutoSaveIndicator{left:calc(var(--sidebar-collapsed-width,72px) + 14px)}
-            #driveAutoSaveIndicator[data-state="idle"],#driveAutoSaveIndicator:not(.drive-toast-visible){opacity:0;transform:translateY(6px);visibility:hidden}
-            #driveAutoSaveIndicator.drive-toast-visible{opacity:1;transform:none;visibility:visible}
-            #driveAutoSaveIndicator .drive-save-dot{width:18px;height:18px;border-radius:6px;display:grid;place-items:center;flex:0 0 18px;background:color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 13%,transparent);color:var(--accent-color,var(--primary-color,#648dff));font-size:11px}
-            #driveAutoSaveIndicator[data-state="saving"] .drive-save-dot{animation:driveSavePulse 1.1s ease-in-out infinite alternate}
-            #driveAutoSaveIndicator[data-state="saved"] .drive-save-dot{color:#16a34a;background:color-mix(in srgb,#16a34a 12%,transparent)}
-            #driveAutoSaveIndicator[data-state="error"] .drive-save-dot,#driveAutoSaveIndicator[data-state="offline"] .drive-save-dot{color:#e09b32;background:color-mix(in srgb,#e09b32 12%,transparent)}
-            #driveAutoSaveIndicator .drive-save-content{min-width:0;max-width:190px}
-            #driveAutoSaveIndicator .drive-save-heading{font-size:11px;font-weight:750;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-            #driveAutoSaveIndicator #driveAutoSaveIndicatorText{display:none}
-            #driveAutoSaveIndicator .drive-save-track{position:absolute;bottom:0;left:0;right:0;height:2px;background:color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 13%,transparent);overflow:hidden}
-            #driveAutoSaveIndicator .drive-save-track::after{content:"";display:block;width:36%;height:100%;background:var(--accent-color,var(--primary-color,#648dff));transform:translateX(-120%)}
-            #driveAutoSaveIndicator[data-state="saving"] .drive-save-track::after{animation:driveSaveTravel 1.35s ease-in-out infinite}
-            #driveAutoSaveIndicator[data-state="saved"] .drive-save-track::after{width:100%;transform:none;background:#16a34a}
-            #driveAutoSaveIndicator[data-state="error"] .drive-save-track::after,#driveAutoSaveIndicator[data-state="offline"] .drive-save-track::after{width:100%;transform:none;background:#e09b32}
-            @keyframes driveSavePulse{from{transform:scale(.9);opacity:.6}to{transform:scale(1.08);opacity:1}}
-            @keyframes driveSaveTravel{to{transform:translateX(400%)}}
-            @media(prefers-reduced-motion:reduce){#driveAutoSaveIndicator *,#driveAutoSaveIndicator::after{animation:none!important;transition:none!important}}
+            body.sidebar-pro-enabled #driveAutoSaveIndicator{left:var(--sidebar-expanded-width,226px)}
+            body.sidebar-pro-enabled.sidebar-pro-collapsed #driveAutoSaveIndicator{left:var(--sidebar-collapsed-width,72px)}
+            #driveAutoSaveIndicator[data-state="idle"],#driveAutoSaveIndicator:not(.drive-toast-visible){opacity:0;visibility:hidden}
+            #driveAutoSaveIndicator .drive-save-dot,#driveAutoSaveIndicator .drive-save-content{display:none!important}
+            #driveAutoSaveIndicator .drive-save-track{position:absolute;inset:0;height:100%;background:color-mix(in srgb,var(--drive-progress-color) 14%,transparent);overflow:hidden}
+            #driveAutoSaveIndicator .drive-save-track::after{content:"";display:block;width:35%;height:100%;background:var(--drive-progress-color);transform:translateX(-110%)}
+            #driveAutoSaveIndicator[data-state="saving"] .drive-save-track::after{animation:driveSaveTravel 1.4s ease-in-out infinite}
+            #driveAutoSaveIndicator[data-state="saved"] .drive-save-track::after{animation:none;width:100%;transform:none;background:#16a34a}
+            #driveAutoSaveIndicator[data-state="error"] .drive-save-track::after,#driveAutoSaveIndicator[data-state="offline"] .drive-save-track::after{animation:none;width:100%;transform:none;background:#e09b32}
+            @keyframes driveSaveTravel{from{transform:translateX(-110%)}to{transform:translateX(400%)}}
+            @media(prefers-reduced-motion:reduce){#driveAutoSaveIndicator .drive-save-track::after{animation-duration:3s}}
             .account-toolbar-btn.account-connected-v2{
                 display:inline-flex;align-items:center;gap:8px;max-width:210px;
             }
@@ -108,7 +98,7 @@
             .account-toolbar-name-v2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
             .account-sync-detail-v2 small{display:block;margin-top:3px;opacity:.7;font-weight:600}
             @media (max-width:768px){
-                #driveAutoSaveIndicator,body.sidebar-pro-enabled #driveAutoSaveIndicator,body.sidebar-pro-enabled.sidebar-pro-collapsed #driveAutoSaveIndicator{left:10px;right:auto;bottom:calc(12px + env(safe-area-inset-bottom));max-width:calc(100vw - 20px)}
+                #driveAutoSaveIndicator,body.sidebar-pro-enabled #driveAutoSaveIndicator,body.sidebar-pro-enabled.sidebar-pro-collapsed #driveAutoSaveIndicator{left:0;right:0;bottom:env(safe-area-inset-bottom);width:100%;max-width:none;height:3px}
                 .account-toolbar-name-v2{max-width:90px}
             }
         `;
@@ -125,6 +115,7 @@
             el.innerHTML = `<span class="drive-save-dot" aria-hidden="true">☁</span><span class="drive-save-content"><span class="drive-save-heading">Google Drive</span><span id="driveAutoSaveIndicatorText">Local cache ready</span></span><span class="drive-save-track" aria-hidden="true"></span>`;
             el.setAttribute('role', 'status');
             el.setAttribute('aria-live', 'polite');
+            el.setAttribute('aria-label', 'Google Drive sync status');
             document.body.appendChild(el);
         }
         return el;
@@ -187,6 +178,7 @@
         const textEl = document.getElementById('driveAutoSaveIndicatorText');
         if (textEl) textEl.textContent = text;
         const heading = el.querySelector('.drive-save-heading');
+        el.setAttribute('aria-label', text || stateName);
         if (heading) heading.textContent = stateName === 'saving' ? 'Đang đồng bộ Google Drive' :
             stateName === 'saved' ? 'Đã đồng bộ Google Drive' :
             stateName === 'error' ? 'Đồng bộ thất bại' :
