@@ -80,10 +80,8 @@
         }
 
         btn.classList.add('avatar-only-account-v4');
-        btn.title = googleAccountProfile?.email
-            ? `Current account: ${googleAccountProfile.email}`
-            : 'Current account';
-        btn.setAttribute('aria-label', btn.title);
+        btn.removeAttribute('title');
+        btn.setAttribute('aria-label', googleAccountProfile?.email ? `Current account: ${googleAccountProfile.email}` : 'Current account');
 
         const avatarUrl = getEffectiveToolbarAvatarV4();
 

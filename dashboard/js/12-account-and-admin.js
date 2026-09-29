@@ -605,7 +605,7 @@
 
         btn.classList.add('profile-header-btn-v5');
         btn.classList.remove('header-account-pill-v2');
-        btn.title = title;
+        btn.removeAttribute('title');
         btn.setAttribute('aria-label', `Current account: ${label}`);
 
         const currentAvatar = btn.querySelector('.profile-avatar-v5')?.getAttribute('src') || '';
