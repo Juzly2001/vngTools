@@ -16,8 +16,11 @@
     const btn = button();
     if (!btn || !btn.classList.contains('profile-header-btn-v5')) return;
     btn.removeAttribute('title');
-    const name = (typeof effectiveAccountName === 'function' && effectiveAccountName()) || window.googleAccountProfile?.name || 'Current account';
-    const email = window.googleAccountProfile?.email || '';
+    // googleAccountProfile is a top-level lexical binding, not a window property.
+    const profile = typeof googleAccountProfile !== 'undefined' ? googleAccountProfile : null;
+    const connected = typeof isGoogleConnected === 'function' && isGoogleConnected();
+    const name = (typeof window.getCurrentAccountDisplayName === 'function' && window.getCurrentAccountDisplayName()) || profile?.name || profile?.email || 'Current account';
+    const email = profile?.email || ''; 
     const avatar = btn.querySelector('.profile-avatar-v5');
     const c = ensureCard();
     c.replaceChildren();
@@ -32,7 +35,7 @@
     top.appendChild(info);c.appendChild(top);
     const status=document.createElement('div');status.className='avatar-hover-card__status';
     const dot=document.createElement('span');dot.className='avatar-hover-card__dot';status.appendChild(dot);
-    const label=document.createElement('span');label.textContent='Google account connected';status.appendChild(label);c.appendChild(status);
+    const label=document.createElement('span');label.textContent=connected ? 'Google account connected' : 'Account not connected';status.appendChild(label);c.appendChild(status);c.classList.toggle('is-disconnected', !connected);
     const rect=btn.getBoundingClientRect();
     c.style.visibility='hidden';c.classList.add('visible');
     const w=c.offsetWidth,h=c.offsetHeight;

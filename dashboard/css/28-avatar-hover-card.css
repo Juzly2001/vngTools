@@ -7,3 +7,5 @@
 .avatar-hover-card__info {min-width:0;flex:1}.avatar-hover-card__name {display:block;font-size:13px;font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.avatar-hover-card__email {display:block;font-size:11px;opacity:.72;overflow-wrap:anywhere;margin-top:3px;line-height:1.4}
 .avatar-hover-card__status {margin-top:11px;padding-top:10px;border-top:1px solid var(--border-color,rgba(148,163,184,.2));font-size:11px;opacity:.82;display:flex;align-items:center;gap:6px}.avatar-hover-card__dot {width:7px;height:7px;border-radius:50%;background:#22c55e;box-shadow:0 0 0 3px rgba(34,197,94,.14)}
 @media(hover:none){.avatar-hover-card{display:none!important}}@media(prefers-reduced-motion:reduce){.avatar-hover-card{transition:none}}
+
+.avatar-hover-card.is-disconnected .avatar-hover-card__dot{background:#94a3b8;box-shadow:0 0 0 3px rgba(148,163,184,.14)}
