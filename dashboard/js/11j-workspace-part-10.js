@@ -64,7 +64,7 @@
         style.id = 'autoDriveV2Styles';
         style.textContent = `
             #driveAutoSaveIndicator{
-                position:fixed;right:18px;bottom:18px;z-index:12000;
+                position:fixed;left:18px;right:auto;bottom:18px;z-index:12000;
                 display:flex;align-items:center;gap:11px;
                 width:min(340px,calc(100vw - 24px));box-sizing:border-box;
                 min-height:68px;padding:13px 15px;border-radius:16px;
@@ -112,7 +112,7 @@
             .account-toolbar-name-v2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
             .account-sync-detail-v2 small{display:block;margin-top:3px;opacity:.7;font-weight:600}
             @media (max-width:768px){
-                #driveAutoSaveIndicator{right:10px;bottom:10px;max-width:calc(100vw - 20px)}
+                #driveAutoSaveIndicator{left:10px;right:auto;bottom:calc(10px + env(safe-area-inset-bottom));max-width:calc(100vw - 20px)}
                 .account-toolbar-name-v2{max-width:90px}
             }
         `;

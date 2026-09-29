@@ -46,10 +46,7 @@
         const style = document.createElement('style');
         style.id = 'autoDriveV3Styles';
         style.textContent = `
-            /* V2 save badge remains functional internally, but is intentionally invisible. */
-            #driveAutoSaveIndicator{
-                display:none !important;
-            }
+            /* Floating sync status is owned by V2; do not hide it here. */
 
             .account-avatar-wrap{
                 position:relative;
@@ -659,19 +656,7 @@
         return result;
     };
 
-    // V2 can create the hidden status node. Remove any cached/old instance visually and
-    // keep it hidden even when older CSS is cached.
-    function removeVisibleFloatingSaveBadgeV3() {
-        injectV3Styles();
-        const badge = document.getElementById('driveAutoSaveIndicator');
-        if (badge) {
-            badge.style.setProperty('display', 'none', 'important');
-            badge.setAttribute('aria-hidden', 'true');
-        }
-    }
-
     document.addEventListener('DOMContentLoaded', () => {
-        removeVisibleFloatingSaveBadgeV3();
         ensureAvatarControlsV3();
         applyEffectiveAvatarToUI();
         refreshCurrentAccountSaveState();
@@ -680,7 +665,6 @@
     });
 
     window.addEventListener('load', () => {
-        removeVisibleFloatingSaveBadgeV3();
 
         // Give Google API/GIS a moment to initialize, then silently recover the session.
         let attempts = 0;
@@ -698,8 +682,7 @@
 
     window.addEventListener('online', () => {
         setTimeout(() => {
-            removeVisibleFloatingSaveBadgeV3();
-            refreshCurrentAccountSaveState();
+                refreshCurrentAccountSaveState();
 
             if (!isGoogleConnected()) {
                 trySilentGoogleRestoreV3();
