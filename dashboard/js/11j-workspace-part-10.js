@@ -63,36 +63,32 @@
         const style = document.createElement('style');
         style.id = 'autoDriveV2Styles';
         style.textContent = `
+            /* Compact, theme-aware sync pill outside the desktop sidebar. */
             #driveAutoSaveIndicator{
-                position:fixed;left:18px;right:auto;bottom:18px;z-index:12000;
-                display:flex;align-items:center;gap:11px;
-                width:min(340px,calc(100vw - 24px));box-sizing:border-box;
-                min-height:68px;padding:13px 15px;border-radius:16px;
-                border:1px solid color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 30%,var(--border-color,transparent));
-                background:var(--bg-secondary,var(--bg-primary,#fff));
-                color:var(--text-primary,#1f2937);
-                box-shadow:0 12px 35px rgba(0,0,0,.18);
-                font-size:12px;font-weight:650;line-height:1.4;
-                transition:opacity .25s ease,transform .25s ease;
-                overflow:hidden;pointer-events:none;
+                position:fixed;left:14px;right:auto;bottom:16px;z-index:2400;
+                display:flex;align-items:center;gap:8px;width:max-content;max-width:min(245px,calc(100vw - 28px));
+                min-height:34px;box-sizing:border-box;padding:7px 11px 9px;border-radius:11px;
+                border:1px solid color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 24%,var(--border-color,transparent));
+                background:var(--bg-secondary,var(--bg-primary,#fff));color:var(--text-primary,#1f2937);
+                box-shadow:0 5px 18px rgba(0,0,0,.12);font-size:11px;font-weight:650;line-height:1.25;
+                transition:opacity .2s ease,transform .2s ease,left .24s ease;overflow:hidden;pointer-events:none;
             }
-            #driveAutoSaveIndicator[data-state="idle"],
-            #driveAutoSaveIndicator[data-state="saved"]{opacity:0;transform:translateY(10px);visibility:hidden}
-            #driveAutoSaveIndicator[data-state="saved"].drive-toast-visible{opacity:1;transform:none;visibility:visible}
-            #driveAutoSaveIndicator .drive-save-dot{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;flex:0 0 28px;background:color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 16%,transparent);color:var(--accent-color,var(--primary-color,#648dff));font-size:15px}
+            body.sidebar-pro-enabled #driveAutoSaveIndicator{left:calc(var(--sidebar-expanded-width,226px) + 14px)}
+            body.sidebar-pro-enabled.sidebar-pro-collapsed #driveAutoSaveIndicator{left:calc(var(--sidebar-collapsed-width,72px) + 14px)}
+            #driveAutoSaveIndicator[data-state="idle"],#driveAutoSaveIndicator:not(.drive-toast-visible){opacity:0;transform:translateY(6px);visibility:hidden}
+            #driveAutoSaveIndicator.drive-toast-visible{opacity:1;transform:none;visibility:visible}
+            #driveAutoSaveIndicator .drive-save-dot{width:18px;height:18px;border-radius:6px;display:grid;place-items:center;flex:0 0 18px;background:color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 13%,transparent);color:var(--accent-color,var(--primary-color,#648dff));font-size:11px}
             #driveAutoSaveIndicator[data-state="saving"] .drive-save-dot{animation:driveSavePulse 1.1s ease-in-out infinite alternate}
-            #driveAutoSaveIndicator[data-state="saved"] .drive-save-dot{color:#16a34a;background:color-mix(in srgb,#16a34a 15%,transparent)}
-            #driveAutoSaveIndicator[data-state="error"] .drive-save-dot,
-            #driveAutoSaveIndicator[data-state="offline"] .drive-save-dot{color:#e09b32;background:color-mix(in srgb,#e09b32 15%,transparent)}
-            #driveAutoSaveIndicator .drive-save-content{flex:1;min-width:0;padding-bottom:4px}
-            #driveAutoSaveIndicator .drive-save-heading{font-size:12px;font-weight:800;margin-bottom:2px}
-            #driveAutoSaveIndicator #driveAutoSaveIndicatorText{display:block;font-size:11px;opacity:.76;overflow-wrap:anywhere}
-            #driveAutoSaveIndicator .drive-save-track{position:absolute;bottom:0;left:0;right:0;height:3px;background:color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 15%,transparent);overflow:hidden}
+            #driveAutoSaveIndicator[data-state="saved"] .drive-save-dot{color:#16a34a;background:color-mix(in srgb,#16a34a 12%,transparent)}
+            #driveAutoSaveIndicator[data-state="error"] .drive-save-dot,#driveAutoSaveIndicator[data-state="offline"] .drive-save-dot{color:#e09b32;background:color-mix(in srgb,#e09b32 12%,transparent)}
+            #driveAutoSaveIndicator .drive-save-content{min-width:0;max-width:190px}
+            #driveAutoSaveIndicator .drive-save-heading{font-size:11px;font-weight:750;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            #driveAutoSaveIndicator #driveAutoSaveIndicatorText{display:none}
+            #driveAutoSaveIndicator .drive-save-track{position:absolute;bottom:0;left:0;right:0;height:2px;background:color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 13%,transparent);overflow:hidden}
             #driveAutoSaveIndicator .drive-save-track::after{content:"";display:block;width:36%;height:100%;background:var(--accent-color,var(--primary-color,#648dff));transform:translateX(-120%)}
             #driveAutoSaveIndicator[data-state="saving"] .drive-save-track::after{animation:driveSaveTravel 1.35s ease-in-out infinite}
             #driveAutoSaveIndicator[data-state="saved"] .drive-save-track::after{width:100%;transform:none;background:#16a34a}
-            #driveAutoSaveIndicator[data-state="error"] .drive-save-track::after,
-            #driveAutoSaveIndicator[data-state="offline"] .drive-save-track::after{width:100%;transform:none;background:#e09b32}
+            #driveAutoSaveIndicator[data-state="error"] .drive-save-track::after,#driveAutoSaveIndicator[data-state="offline"] .drive-save-track::after{width:100%;transform:none;background:#e09b32}
             @keyframes driveSavePulse{from{transform:scale(.9);opacity:.6}to{transform:scale(1.08);opacity:1}}
             @keyframes driveSaveTravel{to{transform:translateX(400%)}}
             @media(prefers-reduced-motion:reduce){#driveAutoSaveIndicator *,#driveAutoSaveIndicator::after{animation:none!important;transition:none!important}}
@@ -112,7 +108,7 @@
             .account-toolbar-name-v2{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
             .account-sync-detail-v2 small{display:block;margin-top:3px;opacity:.7;font-weight:600}
             @media (max-width:768px){
-                #driveAutoSaveIndicator{left:10px;right:auto;bottom:calc(10px + env(safe-area-inset-bottom));max-width:calc(100vw - 20px)}
+                #driveAutoSaveIndicator,body.sidebar-pro-enabled #driveAutoSaveIndicator,body.sidebar-pro-enabled.sidebar-pro-collapsed #driveAutoSaveIndicator{left:10px;right:auto;bottom:calc(12px + env(safe-area-inset-bottom));max-width:calc(100vw - 20px)}
                 .account-toolbar-name-v2{max-width:90px}
             }
         `;
