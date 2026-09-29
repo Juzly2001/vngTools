@@ -65,23 +65,37 @@
         style.textContent = `
             #driveAutoSaveIndicator{
                 position:fixed;right:18px;bottom:18px;z-index:12000;
-                display:flex;align-items:center;gap:8px;
-                min-height:34px;padding:7px 11px;border-radius:999px;
-                border:1px solid color-mix(in srgb, currentColor 16%, transparent);
-                background:color-mix(in srgb, var(--bg-primary, #fff) 92%, transparent);
-                color:var(--text-primary, #1f2937);
-                box-shadow:0 8px 26px rgba(0,0,0,.12);
-                backdrop-filter:blur(12px);
-                font-size:12px;font-weight:700;line-height:1;
-                opacity:.94;transition:.18s ease;
-                pointer-events:none;
+                display:flex;align-items:center;gap:11px;
+                width:min(340px,calc(100vw - 24px));box-sizing:border-box;
+                min-height:68px;padding:13px 15px;border-radius:16px;
+                border:1px solid color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 30%,var(--border-color,transparent));
+                background:var(--bg-secondary,var(--bg-primary,#fff));
+                color:var(--text-primary,#1f2937);
+                box-shadow:0 12px 35px rgba(0,0,0,.18);
+                font-size:12px;font-weight:650;line-height:1.4;
+                transition:opacity .25s ease,transform .25s ease;
+                overflow:hidden;pointer-events:none;
             }
-            #driveAutoSaveIndicator[data-state="saved"]{opacity:.72}
-            #driveAutoSaveIndicator[data-state="saving"] .drive-save-dot{animation:driveSavePulse .8s infinite alternate}
-            #driveAutoSaveIndicator[data-state="offline"] .drive-save-dot,
-            #driveAutoSaveIndicator[data-state="error"] .drive-save-dot{opacity:.9}
-            .drive-save-dot{width:8px;height:8px;border-radius:50%;background:currentColor;opacity:.65}
-            @keyframes driveSavePulse{from{transform:scale(.75);opacity:.35}to{transform:scale(1.2);opacity:1}}
+            #driveAutoSaveIndicator[data-state="idle"],
+            #driveAutoSaveIndicator[data-state="saved"]{opacity:0;transform:translateY(10px);visibility:hidden}
+            #driveAutoSaveIndicator[data-state="saved"].drive-toast-visible{opacity:1;transform:none;visibility:visible}
+            #driveAutoSaveIndicator .drive-save-dot{width:28px;height:28px;border-radius:10px;display:grid;place-items:center;flex:0 0 28px;background:color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 16%,transparent);color:var(--accent-color,var(--primary-color,#648dff));font-size:15px}
+            #driveAutoSaveIndicator[data-state="saving"] .drive-save-dot{animation:driveSavePulse 1.1s ease-in-out infinite alternate}
+            #driveAutoSaveIndicator[data-state="saved"] .drive-save-dot{color:#16a34a;background:color-mix(in srgb,#16a34a 15%,transparent)}
+            #driveAutoSaveIndicator[data-state="error"] .drive-save-dot,
+            #driveAutoSaveIndicator[data-state="offline"] .drive-save-dot{color:#e09b32;background:color-mix(in srgb,#e09b32 15%,transparent)}
+            #driveAutoSaveIndicator .drive-save-content{flex:1;min-width:0;padding-bottom:4px}
+            #driveAutoSaveIndicator .drive-save-heading{font-size:12px;font-weight:800;margin-bottom:2px}
+            #driveAutoSaveIndicator #driveAutoSaveIndicatorText{display:block;font-size:11px;opacity:.76;overflow-wrap:anywhere}
+            #driveAutoSaveIndicator .drive-save-track{position:absolute;bottom:0;left:0;right:0;height:3px;background:color-mix(in srgb,var(--accent-color,var(--primary-color,#648dff)) 15%,transparent);overflow:hidden}
+            #driveAutoSaveIndicator .drive-save-track::after{content:"";display:block;width:36%;height:100%;background:var(--accent-color,var(--primary-color,#648dff));transform:translateX(-120%)}
+            #driveAutoSaveIndicator[data-state="saving"] .drive-save-track::after{animation:driveSaveTravel 1.35s ease-in-out infinite}
+            #driveAutoSaveIndicator[data-state="saved"] .drive-save-track::after{width:100%;transform:none;background:#16a34a}
+            #driveAutoSaveIndicator[data-state="error"] .drive-save-track::after,
+            #driveAutoSaveIndicator[data-state="offline"] .drive-save-track::after{width:100%;transform:none;background:#e09b32}
+            @keyframes driveSavePulse{from{transform:scale(.9);opacity:.6}to{transform:scale(1.08);opacity:1}}
+            @keyframes driveSaveTravel{to{transform:translateX(400%)}}
+            @media(prefers-reduced-motion:reduce){#driveAutoSaveIndicator *,#driveAutoSaveIndicator::after{animation:none!important;transition:none!important}}
             .account-toolbar-btn.account-connected-v2{
                 display:inline-flex;align-items:center;gap:8px;max-width:210px;
             }
@@ -112,7 +126,9 @@
             el = document.createElement('div');
             el.id = 'driveAutoSaveIndicator';
             el.dataset.state = 'idle';
-            el.innerHTML = `<span class="drive-save-dot"></span><span id="driveAutoSaveIndicatorText">Local cache ready</span>`;
+            el.innerHTML = `<span class="drive-save-dot" aria-hidden="true">☁</span><span class="drive-save-content"><span class="drive-save-heading">Google Drive</span><span id="driveAutoSaveIndicatorText">Local cache ready</span></span><span class="drive-save-track" aria-hidden="true"></span>`;
+            el.setAttribute('role', 'status');
+            el.setAttribute('aria-live', 'polite');
             document.body.appendChild(el);
         }
         return el;
@@ -169,24 +185,26 @@
 
     function setSaveStatus(stateName, text, {sticky = false} = {}) {
         const el = ensureStatusIndicator();
+        clearTimeout(statusResetTimer);
         el.dataset.state = stateName;
+        el.classList.toggle('drive-toast-visible', stateName !== 'idle');
         const textEl = document.getElementById('driveAutoSaveIndicatorText');
         if (textEl) textEl.textContent = text;
-        clearTimeout(statusResetTimer);
-
+        const heading = el.querySelector('.drive-save-heading');
+        if (heading) heading.textContent = stateName === 'saving' ? 'Đang đồng bộ Google Drive' :
+            stateName === 'saved' ? 'Đã đồng bộ Google Drive' :
+            stateName === 'error' ? 'Đồng bộ thất bại' :
+            stateName === 'offline' ? 'Chưa đồng bộ lên Drive' : 'Google Drive';
+        const dot = el.querySelector('.drive-save-dot');
+        if (dot) dot.textContent = stateName === 'saved' ? '✓' :
+            ['error','offline'].includes(stateName) ? '!' : '☁';
         if (!sticky && ['saved', 'merged'].includes(stateName)) {
             statusResetTimer = setTimeout(() => {
-                if (!navigator.onLine) {
-                    setSaveStatus('offline', 'Offline · changes stay on this device', {sticky:true});
-                } else if (__driveAutoSyncReady) {
-                    const target = document.getElementById('driveAutoSaveIndicator');
-                    const targetText = document.getElementById('driveAutoSaveIndicatorText');
-                    if (target) target.dataset.state = 'saved';
-                    if (targetText) targetText.textContent = lastSavedAt
-                        ? `Saved to Drive ✓ · ${formatClock(lastSavedAt)}`
-                        : 'Auto-save active ✓';
+                if (el.dataset.state === stateName && !dirty) {
+                    el.classList.remove('drive-toast-visible');
+                    el.dataset.state = 'idle';
                 }
-            }, 2600);
+            }, 3000);
         }
         updateAccountSyncDetails();
     }
@@ -572,7 +590,8 @@
                 window.__workspaceDirtyScopesV2?.clear?.();
             }
 
-            setSaveStatus('saved', `Saved to Drive ✓ · ${formatClock(lastSavedAt)}`);
+            if (dirty) setSaveStatus('saving', 'New changes queued · waiting for next Drive confirmation', {sticky:true});
+            else setSaveStatus('saved', `Saved to Drive ✓ · ${formatClock(lastSavedAt)}`);
             broadcast({type:'saved', modifiedTime:knownModifiedTime, updatedAt:baseCloudUpdatedAt});
 
             return true;
