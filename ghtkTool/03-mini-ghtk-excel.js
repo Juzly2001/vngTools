@@ -1,8 +1,10 @@
 (() => {
   'use strict';
-  GHTKTools.register('miniExcel', {
+
+  // Compatible with both GHTKTools dashboard and standalone execution.
+  const miniExcelTool = {
     name: "Mini GHTK Excel",
-    description: "Bảng nhập liệu và tham chiếu nhiều tab",
+    description: "Bảng nhập liệu và tham chiếu nhiều tab (Giao diện thiết kế mới)",
     type: 'toggle',
     start() {
 
@@ -254,508 +256,429 @@
             *{box-sizing:border-box}
             :host{all:initial}
             .wrap{
-              position:fixed;z-index: 2147483646;top:24px;left:24px;
-              width:min(1180px,calc(100vw - 48px));height:min(780px,calc(100vh - 48px));
-              background:#fff;color:#1f2937;border:1px solid #cbd5e1;border-radius:14px;
-              box-shadow:0 20px 60px rgba(15,23,42,.25);font:13px/1.4 Arial,sans-serif;
+              position:fixed;z-index:2147483646;top:24px;left:24px;
+              width:min(1240px,calc(100vw - 48px));height:min(800px,calc(100vh - 48px));
+              background:#ffffff;color:#0f172a;border:1px solid #e2e8f0;border-radius:16px;
+              box-shadow:0 25px 50px -12px rgba(15,23,42,0.25), 0 0 0 1px rgba(15,23,42,0.05);
+              font:13px/1.5 Inter, system-ui, -apple-system, sans-serif;
               display:flex;flex-direction:column;overflow:hidden;
-              min-width:520px;min-height:360px
+              min-width:560px;min-height:380px;backdrop-filter: blur(8px);
             }
             .topbar{
-              display:flex;align-items:center;gap:8px;padding:9px 12px;
-              background:#0f172a;color:#fff;cursor:move;user-select:none
+              display:flex;align-items:center;gap:8px;padding:10px 16px;
+              background:linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+              color:#fff;cursor:move;user-select:none;border-bottom:1px solid rgba(255,255,255,0.1);
             }
             .wrap.minimized{
               width:auto!important;height:auto!important;min-width:0!important;min-height:0!important;
-              top:auto!important;left:auto!important;right:16px!important;bottom:16px!important;
-              border-radius:12px;overflow:visible
+              top:auto!important;left:auto!important;right:20px!important;bottom:20px!important;
+              border-radius:14px;overflow:visible
             }
             .wrap.minimized .topbar{
-              border-radius:12px;padding:8px 10px;cursor:pointer
+              border-radius:14px;padding:10px 14px;cursor:pointer
             }
             .wrap.minimized .topbar > *{display:none!important}
             .wrap.minimized .topbar .mini-restore{
-              display:inline-flex!important;align-items:center;gap:7px;
-              border:0;border-radius:8px;background:#0f172a;color:#fff;
-              padding:7px 10px;cursor:pointer;font-weight:700
+              display:inline-flex!important;align-items:center;gap:8px;
+              border:0;border-radius:10px;background:#2563eb;color:#fff;
+              padding:8px 14px;cursor:pointer;font-weight:600;font-size:13px;
+              box-shadow:0 4px 12px rgba(37,99,235,0.3)
             }
             .wrap.minimized .tabsbar,
             .wrap.minimized .body,
             .wrap.minimized .resize-handle{display:none!important}
             .mini-restore{display:none}
 
-            .title{font-weight:700;flex:1;font-size:14px}
+            .title{font-weight:700;flex:1;font-size:14px;letter-spacing:-0.01em;display:flex;align-items:center;gap:8px}
+            .title::before{content:"";display:inline-block;width:8px;height:8px;background:#38bdf8;border-radius:50%;box-shadow:0 0 8px #38bdf8}
+            
             button{font:inherit}
-            .btn{border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:7px 10px;cursor:pointer}
+            .btn{border:1px solid #cbd5e1;border-radius:8px;background:#fff;padding:6px 12px;cursor:pointer;font-weight:500;transition:all 0.15s ease}
+            .btn:hover{background:#f8fafc;border-color:#94a3b8}
             .btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
-            .btn.danger{background:#fff1f2;color:#be123c;border-color:#fecdd3}
-            .topbtn{border:0;border-radius:8px;padding:7px 10px;cursor:pointer;background:#334155;color:#fff}
-            .close{background:#b91c1c}
+            .btn.primary:hover{background:#1d4ed8}
+            .btn.danger{background:#fff1f2;color:#e11d48;border-color:#fecdd3}
+            .btn.danger:hover{background:#ffe4e6}
+            
+            .topbtn{border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:6px 10px;cursor:pointer;background:rgba(255,255,255,0.08);color:#f8fafc;font-size:12px;font-weight:500;transition:all 0.15s ease}
+            .topbtn:hover{background:rgba(255,255,255,0.15);border-color:rgba(255,255,255,0.3)}
+            .topbtn.close{background:rgba(239,68,68,0.2);border-color:rgba(239,68,68,0.4);color:#fca5a5}
+            .topbtn.close:hover{background:rgba(239,68,68,0.4);color:#fff}
+
             .tabsbar{
-              display:flex;align-items:end;gap:6px;padding:8px 10px 0;background:#f8fafc;
-              border-bottom:1px solid #e2e8f0;overflow-x:auto;overflow-y:hidden
+              display:flex;align-items:end;gap:4px;padding:8px 12px 0;background:#f8fafc;
+              border-bottom:1px solid #e2e8f0;overflow-x:auto;overflow-y:hidden;
             }
+            .tabsbar::-webkit-scrollbar{height:4px}
+            .tabsbar::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+
             .tab{
-              display:flex;align-items:center;gap:6px;border:1px solid #cbd5e1;border-bottom:0;
-              background:#e2e8f0;padding:8px 10px;border-radius:8px 8px 0 0;cursor:pointer;
-              white-space:nowrap;max-width:220px
+              display:flex;align-items:center;gap:8px;border:1px solid #cbd5e1;border-bottom:0;
+              background:#f1f5f9;padding:8px 12px;border-radius:10px 10px 0 0;cursor:pointer;
+              white-space:nowrap;max-width:220px;font-size:12px;color:#475569;transition:all 0.15s ease;
             }
-            .tab.active{background:#fff;font-weight:700}
-            .type-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
-            .type-input{background:#2563eb}.type-reference{background:#16a34a}
-            .tabname{max-width:150px;overflow:hidden;text-overflow:ellipsis}
-            .tabclose{border:0;background:transparent;color:#64748b;cursor:pointer;padding:0 2px}
-            .addtab{border:1px dashed #94a3b8;border-bottom:0;background:#fff;padding:8px 12px;border-radius:8px 8px 0 0;cursor:pointer;font-weight:700}
-            .body{flex:1;min-height:0;display:flex;flex-direction:column}
+            .tab:hover{background:#e2e8f0;color:#1e293b}
+            .tab.active{background:#ffffff;color:#0f172a;font-weight:600;border-color:#cbd5e1;border-bottom:2px solid #ffffff;margin-bottom:-1px;box-shadow:0 -2px 6px rgba(0,0,0,0.02)}
+            .type-dot{width:7px;height:7px;border-radius:50%;display:inline-block}
+            .type-input{background:#2563eb;box-shadow:0 0 6px rgba(37,99,235,0.4)}
+            .type-reference{background:#10b981;box-shadow:0 0 6px rgba(16,185,129,0.4)}
+            .tabname{max-width:140px;overflow:hidden;text-overflow:ellipsis}
+            .tabclose{border:0;background:transparent;color:#94a3b8;cursor:pointer;padding:2px;border-radius:4px;font-size:14px;display:flex;align-items:center;justify-content:center}
+            .tabclose:hover{background:#fee2e2;color:#dc2626}
+            
+            .addtab{border:1px dashed #94a3b8;border-bottom:0;background:transparent;padding:8px 14px;border-radius:10px 10px 0 0;cursor:pointer;font-weight:600;color:#64748b;font-size:12px;transition:all 0.15s ease}
+            .addtab:hover{background:#f1f5f9;color:#0f172a;border-color:#64748b}
+
+            .body{flex:1;min-height:0;display:flex;flex-direction:column;background:#ffffff}
             .settings-panel{display:none}
             .settings-panel.open{
-              display:block;
-              max-height:46%;
-              overflow-y:auto;
-              overflow-x:hidden;
-              flex:0 1 auto;
-              scrollbar-gutter:stable;
-              padding:0
+              display:block;max-height:48%;overflow-y:auto;overflow-x:hidden;
+              flex:0 1 auto;scrollbar-gutter:stable;padding:0;background:#f8fafc;
+              border-bottom:1px solid #e2e8f0;
             }
 
-
             .searchbar{
-              display:none;align-items:center;gap:8px;padding:9px 12px;
+              display:none;align-items:center;gap:10px;padding:10px 16px;
               border-bottom:1px solid #e2e8f0;background:#f8fafc
             }
             .searchbar.open{display:flex}
-            .search-input-wrap{position:relative;flex:1;min-width:160px}
+            .search-input-wrap{position:relative;flex:1;min-width:180px}
             .searchbox{
               width:100%;border:1px solid #cbd5e1;border-radius:8px;
-              padding:7px 34px 7px 10px;background:#fff;outline:none
+              padding:7px 34px 7px 12px;background:#fff;outline:none;font-size:12px;
+              transition:all 0.15s ease;
             }
-            .searchbox:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.10)}
+            .searchbox:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
             .search-clear{
-              display:none;position:absolute;right:6px;top:50%;transform:translateY(-50%);
-              width:22px;height:22px;border:0;border-radius:50%;background:transparent;
-              color:#94a3b8;cursor:pointer;font-size:17px;line-height:20px;padding:0
+              display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);
+              width:20px;height:20px;border:0;border-radius:50%;background:transparent;
+              color:#94a3b8;cursor:pointer;font-size:16px;line-height:18px;padding:0;
+              display:flex;align-items:center;justify-content:center;
             }
-            .search-clear.show{display:block}
+            .search-clear.show{display:flex}
             .search-clear:hover{background:#e2e8f0;color:#475569}
-            .search-count{font-size:12px;color:#64748b;white-space:nowrap}
-            td.cell.search-hit{background:#fef3c7!important}
+            .search-count{font-size:12px;font-weight:500;color:#64748b;white-space:nowrap;background:#e2e8f0;padding:3px 8px;border-radius:6px}
+            td.cell.search-hit{background:#fef08a!important}
 
             .tab-info{
-              display:flex;align-items:center;gap:10px;
-              padding:10px 12px;border-bottom:1px solid #e2e8f0;background:#fff;
+              display:flex;align-items:center;gap:12px;
+              padding:12px 16px;border-bottom:1px solid #e2e8f0;background:#fff;
             }
             .tab-info-main{min-width:0;flex:1}
-            .tab-info-title{font-size:16px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-            .tab-info-sub{font-size:12px;color:#64748b;margin-top:1px}
-            .lookup-toggle{
-              border:1px solid #bfdbfe;background:#eff6ff;color:#1d4ed8;
-              border-radius:8px;padding:7px 10px;cursor:pointer;font-weight:600
-            }
-            .lookup-toggle:hover{background:#dbeafe}
+            .tab-info-title{font-size:15px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-0.01em}
+            .tab-info-sub{font-size:11px;color:#64748b;margin-top:2px;font-weight:500}
+            
             .more-wrap{position:relative}
             .more-btn{
               width:34px;height:34px;border:1px solid #cbd5e1;border-radius:8px;
-              background:#fff;cursor:pointer;font-size:18px;color:#475569
+              background:#fff;cursor:pointer;font-size:16px;color:#475569;
+              display:flex;align-items:center;justify-content:center;transition:all 0.15s ease;
             }
-            .more-btn:hover{background:#f8fafc}
+            .more-btn:hover{background:#f1f5f9;border-color:#94a3b8}
+            
             .tab-menu{
-              position:absolute;right:0;top:39px;z-index:30;width:170px;
-              background:#fff;border:1px solid #e2e8f0;border-radius:10px;
-              box-shadow:0 12px 30px rgba(15,23,42,.15);padding:5px
+              position:absolute;right:0;top:42px;z-index:30;width:180px;
+              background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+              box-shadow:0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.1);
+              padding:6px
             }
             .tab-menu button{
               display:block;width:100%;border:0;background:#fff;text-align:left;
-              border-radius:7px;padding:8px 9px;cursor:pointer;color:#334155
+              border-radius:8px;padding:8px 10px;cursor:pointer;color:#334155;font-weight:500;font-size:12px;
+              transition:background 0.1s ease;
             }
-            .tab-menu button:hover{background:#f1f5f9}
-            .tab-menu button.menu-danger{color:#be123c}
+            .tab-menu button:hover{background:#f1f5f9;color:#0f172a}
+            .tab-menu button.menu-danger{color:#e11d48}
+            .tab-menu button.menu-danger:hover{background:#fff1f2}
 
-            .toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:10px 12px;border-bottom:1px solid #e2e8f0;background:#fff;align-items:center}
+            .toolbar{display:flex;flex-wrap:wrap;gap:8px;padding:10px 16px;border-bottom:1px solid #e2e8f0;background:#f8fafc;align-items:center}
             .table-color-wrap{position:relative}
             .table-color-menu{
               position:absolute;top:calc(100% + 6px);left:0;z-index:55;
-              width:190px;padding:9px;background:#fff;border:1px solid #cbd5e1;
-              border-radius:10px;box-shadow:0 10px 28px rgba(15,23,42,.18)
+              width:200px;padding:10px;background:#fff;border:1px solid #cbd5e1;
+              border-radius:12px;box-shadow:0 10px 25px -5px rgba(15,23,42,0.15)
             }
-            .table-color-title{font-size:11px;font-weight:700;color:#64748b;margin:0 0 7px}
-            .table-color-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+            .table-color-title{font-size:11px;font-weight:700;color:#64748b;margin:0 0 8px;letter-spacing:0.03em}
+            .table-color-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
             .table-color-option{
-              height:34px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;
-              position:relative;padding:0;background:var(--swatch)
+              height:32px;border:1px solid #cbd5e1;border-radius:8px;cursor:pointer;
+              position:relative;padding:0;background:var(--swatch);transition:transform 0.15s ease;
             }
-            .table-color-option:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(15,23,42,.15)}
+            .table-color-option:hover{transform:scale(1.05);box-shadow:0 4px 12px rgba(15,23,42,0.15)}
             .table-color-option.active:after{
               content:"✓";position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-              color:#fff;font-weight:800;font-size:16px;text-shadow:0 1px 3px rgba(0,0,0,.5)
+              color:#fff;font-weight:800;font-size:14px;text-shadow:0 1px 2px rgba(0,0,0,0.4)
             }
 
-            .panel{padding:10px 12px;border-bottom:1px solid #e2e8f0;background:#f8fafc}
-            select,input[type=text]{font:inherit;border:1px solid #cbd5e1;border-radius:7px;padding:6px 8px;background:#fff;min-width:0}
-            .rule-grid{display:grid;grid-template-columns:145px minmax(150px,1fr) 145px minmax(150px,1fr);gap:8px;align-items:center}
-            .rule-grid label{font-weight:600}
-
+            select,input[type=text]{font:inherit;border:1px solid #cbd5e1;border-radius:8px;padding:6px 10px;background:#fff;min-width:0;outline:none;transition:all 0.15s ease}
+            select:focus,input[type=text]:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
+            
             .rules-head{
-              display:flex;align-items:center;justify-content:space-between;gap:10px;
-              margin:0;
-              padding:10px 12px;
-              position:sticky;top:0;z-index:10;
-              background:#f8fafc;
-              border-bottom:1px solid #e2e8f0;
-              box-shadow:0 1px 0 rgba(226,232,240,.9)
+              display:flex;align-items:center;justify-content:space-between;gap:12px;
+              margin:0;padding:12px 16px;position:relative;top:auto;flex:0 0 auto;
+              background:#fff;border-bottom:1px solid #e2e8f0;
             }
-            #lookupRules{padding:10px 12px 2px}
-            .rules-title{font-size:13px;font-weight:700;color:#334155}
+            #lookupRules{overflow-y:auto;min-height:0;padding:12px 16px 6px}
+            .rules-title{font-size:13px;font-weight:700;color:#0f172a}
+            
             .rule-card{
-              border:1px solid #dbe3ee;border-radius:11px;background:#fff;
-              padding:11px;margin-bottom:10px
+              border:1px solid #cbd5e1;border-radius:12px;background:#fff;
+              padding:0;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.02);
+              transition:all 0.15s ease;
             }
             .rule-card-head{
-              display:flex;align-items:center;gap:8px;margin-bottom:10px
+              display:flex;align-items:center;gap:8px;margin:0;padding:10px 12px;
+              border-bottom:1px solid #f1f5f9;background:#f8fafc;cursor:default
             }
             .rule-no{
               display:flex;align-items:center;justify-content:center;
-              min-width:25px;height:25px;padding:0 6px;border-radius:7px;
-              background:#eef2ff;color:#4338ca;font-weight:700;font-size:12px
+              min-width:24px;height:24px;padding:0;border-radius:6px;
+              background:#eff6ff;color:#2563eb;font-weight:700;font-size:11px
             }
             .rule-name{
               flex:1;min-width:0;border:0;background:transparent;
-              font-weight:700;color:#0f172a;padding:4px 2px;outline:none
+              font-weight:700;color:#0f172a;padding:4px 6px;outline:none;font-size:13px;
+              border-radius:6px;transition:background 0.15s ease;
             }
-            .rule-name:focus{background:#f8fafc;border-radius:6px}
+            .rule-name:focus{background:#fff;box-shadow:0 0 0 2px #2563eb}
             .rule-remove{
               border:0;background:transparent;color:#94a3b8;cursor:pointer;
-              width:28px;height:28px;border-radius:7px;font-size:17px
+              width:26px;height:26px;border-radius:6px;font-size:16px;
+              display:flex;align-items:center;justify-content:center;transition:all 0.15s ease;
             }
-            .rule-remove:hover{background:#fff1f2;color:#e11d48}
-            .rule-card .rule-grid{margin-bottom:8px}
+            .rule-remove:hover{background:#fee2e2;color:#dc2626}
+            
+            .rule-card .rule-grid{
+              margin:0;padding:12px;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px
+            }
+            .rule-grid label{
+              display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:600;color:#64748b
+            }
+            .rule-grid label select{width:100%;color:#1f2937;font-size:12px}
+            
+            .returns{margin:0;padding:0 12px 10px}
+            .returns-title{font-size:11px;font-weight:700;color:#64748b;margin-bottom:6px;letter-spacing:0.02em}
+            .return-row{display:grid;grid-template-columns:minmax(110px,1fr) 24px minmax(110px,1fr) 32px;gap:8px;align-items:center}
+            .arrow{text-align:center;color:#94a3b8;font-weight:600}
+            .return-row select{width:100%;font-size:12px;padding:5px 8px}
+            
             .rule-actions{
-              display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:8px
+              display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0;padding:0 12px 12px
             }
             .rule-ref-name{
-              font-size:11px;color:#64748b;background:#f8fafc;
-              padding:3px 7px;border-radius:999px
+              font-size:11px;color:#2563eb;background:#eff6ff;
+              padding:3px 8px;border-radius:999px;font-weight:500;border:1px solid #bfdbfe
             }
 
-            .returns{margin-top:8px;display:flex;flex-direction:column;gap:6px}
-            .return-row{display:grid;grid-template-columns:minmax(120px,1fr) 28px minmax(120px,1fr) 34px;gap:6px;align-items:center}
-            .arrow{text-align:center}
             .gridwrap{flex:1;min-height:0;overflow:auto;background:#fff}
             .zoom-stage{transform-origin:top left;display:inline-block;min-width:100%}
             table{border-collapse:separate;border-spacing:0;min-width:100%;table-layout:fixed}
-            th,td{border-right:1px solid #dbeafe;border-bottom:1px solid #dbeafe;height:31px;min-width:130px}
-            th{position:sticky;top:0;z-index:2;background:#4472c4;color:#fff;font-weight:700;padding:0}
-            th.index,td.index{position:sticky;left:0;z-index:3;min-width:48px;width:48px;text-align:center;background:#f1f5f9;color:#475569}
-            th.index{z-index:4;background:#334155;color:#fff}
+            th,td{border-right:1px solid #e2e8f0;border-bottom:1px solid #e2e8f0;height:32px;min-width:130px}
+            th{position:sticky;top:0;z-index:2;background:#4472c4;color:#fff;font-weight:600;padding:0;font-size:12px}
+            th.index,td.index{position:sticky;left:0;z-index:3;min-width:48px;width:48px;text-align:center;background:#f8fafc;color:#64748b;font-weight:500;font-size:12px}
+            th.index{z-index:4;background:#1e293b;color:#fff}
             .headcell{display:flex;align-items:center;height:100%}
-            .headname{flex:1;padding:6px 8px;outline:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-            .col-del{width:26px;border:0;background:transparent;color:#fff;cursor:pointer;font-size:15px}
-            td.cell{padding:5px 7px;outline:none;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff}
-            tr:nth-child(even) td.cell{background:#eef4ff}
-            td.cell:focus{outline:2px solid #2563eb;outline-offset:-2px;background:#fff}
+            .headname{flex:1;padding:6px 10px;outline:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+            .col-del{width:26px;border:0;background:transparent;color:rgba(255,255,255,0.7);cursor:pointer;font-size:14px;border-radius:4px;transition:all 0.1s ease}
+            .col-del:hover{background:rgba(255,255,255,0.2);color:#fff}
+            
+            td.cell{padding:6px 10px;outline:none;vertical-align:middle;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff;font-size:13px;color:#1e293b}
+            tr:nth-child(even) td.cell{background:#f8fafc}
+            td.cell:focus{outline:2px solid #2563eb;outline-offset:-2px;background:#fff;box-shadow:inset 0 0 0 1px #2563eb}
 
             /* Màu bảng - đổi bằng nút 🎨 */
-            .gridwrap[data-table-theme="blue"] th{background:#4472c4}
-            .gridwrap[data-table-theme="blue"] th.index{background:#334155}
-            .gridwrap[data-table-theme="blue"] tr:nth-child(even) td.cell{background:#eef4ff}
+            .gridwrap[data-table-theme="blue"] th{background:#2563eb}
+            .gridwrap[data-table-theme="blue"] th.index{background:#0f172a}
+            .gridwrap[data-table-theme="blue"] tr:nth-child(even) td.cell{background:#f8fafc}
 
-            .gridwrap[data-table-theme="green"] th{background:#548235}
-            .gridwrap[data-table-theme="green"] th.index{background:#375623}
-            .gridwrap[data-table-theme="green"] tr:nth-child(even) td.cell{background:#e2f0d9}
+            .gridwrap[data-table-theme="green"] th{background:#16a34a}
+            .gridwrap[data-table-theme="green"] th.index{background:#14532d}
+            .gridwrap[data-table-theme="green"] tr:nth-child(even) td.cell{background:#f0fdf4}
 
-            .gridwrap[data-table-theme="orange"] th{background:#c65911}
-            .gridwrap[data-table-theme="orange"] th.index{background:#843c0c}
-            .gridwrap[data-table-theme="orange"] tr:nth-child(even) td.cell{background:#fce4d6}
+            .gridwrap[data-table-theme="orange"] th{background:#ea580c}
+            .gridwrap[data-table-theme="orange"] th.index{background:#7c2d12}
+            .gridwrap[data-table-theme="orange"] tr:nth-child(even) td.cell{background:#fff7ed}
 
-            .gridwrap[data-table-theme="purple"] th{background:#7030a0}
-            .gridwrap[data-table-theme="purple"] th.index{background:#4c1f6f}
-            .gridwrap[data-table-theme="purple"] tr:nth-child(even) td.cell{background:#e4dfec}
+            .gridwrap[data-table-theme="purple"] th{background:#9333ea}
+            .gridwrap[data-table-theme="purple"] th.index{background:#581c87}
+            .gridwrap[data-table-theme="purple"] tr:nth-child(even) td.cell{background:#faf5ff}
 
-            .gridwrap[data-table-theme="gray"] th{background:#595959}
-            .gridwrap[data-table-theme="gray"] th.index{background:#3f3f3f}
-            .gridwrap[data-table-theme="gray"] tr:nth-child(even) td.cell{background:#f2f2f2}
+            .gridwrap[data-table-theme="gray"] th{background:#475569}
+            .gridwrap[data-table-theme="gray"] th.index{background:#1e293b}
+            .gridwrap[data-table-theme="gray"] tr:nth-child(even) td.cell{background:#f1f5f9}
 
-            .gridwrap[data-table-theme="teal"] th{background:#0f6b78}
-            .gridwrap[data-table-theme="teal"] th.index{background:#084c55}
-            .gridwrap[data-table-theme="teal"] tr:nth-child(even) td.cell{background:#e2f0f2}
-            .row-del{border:0;background:transparent;color:#be123c;cursor:pointer;font-weight:700}
-            .status{padding:7px 12px;border-top:1px solid #e2e8f0;background:#f8fafc;color:#475569;display:flex;gap:12px;align-items:center}
-            .pill{display:inline-block;padding:2px 7px;border-radius:999px;background:#e2e8f0}
-            .small{font-size:12px;color:#64748b}
-            .check{display:inline-flex;align-items:center;gap:5px}
-            .hit{background:#ecfdf5!important}.notfound{background:#fff1f2!important;color:#be123c}
+            .gridwrap[data-table-theme="teal"] th{background:#0d9488}
+            .gridwrap[data-table-theme="teal"] th.index{background:#134e4a}
+            .gridwrap[data-table-theme="teal"] tr:nth-child(even) td.cell{background:#f0fdfa}
+
+            .row-del{border:0;background:transparent;color:#94a3b8;cursor:pointer;font-weight:700;border-radius:4px;width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center}
+            .row-del:hover{background:#fee2e2;color:#dc2626}
+            
+            .status{padding:10px 16px;border-top:1px solid #e2e8f0;background:#f8fafc;color:#64748b;display:flex;gap:12px;align-items:center;font-size:12px;font-weight:500}
+            .pill{display:inline-block;padding:3px 10px;border-radius:999px;background:#e2e8f0;color:#334155;font-weight:600}
+            
             .modal-bg{
               position:absolute;inset:0;z-index:80;
               display:flex;align-items:center;justify-content:center;
-              padding:20px;
-              background:rgba(15,23,42,.22);
-              backdrop-filter:blur(2px);
+              padding:20px;background:rgba(15,23,42,0.35);
+              backdrop-filter:blur(4px);
             }
             .modal{
-              width:min(420px,calc(100% - 24px));
-              background:#fff;
-              border:1px solid #e2e8f0;
-              border-radius:12px;
-              box-shadow:0 18px 50px rgba(15,23,42,.18);
-              overflow:hidden;
-              animation:modalIn .16s ease-out;
+              width:min(440px,calc(100% - 24px));
+              background:#fff;border:1px solid #cbd5e1;border-radius:16px;
+              box-shadow:0 25px 50px -12px rgba(15,23,42,0.25);
+              overflow:hidden;animation:modalIn .2s cubic-bezier(0.16, 1, 0.3, 1);
             }
             @keyframes modalIn{
-              from{opacity:0;transform:translateY(6px) scale(.985)}
+              from{opacity:0;transform:translateY(8px) scale(0.97)}
               to{opacity:1;transform:translateY(0) scale(1)}
             }
-            .modal-head{
-              display:flex;align-items:center;gap:10px;
-              padding:14px 16px 10px;
-            }
+            .modal-head{display:flex;align-items:center;gap:12px;padding:18px 20px 12px}
             .modal-symbol{
-              width:28px;height:28px;flex:0 0 28px;
-              display:flex;align-items:center;justify-content:center;
-              border-radius:8px;
-              font-size:14px;font-weight:800;
+              width:32px;height:32px;flex:0 0 32px;display:flex;align-items:center;justify-content:center;
+              border-radius:10px;font-size:15px;font-weight:800;
             }
             .modal-symbol.info{background:#eff6ff;color:#2563eb}
             .modal-symbol.success{background:#ecfdf5;color:#16a34a}
             .modal-symbol.warning{background:#fff7ed;color:#ea580c}
             .modal-symbol.error{background:#fff1f2;color:#e11d48}
             .modal-symbol.question{background:#f8fafc;color:#475569}
-            .modal-title{
-              margin:0;
-              font-size:15px;
-              line-height:1.25;
-              color:#0f172a;
-              font-weight:700;
-            }
-            .modal-body{
-              padding:0 16px 14px 54px;
-              color:#475569;
-              font-size:13px;
-              line-height:1.5;
-              white-space:pre-wrap;
-            }
+            .modal-title{margin:0;font-size:16px;line-height:1.3;color:#0f172a;font-weight:700}
+            .modal-body{padding:0 20px 16px 64px;color:#475569;font-size:13px;line-height:1.6;white-space:pre-wrap}
             .modal-input{
-              display:block;
-              width:calc(100% - 32px);
-              margin:0 16px 14px;
-              border:1px solid #cbd5e1;
-              border-radius:8px;
-              padding:9px 10px;
-              outline:none;
-              background:#fff;
-              color:#0f172a;
+              display:block;width:calc(100% - 40px);margin:0 20px 16px;
+              border:1px solid #cbd5e1;border-radius:10px;padding:10px 12px;
+              outline:none;background:#fff;color:#0f172a;font-size:13px;
+              transition:all 0.15s ease;
             }
-            .modal-input:focus{
-              border-color:#3b82f6;
-              box-shadow:0 0 0 3px rgba(59,130,246,.12);
-            }
-            .modal-actions{
-              display:flex;justify-content:flex-end;gap:8px;
-              padding:10px 16px 14px;
-              border-top:1px solid #f1f5f9;
-              background:#fff;
-            }
+            .modal-input:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.12)}
+            .modal-actions{display:flex;justify-content:flex-end;gap:8px;padding:12px 20px 18px;border-top:1px solid #f1f5f9;background:#f8fafc}
             .modal-btn{
-              border:1px solid #cbd5e1;
-              border-radius:8px;
-              padding:7px 12px;
-              min-width:72px;
-              background:#fff;
-              color:#334155;
-              cursor:pointer;
-              font-weight:600;
+              border:1px solid #cbd5e1;border-radius:8px;padding:8px 16px;min-width:80px;
+              background:#fff;color:#334155;cursor:pointer;font-weight:600;font-size:13px;
+              transition:all 0.15s ease;
             }
-            .modal-btn:hover{background:#f8fafc}
-            .modal-btn.primary{
-              background:#2563eb;
-              border-color:#2563eb;
-              color:#fff;
-            }
+            .modal-btn:hover{background:#f1f5f9;border-color:#94a3b8}
+            .modal-btn.primary{background:#2563eb;border-color:#2563eb;color:#fff}
             .modal-btn.primary:hover{background:#1d4ed8}
-            .modal-btn.danger{
-              background:#e11d48;
-              border-color:#e11d48;
-              color:#fff;
-            }
+            .modal-btn.danger{background:#e11d48;border-color:#e11d48;color:#fff}
             .modal-btn.danger:hover{background:#be123c}
             .modal-close{
-              margin-left:auto;
-              width:28px;height:28px;
-              border:0;border-radius:7px;
-              background:transparent;color:#94a3b8;
-              cursor:pointer;font-size:18px;line-height:1;
+              margin-left:auto;width:30px;height:30px;border:0;border-radius:8px;
+              background:transparent;color:#94a3b8;cursor:pointer;font-size:18px;
+              display:flex;align-items:center;justify-content:center;transition:all 0.1s ease;
             }
-            .modal-close:hover{background:#f1f5f9;color:#475569}
-            .choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 16px}
-            .choice-card{border:1px solid #e2e8f0;border-radius:10px;padding:12px;cursor:pointer;background:#fff;text-align:left}
-            .choice-card.selected{border-color:#3b82f6;background:#eff6ff}
-            .choice-card b{display:block;margin-bottom:4px;color:#0f172a}
-            .rename{font-weight:700}
-            .spacer{flex:1}
-            .resize-handle{
-              position:absolute;right:0;bottom:0;width:22px;height:22px;
-              cursor:nwse-resize;z-index:60
-            }
+            .modal-close:hover{background:#f1f5f9;color:#0f172a}
+            
+            .choice{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 20px}
+            .choice-card{border:1px solid #cbd5e1;border-radius:12px;padding:14px;cursor:pointer;background:#fff;text-align:left;transition:all 0.15s ease}
+            .choice-card.selected{border-color:#2563eb;background:#eff6ff;box-shadow:0 0 0 2px #2563eb}
+            .choice-card b{display:block;margin-bottom:4px;color:#0f172a;font-size:13px}
+            
+            .resize-handle{position:absolute;right:0;bottom:0;width:24px;height:24px;cursor:nwse-resize;z-index:60}
             .resize-handle:before{
-              content:"";position:absolute;right:4px;bottom:4px;width:12px;height:12px;
-              border-right:2px solid #64748b;border-bottom:2px solid #64748b;
-              box-shadow:4px 4px 0 -2px #64748b
+              content:"";position:absolute;right:6px;bottom:6px;width:10px;height:10px;
+              border-right:2px solid #94a3b8;border-bottom:2px solid #94a3b8;
             }
-    
-                        .topbtn:disabled{opacity:.38;cursor:not-allowed;background:#f8fafc}
-
 
             .app-tooltip{
-              position:fixed;z-index:2147483647;
-              max-width:260px;padding:7px 9px;
-              border-radius:7px;
-              background:#0f172a;color:#f8fafc;
-              box-shadow:0 8px 24px rgba(15,23,42,.22);
-              font-size:11px;line-height:1.35;font-weight:500;
-              pointer-events:none;opacity:0;
-              transform:translateY(3px) scale(.98);
-              transition:opacity .11s ease,transform .11s ease;
-              white-space:normal;
+              position:fixed;z-index:2147483647;max-width:260px;padding:8px 12px;
+              border-radius:10px;background:#0f172a;color:#f8fafc;
+              box-shadow:0 10px 25px -5px rgba(15,23,42,0.3);
+              font-size:12px;line-height:1.4;font-weight:500;
+              pointer-events:none;opacity:0;transform:translateY(4px) scale(0.98);
+              transition:opacity .15s ease,transform .15s ease;
             }
             .app-tooltip.show{opacity:1;transform:translateY(0) scale(1)}
-            .app-tooltip-title{font-weight:700;color:#fff}
+            .app-tooltip-title{font-weight:700;color:#fff;margin-bottom:2px}
             .app-tooltip-shortcut{
               display:inline-block;margin-left:6px;padding:1px 5px;
-              border:1px solid rgba(255,255,255,.18);border-radius:4px;
-              color:#cbd5e1;font-size:10px
-            }
-            .app-tooltip::after{
-              content:"";position:absolute;left:50%;bottom:-5px;transform:translateX(-50%);
-              border:5px solid transparent;border-top-color:#0f172a;border-bottom:0
-            }
-            .app-tooltip.bottom::after{
-              top:-5px;bottom:auto;border-top:0;border-bottom:5px solid #0f172a
+              border:1px solid rgba(255,255,255,0.2);border-radius:4px;
+              color:#cbd5e1;font-size:10px;font-family:monospace
             }
 
+            .tab-history-actions{display:inline-flex;align-items:center;gap:4px;margin-left:auto;margin-right:6px}
+            .tab-history-btn{width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#475569;font-size:16px;cursor:pointer;transition:all 0.15s ease}
+            .tab-history-btn:hover:not(:disabled){background:#f1f5f9;border-color:#94a3b8;color:#0f172a}
+            .tab-history-btn:disabled{opacity:0.35;cursor:not-allowed;background:#f8fafc}
 
-            .tab-history-actions{display:inline-flex;align-items:center;gap:3px;margin-left:auto;margin-right:4px}
-            .tab-history-btn{width:28px;height:28px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #dbe3ee;border-radius:6px;background:#fff;color:#475569;font-size:16px;line-height:1;cursor:pointer;transition:.12s ease}
-            .tab-history-btn:hover:not(:disabled){background:#f1f5f9;border-color:#cbd5e1;color:#0f172a}
-            .tab-history-btn:active:not(:disabled){transform:translateY(1px)}
-            .tab-history-btn:disabled{opacity:.32;cursor:not-allowed;background:#f8fafc}
-
-      
-            /* ===== v12: giao diện bảng + thiết lập gọn hơn ===== */
-            .tab-info{padding:9px 12px;gap:7px;background:#fff}
-            .tab-info-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+            .tab-actions{display:flex;align-items:center;gap:6px}
             .tab-action{
               height:32px;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-              border:1px solid #dbe3ee;border-radius:8px;background:#fff;color:#334155;
-              padding:0 9px;cursor:pointer;font-weight:600;white-space:nowrap
+              border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#334155;
+              padding:0 12px;cursor:pointer;font-weight:600;font-size:12px;white-space:nowrap;transition:all 0.15s ease;
             }
-            .tab-action:hover{background:#f8fafc;border-color:#cbd5e1}
-            .tab-action.primary{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+            .tab-action:hover{background:#f8fafc;border-color:#94a3b8;color:#0f172a}
+            .tab-action.primary{background:#eff6ff;border-color:#bfdbfe;color:#2563eb}
+            .tab-action.primary:hover{background:#dbeafe}
             .tab-action.icon{width:32px;padding:0;font-size:16px}
-            .tab-action:disabled{opacity:.34;cursor:not-allowed;background:#f8fafc}
-            .toolbar{padding:7px 12px;gap:6px;background:#f8fafc}
-            .toolbar .btn{padding:5px 9px;border-radius:7px;background:#fff}
-            .toolbar-note{margin-left:auto;font-size:11px;color:#94a3b8}
+            .tab-action:disabled{opacity:0.4;cursor:not-allowed;background:#f8fafc}
+            
+            .toolbar-note{margin-left:auto;font-size:11px;color:#94a3b8;font-weight:500}
 
-            .settings-panel.open{
-              display:flex;flex-direction:column;max-height:48%;
-              overflow:hidden;padding:0;background:#f8fafc
+            .rule-card.collapsed .rule-card-body{display:none}
+            .rule-collapse{
+              width:26px;height:26px;border:0;border-radius:6px;background:transparent;
+              color:#64748b;cursor:pointer;font-size:11px;display:flex;align-items:center;justify-content:center;transition:background 0.1s ease
             }
-            .rules-head{
-              position:relative;top:auto;flex:0 0 auto;padding:10px 12px;background:#fff;
-              box-shadow:none;border-bottom:1px solid #e2e8f0
-            }
-            #lookupRules{overflow-y:auto;min-height:0;padding:10px 12px 4px}
-            .rule-card{padding:0;margin-bottom:9px;overflow:hidden;border-radius:10px;box-shadow:0 1px 2px rgba(15,23,42,.03)}
-            .rule-card-head{margin:0;padding:8px 10px;border-bottom:1px solid #eef2f7;background:#fbfdff}
-            .rule-no{min-width:22px;height:22px;border-radius:6px}
-            .rule-name{font-size:13px}
-            .rule-ref-name{background:#eef6ff;color:#2563eb}
-            .rule-card .rule-grid{
-              margin:0;padding:10px;
-              grid-template-columns:repeat(4,minmax(0,1fr));
-              gap:8px
-            }
-            .rule-grid label{
-              display:flex;flex-direction:column;gap:4px;font-size:11px;font-weight:600;color:#64748b
-            }
-            .rule-grid label select{width:100%;color:#1f2937;font-size:12px}
-            .returns{margin:0;padding:0 10px 8px}
-            .returns-title{font-size:11px;font-weight:700;color:#64748b;margin-bottom:5px}
-            .return-row{grid-template-columns:minmax(100px,1fr) 22px minmax(100px,1fr) 28px}
-            .return-row select{width:100%;font-size:12px;padding:5px 7px}
-            .rule-actions{margin:0;padding:0 10px 10px}
-            .rule-actions .btn{padding:5px 8px;font-size:12px}
-            @media(max-width:850px){
-              .rule-card .rule-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-              .toolbar-note{display:none}
-            }
+            .rule-collapse:hover{background:#e2e8f0;color:#0f172a}
+            .rule-summary{min-width:0;flex:1;display:flex;align-items:center;gap:8px;overflow:hidden}
+            .rule-summary-text{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:#64748b;font-weight:500}
+            .rule-card:not(.collapsed) .rule-summary-text{display:none}
+            .rule-card-body{background:#fff;padding:4px 0 0}
 
-            /* Excel-like range selection */
+            .sheet-context-menu{
+              position:fixed;z-index:2147483647;width:210px;padding:6px;
+              background:#fff;border:1px solid #cbd5e1;border-radius:12px;
+              box-shadow:0 15px 35px -5px rgba(15,23,42,0.18)
+            }
+            .sheet-context-menu button{
+              width:100%;display:flex;align-items:center;justify-content:space-between;
+              gap:12px;border:0;border-radius:8px;background:#fff;color:#334155;
+              padding:8px 10px;text-align:left;cursor:pointer;font-size:12px;font-weight:500;
+              transition:background 0.1s ease;
+            }
+            .sheet-context-menu button:hover{background:#f1f5f9;color:#0f172a}
+            .sheet-context-menu button.danger{color:#e11d48}
+            .sheet-context-menu button.danger:hover{background:#fff1f2}
+            .sheet-context-menu .ctx-sep{height:1px;background:#e2e8f0;margin:4px 4px}
+            .sheet-context-menu kbd{font:10px monospace;color:#94a3b8;background:#f1f5f9;padding:2px 5px;border-radius:4px}
+
+            th[data-col-select],td.index[data-row-select]{cursor:pointer;user-select:none}
+            th[data-col-select]:hover,td.index[data-row-select]:hover{filter:brightness(0.92)}
+            th.col-selected{background:#1d4ed8!important}
+            td.index.row-selected{background:#eff6ff!important;color:#2563eb;font-weight:700}
+
             td.cell{user-select:none}
-            td.cell.range-selected{
-              background:#dbeafe!important;
-              box-shadow:inset 0 0 0 1px rgba(37,99,235,.16)
-            }
+            td.cell.range-selected{background:#eff6ff!important;box-shadow:inset 0 0 0 1px rgba(37,99,235,0.2)}
             td.cell.range-anchor{outline:2px solid #2563eb!important;outline-offset:-2px}
             td.cell.range-top{border-top:2px solid #2563eb!important}
             td.cell.range-bottom{border-bottom:2px solid #2563eb!important}
             td.cell.range-left{border-left:2px solid #2563eb!important}
             td.cell.range-right{border-right:2px solid #2563eb!important}
+            td.cell.fill-handle-cell{position:relative;overflow:visible!important}
+            td.cell.fill-handle-cell::after{
+              content:"";position:absolute;width:8px;height:8px;right:-5px;bottom:-5px;
+              background:#2563eb;border:1px solid #fff;box-shadow:0 0 0 1px #2563eb;
+              cursor:crosshair;z-index:12;pointer-events:auto
+            }
+            td.cell.fill-preview{background:#dbeafe!important}
             th.index.select-all-corner{cursor:pointer}
-            th.index.select-all-corner:hover{background:#1e40af}
-
-
-            /* ===== v13: Excel interactions + compact lookup rules ===== */
-            th[data-col-select],td.index[data-row-select]{cursor:pointer;user-select:none}
-            th[data-col-select]:hover,td.index[data-row-select]:hover{filter:brightness(.94)}
-            th.col-selected{background:#1d4ed8!important}
-            td.index.row-selected{background:#dbeafe!important;color:#1d4ed8;font-weight:700}
-
-            .rule-card.collapsed .rule-card-body{display:none}
-            .rule-card-head{cursor:default}
-            .rule-collapse{
-              width:25px;height:25px;border:0;border-radius:6px;background:transparent;
-              color:#64748b;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center
-            }
-            .rule-collapse:hover{background:#e2e8f0;color:#0f172a}
-            .rule-summary{
-              min-width:0;flex:1;display:flex;align-items:center;gap:7px;overflow:hidden
-            }
-            .rule-summary-text{
-              min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-              font-size:11px;color:#64748b
-            }
-            .rule-card:not(.collapsed) .rule-summary-text{display:none}
-            .rule-card.collapsed .rule-name{max-width:180px}
-            .rule-card-body{background:#fff}
-
-            .sheet-context-menu{
-              position:fixed;z-index:2147483647;width:205px;padding:5px;
-              background:#fff;border:1px solid #dbe3ee;border-radius:10px;
-              box-shadow:0 14px 34px rgba(15,23,42,.18)
-            }
-            .sheet-context-menu button{
-              width:100%;display:flex;align-items:center;justify-content:space-between;
-              gap:12px;border:0;border-radius:7px;background:#fff;color:#334155;
-              padding:7px 9px;text-align:left;cursor:pointer;font-size:12px
-            }
-            .sheet-context-menu button:hover{background:#f1f5f9}
-            .sheet-context-menu button.danger{color:#be123c}
-            .sheet-context-menu .ctx-sep{height:1px;background:#e2e8f0;margin:4px 3px}
-            .sheet-context-menu kbd{font:10px Arial;color:#94a3b8}
-
-</style>
+            th.index.select-all-corner:hover{background:#0f172a}
+          </style>
 
           <div class="wrap">
             <div class="topbar">
               <div class="title">Mini Excel - Multi Tab</div>
               <button class="mini-restore" data-act="restore-mini" data-tip="Mở lại bảng">▦ Mini Excel</button>
-              <button class="topbtn" data-act="toggle-search" data-tip="Tìm kiếm dữ liệu trong tab hiện tại" data-shortcut="Search">⌕ Search</button>
+              <button class="topbtn" data-act="toggle-search" data-tip="Tìm kiếm dữ liệu trong tab hiện tại" data-shortcut="Search">⌕ Tìm kiếm</button>
               <button class="topbtn" data-act="zoom-out" data-tip="Thu nhỏ nội dung bảng">−</button>
               <button class="topbtn" data-act="zoom-reset" data-tip="Đưa tỷ lệ hiển thị về 100%"><span id="zoomLabel">100%</span></button>
               <button class="topbtn" data-act="zoom-in" data-tip="Phóng to nội dung bảng">＋</button>
               <button class="topbtn" data-act="save">Lưu</button>
               <button class="topbtn" data-act="reset">Reset</button>
-              <button class="topbtn" data-act="minimize" data-tip="Thu gọn Mini Excel xuống góc phải">▣</button>
-              <button class="topbtn close" data-act="close">✕</button>
+              <button class="topbtn" data-act="minimize" data-tip="Thu gọn Mini Excel xuống góc phải">▣ Thu gọn</button>
+              <button class="topbtn close" data-act="close">✕ Đóng</button>
             </div>
             <div class="tabsbar" id="tabsbar"></div>
             <div class="body" id="content"></div>
@@ -779,11 +702,10 @@
               <span class="tabname" title="${esc(t.name)}">${esc(t.name)}</span>
               <button class="tabclose" data-close-tab="${esc(t.id)}" data-tip="Xóa tab">×</button>
             </div>
-          `).join('') + `<button class="addtab" data-act="add-tab">＋ Tab</button>`;
+          `).join('') + `<button class="addtab" data-act="add-tab">＋ Tab mới</button>`;
         }
 
         function render() {
-          // Mỗi tab có màu bảng riêng. Dữ liệu cũ chưa có tableTheme sẽ dùng xanh dương.
           state.tabs.forEach(t => {
             if (!t.tableTheme) t.tableTheme = 'blue';
           });
@@ -799,7 +721,6 @@
           updateUndoRedoButtons();
         }
 
-
         function searchBarHTML(tab) {
           const colOptions = [
             `<option value="all" ${state.searchColumn === 'all' ? 'selected' : ''}>Tất cả cột</option>`,
@@ -814,7 +735,7 @@
                 <input id="searchInput" class="searchbox" type="text"
                   placeholder="Nhập nội dung cần tìm..." value="${esc(state.searchQuery || '')}">
                 <button class="search-clear ${(state.searchQuery || '') ? 'show' : ''}"
-                  id="searchClear" type="button" data-tip="Xóa nội dung tìm kiếm">×</button>
+                  id="searchClear" type="button" data-tip="Xóa tìm kiếm">×</button>
               </div>
               <select id="searchColumn">${colOptions}</select>
               <span class="search-count" id="searchCount"></span>
@@ -825,18 +746,18 @@
         function tableColorButtonHTML() {
           const current = getActiveTab()?.tableTheme || 'blue';
           const colors = [
-            ['blue','#4472c4','Xanh dương'],
-            ['green','#548235','Xanh lá'],
-            ['orange','#c65911','Cam'],
-            ['purple','#7030a0','Tím'],
-            ['teal','#0f6b78','Teal'],
-            ['gray','#595959','Xám']
+            ['blue','#2563eb','Xanh dương'],
+            ['green','#16a34a','Xanh lá'],
+            ['orange','#ea580c','Cam'],
+            ['purple','#9333ea','Tím'],
+            ['teal','#0d9488','Teal'],
+            ['gray','#475569','Xám']
           ];
           return `
             <div class="table-color-wrap">
               <button class="btn" data-act="toggle-table-color" data-tip="Chọn màu bảng">🎨 Màu bảng</button>
               <div class="table-color-menu" id="tableColorMenu" style="display:none">
-                <div class="table-color-title">CHỌN MÀU BẢNG</div>
+                <div class="table-color-title">CHỌN MÀU BẢNG HIỂN THỊ</div>
                 <div class="table-color-grid">
                   ${colors.map(([id,color,name]) => `
                     <button class="table-color-option ${current===id?'active':''}"
@@ -889,20 +810,20 @@
             <div class="tab-info">
               <div class="tab-info-main">
                 <div class="tab-info-title">${esc(tab.name)}</div>
-                <div class="tab-info-sub">Tab nhập liệu</div>
+                <div class="tab-info-sub">Tab nhập liệu dữ liệu</div>
               </div>
-              <div class="tab-info-actions">
-                <button class="tab-action primary" data-act="toggle-settings" data-tip="Thiết lập tra cứu">${state.settingsOpen ? 'Ẩn tra cứu' : '🔗 Tra cứu'}</button>
-                <button class="tab-action" data-act="export-xlsx" data-tip="Xuất riêng tab này ra Excel">⇩ Excel</button>
-                <button class="tab-action icon" data-act="undo" data-tip="Hoàn tác trong tab này" data-shortcut="Ctrl + Z" disabled>↶</button>
-                <button class="tab-action icon" data-act="redo" data-tip="Làm lại trong tab này" data-shortcut="Ctrl + Y" disabled>↷</button>
+              <div class="tab-actions">
+                <button class="tab-action primary" data-act="toggle-settings" data-tip="Thiết lập tham chiếu">${state.settingsOpen ? 'Ẩn cài đặt' : '⚙ Cài đặt tra cứu'}</button>
+                <button class="tab-action" data-act="export-xlsx" data-tip="Xuất tab này ra Excel">⇩ Xuất Excel</button>
+                <button class="tab-action icon" data-act="undo" data-tip="Hoàn tác" data-shortcut="Ctrl + Z" disabled>↶</button>
+                <button class="tab-action icon" data-act="redo" data-tip="Làm lại" data-shortcut="Ctrl + Y" disabled>↷</button>
               </div>
               <div class="more-wrap">
-                <button class="more-btn" data-act="toggle-tab-menu" data-tip="Tùy chọn cho tab hiện tại">⋮</button>
+                <button class="more-btn" data-act="toggle-tab-menu" data-tip="Tùy chọn tab">⋮</button>
                 <div class="tab-menu" id="tabMenu" style="display:none">
                   <button data-act="rename-tab">✏ Đổi tên tab</button>
                   <button data-act="duplicate-tab">▣ Nhân bản tab</button>
-                  <button class="menu-danger" data-act="delete-active-tab">🗑 Xóa tab</button>
+                  <button class="menu-danger" data-act="delete-active-tab">🗑 Xóa tab này</button>
                 </div>
               </div>
             </div>
@@ -911,10 +832,10 @@
               ${refs.length ? `
                 <div class="rules-head">
                   <div>
-                    <div class="rules-title">Quy tắc tham chiếu</div>
-                    <div class="small">Thiết lập nhiều nguồn tham chiếu. Tra cứu được thực hiện tự động khi dữ liệu đầu vào thay đổi.</div>
+                    <div class="rules-title">Quy tắc tham chiếu tự động</div>
+                    <div style="font-size:11px;color:#64748b;margin-top:2px">Thiết lập nguồn tham chiếu và tự động điền dữ liệu khi thay đổi.</div>
                   </div>
-                  <button class="btn" data-act="add-rule">+ Thêm quy tắc</button>
+                  <button class="btn primary" data-act="add-rule">+ Thêm quy tắc</button>
                 </div>
 
                 <div id="lookupRules">
@@ -924,83 +845,83 @@
                       <div class="rule-card ${rule.collapsed ? 'collapsed' : ''}" data-rule-id="${esc(rule.id)}">
                         <div class="rule-card-head">
                           <button class="rule-collapse" type="button" data-rule-collapse="${esc(rule.id)}"
-                            data-tip="Thu gọn / mở rộng quy tắc">${rule.collapsed ? '▶' : '▼'}</button>
+                            data-tip="Thu gọn / mở rộng">${rule.collapsed ? '▶' : '▼'}</button>
                           <span class="rule-no">${ruleIndex + 1}</span>
                           <div class="rule-summary">
                             <input class="rule-name" type="text"
                               value="${esc(rule.name || `Tham chiếu ${ruleIndex + 1}`)}"
-                              data-tip="Bấm vào đây để đổi tên quy tắc">
-                            <span class="rule-summary-text">${esc(tab.columns[rule.sourceCol] || `Cột ${rule.sourceCol+1}`)} → ${esc(ref?.columns?.[rule.refCol] || `Cột ${rule.refCol+1}`)} · ${(rule.outputs || []).length} cột trả về</span>
+                              data-tip="Click để đổi tên quy tắc">
+                            <span class="rule-summary-text">${esc(tab.columns[rule.sourceCol] || `Cột ${rule.sourceCol+1}`)} → ${esc(ref?.columns?.[rule.refCol] || `Cột ${rule.refCol+1}`)} · ${(rule.outputs || []).length} kết quả</span>
                           </div>
                           <span class="rule-ref-name">${esc(ref?.name || 'Chưa chọn bảng')}</span>
                           <button class="rule-remove" data-act="remove-rule"
-                            data-rule-id="${esc(rule.id)}" data-tip="Xóa quy tắc tham chiếu này">×</button>
+                            data-rule-id="${esc(rule.id)}" data-tip="Xóa quy tắc">×</button>
                         </div>
 
                         <div class="rule-card-body">
-                        <div class="rule-grid">
-                          <label><span>Bảng tham chiếu</span>
-                            <select class="rule-reference">
-                              ${refs.map(r => `<option value="${esc(r.id)}" ${r.id===rule.referenceTabId?'selected':''}>${esc(r.name)}</option>`).join('')}
-                            </select>
-                          </label>
-                          <label><span>Cột cần tìm</span>
-                            <select class="rule-source">${optionList(tab.columns, rule.sourceCol)}</select>
-                          </label>
-                          <label><span>So với cột</span>
-                            <select class="rule-ref-col">${optionList(ref?.columns || [], rule.refCol)}</select>
-                          </label>
-                          <label><span>Kiểu so sánh</span>
-                            <select class="rule-mode">
-                              <option value="exact-normalized" ${rule.mode==='exact-normalized'?'selected':''}>Chính xác · chuẩn hóa</option>
-                              <option value="exact" ${rule.mode==='exact'?'selected':''}>Chính xác · nguyên bản</option>
-                              <option value="contains-normalized" ${rule.mode==='contains-normalized'?'selected':''}>Có chứa · chuẩn hóa</option>
-                              <option value="contains" ${rule.mode==='contains'?'selected':''}>Có chứa · nguyên bản</option>
-                            </select>
-                          </label>
-                        </div>
+                          <div class="rule-grid">
+                            <label><span>Bảng tham chiếu</span>
+                              <select class="rule-reference">
+                                ${refs.map(r => `<option value="${esc(r.id)}" ${r.id===rule.referenceTabId?'selected':''}>${esc(r.name)}</option>`).join('')}
+                              </select>
+                            </label>
+                            <label><span>Cột cần tìm</span>
+                              <select class="rule-source">${optionList(tab.columns, rule.sourceCol)}</select>
+                            </label>
+                            <label><span>So với cột</span>
+                              <select class="rule-ref-col">${optionList(ref?.columns || [], rule.refCol)}</select>
+                            </label>
+                            <label><span>Kiểu so sánh</span>
+                              <select class="rule-mode">
+                                <option value="exact-normalized" ${rule.mode==='exact-normalized'?'selected':''}>Chính xác (chuẩn hóa)</option>
+                                <option value="exact" ${rule.mode==='exact'?'selected':''}>Chính xác (nguyên bản)</option>
+                                <option value="contains-normalized" ${rule.mode==='contains-normalized'?'selected':''}>Có chứa (chuẩn hóa)</option>
+                                <option value="contains" ${rule.mode==='contains'?'selected':''}>Có chứa (nguyên bản)</option>
+                              </select>
+                            </label>
+                          </div>
 
-                        <div class="returns">
-                          <div class="returns-title">CỘT TRẢ VỀ <span style="font-weight:400;color:#94a3b8">· nguồn → cột nhận</span></div>
-                          ${(rule.outputs || []).map((o, idx) => `
-                            <div class="return-row" data-output="${idx}">
-                              <select class="fromCol">${optionList(ref?.columns || [], o.fromCol)}</select>
-                              <div class="arrow">→</div>
-                              <select class="toCol">${optionList(tab.columns, o.toCol)}</select>
-                              <button class="btn danger del-output" type="button">×</button>
-                            </div>
-                          `).join('')}
-                        </div>
+                          <div class="returns">
+                            <div class="returns-title">CỘT TRẢ VỀ <span style="font-weight:400;color:#94a3b8">(nguồn → nhận)</span></div>
+                            ${(rule.outputs || []).map((o, idx) => `
+                              <div class="return-row" data-output="${idx}">
+                                <select class="fromCol">${optionList(ref?.columns || [], o.fromCol)}</select>
+                                <div class="arrow">→</div>
+                                <select class="toCol">${optionList(tab.columns, o.toCol)}</select>
+                                <button class="btn danger del-output" type="button" style="padding:4px 8px">×</button>
+                              </div>
+                            `).join('')}
+                          </div>
 
-                        <div class="rule-actions">
-                          <button class="btn" data-act="add-output"
-                            data-rule-id="${esc(rule.id)}">+ Thêm cột trả về</button>
-                        </div>
+                          <div class="rule-actions">
+                            <button class="btn" data-act="add-output"
+                              data-rule-id="${esc(rule.id)}">+ Thêm cột trả về</button>
+                          </div>
                         </div>
                       </div>
                     `;
                   }).join('')}
                 </div>
               ` : `
-                <div style="padding:6px 0">
-                  Chưa có <b>Tab tham chiếu</b>. Hãy bấm <b>＋ Tab</b> và tạo tab loại <b>Tham chiếu</b>.
+                <div style="padding:16px; text-align:center; color:#64748b">
+                  Chưa có <b>Tab tham chiếu</b>. Hãy bấm <b>＋ Tab mới</b> và chọn loại <b>Tham chiếu</b> để thiết lập.
                 </div>
               `}
             </div>
 
             <div class="toolbar">
-              <button class="btn" data-act="add-row">+ Thêm dòng</button>
+              <button class="btn primary" data-act="add-row">+ Thêm dòng</button>
               <button class="btn" data-act="add-col">+ Thêm cột</button>
               ${tableColorButtonHTML()}
-              <button class="btn" data-act="clear">Xóa dữ liệu</button>
-              <span class="toolbar-note">Kéo để chọn vùng · Ctrl+C để copy · Ctrl+V để dán</span>
+              <button class="btn danger" data-act="clear">Xóa dữ liệu</button>
+              <span class="toolbar-note">Kéo chọn vùng · Ctrl+C copy · Ctrl+A chọn dữ liệu · Kéo chấm góc để bung dữ liệu</span>
             </div>
 
             ${tableHTML(tab)}
             <div class="status">
               <span class="pill">${tab.rows.length} dòng</span>
               <span class="pill">${tab.columns.length} cột</span>
-              <span id="lookupStatus">Sẵn sàng</span>
+              <span id="lookupStatus" style="color:#16a34a; font-weight:600">Sẵn sàng</span>
             </div>
           `;
 
@@ -1016,29 +937,29 @@
             <div class="tab-info">
               <div class="tab-info-main">
                 <div class="tab-info-title">${esc(tab.name)}</div>
-                <div class="tab-info-sub">Tab tham chiếu</div>
+                <div class="tab-info-sub">Tab dữ liệu tham chiếu</div>
               </div>
-              <div class="tab-info-actions">
-                <button class="tab-action primary" data-act="import-xlsx" data-tip="Nhập dữ liệu Excel vào tab này">⇧ Import</button>
-                <button class="tab-action" data-act="export-xlsx" data-tip="Xuất riêng tab này ra Excel">⇩ Excel</button>
-                <button class="tab-action icon" data-act="undo" data-tip="Hoàn tác trong tab này" data-shortcut="Ctrl + Z" disabled>↶</button>
-                <button class="tab-action icon" data-act="redo" data-tip="Làm lại trong tab này" data-shortcut="Ctrl + Y" disabled>↷</button>
+              <div class="tab-actions">
+                <button class="tab-action primary" data-act="import-xlsx" data-tip="Nhập file Excel/CSV">⇧ Import Excel</button>
+                <button class="tab-action" data-act="export-xlsx" data-tip="Xuất file Excel">⇩ Xuất Excel</button>
+                <button class="tab-action icon" data-act="undo" data-tip="Hoàn tác" data-shortcut="Ctrl + Z" disabled>↶</button>
+                <button class="tab-action icon" data-act="redo" data-tip="Làm lại" data-shortcut="Ctrl + Y" disabled>↷</button>
               </div>
               <div class="more-wrap">
-                <button class="more-btn" data-act="toggle-tab-menu" data-tip="Tùy chọn cho tab hiện tại">⋮</button>
+                <button class="more-btn" data-act="toggle-tab-menu" data-tip="Tùy chọn tab">⋮</button>
                 <div class="tab-menu" id="tabMenu" style="display:none">
                   <button data-act="rename-tab">✏ Đổi tên tab</button>
                   <button data-act="duplicate-tab">▣ Nhân bản tab</button>
-                  <button class="menu-danger" data-act="delete-active-tab">🗑 Xóa tab</button>
+                  <button class="menu-danger" data-act="delete-active-tab">🗑 Xóa tab này</button>
                 </div>
               </div>
             </div>
             <div class="toolbar">
-              <button class="btn" data-act="add-row">+ Thêm dòng</button>
+              <button class="btn primary" data-act="add-row">+ Thêm dòng</button>
               <button class="btn" data-act="add-col">+ Thêm cột</button>
               ${tableColorButtonHTML()}
-              <button class="btn" data-act="clear">Xóa dữ liệu</button>
-              <span class="toolbar-note">Kéo để chọn vùng · Ctrl+C để copy · Ctrl+V để dán</span>
+              <button class="btn danger" data-act="clear">Xóa dữ liệu</button>
+              <span class="toolbar-note">Kéo chọn vùng · Ctrl+C copy · Ctrl+A chọn dữ liệu · Kéo chấm góc để bung dữ liệu</span>
               <input id="xlsxInput" type="file" accept=".xlsx,.xls,.csv" style="display:none">
             </div>
             ${tableHTML(tab)}
@@ -1150,7 +1071,6 @@
           });
         }
 
-
         function bindSearch(tab) {
           const input = $('#searchInput');
           const select = $('#searchColumn');
@@ -1237,7 +1157,6 @@
           const root = shadow.querySelector(`[data-table-id="${tab.id}"]`);
           if (!root) return;
 
-          // Theo dõi thay đổi khi sửa ô / tên cột để Undo/Redo theo đúng tab.
           root.addEventListener('focusin', e => {
             if (e.target.matches('.cell,[contenteditable="true"]')) {
               editStartSnapshot = historySnapshot(tab);
@@ -1255,18 +1174,20 @@
             }
           });
 
-          // Chọn vùng kiểu Excel: kéo chuột, Shift+click, Ctrl+A, Ctrl+C
           let selecting = false;
           let selStart = null;
           let selEnd = null;
-          let selectionKind = 'cells'; // cells | row | col | all
+          let selectionKind = 'cells';
           let ctrlACount = 0;
+          let fillDragging = false;
+          let fillSource = null;
+          let fillTarget = null;
 
           const cellAt = (r,c) => root.querySelector(`.cell[data-r="${r}"][data-c="${c}"]`);
 
           function clearRangeVisual() {
-            root.querySelectorAll('.range-selected,.range-anchor,.range-top,.range-bottom,.range-left,.range-right')
-              .forEach(el => el.classList.remove('range-selected','range-anchor','range-top','range-bottom','range-left','range-right'));
+            root.querySelectorAll('.range-selected,.range-anchor,.range-top,.range-bottom,.range-left,.range-right,.fill-handle-cell,.fill-preview')
+              .forEach(el => el.classList.remove('range-selected','range-anchor','range-top','range-bottom','range-left','range-right','fill-handle-cell','fill-preview'));
             root.querySelectorAll('.col-selected').forEach(el => el.classList.remove('col-selected'));
             root.querySelectorAll('.row-selected').forEach(el => el.classList.remove('row-selected'));
           }
@@ -1288,12 +1209,61 @@
               }
             }
             cellAt(selStart.r, selStart.c)?.classList.add('range-anchor');
+            if (selectionKind === 'cells') cellAt(r2, c2)?.classList.add('fill-handle-cell');
             if (selectionKind === 'row') {
               for (let r=r1; r<=r2; r++) root.querySelector(`[data-row-select="${r}"]`)?.classList.add('row-selected');
             }
             if (selectionKind === 'col') {
               for (let c=c1; c<=c2; c++) root.querySelector(`[data-col-select="${c}"]`)?.classList.add('col-selected');
             }
+          }
+
+          function isEditingCell(e) {
+            const cell = e.target.closest?.('.cell');
+            if (!cell) return false;
+            const sel = window.getSelection?.();
+            return !!(sel && sel.rangeCount && !sel.isCollapsed && cell.contains(sel.anchorNode));
+          }
+
+          function dataBounds() {
+            let maxR = 0, maxC = 0, found = false;
+            tab.rows.forEach((row, r) => row.forEach((v, c) => {
+              if (String(v ?? '').trim() !== '') { found = true; maxR = Math.max(maxR, r); maxC = Math.max(maxC, c); }
+            }));
+            return found ? {r:maxR,c:maxC} : {r:0,c:0};
+          }
+
+          function selectCurrentRegion() {
+            const b = dataBounds();
+            selectionKind = 'cells';
+            selStart = {r:0,c:0}; selEnd = {r:b.r,c:b.c}; paintRange();
+          }
+
+          function fillPreview() {
+            root.querySelectorAll('.fill-preview').forEach(el => el.classList.remove('fill-preview'));
+            if (!fillSource || !fillTarget) return;
+            const r1=Math.min(fillSource.r1,fillTarget.r), r2=Math.max(fillSource.r2,fillTarget.r);
+            const c1=Math.min(fillSource.c1,fillTarget.c), c2=Math.max(fillSource.c2,fillTarget.c);
+            for(let r=r1;r<=r2;r++) for(let c=c1;c<=c2;c++) cellAt(r,c)?.classList.add('fill-preview');
+          }
+
+          function applyFill() {
+            if (!fillSource || !fillTarget) return;
+            const before=historySnapshot(tab);
+            const {r1,r2,c1,c2}=fillSource;
+            const tr1=Math.min(r1,fillTarget.r), tr2=Math.max(r2,fillTarget.r);
+            const tc1=Math.min(c1,fillTarget.c), tc2=Math.max(c2,fillTarget.c);
+            const h=r2-r1+1, w=c2-c1+1;
+            const pattern=[];
+            for(let r=r1;r<=r2;r++) pattern.push(Array.from({length:w},(_,j)=>tab.rows[r]?.[c1+j] ?? ''));
+            for(let r=tr1;r<=tr2;r++) for(let c=tc1;c<=tc2;c++) {
+              if(r>=r1&&r<=r2&&c>=c1&&c<=c2) continue;
+              while(tab.rows.length<=r) tab.rows.push(Array(tab.columns.length).fill(''));
+              tab.rows[r][c]=pattern[((r-r1)%h+h)%h][((c-c1)%w+w)%w];
+            }
+            pushHistory(before,tab.id); ensureBlankRow(tab); saveState();
+            selStart={r:tr1,c:tc1}; selEnd={r:tr2,c:tc2}; selectionKind='cells';
+            fillDragging=false; fillSource=null; fillTarget=null; render();
           }
 
           function selectAllTable() {
@@ -1371,1141 +1341,703 @@
             ensureRect(tab); saveState(); render();
           }
 
-          root.addEventListener('contextmenu', e => {
-            const cell = e.target.closest('.cell');
-            if (!cell) return;
-            e.preventDefault();
-
-            const p = {r:+cell.dataset.r,c:+cell.dataset.c};
-            const inside = selStart && selEnd &&
-              p.r >= Math.min(selStart.r,selEnd.r) && p.r <= Math.max(selStart.r,selEnd.r) &&
-              p.c >= Math.min(selStart.c,selEnd.c) && p.c <= Math.max(selStart.c,selEnd.c);
-
-            if (!inside) {
-              selectionKind = 'cells'; ctrlACount = 0;
-              selStart = p; selEnd = p; paintRange();
-            }
-
-            closeSheetContextMenu();
-            const menu = document.createElement('div');
-            menu.className = 'sheet-context-menu';
-            menu.innerHTML = `
-              <button data-ctx="copy"><span>Copy</span><kbd>Ctrl+C</kbd></button>
-              <button data-ctx="paste"><span>Paste</span><kbd>Ctrl+V</kbd></button>
-              <button class="danger" data-ctx="clear"><span>Xóa nội dung</span><kbd>Delete</kbd></button>
-              <div class="ctx-sep"></div>
-              <button data-ctx="row-above"><span>Thêm dòng phía trên</span></button>
-              <button data-ctx="row-below"><span>Thêm dòng phía dưới</span></button>
-              <button data-ctx="col-left"><span>Thêm cột bên trái</span></button>
-              <button data-ctx="col-right"><span>Thêm cột bên phải</span></button>
-            `;
-            shadow.appendChild(menu);
-
-            const wrapRect = shadow.querySelector('.wrap').getBoundingClientRect();
-            const mw = 205, mh = 260;
-            menu.style.left = Math.min(e.clientX, wrapRect.right - mw - 8) + 'px';
-            menu.style.top = Math.min(e.clientY, wrapRect.bottom - mh - 8) + 'px';
-
-            menu.addEventListener('click', async ev => {
-              const act = ev.target.closest('[data-ctx]')?.dataset.ctx;
-              if (!act) return;
-              closeSheetContextMenu();
-
-              if (act === 'copy') await copySelection();
-              if (act === 'clear') clearSelectionData();
-              if (act === 'row-above') insertRowAt(p.r);
-              if (act === 'row-below') insertRowAt(p.r + 1);
-              if (act === 'col-left') insertColAt(p.c);
-              if (act === 'col-right') insertColAt(p.c + 1);
-
-              if (act === 'paste') {
-                try {
-                  const text = await navigator.clipboard.readText();
-                  if (text) pasteGrid(tab, Math.min(selStart.r,selEnd.r), Math.min(selStart.c,selEnd.c), text);
-                } catch {
-                  notify('Trình duyệt không cho đọc Clipboard trực tiếp. Hãy dùng Ctrl + V.', 'warning', 'Không thể Paste');
-                }
-              }
-            });
-          });
-
-          shadow.addEventListener('mousedown', e => {
-            if (!e.target.closest('.sheet-context-menu')) closeSheetContextMenu();
-          });
-
           root.addEventListener('mousedown', e => {
+            closeSheetContextMenu();
             const cell = e.target.closest('.cell');
-            if (!cell || e.button !== 0) return;
-
-            const point = {r:+cell.dataset.r,c:+cell.dataset.c};
-            selectionKind = 'cells';
-            ctrlACount = 0;
-
-            if (e.shiftKey && selStart) {
-              selEnd = point;
-            } else {
-              selStart = point;
-              selEnd = point;
+            if (cell && cell.classList.contains('fill-handle-cell')) {
+              const rect = cell.getBoundingClientRect();
+              if (e.clientX >= rect.right - 12 && e.clientY >= rect.bottom - 12) {
+                const r1=Math.min(selStart.r,selEnd.r), r2=Math.max(selStart.r,selEnd.r);
+                const c1=Math.min(selStart.c,selEnd.c), c2=Math.max(selStart.c,selEnd.c);
+                fillDragging=true; fillSource={r1,r2,c1,c2}; fillTarget={r:r2,c:c2};
+                e.preventDefault(); e.stopPropagation(); return;
+              }
             }
-            selecting = true;
-            paintRange();
-            root.focus({preventScroll:true});
-
-            // Giữ khả năng sửa ô bằng double click; click-kéo ưu tiên chọn vùng.
-            if (e.detail === 1) e.preventDefault();
+            if (cell) {
+              selecting = true;
+              selectionKind = 'cells';
+              ctrlACount = 0;
+              const r = +cell.dataset.r;
+              const c = +cell.dataset.c;
+              if (e.shiftKey && selStart) {
+                selEnd = {r,c};
+              } else {
+                selStart = {r,c};
+                selEnd = {r,c};
+              }
+              paintRange();
+            }
           });
 
           root.addEventListener('mouseover', e => {
+            const cell = e.target.closest('.cell');
+            if (fillDragging && cell) {
+              fillTarget={r:+cell.dataset.r,c:+cell.dataset.c}; fillPreview(); return;
+            }
             if (!selecting) return;
-            const cell = e.target.closest('.cell');
-            if (!cell) return;
-            selEnd = {r:+cell.dataset.r,c:+cell.dataset.c};
-            paintRange();
+            if (cell) {
+              selEnd = {r:+cell.dataset.r, c:+cell.dataset.c};
+              paintRange();
+            }
           });
 
-          window.addEventListener('mouseup', () => { selecting = false; });
+          window.addEventListener('mouseup', () => {
+            selecting = false;
+            if (fillDragging) applyFill();
+          });
 
-          root.querySelectorAll('[data-row-select]').forEach(h => {
-            h.addEventListener('click', e => {
-              e.preventDefault();
-              const r = +h.dataset.rowSelect;
+          root.addEventListener('click', e => {
+            const rowTh = e.target.closest('[data-row-select]');
+            if (rowTh) {
+              const ri = +rowTh.dataset.rowSelect;
               selectionKind = 'row';
-              ctrlACount = 0;
-              selStart = {r, c:0};
-              selEnd = {r, c:Math.max(0, tab.columns.length-1)};
+              selStart = {r:ri, c:0};
+              selEnd = {r:ri, c:tab.columns.length-1};
               paintRange();
-              root.focus({preventScroll:true});
-            });
-          });
-
-          root.querySelectorAll('[data-col-select]').forEach(h => {
-            h.addEventListener('click', e => {
-              // Không chọn cột nếu người dùng đang thao tác nút xóa/tên cột.
-              if (e.target.closest('.col-del,.headname')) return;
-              e.preventDefault();
-              const c = +h.dataset.colSelect;
+              return;
+            }
+            const colTh = e.target.closest('[data-col-select]');
+            if (colTh) {
+              const ci = +colTh.dataset.colSelect;
               selectionKind = 'col';
-              ctrlACount = 0;
-              selStart = {r:0, c};
-              selEnd = {r:Math.max(0, tab.rows.length-1), c};
+              selStart = {r:0, c:ci};
+              selEnd = {r:Math.max(0, tab.rows.length-1), c:ci};
               paintRange();
-              root.focus({preventScroll:true});
-            });
-          });
-
-          root.querySelector('[data-select-all]')?.addEventListener('click', e => {
-            e.preventDefault();
-            ctrlACount = 2;
-            selectAllTable();
-            root.focus({preventScroll:true});
-          });
-
-          root.addEventListener('dblclick', e => {
-            const cell = e.target.closest('.cell');
-            if (!cell) return;
-            cell.focus();
-            placeCaretEnd(cell);
+              return;
+            }
+            const corner = e.target.closest('[data-select-all]');
+            if (corner) {
+              selectAllTable();
+            }
           });
 
           root.addEventListener('keydown', async e => {
-            const editingCell = e.target?.matches?.('.cell[contenteditable="true"]') && shadow.activeElement === e.target;
-
-            // Nếu đang trực tiếp sửa nội dung trong ô, để Delete/Backspace hoạt động như text editor:
-            // xóa từng ký tự / vùng ký tự đang bôi đen, KHÔNG xóa cả ô/vùng.
-            if ((e.key === 'Delete' || e.key === 'Backspace') && editingCell) {
-              return;
-            }
-
-            // Chỉ khi không ở chế độ edit text mới xóa toàn bộ vùng đang chọn.
-            if ((e.key === 'Delete' || e.key === 'Backspace') && selStart && selEnd) {
+            const editingText = isEditingCell(e);
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'c') {
+              if (editingText) return;
               e.preventDefault();
-              clearSelectionData();
-              return;
-            }
-
-            const ctrl = e.ctrlKey || e.metaKey;
-            if (!ctrl) return;
-            const key = e.key.toLowerCase();
-
-            // Khi đang edit text trong một ô, ưu tiên shortcut chuẩn của trình soạn thảo.
-            if (editingCell && (key === 'x' || key === 'v')) {
-              return;
-            }
-
-            if (key === 'a') {
-              // Đang sửa một ô -> Ctrl+A chỉ chọn toàn bộ text trong ô đó.
-              if (editingCell) {
-                e.preventDefault();
-                const range = document.createRange();
-                range.selectNodeContents(e.target);
-                const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(range);
-                return;
+              if (!selStart) {
+                const cell=e.target.closest('.cell');
+                if(cell){ selStart=selEnd={r:+cell.dataset.r,c:+cell.dataset.c}; selectionKind='cells'; paintRange(); }
               }
-
-              // Không edit ô -> Ctrl+A chọn toàn bộ bảng như Excel.
-              e.preventDefault();
-              ctrlACount = selectionKind === 'all' ? Math.min(ctrlACount + 1, 2) : 1;
-              selectAllTable();
-              return;
-            }
-
-            if (key === 'c' && editingCell) {
-              return;
-            }
-
-            if (key === 'c' && selStart && selEnd) {
-              e.preventDefault();
               await copySelection();
+              return;
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
+              e.preventDefault();
+              undoAction();
+              return;
+            }
+            if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
+              e.preventDefault();
+              redoAction();
+              return;
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'a') {
+              if (editingText) return;
+              e.preventDefault();
+              ctrlACount++;
+              if (ctrlACount === 1) selectCurrentRegion();
+              else selectAllTable();
+              return;
+            }
+            if (e.key === 'Delete' || e.key === 'Backspace') {
+              if (e.target.matches('.cell') && e.target.textContent.trim() === '') {
+                clearSelectionData();
+              }
             }
           });
 
+          // Cell input change listener & Auto lookup execution
+          root.addEventListener('input', e => {
+            const cell = e.target.closest('.cell');
+            const head = e.target.closest('[data-col-name]');
 
-          root.querySelectorAll('.cell').forEach(cell => {
-            cell.addEventListener('input', () => {
-              const r = +cell.dataset.r, c = +cell.dataset.c;
-              tab.rows[r][c] = cell.innerText.replace(/\n/g,' ');
+            if (cell) {
+              const r = +cell.dataset.r;
+              const c = +cell.dataset.c;
+              const val = cell.textContent;
+              if (!tab.rows[r]) tab.rows[r] = Array(tab.columns.length).fill('');
+              tab.rows[r][c] = val;
+              ensureBlankRow(tab);
+              saveState();
 
               if (tab.type === 'input' && Array.isArray(tab.lookupRules)) {
-                tab.lookupRules
-                  .filter(rule => c === rule.sourceCol)
-                  .forEach(rule => lookupRowRule(tab, rule, r, true));
-              }
-
-              if (r === tab.rows.length - 1 && tab.rows[r].some(v => String(v).trim() !== '')) {
-                ensureBlankRow(tab);
-                saveState();
-                render();
-                const next = shadow.querySelector(`[data-table-id="${tab.id}"] .cell[data-r="${r}"][data-c="${c}"]`);
-                next?.focus();
-                placeCaretEnd(next);
-                return;
-              }
-              saveState();
-            });
-
-            cell.addEventListener('keydown', e => {
-              const r = +cell.dataset.r, c = +cell.dataset.c;
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                focusCell(tab, r+1, c);
-              }
-              if (e.key === 'Tab') {
-                const dir = e.shiftKey ? -1 : 1;
-                let nr = r, nc = c + dir;
-                if (nc >= tab.columns.length) { nr++; nc = 0; }
-                if (nc < 0) { nr--; nc = tab.columns.length - 1; }
-                if (nr >= 0) {
-                  e.preventDefault();
-                  focusCell(tab, nr, nc);
-                }
-              }
-            });
-
-            cell.addEventListener('paste', e => {
-              const text = e.clipboardData?.getData('text/plain');
-              if (!text || (!text.includes('\t') && !text.includes('\n'))) return;
-              e.preventDefault();
-              pasteGrid(tab, +cell.dataset.r, +cell.dataset.c, text);
-            });
-          });
-
-          root.querySelectorAll('[data-del-row]').forEach(btn => {
-            btn.addEventListener('click', () => {
-              tab.rows.splice(+btn.dataset.delRow, 1);
-              ensureBlankRow(tab); saveState(); render();
-            });
-          });
-
-          root.querySelectorAll('[data-del-col]').forEach(btn => {
-            btn.addEventListener('click', () => {
-              const i = +btn.dataset.delCol;
-              if (tab.columns.length <= 1) { notify('Phải giữ lại ít nhất 1 cột.', 'warning'); return; }
-              tab.columns.splice(i,1);
-              tab.rows.forEach(r => r.splice(i,1));
-              fixLookupIndexesAfterDelete(tab, i);
-              saveState(); render();
-            });
-          });
-
-          root.querySelectorAll('[data-col-name]').forEach(el => {
-            el.addEventListener('blur', () => {
-              const i = +el.dataset.colName;
-              tab.columns[i] = el.innerText.trim() || `Cột ${i+1}`;
-              saveState(); render();
-            });
-            el.addEventListener('keydown', e => {
-              if (e.key === 'Enter') { e.preventDefault(); el.blur(); }
-            });
-          });
-        }
-
-        function fixLookupIndexesAfterDelete(tab, deleted) {
-          if (tab.type === 'input' && Array.isArray(tab.lookupRules)) {
-            tab.lookupRules.forEach(rule => {
-              if (rule.sourceCol === deleted) rule.sourceCol = 0;
-              else if (rule.sourceCol > deleted) rule.sourceCol--;
-
-              rule.outputs = (rule.outputs || []).map(o => ({
-                ...o,
-                toCol: o.toCol === deleted ? 0 : (o.toCol > deleted ? o.toCol - 1 : o.toCol)
-              }));
-            });
-          }
-
-          if (tab.type === 'reference') {
-            state.tabs.filter(t => t.type === 'input').forEach(input => {
-              (input.lookupRules || [])
-                .filter(rule => rule.referenceTabId === tab.id)
-                .forEach(rule => {
-                  if (rule.refCol === deleted) rule.refCol = 0;
-                  else if (rule.refCol > deleted) rule.refCol--;
-
-                  rule.outputs = (rule.outputs || []).map(o => ({
-                    ...o,
-                    fromCol: o.fromCol === deleted ? 0 : (o.fromCol > deleted ? o.fromCol - 1 : o.fromCol)
-                  }));
+                tab.lookupRules.forEach(rule => {
+                  if (rule.sourceCol === c && rule.autoLookup !== false) {
+                    executeRuleLookup(tab, rule, r);
+                  }
                 });
-            });
-          }
-        }
-
-
-        function pasteGrid(tab, startR, startC, text) {
-          const matrix = text.replace(/\r/g,'').split('\n');
-          if (matrix[matrix.length-1] === '') matrix.pop();
-          const cells = matrix.map(line => line.split('\t'));
-          const neededCols = startC + Math.max(...cells.map(r => r.length));
-          while (tab.columns.length < neededCols) {
-            tab.columns.push(`Cột ${tab.columns.length+1}`);
-            tab.rows.forEach(r => r.push(''));
-          }
-          while (tab.rows.length < startR + cells.length) {
-            tab.rows.push(Array(tab.columns.length).fill(''));
-          }
-          ensureRect(tab);
-          cells.forEach((row,rr) => row.forEach((v,cc) => {
-            tab.rows[startR+rr][startC+cc] = v;
-          }));
-
-          // Paste nhiều ô không phát sinh event "input" cho từng cell,
-          // nên phải chủ động chạy lại lookup cho các dòng vừa dán.
-          if (tab.type === 'input' && Array.isArray(tab.lookupRules)) {
-            const pastedStartC = startC;
-            const pastedEndC = startC + Math.max(...cells.map(r => r.length)) - 1;
-
-            tab.lookupRules.forEach(rule => {
-              // Chỉ cần chạy rule nếu vùng paste chạm vào cột nguồn của rule.
-              if (rule.sourceCol < pastedStartC || rule.sourceCol > pastedEndC) return;
-
-              for (let rr = 0; rr < cells.length; rr++) {
-                lookupRowRule(tab, rule, startR + rr, false);
               }
-            });
-          }
-
-          ensureBlankRow(tab);
-          saveState();
-          render();
-        }
-
-        function focusCell(tab, r, c) {
-          while (tab.rows.length <= r) tab.rows.push(Array(tab.columns.length).fill(''));
-          ensureBlankRow(tab); saveState(); render();
-          const el = shadow.querySelector(`[data-table-id="${tab.id}"] .cell[data-r="${r}"][data-c="${c}"]`);
-          el?.focus(); placeCaretEnd(el);
-        }
-
-        function placeCaretEnd(el) {
-          if (!el) return;
-          const range = document.createRange();
-          const sel = window.getSelection();
-          range.selectNodeContents(el);
-          range.collapse(false);
-          sel.removeAllRanges();
-          sel.addRange(range);
-        }
-
-        function lookupRowRule(inputTab, rule, rowIndex, updateDOM=false) {
-          const ref = getTab(rule?.referenceTabId);
-          if (!rule || !ref) return false;
-
-          const row = inputTab.rows[rowIndex];
-          const needle = row?.[rule.sourceCol];
-          if (String(needle ?? '').trim() === '') return false;
-
-          const refRow = ref.rows.find(r => matchValue(needle, r[rule.refCol], rule.mode));
-
-          if (!refRow) {
-            if (updateDOM) markRuleLookup(inputTab, rule, rowIndex, false);
-            return false;
-          }
-
-          (rule.outputs || []).forEach(o => {
-            if (o.toCol < inputTab.columns.length && o.fromCol < ref.columns.length) {
-              row[o.toCol] = refRow[o.fromCol] ?? '';
+            } else if (head) {
+              const ci = +head.dataset.colName;
+              tab.columns[ci] = head.textContent;
+              saveState();
+              renderTabs();
             }
           });
 
-          saveState();
-
-          if (updateDOM) {
-            (rule.outputs || []).forEach(o => {
-              const cell = shadow.querySelector(
-                `[data-table-id="${inputTab.id}"] .cell[data-r="${rowIndex}"][data-c="${o.toCol}"]`
-              );
-              if (cell) cell.innerText = row[o.toCol] ?? '';
-            });
-            markRuleLookup(inputTab, rule, rowIndex, true);
-          }
-
-          return true;
-        }
-
-        function markRuleLookup(tab, rule, rowIndex, found) {
-          const cell = shadow.querySelector(
-            `[data-table-id="${tab.id}"] .cell[data-r="${rowIndex}"][data-c="${rule.sourceCol}"]`
-          );
-          cell?.classList.remove('hit', 'notfound');
-          cell?.classList.add(found ? 'hit' : 'notfound');
-        }
-
-        function runOneRule(tab, rule) {
-          let checked = 0;
-          let found = 0;
-
-          tab.rows.forEach((row, i) => {
-            if (String(row[rule.sourceCol] ?? '').trim() === '') return;
-            checked++;
-            if (lookupRowRule(tab, rule, i, false)) found++;
-          });
-
-          saveState();
-          render();
-
-          const s = $('#lookupStatus');
-          if (s) s.textContent = `${rule.name || 'Tham chiếu'}: tìm thấy ${found}/${checked} dòng`;
-        }
-
-        function lookupAll(tab) {
-          const rules = Array.isArray(tab.lookupRules) ? tab.lookupRules : [];
-          let checked = 0;
-          let found = 0;
-
-          rules.forEach(rule => {
-            tab.rows.forEach((row, i) => {
-              if (String(row[rule.sourceCol] ?? '').trim() === '') return;
-              checked++;
-              if (lookupRowRule(tab, rule, i, false)) found++;
-            });
-          });
-
-          saveState();
-          render();
-
-          const s = $('#lookupStatus');
-          if (s) s.textContent = `Đã chạy ${rules.length} tham chiếu · tìm thấy ${found}/${checked} lượt`;
-        }
-
-
-        async function loadXLSX() {
-          if (window.XLSX) return;
-          await new Promise((resolve,reject) => {
-            const s = document.createElement('script');
-            s.src = XLSX_URL;
-            s.onload = resolve;
-            s.onerror = () => reject(new Error('Không tải được thư viện XLSX.'));
-            document.head.appendChild(s);
-          });
-        }
-
-        async function onImportExcel(tab, e) {
-          const file = e.target.files?.[0];
-          if (!file) return;
-          try {
-            await loadXLSX();
-            const buf = await file.arrayBuffer();
-            const wb = XLSX.read(buf,{type:'array'});
-            const ws = wb.Sheets[wb.SheetNames[0]];
-            const matrix = XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-            if (!matrix.length) throw new Error('File không có dữ liệu.');
-
-            const maxCols = Math.max(...matrix.map(r => r.length),1);
-            tab.columns = Array.from({length:maxCols},(_,i) =>
-              String(matrix[0]?.[i] ?? '').trim() || `Cột ${i+1}`
-            );
-            tab.rows = matrix.slice(1).map(r => Array.from({length:maxCols},(_,i)=>r[i] ?? ''));
-            ensureBlankRow(tab);
-
-            state.tabs.filter(t => t.type === 'input').forEach(input => {
-              (input.lookupRules || [])
-                .filter(rule => rule.referenceTabId === tab.id)
-                .forEach(rule => {
-                  rule.refCol = Math.min(rule.refCol, tab.columns.length - 1);
-                  rule.outputs = (rule.outputs || []).map(o => ({
-                    ...o,
-                    fromCol: Math.min(o.fromCol, tab.columns.length - 1)
-                  }));
-                });
-            });
-
-            saveState(); render();
-            await notify(`Đã import ${matrix.length-1} dòng từ sheet "${wb.SheetNames[0]}".`, 'success', 'Import thành công');
-          } catch(err) {
-            await notify('Import lỗi: ' + (err?.message || err), 'error', 'Import thất bại');
-          } finally {
-            e.target.value = '';
-          }
-        }
-
-        function xmlEsc(v) {
-          return String(v ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&apos;');
-        }
-
-        function downloadExcelXml(tab) {
-          const rows = [
-            tab.columns,
-            ...tab.rows.filter(r => r.some(v => String(v).trim() !== ''))
-          ];
-
-          const worksheetRows = rows.map((row, ri) => {
-            const cells = row.map(v =>
-              `<Cell><Data ss:Type="String">${xmlEsc(v)}</Data></Cell>`
-            ).join('');
-            return `<Row>${cells}</Row>`;
-          }).join('');
-
-          const sheetName = (tab.name || 'Data').replace(/[\\/:*?\[\]]/g, '_').slice(0,31) || 'Data';
-          const xml = `<?xml version="1.0"?>
-<?mso-application progid="Excel.Sheet"?>
-<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
- xmlns:o="urn:schemas-microsoft-com:office:office"
- xmlns:x="urn:schemas-microsoft-com:office:excel"
- xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet">
- <Worksheet ss:Name="${xmlEsc(sheetName)}">
-  <Table>
-   ${worksheetRows}
-  </Table>
- </Worksheet>
-</Workbook>`;
-
-          const blob = new Blob(['\ufeff', xml], {
-            type: 'application/vnd.ms-excel;charset=utf-8'
-          });
-
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          const safe = (tab.name || 'tab').replace(/[\\/:*?"<>|]/g, '_');
-          a.href = url;
-          a.download = `${safe || 'tab'}.xls`;
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 1500);
-        }
-
-        async function exportTab(tab) {
-          try {
-            // Nếu XLSX đã có sẵn thì xuất .xlsx chuẩn.
-            if (window.XLSX) {
-              const data = [tab.columns, ...tab.rows.filter(r => r.some(v => String(v).trim() !== ''))];
-              const ws = XLSX.utils.aoa_to_sheet(data);
-              const wb = XLSX.utils.book_new();
-              XLSX.utils.book_append_sheet(wb, ws, tab.name.slice(0,31) || 'Data');
-              const safe = tab.name.replace(/[\\/:*?"<>|]/g,'_');
-              XLSX.writeFile(wb, `${safe || 'tab'}.xlsx`);
+          root.addEventListener('click', e => {
+            const delCol = e.target.closest('[data-del-col]');
+            if (delCol) {
+              const ci = +delCol.dataset.delCol;
+              if (tab.columns.length <= 1) {
+                showModal('Thông báo', 'Bảng phải có ít nhất 1 cột.', 'warning');
+                return;
+              }
+              const before = historySnapshot(tab);
+              tab.columns.splice(ci, 1);
+              tab.rows.forEach(r => r.splice(ci, 1));
+              pushHistory(before, tab.id);
+              ensureRect(tab); saveState(); render();
               return;
             }
 
-            // Không phụ thuộc CDN: xuất Excel XML .xls trực tiếp.
-            downloadExcelXml(tab);
-          } catch(err) {
-            await notify('Xuất Excel lỗi: ' + (err?.message || err), 'error', 'Xuất Excel thất bại');
+            const delRow = e.target.closest('[data-del-row]');
+            if (delRow) {
+              const ri = +delRow.dataset.delRow;
+              if (tab.rows.length <= 1) {
+                tab.rows = [Array(tab.columns.length).fill('')];
+              } else {
+                const before = historySnapshot(tab);
+                tab.rows.splice(ri, 1);
+                pushHistory(before, tab.id);
+              }
+              ensureBlankRow(tab); saveState(); render();
+              return;
+            }
+          });
+        }
+
+        function executeRuleLookup(inputTab, rule, targetRowIdx) {
+          const refTab = getTab(rule.referenceTabId);
+          const statusEl = $('#lookupStatus');
+          if (!refTab) {
+            if (statusEl) statusEl.textContent = 'Lỗi: Không tìm thấy bảng tham chiếu';
+            return;
+          }
+
+          const sourceVal = inputTab.rows[targetRowIdx]?.[rule.sourceCol];
+          if (!sourceVal || String(sourceVal).trim() === '') {
+            rule.outputs.forEach(o => {
+              if (inputTab.rows[targetRowIdx]) {
+                inputTab.rows[targetRowIdx][o.toCol] = '';
+              }
+            });
+            saveState();
+            render();
+            if (statusEl) statusEl.textContent = 'Đã xóa dữ liệu trống';
+            return;
+          }
+
+          const foundRow = refTab.rows.find(refRow => matchValue(refRow[rule.refCol], sourceVal, rule.mode));
+
+          if (foundRow) {
+            rule.outputs.forEach(o => {
+              if (inputTab.rows[targetRowIdx]) {
+                inputTab.rows[targetRowIdx][o.toCol] = foundRow[o.fromCol] ?? '';
+              }
+            });
+            ensureBlankRow(inputTab);
+            saveState();
+            render();
+            if (statusEl) {
+              statusEl.textContent = `Tra cứu thành công dòng ${targetRowIdx + 1}`;
+              statusEl.style.color = '#16a34a';
+            }
+          } else {
+            rule.outputs.forEach(o => {
+              if (inputTab.rows[targetRowIdx]) {
+                inputTab.rows[targetRowIdx][o.toCol] = '';
+              }
+            });
+            saveState();
+            render();
+            if (statusEl) {
+              statusEl.textContent = `Không tìm thấy kết quả cho dòng ${targetRowIdx + 1}`;
+              statusEl.style.color = '#dc2626';
+            }
           }
         }
 
+        function showModal(title, message, type = 'info', buttons = [{text: 'Đóng', primary: true}], customBodyHTML = '') {
+          const root = $('#modalRoot');
+          if (!root) return;
 
-        function showModal({
-          title='Thông báo',
-          message='',
-          type='info',
-          confirmText='OK',
-          cancelText='Hủy',
-          showCancel=false,
-          inputValue=null,
-          danger=false
-        } = {}) {
-          return new Promise(resolve => {
-            const iconMap = {
-              info: 'i',
-              success: '✓',
-              warning: '!',
-              error: '×',
-              question: '?'
-            };
+          const symbolMap = { info: 'i', success: '✓', warning: '!', error: '✕', question: '?' };
 
-            $('#modalRoot').innerHTML = `
-              <div class="modal-bg">
-                <div class="modal" role="dialog" aria-modal="true">
-                  <div class="modal-head">
-                    <div class="modal-symbol ${esc(type)}">${iconMap[type] || 'i'}</div>
-                    <h3 class="modal-title">${esc(title)}</h3>
-                    <button class="modal-close" data-generic-close data-tip="Đóng">×</button>
-                  </div>
-                  ${message ? `<div class="modal-body">${esc(message)}</div>` : ''}
-                  ${inputValue !== null ? `<input id="genericModalInput" class="modal-input" type="text" value="${esc(inputValue)}">` : ''}
-                  <div class="modal-actions">
-                    ${showCancel ? `<button class="modal-btn" data-generic-cancel>${esc(cancelText)}</button>` : ''}
-                    <button class="modal-btn ${danger ? 'danger' : 'primary'}" data-generic-ok>${esc(confirmText)}</button>
-                  </div>
-                </div>
-              </div>
-            `;
-
-            const input = $('#genericModalInput');
-
-            setTimeout(() => {
-              if (input) {
-                input.focus();
-                input.select();
-              } else {
-                $('#modalRoot [data-generic-ok]')?.focus();
-              }
-            }, 0);
-
-            const cleanup = value => {
-              $('#modalRoot').innerHTML = '';
-              resolve(value);
-            };
-
-            $('#modalRoot [data-generic-ok]')?.addEventListener('click', () => {
-              cleanup(input ? input.value : true);
-            });
-            $('#modalRoot [data-generic-cancel]')?.addEventListener('click', () => cleanup(false));
-            $('#modalRoot [data-generic-close]')?.addEventListener('click', () => cleanup(false));
-
-            $('#modalRoot .modal-bg')?.addEventListener('mousedown', e => {
-              if (e.target.classList.contains('modal-bg')) cleanup(false);
-            });
-
-            const keyHandler = e => {
-              if (!$('#modalRoot .modal')) return;
-              if (e.key === 'Escape') cleanup(false);
-              if (e.key === 'Enter' && input && document.activeElement === input) cleanup(input.value);
-            };
-            window.addEventListener('keydown', keyHandler, { once: true });
-          });
-        }
-
-        function notify(message, type='info', title='Thông báo') {
-          return showModal({title, message, type, confirmText:'Đóng'});
-        }
-
-        function confirmModal(message, title='Xác nhận') {
-          return showModal({
-            title,
-            message,
-            type:'question',
-            confirmText:'Xác nhận',
-            cancelText:'Hủy',
-            showCancel:true,
-            danger:true
-          });
-        }
-
-        function promptModal(message, value='', title='Nhập thông tin') {
-          return showModal({
-            title,
-            message,
-            type:'info',
-            confirmText:'Lưu',
-            cancelText:'Hủy',
-            showCancel:true,
-            inputValue:value
-          });
-        }
-
-        function showAddTabModal() {
-          let selectedType = 'input';
-          $('#modalRoot').innerHTML = `
+          root.innerHTML = `
             <div class="modal-bg">
               <div class="modal">
                 <div class="modal-head">
-                  <div class="modal-symbol info">＋</div>
-                  <h3 class="modal-title">Tạo tab mới</h3>
-                  <button class="modal-close" data-modal-cancel data-tip="Đóng">×</button>
+                  <div class="modal-symbol ${esc(type)}">${symbolMap[type] || 'i'}</div>
+                  <h3 class="modal-title">${esc(title)}</h3>
+                  <button class="modal-close" data-modal-close>×</button>
                 </div>
-                <div class="modal-body" style="padding-bottom:8px">Chọn loại tab và đặt tên cho tab mới.</div>
-                <input id="newTabName" class="modal-input" type="text" value="Tab mới">
-                <div class="choice">
-                  <button class="choice-card selected" data-type-choice="input">
-                    <b>📝 Tab nhập liệu</b>
-                    Dùng để nhập dữ liệu và tra cứu từ tab tham chiếu.
-                  </button>
-                  <button class="choice-card" data-type-choice="reference">
-                    <b>📚 Tab tham chiếu</b>
-                    Dùng làm nguồn dữ liệu, có thể Import Excel.
-                  </button>
-                </div>
+                <div class="modal-body">${esc(message)}</div>
+                ${customBodyHTML}
                 <div class="modal-actions">
-                  <button class="modal-btn" data-modal-cancel>Hủy</button>
-                  <button class="modal-btn primary" data-modal-create>Tạo tab</button>
+                  ${buttons.map((b, i) => `
+                    <button class="modal-btn ${b.primary ? 'primary' : ''} ${b.danger ? 'danger' : ''}" data-modal-btn="${i}">${esc(b.text)}</button>
+                  `).join('')}
                 </div>
               </div>
             </div>
           `;
 
-          $$('#modalRoot [data-type-choice]').forEach(btn => {
-            btn.addEventListener('click', () => {
-              selectedType = btn.dataset.typeChoice;
-              $$('#modalRoot [data-type-choice]').forEach(x => x.classList.toggle('selected', x === btn));
-            });
+          const close = () => { root.innerHTML = ''; };
+          root.querySelector('[data-modal-close]')?.addEventListener('click', close);
+          root.querySelector('.modal-bg')?.addEventListener('click', e => {
+            if (e.target.classList.contains('modal-bg')) close();
           });
 
-          $$('#modalRoot [data-modal-cancel]').forEach(btn => {
-            btn.addEventListener('click', () => {
-              $('#modalRoot').innerHTML = '';
+          buttons.forEach((b, i) => {
+            root.querySelector(`[data-modal-btn="${i}"]`)?.addEventListener('click', () => {
+              if (b.onClick) b.onClick(root);
+              if (b.close !== false) close();
             });
-          });
-          $('#modalRoot [data-modal-create]')?.addEventListener('click', () => {
-            const name = $('#newTabName').value.trim() || (selectedType === 'input' ? 'Nhập liệu' : 'Tham chiếu');
-            createTab(selectedType, name);
-            $('#modalRoot').innerHTML = '';
-          });
-
-          $('#modalRoot .modal-bg')?.addEventListener('mousedown', e => {
-            if (e.target.classList.contains('modal-bg')) {
-              $('#modalRoot').innerHTML = '';
-            }
           });
         }
 
-        function createTab(type, name) {
-          const id = uid();
-          if (type === 'reference') {
-            state.tabs.push({
-              id, name, type:'reference',
-              columns:['Cột 1','Cột 2','Cột 3'],
-              rows:[['','','']]
-            });
-          } else {
-            const ref = referenceTabs()[0];
-            state.tabs.push({
-              id, name, type:'input',
-              columns:['Cột 1','Cột 2','Cột 3'],
-              rows:[['','',''],['','',''],['','','']],
-              lookupRules: ref ? [{
-                id:uid(),
-                name:'Tham chiếu 1',
-                referenceTabId:ref.id,
-                sourceCol:0,
-                refCol:0,
-                mode:'exact-normalized',
-                autoLookup:true,
-                outputs:[]
-              }] : []
-            });
-          }
-          state.activeTabId = id;
-          saveState(); render();
-        }
-
-        async function deleteTab(id) {
-          if (state.tabs.length <= 1) { await notify('Phải giữ lại ít nhất 1 tab.', 'warning'); return; }
-          const tab = getTab(id);
-          if (!tab) return;
-          if (!(await confirmModal(`Xóa tab "${tab.name}"?`, 'Xóa tab'))) return;
-
-          tabHistory.delete(id);
-          state.tabs = state.tabs.filter(t => t.id !== id);
-
-          if (tab.type === 'reference') {
-            const fallbackRef = referenceTabs()[0];
-            state.tabs.filter(t => t.type === 'input').forEach(input => {
-              (input.lookupRules || []).forEach(rule => {
-                if (rule.referenceTabId === id) {
-                  rule.referenceTabId = fallbackRef?.id || '';
-                  rule.refCol = 0;
-                  rule.outputs = [];
-                }
-              });
-            });
-          }
-
-          if (state.activeTabId === id) state.activeTabId = state.tabs[0].id;
-          saveState(); render();
-        }
-
-
-        function duplicateActiveTab() {
-          const tab = getActiveTab();
-          if (!tab) return;
-          pushHistory();
-          const copy = clone(tab);
-          copy.id = uid();
-          copy.name = tab.name + ' - Bản sao';
-          state.tabs.push(copy);
-          state.activeTabId = copy.id;
-          saveState();
-          render();
-        }
-
-        async function renameActiveTab() {
-          const tab = getActiveTab();
-          if (!tab) return;
-          const name = await promptModal('Nhập tên mới cho tab:', tab.name, 'Đổi tên tab');
-          if (name === false) return;
-          const v = String(name).trim();
-          if (!v) return;
-          tab.name = v;
-          saveState(); render();
-        }
-
-        function addColumn(tab) {
-          tab.columns.push(`Cột ${tab.columns.length+1}`);
-          tab.rows.forEach(r => r.push(''));
-          saveState(); render();
-        }
-
-        function addRow(tab) {
-          tab.rows.push(Array(tab.columns.length).fill(''));
-          saveState(); render();
-        }
-
-        async function clearData(tab) {
-          if (!(await confirmModal(`Xóa toàn bộ dữ liệu trong tab "${tab.name}"?
-      Tên cột vẫn được giữ.`, 'Xóa dữ liệu'))) return;
-          tab.rows = [Array(tab.columns.length).fill('')];
-          saveState(); render();
-        }
-
-
-        function setZoom(next) {
-          state.zoom = Math.max(50, Math.min(160, next));
-          saveState();
-          render();
-          const label = $('#zoomLabel');
-          if (label) label.textContent = state.zoom + '%';
-        }
-
-        shadow.addEventListener('click', async e => {
-          const closeTabBtn = e.target.closest('[data-close-tab]');
-          if (closeTabBtn) {
-            e.stopPropagation();
-            await deleteTab(closeTabBtn.dataset.closeTab);
-            return;
-          }
-
-          const tabEl = e.target.closest('[data-tab-id]');
-          if (tabEl) {
-            state.activeTabId = tabEl.dataset.tabId;
-            saveState(); render();
-            return;
-          }
-
-          const colorOption = e.target.closest('[data-table-color]');
-          if (colorOption) {
-            const activeTab = getActiveTab();
-            if (activeTab) {
-              activeTab.tableTheme = colorOption.dataset.tableColor || 'blue';
-              saveState();
-              render();
-            }
-            return;
-          }
-
-          const act = e.target.closest('[data-act]')?.dataset.act;
+        // Event listeners cho các nút chính ở toàn cục & thanh công cụ
+        shadow.addEventListener('click', e => {
+          const act = e.target.dataset.act;
           if (!act) return;
 
-          const tab = getActiveTab();
-
-          if (act === 'close') host.remove();
-          if (act === 'minimize') {
-            $('.wrap')?.classList.add('minimized');
-            return;
-          }
-          if (act === 'restore-mini') {
-            $('.wrap')?.classList.remove('minimized');
-            return;
-          }
-          if (act === 'undo') { undoAction(); return; }
-          if (act === 'redo') { redoAction(); return; }
-          if (act === 'toggle-search') {
+          if (act === 'close') {
+            host.remove();
+          } else if (act === 'minimize') {
+            $('.wrap').classList.add('minimized');
+          } else if (act === 'restore-mini') {
+            $('.wrap').classList.remove('minimized');
+          } else if (act === 'toggle-search') {
             state.searchOpen = !state.searchOpen;
-            saveState(); render();
-            if (state.searchOpen) setTimeout(() => $('#searchInput')?.focus(), 0);
-            return;
-          }
-          if (act === 'toggle-tab-menu') {
-            const menu = $('#tabMenu');
-            if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-            return;
-          }
-          if (act === 'toggle-settings') {
-            state.settingsOpen = !state.settingsOpen;
-            saveState(); render();
-          }
-          if (act === 'zoom-out') setZoom(state.zoom - 10);
-          if (act === 'zoom-reset') setZoom(100);
-          if (act === 'zoom-in') setZoom(state.zoom + 10);
-          if (act === 'save') { saveState(); await notify('Đã lưu dữ liệu.', 'success', 'Đã lưu'); }
-          if (act === 'reset') {
-            if (await confirmModal('Reset toàn bộ tool về mặc định?', 'Reset tool')) {
-              state = clone(defaultState);
-              saveState(); render();
-            }
-          }
-          if (act === 'rename-tab') await renameActiveTab();
-          if (act === 'duplicate-tab') duplicateActiveTab();
-          if (act === 'delete-active-tab') await deleteTab(tab.id);
-          if (act === 'add-tab') showAddTabModal();
-          if (act === 'add-row') addRow(tab);
-          if (act === 'add-col') addColumn(tab);
-          if (act === 'toggle-table-color') {
-            const menu = $('#tableColorMenu');
-            if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
-            return;
-          }
-          if (act === 'clear') await clearData(tab);
-          if (act === 'import-xlsx' && tab.type === 'reference') $('#xlsxInput')?.click();
-          if (act === 'export-xlsx') exportTab(tab);
-
-          if (act === 'add-rule' && tab.type === 'input') {
-            const ref = referenceTabs()[0];
-            if (!ref) { await notify('Chưa có tab tham chiếu.', 'warning'); return; }
-
-            pushHistory();
-            const n = (tab.lookupRules?.length || 0) + 1;
-            tab.lookupRules = tab.lookupRules || [];
-            tab.lookupRules.push({
-              id:uid(),
-              name:`Tham chiếu ${n}`,
-              referenceTabId:ref.id,
-              sourceCol:0,
-              refCol:0,
-              mode:'exact-normalized',
-              autoLookup:true,
-              outputs:[]
-            });
-
             saveState();
             render();
-          }
-
-          if (act === 'remove-rule' && tab.type === 'input') {
-            const ruleId = e.target.closest('[data-rule-id]')?.dataset.ruleId;
-            const rule = (tab.lookupRules || []).find(r => r.id === ruleId);
-            if (!rule) return;
-
-            if (!(await confirmModal(`Xóa quy tắc "${rule.name || 'Tham chiếu'}"?`, 'Xóa tham chiếu'))) return;
-
-            pushHistory();
+            if (state.searchOpen) $('#searchInput')?.focus();
+          } else if (act === 'zoom-in') {
+            state.zoom = Math.min(180, state.zoom + 10);
+            saveState();
+            render();
+          } else if (act === 'zoom-out') {
+            state.zoom = Math.max(50, state.zoom - 10);
+            saveState();
+            render();
+          } else if (act === 'zoom-reset') {
+            state.zoom = 100;
+            saveState();
+            render();
+          } else if (act === 'save') {
+            saveState();
+            showModal('Thành công', 'Đã lưu toàn bộ dữ liệu vào LocalStorage thành công!', 'success');
+          } else if (act === 'reset') {
+            showModal('Xác nhận Reset', 'Bạn có chắc chắn muốn đặt lại toàn bộ dữ liệu về mặc định không?', 'warning', [
+              {text: 'Hủy'},
+              {text: 'Xác nhận', danger: true, onClick: () => {
+                localStorage.removeItem(STORAGE_KEY);
+                state = clone(defaultState);
+                tabHistory.clear();
+                render();
+              }}
+            ]);
+          } else if (act === 'add-tab') {
+            showModal('Tạo tab mới', 'Vui lòng chọn loại tab bạn muốn tạo:', 'question', [], `
+              <div class="choice">
+                <div class="choice-card selected" data-choice="input">
+                  <b>Tab Nhập liệu</b>
+                  <div style="font-size:11px;color:#64748b">Cho phép nhập dữ liệu và thiết lập quy tắc tra cứu tự động.</div>
+                </div>
+                <div class="choice-card" data-choice="reference">
+                  <b>Tab Tham chiếu</b>
+                  <div style="font-size:11px;color:#64748b">Chứa dữ liệu nguồn để tra cứu hoặc import từ file Excel.</div>
+                </div>
+              </div>
+              <input class="modal-input" id="newTabNameInput" type="text" placeholder="Nhập tên tab..." value="Tab mới">
+            `);
+            const root = $('#modalRoot');
+            let chosenType = 'input';
+            root.querySelectorAll('.choice-card').forEach(card => {
+              card.addEventListener('click', () => {
+                root.querySelectorAll('.choice-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                chosenType = card.dataset.choice;
+              });
+            });
+            const btnWrap = root.querySelector('.modal-actions');
+            btnWrap.innerHTML = `
+              <button class="modal-btn" id="cancelNewTab">Hủy</button>
+              <button class="modal-btn primary" id="confirmNewTab">Tạo tab</button>
+            `;
+            root.querySelector('#cancelNewTab').addEventListener('click', () => { root.innerHTML = ''; });
+            root.querySelector('#confirmNewTab').addEventListener('click', () => {
+              const nameInput = root.querySelector('#newTabNameInput');
+              const name = nameInput.value.trim() || 'Tab mới';
+              const newId = uid();
+              state.tabs.push({
+                id: newId,
+                name,
+                type: chosenType,
+                columns: ['Cột 1', 'Cột 2', 'Cột 3'],
+                rows: [['', '', ''], ['', '', '']],
+                ...(chosenType === 'input' ? {
+                  lookupRules: [{
+                    id: uid(),
+                    name: 'Tham chiếu 1',
+                    referenceTabId: referenceTabs()[0]?.id || '',
+                    sourceCol: 0,
+                    refCol: 0,
+                    mode: 'exact-normalized',
+                    autoLookup: true,
+                    outputs: []
+                  }]
+                } : {})
+              });
+              state.activeTabId = newId;
+              saveState();
+              root.innerHTML = '';
+              render();
+            });
+          } else if (act === 'toggle-settings') {
+            state.settingsOpen = !state.settingsOpen;
+            saveState();
+            render();
+          } else if (act === 'add-rule') {
+            const tab = getActiveTab();
+            if (!tab || tab.type !== 'input') return;
+            const refs = referenceTabs();
+            if (!refs.length) {
+              showModal('Thông báo', 'Cần có ít nhất 1 tab tham chiếu để thêm quy tắc.', 'warning');
+              return;
+            }
+            if (!Array.isArray(tab.lookupRules)) tab.lookupRules = [];
+            tab.lookupRules.push({
+              id: uid(),
+              name: `Tham chiếu ${tab.lookupRules.length + 1}`,
+              referenceTabId: refs[0].id,
+              sourceCol: 0,
+              refCol: 0,
+              mode: 'exact-normalized',
+              autoLookup: true,
+              outputs: []
+            });
+            saveState();
+            render();
+          } else if (act === 'remove-rule') {
+            const ruleId = e.target.dataset.ruleId;
+            const tab = getActiveTab();
+            if (!tab || !Array.isArray(tab.lookupRules)) return;
             tab.lookupRules = tab.lookupRules.filter(r => r.id !== ruleId);
             saveState();
             render();
-          }
-
-          if (act === 'add-output' && tab.type === 'input') {
-            const ruleId = e.target.closest('[data-rule-id]')?.dataset.ruleId;
-            const rule = (tab.lookupRules || []).find(r => r.id === ruleId);
+          } else if (act === 'add-output') {
+            const ruleId = e.target.dataset.ruleId;
+            const tab = getActiveTab();
+            const rule = tab?.lookupRules?.find(r => r.id === ruleId);
             if (!rule) return;
-
-            const ref = getTab(rule.referenceTabId);
-            if (!ref) { await notify('Chưa có tab tham chiếu.', 'warning'); return; }
-
-            pushHistory();
-            rule.outputs.push({fromCol:0,toCol:0});
+            if (!Array.isArray(rule.outputs)) rule.outputs = [];
+            rule.outputs.push({ fromCol: 0, toCol: 0 });
             saveState();
             render();
-          }
-        });
-
-
-        shadow.addEventListener('mousedown', e => {
-          if (!e.target.closest('.table-color-wrap')) {
+          } else if (act === 'add-row') {
+            const tab = getActiveTab();
+            if (!tab) return;
+            const before = historySnapshot(tab);
+            tab.rows.push(Array(tab.columns.length).fill(''));
+            pushHistory(before, tab.id);
+            saveState();
+            render();
+          } else if (act === 'add-col') {
+            const tab = getActiveTab();
+            if (!tab) return;
+            const before = historySnapshot(tab);
+            const idx = tab.columns.length + 1;
+            tab.columns.push(`Cột ${idx}`);
+            tab.rows.forEach(r => r.push(''));
+            pushHistory(before, tab.id);
+            saveState();
+            render();
+          } else if (act === 'clear') {
+            const tab = getActiveTab();
+            if (!tab) return;
+            showModal('Xóa dữ liệu', 'Bạn có muốn xóa toàn bộ dữ liệu trong bảng hiện tại không?', 'warning', [
+              {text: 'Hủy'},
+              {text: 'Xóa sạch', danger: true, onClick: () => {
+                const before = historySnapshot(tab);
+                tab.rows = [Array(tab.columns.length).fill('')];
+                pushHistory(before, tab.id);
+                saveState();
+                render();
+              }}
+            ]);
+          } else if (act === 'toggle-table-color') {
             const menu = $('#tableColorMenu');
-            if (menu) menu.style.display = 'none';
-          }
-        });
-
-        shadow.addEventListener('dblclick', async e => {
-          const tabEl = e.target.closest('[data-tab-id]');
-          if (!tabEl || e.target.closest('[data-close-tab]')) return;
-          state.activeTabId = tabEl.dataset.tabId;
-          saveState();
-          await renameActiveTab();
-        });
-
-
-
-        // Tooltip tùy chỉnh
-        let tooltipTimer = null;
-
-        function hideTooltip() {
-          clearTimeout(tooltipTimer);
-          const root = $('#tooltipRoot');
-          if (root) root.innerHTML = '';
-        }
-
-        function showTooltip(target) {
-          const text = target?.dataset?.tip;
-          if (!text || target.disabled) return;
-
-          const shortcut = target.dataset.shortcut || '';
-          const root = $('#tooltipRoot');
-          if (!root) return;
-
-          root.innerHTML = `
-            <div class="app-tooltip">
-              <span class="app-tooltip-title">${esc(text)}</span>
-              ${shortcut ? `<span class="app-tooltip-shortcut">${esc(shortcut)}</span>` : ''}
-            </div>
-          `;
-
-          const tip = root.querySelector('.app-tooltip');
-          const rect = target.getBoundingClientRect();
-
-          // Measure after insertion.
-          const tw = tip.offsetWidth;
-          const th = tip.offsetHeight;
-          const gap = 8;
-
-          let left = rect.left + rect.width / 2 - tw / 2;
-          left = Math.max(8, Math.min(left, window.innerWidth - tw - 8));
-
-          let top = rect.top - th - gap;
-          let bottomMode = false;
-
-          if (top < 8) {
-            top = rect.bottom + gap;
-            bottomMode = true;
-          }
-
-          tip.style.left = `${left}px`;
-          tip.style.top = `${top}px`;
-          tip.classList.toggle('bottom', bottomMode);
-
-          requestAnimationFrame(() => tip.classList.add('show'));
-        }
-
-        shadow.addEventListener('mouseover', e => {
-          const target = e.target.closest('[data-tip]');
-          if (!target) return;
-          clearTimeout(tooltipTimer);
-          tooltipTimer = setTimeout(() => showTooltip(target), 320);
-        });
-
-        shadow.addEventListener('mouseout', e => {
-          const target = e.target.closest('[data-tip]');
-          if (!target) return;
-          hideTooltip();
-        });
-
-        shadow.addEventListener('mousedown', hideTooltip);
-        shadow.addEventListener('wheel', hideTooltip, {passive:true});
-
-        shadow.addEventListener('keydown', e => {
-          const ctrl = e.ctrlKey || e.metaKey;
-          if (!ctrl) return;
-
-          const key = e.key.toLowerCase();
-
-          if (key === 'z' && !e.shiftKey) {
-            e.preventDefault();
+            if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+          } else if (act === 'export-xlsx') {
+            exportTabXlsx(getActiveTab());
+          } else if (act === 'import-xlsx') {
+            $('#xlsxInput')?.click();
+          } else if (act === 'toggle-tab-menu') {
+            const menu = $('#tabMenu');
+            if (menu) menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+          } else if (act === 'rename-tab') {
+            const tab = getActiveTab();
+            if (!tab) return;
+            showModal('Đổi tên tab', 'Nhập tên mới cho tab:', 'question', [
+              {text: 'Hủy'},
+              {text: 'Lưu', primary: true, onClick: root => {
+                const val = root.querySelector('#renameInput')?.value?.trim();
+                if (val) {
+                  tab.name = val;
+                  saveState();
+                  render();
+                }
+              }}
+            ], `<input class="modal-input" id="renameInput" type="text" value="${esc(tab.name)}">`);
+          } else if (act === 'duplicate-tab') {
+            const tab = getActiveTab();
+            if (!tab) return;
+            const cloned = clone(tab);
+            cloned.id = uid();
+            cloned.name = tab.name + ' (Sao chép)';
+            state.tabs.push(cloned);
+            state.activeTabId = cloned.id;
+            saveState();
+            render();
+          } else if (act === 'delete-active-tab') {
+            const tab = getActiveTab();
+            if (!tab) return;
+            if (state.tabs.length <= 1) {
+              showModal('Không thể xóa', 'Cần giữ lại ít nhất một tab trong bảng.', 'warning');
+              return;
+            }
+            showModal('Xóa tab', `Bạn có chắc chắn muốn xóa tab "${tab.name}" không?`, 'danger', [
+              {text: 'Hủy'},
+              {text: 'Xóa', danger: true, onClick: () => {
+                state.tabs = state.tabs.filter(t => t.id !== tab.id);
+                state.activeTabId = state.tabs[0].id;
+                saveState();
+                render();
+              }}
+            ]);
+          } else if (act === 'undo') {
             undoAction();
-            return;
-          }
-
-          if (key === 'y' || (key === 'z' && e.shiftKey)) {
-            e.preventDefault();
+          } else if (act === 'redo') {
             redoAction();
           }
         });
 
-        // Kéo cửa sổ
-        (() => {
-          const box = $('.wrap');
-          const bar = $('.topbar');
-          let dragging=false, ox=0, oy=0;
+        // Click ngoài menu để ẩn
+        shadow.addEventListener('click', e => {
+          if (!e.target.closest('.table-color-wrap')) {
+            const menu = $('#tableColorMenu');
+            if (menu) menu.style.display = 'none';
+          }
+          if (!e.target.closest('.more-wrap')) {
+            const menu = $('#tabMenu');
+            if (menu) menu.style.display = 'none';
+          }
+        });
 
-          bar.addEventListener('mousedown', e => {
-            if (e.target.closest('button,input,select')) return;
-            dragging = true;
-            const rect = box.getBoundingClientRect();
-            ox = e.clientX - rect.left;
-            oy = e.clientY - rect.top;
-            e.preventDefault();
-          });
+        // Đổi màu bảng
+        shadow.addEventListener('click', e => {
+          const opt = e.target.closest('[data-table-color]');
+          if (!opt) return;
+          const theme = opt.dataset.tableColor;
+          const tab = getActiveTab();
+          if (tab) {
+            tab.tableTheme = theme;
+            saveState();
+            render();
+          }
+        });
 
-          window.addEventListener('mousemove', e => {
-            if (!dragging) return;
-            const maxX = window.innerWidth - 80;
-            const maxY = window.innerHeight - 50;
-            box.style.left = Math.max(-box.offsetWidth + 80, Math.min(maxX, e.clientX - ox)) + 'px';
-            box.style.top = Math.max(0, Math.min(maxY, e.clientY - oy)) + 'px';
-          });
-
-          window.addEventListener('mouseup', () => dragging=false);
-        })();
-
-
-        // Kéo góc phải dưới để thay đổi kích thước cửa sổ chính
-        (() => {
-          const box = $('.wrap');
-          const handle = $('.resize-handle');
-          if (!box || !handle) return;
-
-          let resizing = false;
-          let startX = 0, startY = 0, startW = 0, startH = 0;
-
-          handle.addEventListener('mousedown', e => {
-            resizing = true;
-            startX = e.clientX;
-            startY = e.clientY;
-            const rect = box.getBoundingClientRect();
-            startW = rect.width;
-            startH = rect.height;
-            e.preventDefault();
+        // Click chuyển tab trên header tabsbar
+        $('#tabsbar').addEventListener('click', e => {
+          const tabEl = e.target.closest('[data-tab-id]');
+          const closeBtn = e.target.closest('[data-close-tab]');
+          if (closeBtn) {
             e.stopPropagation();
-            document.body.style.userSelect = 'none';
-            document.body.style.cursor = 'nwse-resize';
+            const id = closeBtn.dataset.closeTab;
+            if (state.tabs.length <= 1) {
+              showModal('Không thể xóa', 'Cần giữ lại ít nhất một tab trong bảng.', 'warning');
+              return;
+            }
+            const targetTab = getTab(id);
+            showModal('Xóa tab', `Bạn có chắc chắn muốn xóa tab "${targetTab?.name || ''}" không?`, 'danger', [
+              {text: 'Hủy'},
+              {text: 'Xóa', danger: true, onClick: () => {
+                state.tabs = state.tabs.filter(t => t.id !== id);
+                if (state.activeTabId === id) state.activeTabId = state.tabs[0].id;
+                saveState();
+                render();
+              }}
+            ]);
+            return;
+          }
+          if (tabEl) {
+            const id = tabEl.dataset.tabId;
+            state.activeTabId = id;
+            saveState();
+            render();
+          }
+        });
+
+        // Tooltip hiện đại
+        const tooltipEl = document.createElement('div');
+        tooltipEl.className = 'app-tooltip';
+        $('#tooltipRoot').appendChild(tooltipEl);
+
+        let tooltipTimer = null;
+        shadow.addEventListener('mouseover', e => {
+          const target = e.target.closest('[data-tip]');
+          if (!target) return;
+          const tipText = target.dataset.tip;
+          const shortcut = target.dataset.shortcut;
+          if (!tipText) return;
+
+          if (tooltipTimer) clearTimeout(tooltipTimer);
+          tooltipTimer = setTimeout(() => {
+            tooltipEl.innerHTML = `<div class="app-tooltip-title">${esc(tipText)}</div>${shortcut ? `<span class="app-tooltip-shortcut">${esc(shortcut)}</span>` : ''}`;
+            const rect = target.getBoundingClientRect();
+            const hostRect = host.getBoundingClientRect();
+            let left = rect.left - hostRect.left + rect.width / 2;
+            let top = rect.top - hostRect.top - 8;
+            tooltipEl.style.left = left + 'px';
+            tooltipEl.style.top = top + 'px';
+            tooltipEl.style.transform = 'translate(-50%, -100%) scale(1)';
+            tooltipEl.classList.add('show');
+          }, 200);
+        });
+
+        shadow.addEventListener('mouseout', e => {
+          if (e.target.closest('[data-tip]')) {
+            if (tooltipTimer) clearTimeout(tooltipTimer);
+            tooltipEl.classList.remove('show');
+          }
+        });
+
+        // Kéo thả thay đổi kích thước cửa sổ (Resize)
+        const resizeHandle = shadow.querySelector('.resize-handle');
+        const wrapEl = shadow.querySelector('.wrap');
+        let isResizing = false;
+        let startX, startY, startW, startH;
+
+        resizeHandle.addEventListener('mousedown', e => {
+          isResizing = true;
+          startX = e.clientX;
+          startY = e.clientY;
+          startW = wrapEl.offsetWidth;
+          startH = wrapEl.offsetHeight;
+          e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', e => {
+          if (!isResizing) return;
+          const dx = e.clientX - startX;
+          const dy = e.clientY - startY;
+          wrapEl.style.width = Math.max(520, startW + dx) + 'px';
+          wrapEl.style.height = Math.max(360, startH + dy) + 'px';
+        });
+
+        window.addEventListener('mouseup', () => { isResizing = false; });
+
+        // Kéo thả di chuyển cửa sổ (Drag Topbar)
+        const topbarEl = shadow.querySelector('.topbar');
+        let isDragging = false;
+        let dragStartX, dragStartY, wrapStartX, wrapStartY;
+
+        topbarEl.addEventListener('mousedown', e => {
+          if (e.target.closest('button')) return;
+          isDragging = true;
+          dragStartX = e.clientX;
+          dragStartY = e.clientY;
+          const rect = wrapEl.getBoundingClientRect();
+          wrapStartX = rect.left;
+          wrapStartY = rect.top;
+          e.preventDefault();
+        });
+
+        window.addEventListener('mousemove', e => {
+          if (!isDragging) return;
+          const dx = e.clientX - dragStartX;
+          const dy = e.clientY - dragStartY;
+          wrapEl.style.left = Math.max(10, wrapStartX + dx) + 'px';
+          wrapEl.style.top = Math.max(10, wrapStartY + dy) + 'px';
+        });
+
+        window.addEventListener('mouseup', () => { isDragging = false; });
+
+        // Import / Export Excel helpers qua thư viện XLSX
+        function loadXLSXLibrary(cb) {
+          if (window.XLSX) { cb(); return; }
+          const script = document.createElement('script');
+          script.src = XLSX_URL;
+          script.onload = () => cb();
+          script.onerror = () => showModal('Lỗi', 'Không thể tải thư viện XLSX từ CDN.', 'error');
+          document.head.appendChild(script);
+        }
+
+        function exportTabXlsx(tab) {
+          if (!tab) return;
+          loadXLSXLibrary(() => {
+            const data = [tab.columns, ...tab.rows.map(r => tab.columns.map((_, i) => r[i] ?? ''))];
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, tab.name.slice(0, 30));
+            XLSX.writeFile(wb, `${tab.name.replace(/\s+/g, '_')}.xlsx`);
           });
+        }
 
-          window.addEventListener('mousemove', e => {
-            if (!resizing) return;
+        function onImportExcel(tab, e) {
+          const file = e.target.files?.[0];
+          if (!file) return;
+          loadXLSXLibrary(() => {
+            const reader = new FileReader();
+            reader.onload = ev => {
+              try {
+                const data = new Uint8Array(ev.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                if (!json.length) return;
 
-            const minW = 520;
-            const minH = 360;
-            const maxW = Math.max(minW, window.innerWidth - box.getBoundingClientRect().left - 8);
-            const maxH = Math.max(minH, window.innerHeight - box.getBoundingClientRect().top - 8);
-
-            const newW = Math.max(minW, Math.min(maxW, startW + (e.clientX - startX)));
-            const newH = Math.max(minH, Math.min(maxH, startH + (e.clientY - startY)));
-
-            box.style.width = newW + 'px';
-            box.style.height = newH + 'px';
+                const before = historySnapshot(tab);
+                tab.columns = json[0].map(v => String(v ?? 'Cột'));
+                tab.rows = json.slice(1).map(row => {
+                  return tab.columns.map((_, i) => String(row[i] ?? ''));
+                });
+                if (!tab.rows.length) tab.rows = [Array(tab.columns.length).fill('')];
+                pushHistory(before, tab.id);
+                ensureBlankRow(tab);
+                saveState();
+                render();
+                showModal('Thành công', `Đã nhập thành công ${tab.rows.length} dòng dữ liệu từ file Excel!`, 'success');
+              } catch (err) {
+                showModal('Lỗi đọc file', 'Không thể phân tích định dạng file Excel/CSV này.', 'error');
+              }
+            };
+            reader.readAsArrayBuffer(file);
           });
-
-          window.addEventListener('mouseup', () => {
-            if (!resizing) return;
-            resizing = false;
-            document.body.style.userSelect = '';
-            document.body.style.cursor = '';
-          });
-        })();
+        }
 
         render();
       })();
 
-    },
-    stop() {
-      document.querySelector('#mini-multi-tab-excel-tool')?.remove();
     }
-  });
+  };
+
+  // Register in the dashboard when available; otherwise run directly.
+  try {
+    if (window.GHTKTools && typeof window.GHTKTools.register === 'function') {
+      window.GHTKTools.register('miniExcel', miniExcelTool);
+    } else {
+      miniExcelTool.start();
+    }
+  } catch (err) {
+    console.error('[Mini GHTK Excel] Startup error:', err);
+    // If registration itself failed, still allow direct use.
+    try { miniExcelTool.start(); }
+    catch (fallbackErr) { console.error('[Mini GHTK Excel] Standalone startup failed:', fallbackErr); }
+  }
 })();
