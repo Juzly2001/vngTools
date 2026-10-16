@@ -27,8 +27,8 @@
 </style>
 </head>
 <body>
-<main class="landing" id="landing"><div class="wrap"><div class="brand"><img src="favicon.svg" class="mark" alt="Logo Vistube"><div class="brand-name">vis<span>tube</span></div></div><p class="tag">YOUR SCREEN. YOUR VIDEO.</p><h1 class="headline">YouTube, <em>trọn khung hình.</em></h1><p class="sub">Dán liên kết để xem video chiếm trọn cửa sổ. Rê chuột sát mép trái để mở menu công cụ. Khi đưa chuột ra ngoài, menu tự ẩn để bạn tập trung xem video.</p><section class="card"><label class="label" for="url">Liên kết video YouTube</label><form id="form" class="input-row"><input id="url" class="url" type="url" required autocomplete="url" placeholder="https://www.youtube.com/watch?v=..." aria-describedby="error"><button class="primary home-play" type="submit">▶ &nbsp;Phát video</button></form><p id="error" class="error" role="alert"></p></section><div class="foot"><span>Trọn màn hình</span><span>Hỗ trợ Shorts</span><span>Ghim video Picture-in-Picture</span><span>Menu tự động ẩn</span><span>Lưu yêu thích và lịch sử</span></div><div class="home-actions"><button class="secondary hidden" id="resume" type="button" style="border-radius:11px;padding:11px 15px">▶ Tiếp tục video gần đây</button></div><p class="tiny">Vistube là trình phát nhúng độc lập, không liên kết với YouTube. Video có thể có quảng cáo.</p></div></main>
-<section id="player" class="player" aria-label="Trình phát YouTube"><div id="frame-holder" class="frame-holder"><iframe id="frame" title="YouTube video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><div class="pip-away hidden" id="pip-away"><div class="pip-away-icon">▣</div><h2>Video đang ở cửa sổ nổi</h2><p>Tiếp tục xem trong cửa sổ Picture-in-Picture. Bạn có thể kéo và thay đổi kích thước cửa sổ.</p><button type="button" id="return-pip" class="primary">↙ Đưa video trở lại Vistube</button><div class="pip-away-hint">Cứ đóng cửa sổ PiP để trở lại trang phát video.</div></div>
+<main class="landing" id="landing"><div class="wrap"><div class="brand"><img src="favicon.svg" class="mark" alt="Logo Vistube"><div class="brand-name">vis<span>tube</span></div></div><p class="tag">YOUR SCREEN. YOUR VIDEO.</p><h1 class="headline">YouTube, <em>trọn khung hình.</em></h1><p class="sub">Dán liên kết để xem video chiếm trọn cửa sổ. Rê chuột sát mép trái để mở menu công cụ. Khi đưa chuột ra ngoài, menu tự ẩn để bạn tập trung xem video.</p><section class="card"><label class="label" for="url">Liên kết video YouTube</label><form id="form" class="input-row"><input id="url" class="url" type="url" required autocomplete="url" placeholder="https://www.youtube.com/watch?v=..." aria-describedby="error"><button class="primary home-play" type="submit">▶ &nbsp;Phát video</button></form><p id="error" class="error" role="alert"></p></section><div class="foot"><span>Trọn màn hình</span><span>Hỗ trợ Shorts</span><span>PiP khóa thao tác, không che video</span><span>Menu tự động ẩn</span><span>Lưu yêu thích và lịch sử</span></div><div class="home-actions"><button class="secondary hidden" id="resume" type="button" style="border-radius:11px;padding:11px 15px">▶ Tiếp tục video gần đây</button></div><p class="tiny">Vistube là trình phát nhúng độc lập, không liên kết với YouTube. Video có thể có quảng cáo.</p></div></main>
+<section id="player" class="player" aria-label="Trình phát YouTube"><div id="frame-holder" class="frame-holder"><iframe id="frame" title="YouTube video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><div class="pip-away hidden" id="pip-away"><div class="pip-away-icon">▣</div><h2>Video đang ở cửa sổ nổi</h2><p>Tiếp tục xem trong cửa sổ Picture-in-Picture. Trong cửa sổ PiP, dùng biểu tượng ổ khóa nhỏ ở góc trên bên phải video để bật/tắt thao tác. Kéo hoặc resize cửa sổ bằng thanh và mép của Chrome.</p><button type="button" id="return-pip" class="primary">↙ Đưa video trở lại Vistube</button><div class="pip-away-hint">Cứ đóng cửa sổ PiP để trở lại trang phát video.</div></div>
 <div id="edge" class="edge" role="button" tabindex="0" aria-label="Mở menu công cụ ở mép trái" title="Di chuột vào để mở menu"></div>
 <aside id="drawer" class="drawer" aria-label="Menu công cụ Vistube" aria-hidden="true" inert>
   <header class="drawer-header"><div class="drawer-top"><div class="small-brand"><img src="favicon.svg" alt=""> Vistube <span style="color:#a89dff">Plus</span></div><button class="xbutton" id="close-menu" type="button" aria-label="Đóng menu">×</button></div><div class="drawer-sub micro"><span class="status-dot"></span> Di chuột ra ngoài, menu sẽ tự ẩn</div></header>
@@ -52,7 +52,7 @@
         <button class="action" id="youtube" type="button"><span class="ico">↗</span>Mở YouTube</button>
       </div>
       <div class="section-line"></div>
-      <div class="help-box">💡 <strong>Mẹo:</strong> Bấm <strong>Ghim video (PiP)</strong> để mở cửa sổ nổi thật. Video có thể tải lại khi chuyển giữa hai cửa sổ. Để dùng PiP video gốc, nhấn chuột phải hai lần lên video rồi chọn <strong>Hình trong hình</strong>. Khi chọn một video, menu sẽ tự thu lại.</div>
+      <div class="help-box">💡 <strong>Mẹo:</strong> Trong cửa sổ PiP có biểu tượng <strong>ổ khóa nhỏ</strong> ở góc video. Khi khóa, không hiện bất kỳ thông báo nào che video. Vẫn có thể đổi kích thước bằng viền cửa sổ. Bấm <strong>Ghim video (PiP)</strong> để mở cửa sổ nổi thật. Video có thể tải lại khi chuyển giữa hai cửa sổ. Để dùng PiP video gốc, nhấn chuột phải hai lần lên video rồi chọn <strong>Hình trong hình</strong>. Khi chọn một video, menu sẽ tự thu lại.</div>
     </section>
     <section class="pane" id="pane-library" hidden>
       <div class="pane-title">Thêm video mới</div>
@@ -72,7 +72,7 @@
       <div class="pane-title">Quản lý dữ liệu</div>
       <button type="button" class="action full" id="clear-history">🗑 Xóa lịch sử đã xem</button>
       <div class="pane-title">Trợ giúp</div>
-      <div class="help-box">Đưa chuột đến <strong>mép trái</strong> để mở menu công cụ và đưa chuột ra ngoài để tự đóng. Có thể bấm <strong>Tiếp tục xem</strong> hoặc <strong>Trang chủ</strong> ở cuối menu.<br><br>Phím <strong>Esc</strong> chỉ hoạt động khi trang Vistube nhận bàn phím; YouTube iframe có thể giữ phím. Cài đặt phát áp dụng cho video mở tiếp theo. <strong>PiP một nút</strong> cần Chrome/Edge hiện đại và địa chỉ HTTPS hoặc localhost.</div>
+      <div class="help-box">Đưa chuột đến <strong>mép trái</strong> để mở menu công cụ và đưa chuột ra ngoài để tự đóng. Có thể bấm <strong>Tiếp tục xem</strong> hoặc <strong>Trang chủ</strong> ở cuối menu.<br><br>Phím <strong>Esc</strong> chỉ hoạt động khi trang Vistube nhận bàn phím; YouTube iframe có thể giữ phím. Cài đặt phát áp dụng cho video mở tiếp theo. <strong>PiP với khóa thao tác</strong> cần Chrome/Edge hiện đại và địa chỉ HTTPS hoặc localhost.</div>
     </section>
   </div>
   <footer class="drawer-bottom"><button class="secondary" id="home" type="button">← Trang chủ</button><button class="primary" id="hide-menu" type="button">Tiếp tục xem ▶</button></footer>
@@ -157,17 +157,90 @@ async function togglePiP(){
     popup=await documentPictureInPicture.requestWindow({width:530,height:320});
     pipWin=popup;
     popup.document.title='Vistube · Picture-in-Picture';
-    const style=popup.document.createElement('style');
-    style.textContent=':root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{width:100%;height:100%;border:0;display:block;background:#000}';
-    popup.document.head.append(style);
-    const relay=popup.document.createElement('iframe');
-    relay.id='pip-relay';
-    relay.title='Vistube Picture-in-Picture';
-    relay.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
-    relay.allowFullscreen=true;
-    relay.referrerPolicy='strict-origin-when-cross-origin';
+    // Chrome owns the native PiP title bar. The page cannot add buttons to it.
+    // Show one unobtrusive lock button within the content; no toolbar or resize controls.
+    const doc=popup.document;
+    const style=doc.createElement('style');
+    style.textContent=`
+      :root{color-scheme:dark;font-family:Inter,system-ui,-apple-system,'Segoe UI',sans-serif}
+      *{box-sizing:border-box}
+      html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
+      .vt-shell{position:relative;width:100%;height:100%;background:#000}
+      #vt-relay{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#000}
+      /* Invisible layer only blocks pointer input sent to the embedded YouTube player. */
+      .vt-shield{position:absolute;inset:0;z-index:2;display:none;background:transparent;cursor:default}
+      .vt-shell.locked .vt-shield{display:block}
+      /* Native-Chrome inspired dark lock tab, completely invisible at rest. */
+      .vt-lock{
+        position:absolute;z-index:4;right:6px;top:50%;
+        transform:translate(100%,-50%);
+        display:flex;align-items:center;justify-content:center;
+        padding:10px;border:1px solid #37383b;border-right:0;
+        border-radius:50%;
+        background:#202124;
+        box-shadow:-5px 0 16px rgba(0,0,0,.38);
+        color:#e8eaed;cursor:pointer;
+        opacity:0;visibility:hidden;pointer-events:none;
+        -webkit-tap-highlight-color:transparent;
+        transition:transform .17s ease-out,opacity .15s ease-out,visibility 0s linear .17s,background .12s ease-out;
+      }
+      .vt-shell.is-pointer-in .vt-lock,
+      .vt-lock:hover{
+        transform:translate(0,-50%);
+        opacity:1;visibility:visible;pointer-events:auto;
+        transition:transform .17s ease-out,opacity .15s ease-out,visibility 0s,background .12s ease-out;
+      }
+      .vt-lock:hover{background:#303134}
+      .vt-lock:focus-visible{outline:2px solid #b9bdc5;outline-offset:-3px}
+      .vt-lock svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;
+        stroke-linejoin:round;stroke-linecap:round;pointer-events:none;flex:none}
+      .vt-lock .vt-locked-icon{display:none}
+      .vt-shell.locked .vt-lock{color:#ffffff;background:#292a2d;border-color:#45464a}
+      .vt-shell.locked .vt-lock .vt-open-icon{display:none}
+      .vt-shell.locked .vt-lock .vt-locked-icon{display:block}
+      @media(hover:none){
+        /* Touch users need an accessible unlock control. */
+        .vt-lock{transform:translate(0,-50%);opacity:1;visibility:visible;pointer-events:auto;width:40px;height:52px;transition:none}
+      }
+      @media(prefers-reduced-motion:reduce){.vt-lock{transition:none!important}}
+    `;
+    doc.head.append(style);
+    const shell=doc.createElement('div');
+    shell.className='vt-shell';
+    shell.innerHTML=`
+      <iframe id="vt-relay" title="Vistube YouTube PiP" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+      <div class="vt-shield" id="vt-shield" aria-hidden="true"></div>
+      <button class="vt-lock" id="vt-lock" type="button" title="Khóa thao tác video" aria-label="Khóa thao tác video" aria-pressed="false">
+        <svg class="vt-open-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5"></rect><path d="M8 10V7a4 4 0 0 1 7.5-2"></path><path d="M12 15v2"></path></svg>
+        <svg class="vt-locked-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path><path d="M12 15v2"></path></svg>
+      </button>`;
+    doc.body.append(shell);
+    const relay=doc.getElementById('vt-relay');
     relay.src=pipUrl(current);
     pipRelay=relay;
+    let locked=false;
+    const lockBtn=doc.getElementById('vt-lock');
+    lockBtn.addEventListener('click',()=>{
+      locked=!locked;
+      shell.classList.toggle('locked',locked);
+      lockBtn.title=locked?'Mở khóa thao tác video':'Khóa thao tác video (vẫn kéo và resize cửa sổ được)';
+      lockBtn.setAttribute('aria-label',locked?'Mở khóa thao tác video':'Khóa thao tác video');
+      lockBtn.setAttribute('aria-pressed',String(locked));
+      // No toast, center label, colored overlay, or other interruption to viewing.
+    });
+    // Only reveal when the pointer is over PiP. Nothing (not even a thin rail)
+    // remains visible after the pointer exits the PiP content area.
+    const revealLock=()=>shell.classList.add('is-pointer-in');
+    const concealLock=()=>{
+      shell.classList.remove('is-pointer-in');
+      lockBtn.blur();
+    };
+    doc.documentElement.addEventListener('pointerenter',revealLock);
+    doc.documentElement.addEventListener('pointerleave',concealLock);
+    doc.addEventListener('pointermove',revealLock,{passive:true});
+    relay.addEventListener('mouseenter',revealLock);
+    doc.getElementById('vt-shield').addEventListener('mouseenter',revealLock);
+    popup.addEventListener('blur',concealLock);
     // The relay reports its video time without exposing YouTube credentials.
     popup.addEventListener('message',(e)=>{
       if(e.origin!==location.origin||e.source!==relay.contentWindow)return;
@@ -186,7 +259,6 @@ async function togglePiP(){
       $('pip-away').classList.add('hidden');
       pipStatus();
     },{once:true});
-    popup.document.body.appendChild(relay);
     frame.src='about:blank'; // Do not play two copies at once.
     $('pip-away').classList.remove('hidden');
     hideMenu();
