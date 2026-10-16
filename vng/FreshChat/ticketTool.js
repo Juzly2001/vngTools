@@ -148,7 +148,7 @@
             display: flex; align-items: center; gap: 4px; height: 26px; padding: 0 8px;
             border-radius: 20px; background: #dafbe1; color: #116329; font-size: 12px; font-weight: 700;
         }
-        #resolved { width: 28px !important; border: 0 !important; background: transparent !important; padding: 0 !important; color: inherit !important; font-weight: 700; text-align: left !important; outline: none; }
+        #resolved { width: 46px !important; border: 0 !important; background: transparent !important; padding: 0 !important; color: inherit !important; font-weight: 700; text-align: right !important; outline: none; }
 
         /* Context Menu & Settings */
         #ticket-row-menu {
