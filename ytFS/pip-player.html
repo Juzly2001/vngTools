@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#000000">
+<title>Vistube — Trình phát PiP</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:white;font-family:system-ui,sans-serif}
+iframe{display:block;width:100%;height:100%;border:0}
+#error{display:none;box-sizing:border-box;padding:20px;line-height:1.5;font-size:14px}
+a{color:#b6a9ff}
+</style>
+</head>
+<body>
+<div id="error">Không có video hợp lệ. <a href="./">Trở lại Vistube</a>.</div>
+<iframe id="youtube" title="Video YouTube" allow="autoplay; encrypted-media; fullscreen; picture-in-picture" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+<script>
+(()=>{'use strict';
+const params=new URLSearchParams(location.search);
+const id=params.get('v');
+if(!/^[A-Za-z0-9_-]{11}$/.test(id||'')){
+  document.getElementById('youtube').remove();
+  document.getElementById('error').style.display='block';
+  return;
+}
+const start=Math.max(0,Math.min(24*60*60,Number(params.get('start'))||0));
+const autoplay=params.get('autoplay')==='0'?'0':'1';
+const mute=params.get('mute')==='1'?'1':'0';
+const loop=params.get('loop')==='1'?'1':'0';
+const qs=new URLSearchParams({autoplay,mute,loop,rel:'0',playsinline:'1',enablejsapi:'1',origin:location.origin});
+if(loop==='1')qs.set('playlist',id);
+if(start>=2)qs.set('start',String(Math.floor(start)));
+const video=document.getElementById('youtube');
+video.src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+qs;
+// The relay is loaded from the actual Vercel HTTPS domain. Unlike an
+// about:blank PiP document, it supplies a real HTTP Referer to YouTube.
+video.addEventListener('load',()=>{
+  try{video.contentWindow.postMessage(JSON.stringify({event:'listening',id:'vistube-pip'}),'https://www.youtube.com')}catch{}
+});
+window.addEventListener('message',(e)=>{
+  if(e.origin!=='https://www.youtube.com'||e.source!==video.contentWindow)return;
+  let msg=e.data;
+  if(typeof msg==='string'){try{msg=JSON.parse(msg)}catch{return}}
+  if(!msg||typeof msg!=='object')return;
+  const seconds=msg.info?.currentTime;
+  if(typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>=0){
+    window.parent.postMessage({type:'vistube-pip-position',videoId:id,seconds},location.origin);
+  }
+});
+setInterval(()=>{
+  try{video.contentWindow.postMessage(JSON.stringify({event:'command',func:'getCurrentTime',args:[]}),'https://www.youtube.com')}catch{}
+},1200);
+})();
+</script>
+</body>
+</html>

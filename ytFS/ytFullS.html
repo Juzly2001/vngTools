@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#090d18">
 <meta name="description" content="Vistube PiP - Xem YouTube toàn màn hình, ghim video ra desktop bằng Picture-in-Picture thật.">
 <title>Vistube PiP — YouTube trọn khung hình</title>
@@ -51,7 +52,7 @@
         <button class="action" id="youtube" type="button"><span class="ico">↗</span>Mở YouTube</button>
       </div>
       <div class="section-line"></div>
-      <div class="help-box">💡 <strong>Mẹo:</strong> Bấm <strong>Ghim video (PiP)</strong> để mở cửa sổ nổi thật. Chrome có thể tải lại video khi chuyển giữa hai cửa sổ. Để dùng PiP video gốc, nhấn chuột phải hai lần lên video rồi chọn <strong>Hình trong hình</strong>. Khi chọn một video, menu sẽ tự thu lại.</div>
+      <div class="help-box">💡 <strong>Mẹo:</strong> Bấm <strong>Ghim video (PiP)</strong> để mở cửa sổ nổi thật. Video có thể tải lại khi chuyển giữa hai cửa sổ. Để dùng PiP video gốc, nhấn chuột phải hai lần lên video rồi chọn <strong>Hình trong hình</strong>. Khi chọn một video, menu sẽ tự thu lại.</div>
     </section>
     <section class="pane" id="pane-library" hidden>
       <div class="pane-title">Thêm video mới</div>
@@ -87,7 +88,7 @@ const STORE='vistube-plus-v1';const defaults={queue:[],history:[],favorites:[],s
 let data;
 try{const x=JSON.parse(localStorage.getItem(STORE)||'{}');data={queue:Array.isArray(x.queue)?x.queue.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],history:Array.isArray(x.history)?x.history.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],favorites:Array.isArray(x.favorites)?x.favorites.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],settings:{...defaults.settings,...(x.settings||{})}}}catch{data=JSON.parse(JSON.stringify(defaults))}
 let current=null,open=false,activePane='control',listType='queue',closeTimer=null,toastTimer=null,reopenAfter=0;
-let pipWin=null,pipBusy=false,playSeconds=0,playSecondsVideoId=null;
+let pipWin=null,pipRelay=null,pipBusy=false,playSeconds=0,playSecondsVideoId=null;
 const valid=id=>typeof id==='string'&&/^[\w-]{11}$/.test(id);
 function parseVideo(raw){try{const u=new URL(raw.trim());if(!['http:','https:'].includes(u.protocol))return null;const host=u.hostname.toLowerCase();let id=null;if(host==='youtu.be'||host==='www.youtu.be')id=u.pathname.split('/')[1];else if(['youtube.com','www.youtube.com','m.youtube.com','music.youtube.com','youtube-nocookie.com','www.youtube-nocookie.com'].includes(host)){if(u.pathname==='/watch')id=u.searchParams.get('v');else id=u.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1]}return valid(id)?id:null}catch{return null}}
 function save(){try{localStorage.setItem(STORE,JSON.stringify(data))}catch{}}
@@ -102,21 +103,30 @@ function showPane(name){activePane=name;document.querySelectorAll('[data-pane]')
 function showMenu(){clearTimeout(closeTimer);if(!player.classList.contains('active')||Date.now()<reopenAfter)return; if(open)return;open=true;drawer.classList.add('open');drawer.removeAttribute('inert');drawer.setAttribute('aria-hidden','false');currentInfo();renderList()}
 function hideMenu(){clearTimeout(closeTimer);if(!open)return;open=false;drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');drawer.setAttribute('inert','');reopenAfter=Date.now()+380}
 function deferHide(){clearTimeout(closeTimer);closeTimer=setTimeout(()=>{if(!drawer.matches(':hover'))hideMenu()},320)}
-function play(id){if(!valid(id))return;current=id;playSeconds=0;playSecondsVideoId=id;frame.src=embed(id);landing.classList.add('hidden');player.classList.add('active');if(!data.queue.some(x=>x.id===id))data.queue=insert(data.queue,id);if(data.settings.saveHistory)data.history=insert(data.history,id,true);save();currentInfo();renderList();resumeButton();hideMenu()}
+function play(id){if(!valid(id))return;current=id;playSeconds=0;playSecondsVideoId=id;if(pipWin&&!pipWin.closed&&pipRelay){pipRelay.src=pipUrl(id);frame.src='about:blank'}else frame.src=embed(id);landing.classList.add('hidden');player.classList.add('active');if(!data.queue.some(x=>x.id===id))data.queue=insert(data.queue,id);if(data.settings.saveHistory)data.history=insert(data.history,id,true);save();currentInfo();renderList();resumeButton();hideMenu()}
 function goHome(){hideMenu();player.classList.remove('active');if(pipWin&&!pipWin.closed)pipWin.close();frame.src='about:blank';landing.classList.remove('hidden');if(current)input.value=watch(current);resumeButton();input.focus()}
 
-// Chrome Document Picture-in-Picture: a real always-on-top OS window.
-// Note: moving a cross-origin YouTube iframe reloads its player.
-function pipAvailable(){return !!(window.documentPictureInPicture&&window.isSecureContext)}
+// YouTube error 153 fix: load the player from a real HTTPS same-origin
+// relay page, not directly from the generated about:blank PiP document.
+function pipAvailable(){return !!(window.documentPictureInPicture&&window.isSecureContext&&/^https?:$/.test(location.protocol))}
 function pipStatus(){
   $('pip-label').textContent=pipWin&&!pipWin.closed?'Đưa về Vistube':'Ghim video (PiP)';
   $('pip').title=pipWin&&!pipWin.closed?'Trở lại trang phát video':'Mở video ra cửa sổ nổi';
 }
+function pipUrl(id,seconds=playSeconds){
+  const u=new URL('pip-player.html',document.baseURI);
+  u.searchParams.set('v',id);
+  u.searchParams.set('start',String(Math.max(0,Math.floor(seconds))));
+  u.searchParams.set('autoplay',data.settings.autoplay?'1':'0');
+  u.searchParams.set('mute',data.settings.mute?'1':'0');
+  u.searchParams.set('loop',data.settings.loop?'1':'0');
+  return u.href;
+}
 function showPipHelp(){
   hideMenu();
-  message('PiP một nút cần Chrome/Edge và HTTPS hoặc localhost. Hoặc nhấn chuột phải 2 lần lên video → Hình trong hình.');
+  message('PiP cần Chrome/Edge trên HTTPS hoặc localhost. Bạn vẫn có thể dùng PiP gốc bằng menu chuột phải của video.');
 }
-// IFrame API telemetry (best effort): keep roughly the same playback position during moves.
+// Track playback time in the main YouTube iframe (best effort).
 function handleYTMessage(event){
   if(event.origin!=='https://www.youtube.com'&&event.origin!=='https://www.youtube-nocookie.com')return;
   if(!frame.contentWindow||event.source!==frame.contentWindow)return;
@@ -128,11 +138,11 @@ function handleYTMessage(event){
 }
 window.addEventListener('message',handleYTMessage);
 frame.addEventListener('load',()=>{
-  if(frame.src==='about:blank')return;
+  if(frame.getAttribute('src')==='about:blank')return;
   try{frame.contentWindow.postMessage(JSON.stringify({event:'listening',id:'vistube'}),'https://www.youtube.com')}catch{}
 });
 setInterval(()=>{
-  if(!current||!player.classList.contains('active'))return;
+  if(!current||!player.classList.contains('active')||(pipWin&&!pipWin.closed))return;
   try{frame.contentWindow?.postMessage(JSON.stringify({event:'command',func:'getCurrentTime',args:[]}),'https://www.youtube.com')}catch{}
 },1200);
 function closePiP(){if(pipWin&&!pipWin.closed)pipWin.close()}
@@ -143,35 +153,48 @@ async function togglePiP(){
   pipBusy=true;
   let popup;
   try{
-    // Called directly from the click handler, preserving user activation.
-    popup=await documentPictureInPicture.requestWindow({width:510,height:310});
+    // Must be called from the actual click to keep the browser's user activation.
+    popup=await documentPictureInPicture.requestWindow({width:530,height:320});
     pipWin=popup;
     popup.document.title='Vistube · Picture-in-Picture';
     const style=popup.document.createElement('style');
-    style.textContent=':root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{width:100vw;height:100vh;border:0;display:block;background:#000}';
+    style.textContent=':root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{width:100%;height:100%;border:0;display:block;background:#000}';
     popup.document.head.append(style);
-    popup.addEventListener('message',handleYTMessage);
+    const relay=popup.document.createElement('iframe');
+    relay.id='pip-relay';
+    relay.title='Vistube Picture-in-Picture';
+    relay.allow='autoplay; encrypted-media; picture-in-picture; fullscreen';
+    relay.allowFullscreen=true;
+    relay.referrerPolicy='strict-origin-when-cross-origin';
+    relay.src=pipUrl(current);
+    pipRelay=relay;
+    // The relay reports its video time without exposing YouTube credentials.
+    popup.addEventListener('message',(e)=>{
+      if(e.origin!==location.origin||e.source!==relay.contentWindow)return;
+      const x=e.data;
+      if(x?.type==='vistube-pip-position'&&x.videoId===current&&typeof x.seconds==='number'&&Number.isFinite(x.seconds)&&x.seconds>=0){
+        playSeconds=x.seconds;
+        playSecondsVideoId=current;
+      }
+    });
     popup.addEventListener('pagehide',()=>{
       if(pipWin!==popup)return;
       pipWin=null;
-      try{
-        frameHolder.appendChild(frame);
-        if(player.classList.contains('active')&&current)frame.src=embed(current,playSeconds);
-        else frame.src='about:blank';
-      }catch(err){console.warn('Vistube PiP restore:',err)}
+      pipRelay=null;
+      if(player.classList.contains('active')&&current)frame.src=embed(current,playSeconds);
+      else frame.src='about:blank';
       $('pip-away').classList.add('hidden');
       pipStatus();
     },{once:true});
-    // Moving an iframe between Documents reloads it. Recreate at approx. timestamp.
-    popup.document.body.appendChild(frame);
-    frame.src=embed(current,playSeconds);
+    popup.document.body.appendChild(relay);
+    frame.src='about:blank'; // Do not play two copies at once.
     $('pip-away').classList.remove('hidden');
     hideMenu();
     pipStatus();
   }catch(err){
     console.warn('Vistube PiP unavailable:',err);
     if(popup&&!popup.closed)popup.close();
-    message('Không mở được PiP. Thử Chrome/Edge qua localhost, hoặc chuột phải 2 lần trên video.');
+    message('Không mở được PiP. Thử Chrome/Edge trên HTTPS hoặc dùng PiP gốc của YouTube.');
   }finally{pipBusy=false}
 }
 $('pip').addEventListener('click',togglePiP);
@@ -186,7 +209,7 @@ $('resume').onclick=()=>{const id=data.history[0]?.id||data.queue.at(-1)?.id;if(
 $('prev').onclick=()=>{const i=data.queue.findIndex(x=>x.id===current);if(i>0)play(data.queue[i-1].id)};
 $('next').onclick=()=>{const i=data.queue.findIndex(x=>x.id===current);if(i>=0&&i<data.queue.length-1)play(data.queue[i+1].id)};
 $('favorite').onclick=()=>{if(!current)return;const has=data.favorites.some(x=>x.id===current);data.favorites=has?data.favorites.filter(x=>x.id!==current):insert(data.favorites,current,true);save();currentInfo();renderList();message(has?'Đã bỏ yêu thích':'Đã thêm vào yêu thích')};
-$('reload').onclick=()=>{if(current){playSeconds=0;frame.src=embed(current);hideMenu();message('Đã phát lại video')}};
+$('reload').onclick=()=>{if(current){playSeconds=0;if(pipWin&&!pipWin.closed&&pipRelay){pipRelay.src=pipUrl(current,0)}else frame.src=embed(current);hideMenu();message('Đã phát lại video')}};
 $('copy').onclick=async()=>{if(!current)return;const url=watch(current);try{await navigator.clipboard.writeText(url);message('Đã sao chép liên kết')}catch{const temp=document.createElement('textarea');temp.value=url;document.body.append(temp);temp.select();let ok=false;try{ok=document.execCommand('copy')}catch{}temp.remove();message(ok?'Đã sao chép liên kết':'Không sao chép được; dùng nút Mở YouTube')}};
 $('youtube').onclick=()=>{if(current)window.open(watch(current),'_blank','noopener,noreferrer')};
 $('shuffle').onclick=()=>{for(let i=data.queue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[data.queue[i],data.queue[j]]=[data.queue[j],data.queue[i]]}save();renderList();currentInfo();message('Đã trộn hàng đợi')};
