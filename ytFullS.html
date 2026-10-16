@@ -4,14 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#090d18">
-<meta name="description" content="Vistube - Xem YouTube trọn khung hình với menu công cụ tự ẩn.">
-<title>Vistube — Xem YouTube trọn khung hình</title>
+<meta name="description" content="Vistube PiP - Xem YouTube toàn màn hình, ghim video ra desktop bằng Picture-in-Picture thật.">
+<title>Vistube PiP — YouTube trọn khung hình</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <style>
 :root{color-scheme:dark;--bg:#090d18;--surface:#141c30;--surface2:#202b45;--border:#364360;--ink:#f3f6ff;--muted:#a4b1cc;--accent:#9686ff;--accent2:#675deb}
 *{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}button,input{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible{outline:2px solid #beb4ff;outline-offset:2px}input{min-width:0}.hidden{display:none!important}
 .landing{min-height:100dvh;display:grid;place-items:center;padding:32px 18px;background:radial-gradient(ellipse 48% 55% at 52% 36%,#27204b 0%,transparent 100%),radial-gradient(ellipse 35% 30% at 90% 90%,#10223d 0%,transparent 100%),var(--bg)}.wrap{width:min(100%,650px)}.brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:34px}.mark{width:52px;height:52px}.brand-name{font-size:28px;letter-spacing:-1.2px;font-weight:850}.brand-name span{color:#a99eff}.tag{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#b8aaff;margin:0 0 13px;text-align:center;font-weight:700}.headline{font-size:clamp(32px,6vw,55px);font-weight:850;letter-spacing:-2.5px;line-height:1.1;text-align:center;margin:0}.headline em{font-style:normal;background:linear-gradient(90deg,#c6b7ff,#73c7ff);color:transparent;background-clip:text}.sub{text-align:center;color:var(--muted);font-size:15px;line-height:1.7;margin:18px auto 30px;max-width:460px}.card{background:rgba(19,26,43,.9);border:1px solid #36405c;border-radius:20px;padding:24px;box-shadow:0 24px 80px #0005}.label{font-size:13px;font-weight:650;margin-bottom:10px;display:block}.input-row{display:flex;gap:10px}.url,.field{background:#0b1120;color:#fff;border:1px solid #3b4762;border-radius:12px;padding:14px;outline:0;min-width:0;flex:1}.url:focus,.field:focus{border-color:#988dff;box-shadow:0 0 0 3px #7b6cff2b}.primary{background:linear-gradient(135deg,#806fff,#5e71ed);border:0;border-radius:12px;color:white;padding:13px 18px;font-weight:750;white-space:nowrap}.primary:hover{filter:brightness(1.12)}.error{min-height:18px;color:#ffadb8;font-size:12px;margin:9px 0 0}.foot{display:flex;justify-content:center;gap:10px 20px;flex-wrap:wrap;margin-top:18px;color:#98a6c0;font-size:12px}.foot span:before{content:'✓';color:#a59aff;margin-right:6px}.tiny{text-align:center;color:#7989a2;font-size:12px;margin-top:32px}.home-actions{display:flex;justify-content:center;margin-top:18px}
-.player{display:none;position:fixed;inset:0;width:100vw;height:100dvh;z-index:10;background:#000}.player.active{display:block}.player iframe{width:100%;height:100%;border:0;display:block}
+.player{display:none;position:fixed;inset:0;width:100vw;height:100dvh;z-index:10;background:#000}.player.active{display:block}.player iframe{width:100%;height:100%;border:0;display:block}.frame-holder{position:absolute;inset:0}.pip-away{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px 26px;background:radial-gradient(circle at 50% 10%,#27204b,#090d18 70%);color:#f2efff}.pip-away-icon{font-size:54px;color:#b3a4ff}.pip-away h2{font-size:clamp(22px,3vw,34px);margin:8px 0 8px;letter-spacing:-.6px}.pip-away p{max-width:410px;font-size:14px;line-height:1.6;color:#abb9d2}.pip-away button{margin:15px 0}.pip-away-hint{color:#7e8da8;font-size:12px}.pip-action{background:#3b3674;border-color:#9588ed}.pip-action:hover{background:#514b92}
 /* A narrow always-on-top mouse target, even when YouTube iframe has focus. */
 .edge{position:absolute;z-index:30;top:0;left:0;width:16px;height:100%;cursor:pointer;background:transparent}.edge:after{content:'›';position:absolute;left:0;top:50%;transform:translateY(-50%);width:22px;height:76px;display:grid;place-items:center;border-radius:0 12px 12px 0;border:1px solid #7a6ce0;border-left:0;background:#171a30e8;color:#e3dcff;font-size:27px;box-shadow:0 5px 25px #0009;transition:background .15s}.edge:hover:after,.edge:focus-visible:after{background:#5345a0}
 .drawer{position:absolute;z-index:31;top:0;left:0;height:100%;height:100dvh;width:min(410px,calc(100vw - 20px));display:flex;flex-direction:column;background:#11182af7;border-right:1px solid #536080;box-shadow:16px 0 60px #000b;backdrop-filter:blur(20px);transform:translateX(-105%);visibility:hidden;pointer-events:none;transition:transform .22s ease,visibility .22s}.drawer.open{transform:translateX(0);visibility:visible;pointer-events:auto}
@@ -26,8 +26,8 @@
 </style>
 </head>
 <body>
-<main class="landing" id="landing"><div class="wrap"><div class="brand"><img src="favicon.svg" class="mark" alt="Logo Vistube"><div class="brand-name">vis<span>tube</span></div></div><p class="tag">YOUR SCREEN. YOUR VIDEO.</p><h1 class="headline">YouTube, <em>trọn khung hình.</em></h1><p class="sub">Dán liên kết để xem video chiếm trọn cửa sổ. Rê chuột sát mép trái để mở menu công cụ. Khi đưa chuột ra ngoài, menu tự ẩn để bạn tập trung xem video.</p><section class="card"><label class="label" for="url">Liên kết video YouTube</label><form id="form" class="input-row"><input id="url" class="url" type="url" required autocomplete="url" placeholder="https://www.youtube.com/watch?v=..." aria-describedby="error"><button class="primary home-play" type="submit">▶ &nbsp;Phát video</button></form><p id="error" class="error" role="alert"></p></section><div class="foot"><span>Trọn màn hình</span><span>Hỗ trợ Shorts</span><span>Menu tự động ẩn</span><span>Lưu yêu thích và lịch sử</span></div><div class="home-actions"><button class="secondary hidden" id="resume" type="button" style="border-radius:11px;padding:11px 15px">▶ Tiếp tục video gần đây</button></div><p class="tiny">Vistube là trình phát nhúng độc lập, không liên kết với YouTube. Video có thể có quảng cáo.</p></div></main>
-<section id="player" class="player" aria-label="Trình phát YouTube"><iframe id="frame" title="YouTube video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+<main class="landing" id="landing"><div class="wrap"><div class="brand"><img src="favicon.svg" class="mark" alt="Logo Vistube"><div class="brand-name">vis<span>tube</span></div></div><p class="tag">YOUR SCREEN. YOUR VIDEO.</p><h1 class="headline">YouTube, <em>trọn khung hình.</em></h1><p class="sub">Dán liên kết để xem video chiếm trọn cửa sổ. Rê chuột sát mép trái để mở menu công cụ. Khi đưa chuột ra ngoài, menu tự ẩn để bạn tập trung xem video.</p><section class="card"><label class="label" for="url">Liên kết video YouTube</label><form id="form" class="input-row"><input id="url" class="url" type="url" required autocomplete="url" placeholder="https://www.youtube.com/watch?v=..." aria-describedby="error"><button class="primary home-play" type="submit">▶ &nbsp;Phát video</button></form><p id="error" class="error" role="alert"></p></section><div class="foot"><span>Trọn màn hình</span><span>Hỗ trợ Shorts</span><span>Ghim video Picture-in-Picture</span><span>Menu tự động ẩn</span><span>Lưu yêu thích và lịch sử</span></div><div class="home-actions"><button class="secondary hidden" id="resume" type="button" style="border-radius:11px;padding:11px 15px">▶ Tiếp tục video gần đây</button></div><p class="tiny">Vistube là trình phát nhúng độc lập, không liên kết với YouTube. Video có thể có quảng cáo.</p></div></main>
+<section id="player" class="player" aria-label="Trình phát YouTube"><div id="frame-holder" class="frame-holder"><iframe id="frame" title="YouTube video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div><div class="pip-away hidden" id="pip-away"><div class="pip-away-icon">▣</div><h2>Video đang ở cửa sổ nổi</h2><p>Tiếp tục xem trong cửa sổ Picture-in-Picture. Bạn có thể kéo và thay đổi kích thước cửa sổ.</p><button type="button" id="return-pip" class="primary">↙ Đưa video trở lại Vistube</button><div class="pip-away-hint">Cứ đóng cửa sổ PiP để trở lại trang phát video.</div></div>
 <div id="edge" class="edge" role="button" tabindex="0" aria-label="Mở menu công cụ ở mép trái" title="Di chuột vào để mở menu"></div>
 <aside id="drawer" class="drawer" aria-label="Menu công cụ Vistube" aria-hidden="true" inert>
   <header class="drawer-header"><div class="drawer-top"><div class="small-brand"><img src="favicon.svg" alt=""> Vistube <span style="color:#a89dff">Plus</span></div><button class="xbutton" id="close-menu" type="button" aria-label="Đóng menu">×</button></div><div class="drawer-sub micro"><span class="status-dot"></span> Di chuột ra ngoài, menu sẽ tự ẩn</div></header>
@@ -44,13 +44,14 @@
       <div class="actions"><button class="action" id="prev" type="button"><span class="ico">⏮</span>Video trước</button><button class="action accent" id="next" type="button"><span class="ico">⏭</span>Tiếp theo</button></div>
       <div class="pane-title">Thao tác nhanh</div>
       <div class="actions">
+        <button class="action pip-action" id="pip" type="button" title="Ghim cửa sổ nổi lên desktop"><span class="ico">▣</span><span id="pip-label">Ghim video (PiP)</span></button>
         <button class="action" id="favorite" type="button"><span class="ico">☆</span><span id="fav-label">Thêm yêu thích</span></button>
         <button class="action" id="reload" type="button"><span class="ico">↻</span>Phát lại từ đầu</button>
         <button class="action" id="copy" type="button"><span class="ico">🔗</span>Sao chép link</button>
         <button class="action" id="youtube" type="button"><span class="ico">↗</span>Mở YouTube</button>
       </div>
       <div class="section-line"></div>
-      <div class="help-box">💡 <strong>Mẹo:</strong> Để đổi video khác, mở tab <strong>Danh sách</strong> rồi dán link mới. Khi chọn một video, menu sẽ tự thu lại.</div>
+      <div class="help-box">💡 <strong>Mẹo:</strong> Bấm <strong>Ghim video (PiP)</strong> để mở cửa sổ nổi thật. Chrome có thể tải lại video khi chuyển giữa hai cửa sổ. Để dùng PiP video gốc, nhấn chuột phải hai lần lên video rồi chọn <strong>Hình trong hình</strong>. Khi chọn một video, menu sẽ tự thu lại.</div>
     </section>
     <section class="pane" id="pane-library" hidden>
       <div class="pane-title">Thêm video mới</div>
@@ -70,7 +71,7 @@
       <div class="pane-title">Quản lý dữ liệu</div>
       <button type="button" class="action full" id="clear-history">🗑 Xóa lịch sử đã xem</button>
       <div class="pane-title">Trợ giúp</div>
-      <div class="help-box">Đưa chuột đến <strong>mép trái</strong> để mở menu công cụ và đưa chuột ra ngoài để tự đóng. Có thể bấm <strong>Tiếp tục xem</strong> hoặc <strong>Trang chủ</strong> ở cuối menu.<br><br>Phím <strong>Esc</strong> chỉ hoạt động khi trang Vistube nhận bàn phím; YouTube iframe có thể giữ phím. Cài đặt phát áp dụng cho video mở tiếp theo.</div>
+      <div class="help-box">Đưa chuột đến <strong>mép trái</strong> để mở menu công cụ và đưa chuột ra ngoài để tự đóng. Có thể bấm <strong>Tiếp tục xem</strong> hoặc <strong>Trang chủ</strong> ở cuối menu.<br><br>Phím <strong>Esc</strong> chỉ hoạt động khi trang Vistube nhận bàn phím; YouTube iframe có thể giữ phím. Cài đặt phát áp dụng cho video mở tiếp theo. <strong>PiP một nút</strong> cần Chrome/Edge hiện đại và địa chỉ HTTPS hoặc localhost.</div>
     </section>
   </div>
   <footer class="drawer-bottom"><button class="secondary" id="home" type="button">← Trang chủ</button><button class="primary" id="hide-menu" type="button">Tiếp tục xem ▶</button></footer>
@@ -81,18 +82,19 @@
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const form=$('form'),input=$('url'),landing=$('landing'),player=$('player'),frame=$('frame'),drawer=$('drawer'),edge=$('edge');
+const form=$('form'),input=$('url'),landing=$('landing'),player=$('player'),frame=$('frame'),frameHolder=$('frame-holder'),drawer=$('drawer'),edge=$('edge');
 const STORE='vistube-plus-v1';const defaults={queue:[],history:[],favorites:[],settings:{autoplay:true,mute:false,loop:false,saveHistory:true}};
 let data;
 try{const x=JSON.parse(localStorage.getItem(STORE)||'{}');data={queue:Array.isArray(x.queue)?x.queue.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],history:Array.isArray(x.history)?x.history.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],favorites:Array.isArray(x.favorites)?x.favorites.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],settings:{...defaults.settings,...(x.settings||{})}}}catch{data=JSON.parse(JSON.stringify(defaults))}
 let current=null,open=false,activePane='control',listType='queue',closeTimer=null,toastTimer=null,reopenAfter=0;
+let pipWin=null,pipBusy=false,playSeconds=0,playSecondsVideoId=null;
 const valid=id=>typeof id==='string'&&/^[\w-]{11}$/.test(id);
 function parseVideo(raw){try{const u=new URL(raw.trim());if(!['http:','https:'].includes(u.protocol))return null;const host=u.hostname.toLowerCase();let id=null;if(host==='youtu.be'||host==='www.youtu.be')id=u.pathname.split('/')[1];else if(['youtube.com','www.youtube.com','m.youtube.com','music.youtube.com','youtube-nocookie.com','www.youtube-nocookie.com'].includes(host)){if(u.pathname==='/watch')id=u.searchParams.get('v');else id=u.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1]}return valid(id)?id:null}catch{return null}}
 function save(){try{localStorage.setItem(STORE,JSON.stringify(data))}catch{}}
 function insert(arr,id,front=false){const out=arr.filter(x=>x&&valid(x.id)&&x.id!==id);const record={id,at:Date.now()};front?out.unshift(record):out.push(record);return out.slice(0,150)}
 const thumb=id=>'https://i.ytimg.com/vi/'+encodeURIComponent(id)+'/mqdefault.jpg';
 const watch=id=>'https://www.youtube.com/watch?v='+encodeURIComponent(id);
-function embed(id){const p=new URLSearchParams({autoplay:data.settings.autoplay?'1':'0',mute:data.settings.mute?'1':'0',loop:data.settings.loop?'1':'0',playsinline:'1',rel:'0'});if(data.settings.loop)p.set('playlist',id);return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+p.toString()}
+function embed(id,seconds=0){const p=new URLSearchParams({autoplay:data.settings.autoplay?'1':'0',mute:data.settings.mute?'1':'0',loop:data.settings.loop?'1':'0',playsinline:'1',rel:'0',enablejsapi:'1'});if(data.settings.loop)p.set('playlist',id);if(seconds>=2)p.set('start',String(Math.floor(seconds)));if(location.origin!=='null'&&/^https?:$/.test(location.protocol))p.set('origin',location.origin);return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+p.toString()}
 function message(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),2300)}
 function currentInfo(){if(!current)return;const pos=data.queue.findIndex(x=>x.id===current);$('current-thumb').src=thumb(current);$('current-name').textContent='Video '+current;$('current-id').textContent='ID: '+current;$('queue-position').textContent=pos<0?'Ngoài hàng đợi':`${pos+1} / ${data.queue.length}`;$('prev').disabled=pos<=0;$('next').disabled=pos<0||pos>=data.queue.length-1;const isFav=data.favorites.some(x=>x.id===current);$('fav-label').textContent=isFav?'Bỏ yêu thích':'Thêm yêu thích';$('favorite').querySelector('.ico').textContent=isFav?'★':'☆'}
 function resumeButton(){const id=data.history[0]?.id||data.queue.at(-1)?.id;$('resume').classList.toggle('hidden',!id)}
@@ -100,8 +102,82 @@ function showPane(name){activePane=name;document.querySelectorAll('[data-pane]')
 function showMenu(){clearTimeout(closeTimer);if(!player.classList.contains('active')||Date.now()<reopenAfter)return; if(open)return;open=true;drawer.classList.add('open');drawer.removeAttribute('inert');drawer.setAttribute('aria-hidden','false');currentInfo();renderList()}
 function hideMenu(){clearTimeout(closeTimer);if(!open)return;open=false;drawer.classList.remove('open');drawer.setAttribute('aria-hidden','true');drawer.setAttribute('inert','');reopenAfter=Date.now()+380}
 function deferHide(){clearTimeout(closeTimer);closeTimer=setTimeout(()=>{if(!drawer.matches(':hover'))hideMenu()},320)}
-function play(id){if(!valid(id))return;current=id;frame.src=embed(id);landing.classList.add('hidden');player.classList.add('active');if(!data.queue.some(x=>x.id===id))data.queue=insert(data.queue,id);if(data.settings.saveHistory)data.history=insert(data.history,id,true);save();currentInfo();renderList();resumeButton();hideMenu()}
-function goHome(){hideMenu();frame.src='about:blank';player.classList.remove('active');landing.classList.remove('hidden');if(current)input.value=watch(current);resumeButton();input.focus()}
+function play(id){if(!valid(id))return;current=id;playSeconds=0;playSecondsVideoId=id;frame.src=embed(id);landing.classList.add('hidden');player.classList.add('active');if(!data.queue.some(x=>x.id===id))data.queue=insert(data.queue,id);if(data.settings.saveHistory)data.history=insert(data.history,id,true);save();currentInfo();renderList();resumeButton();hideMenu()}
+function goHome(){hideMenu();player.classList.remove('active');if(pipWin&&!pipWin.closed)pipWin.close();frame.src='about:blank';landing.classList.remove('hidden');if(current)input.value=watch(current);resumeButton();input.focus()}
+
+// Chrome Document Picture-in-Picture: a real always-on-top OS window.
+// Note: moving a cross-origin YouTube iframe reloads its player.
+function pipAvailable(){return !!(window.documentPictureInPicture&&window.isSecureContext)}
+function pipStatus(){
+  $('pip-label').textContent=pipWin&&!pipWin.closed?'Đưa về Vistube':'Ghim video (PiP)';
+  $('pip').title=pipWin&&!pipWin.closed?'Trở lại trang phát video':'Mở video ra cửa sổ nổi';
+}
+function showPipHelp(){
+  hideMenu();
+  message('PiP một nút cần Chrome/Edge và HTTPS hoặc localhost. Hoặc nhấn chuột phải 2 lần lên video → Hình trong hình.');
+}
+// IFrame API telemetry (best effort): keep roughly the same playback position during moves.
+function handleYTMessage(event){
+  if(event.origin!=='https://www.youtube.com'&&event.origin!=='https://www.youtube-nocookie.com')return;
+  if(!frame.contentWindow||event.source!==frame.contentWindow)return;
+  let payload=event.data;
+  if(typeof payload==='string'){try{payload=JSON.parse(payload)}catch{return}}
+  if(!payload||typeof payload!=='object')return;
+  const t=payload.info?.currentTime;
+  if(typeof t==='number'&&Number.isFinite(t)&&t>=0&&playSecondsVideoId===current)playSeconds=t;
+}
+window.addEventListener('message',handleYTMessage);
+frame.addEventListener('load',()=>{
+  if(frame.src==='about:blank')return;
+  try{frame.contentWindow.postMessage(JSON.stringify({event:'listening',id:'vistube'}),'https://www.youtube.com')}catch{}
+});
+setInterval(()=>{
+  if(!current||!player.classList.contains('active'))return;
+  try{frame.contentWindow?.postMessage(JSON.stringify({event:'command',func:'getCurrentTime',args:[]}),'https://www.youtube.com')}catch{}
+},1200);
+function closePiP(){if(pipWin&&!pipWin.closed)pipWin.close()}
+async function togglePiP(){
+  if(!current||pipBusy)return;
+  if(pipWin&&!pipWin.closed){closePiP();return}
+  if(!pipAvailable()){showPipHelp();return}
+  pipBusy=true;
+  let popup;
+  try{
+    // Called directly from the click handler, preserving user activation.
+    popup=await documentPictureInPicture.requestWindow({width:510,height:310});
+    pipWin=popup;
+    popup.document.title='Vistube · Picture-in-Picture';
+    const style=popup.document.createElement('style');
+    style.textContent=':root{color-scheme:dark}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000}iframe{width:100vw;height:100vh;border:0;display:block;background:#000}';
+    popup.document.head.append(style);
+    popup.addEventListener('message',handleYTMessage);
+    popup.addEventListener('pagehide',()=>{
+      if(pipWin!==popup)return;
+      pipWin=null;
+      try{
+        frameHolder.appendChild(frame);
+        if(player.classList.contains('active')&&current)frame.src=embed(current,playSeconds);
+        else frame.src='about:blank';
+      }catch(err){console.warn('Vistube PiP restore:',err)}
+      $('pip-away').classList.add('hidden');
+      pipStatus();
+    },{once:true});
+    // Moving an iframe between Documents reloads it. Recreate at approx. timestamp.
+    popup.document.body.appendChild(frame);
+    frame.src=embed(current,playSeconds);
+    $('pip-away').classList.remove('hidden');
+    hideMenu();
+    pipStatus();
+  }catch(err){
+    console.warn('Vistube PiP unavailable:',err);
+    if(popup&&!popup.closed)popup.close();
+    message('Không mở được PiP. Thử Chrome/Edge qua localhost, hoặc chuột phải 2 lần trên video.');
+  }finally{pipBusy=false}
+}
+$('pip').addEventListener('click',togglePiP);
+$('return-pip').addEventListener('click',closePiP);
+pipStatus();
+
 function selectList(name){listType=name;document.querySelectorAll('[data-list]').forEach(b=>b.classList.toggle('selected',b.dataset.list===name));renderList()}
 function renderList(){const list=data[listType],out=$('video-list');out.replaceChildren();$('list-heading').textContent=({queue:'Hàng đợi phát',history:'Video đã xem',favorites:'Video yêu thích'})[listType];$('list-count').textContent=list.length+' video';$('shuffle').style.display=listType==='queue'?'':'none';$('clear-list').textContent=({queue:'Xóa hàng đợi',history:'Xóa lịch sử',favorites:'Xóa yêu thích'})[listType];if(!list.length){const el=document.createElement('div');el.className='empty';el.textContent=({queue:'Chưa có video nào. Dán link bên trên để thêm vào hàng đợi.',history:'Chưa có lịch sử xem video.',favorites:'Chưa lưu video yêu thích nào.'})[listType];out.append(el);return}for(const entry of list){if(!valid(entry.id))continue;const row=document.createElement('div');row.className='list-item'+(current===entry.id?' current':'');const im=document.createElement('img');im.className='list-thumb';im.src=thumb(entry.id);im.alt='';im.loading='lazy';const info=document.createElement('div');info.className='list-info';const btn=document.createElement('button');btn.className='list-title';btn.textContent='Video '+entry.id;btn.title='Bấm để phát video';btn.onclick=()=>play(entry.id);const small=document.createElement('div');small.className='list-meta';small.textContent=current===entry.id?'● Đang xem':(entry.at?new Date(entry.at).toLocaleDateString('vi-VN'):'YouTube');info.append(btn,small);const del=document.createElement('button');del.className='remove';del.type='button';del.textContent='×';del.title='Xóa khỏi danh sách';del.setAttribute('aria-label','Xóa video '+entry.id);del.onclick=()=>{data[listType]=data[listType].filter(x=>x.id!==entry.id);save();renderList();currentInfo();resumeButton()};row.append(im,info,del);out.append(row)}}
 form.addEventListener('submit',e=>{e.preventDefault();const id=parseVideo(input.value);if(!id){$('error').textContent='Link không hợp lệ. Hãy nhập link YouTube, Shorts hoặc youtu.be.';return}$('error').textContent='';play(id)});
@@ -110,7 +186,7 @@ $('resume').onclick=()=>{const id=data.history[0]?.id||data.queue.at(-1)?.id;if(
 $('prev').onclick=()=>{const i=data.queue.findIndex(x=>x.id===current);if(i>0)play(data.queue[i-1].id)};
 $('next').onclick=()=>{const i=data.queue.findIndex(x=>x.id===current);if(i>=0&&i<data.queue.length-1)play(data.queue[i+1].id)};
 $('favorite').onclick=()=>{if(!current)return;const has=data.favorites.some(x=>x.id===current);data.favorites=has?data.favorites.filter(x=>x.id!==current):insert(data.favorites,current,true);save();currentInfo();renderList();message(has?'Đã bỏ yêu thích':'Đã thêm vào yêu thích')};
-$('reload').onclick=()=>{if(current){frame.src=embed(current);hideMenu();message('Đã phát lại video')}};
+$('reload').onclick=()=>{if(current){playSeconds=0;frame.src=embed(current);hideMenu();message('Đã phát lại video')}};
 $('copy').onclick=async()=>{if(!current)return;const url=watch(current);try{await navigator.clipboard.writeText(url);message('Đã sao chép liên kết')}catch{const temp=document.createElement('textarea');temp.value=url;document.body.append(temp);temp.select();let ok=false;try{ok=document.execCommand('copy')}catch{}temp.remove();message(ok?'Đã sao chép liên kết':'Không sao chép được; dùng nút Mở YouTube')}};
 $('youtube').onclick=()=>{if(current)window.open(watch(current),'_blank','noopener,noreferrer')};
 $('shuffle').onclick=()=>{for(let i=data.queue.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[data.queue[i],data.queue[j]]=[data.queue[j],data.queue[i]]}save();renderList();currentInfo();message('Đã trộn hàng đợi')};
