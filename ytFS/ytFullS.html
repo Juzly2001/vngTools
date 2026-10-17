@@ -162,7 +162,7 @@
     <div class="loading-id" id="loading-video-id"></div>
   </div>
 </div>
-<div class="pip-away hidden" id="pip-away"><div class="pip-away-icon">▣</div><h2>Video đang ở cửa sổ nổi</h2><p>Tiếp tục xem trong cửa sổ Picture-in-Picture. Trong cửa sổ PiP, dùng biểu tượng ổ khóa nhỏ ở giữa mép phải video để bật/tắt thao tác. Kéo hoặc resize cửa sổ bằng thanh và mép của Chrome.</p><button type="button" id="return-pip" class="primary">↙ Đưa video trở lại Vistube</button><div class="pip-away-hint">Cứ đóng cửa sổ PiP để trở lại trang phát video.</div></div>
+<div class="pip-away hidden" id="pip-away"><div class="pip-away-icon">▣</div><h2>Video đang ở cửa sổ nổi</h2><p>Tiếp tục xem trong cửa sổ Picture-in-Picture. Trong cửa sổ PiP, di chuột vào để hiện hai nút ở mép phải: khóa thao tác và phát/tạm dừng video. Kéo hoặc resize cửa sổ bằng thanh và mép của Chrome.</p><button type="button" id="return-pip" class="primary">↙ Đưa video trở lại Vistube</button><div class="pip-away-hint">Cứ đóng cửa sổ PiP để trở lại trang phát video.</div></div>
 
 <div id="edge" class="edge" role="button" tabindex="0" aria-label="Mở menu công cụ ở mép trái" title="Di chuột vào để mở menu"></div>
 
@@ -210,7 +210,7 @@
 
       <div class="section-line"></div>
 
-      <div class="help-box">💡 <strong>Mẹo:</strong> Trong cửa sổ PiP có biểu tượng <strong>ổ khóa nhỏ</strong> ở góc video. Khi khóa, không hiện bất kỳ thông báo nào che video. Vẫn có thể đổi kích thước bằng viền cửa sổ. Bấm <strong>Ghim video (PiP)</strong> để mở cửa sổ nổi thật. Video có thể tải lại khi chuyển giữa hai cửa sổ. Để dùng PiP video gốc, nhấn chuột phải hai lần lên video rồi chọn <strong>Hình trong hình</strong>. Khi chọn một video, menu sẽ tự thu lại.</div>
+      <div class="help-box">💡 <strong>Mẹo:</strong> Trong cửa sổ PiP có hai nút <strong>khóa thao tác</strong> và <strong>phát/tạm dừng</strong> ở mép phải video. Khi khóa, không hiện bất kỳ thông báo nào che video. Vẫn có thể đổi kích thước bằng viền cửa sổ. Bấm <strong>Ghim video (PiP)</strong> để mở cửa sổ nổi thật. Video có thể tải lại khi chuyển giữa hai cửa sổ. Để dùng PiP video gốc, nhấn chuột phải hai lần lên video rồi chọn <strong>Hình trong hình</strong>. Khi chọn một video, menu sẽ tự thu lại.</div>
 
     </section>
 
@@ -352,6 +352,7 @@ function play(id){
   if(pipWin&&!pipWin.closed&&pipRelay){
     stopLoading();
     if(typeof pipWin.vistubeStartLoading==='function')pipWin.vistubeStartLoading();
+    if(typeof pipWin.vistubeResetPlayback==='function')pipWin.vistubeResetPlayback();
     pipRelay.src=pipUrl(id);frame.src='about:blank';
   }else{
     beginLoading(id,switching?'Đang chuyển sang video bạn chọn...':'Đang kết nối với YouTube để mở video của bạn...');
@@ -386,6 +387,7 @@ function pipUrl(id,seconds=playSeconds){
   const u=new URL('pip-player.html',document.baseURI);
 
   u.searchParams.set('v',id);
+  u.searchParams.set('vt','4');
 
   u.searchParams.set('start',String(Math.max(0,Math.floor(seconds))));
 
@@ -472,7 +474,7 @@ async function togglePiP(){
 
     // Chrome owns the native PiP title bar. The page cannot add buttons to it.
 
-    // Show one unobtrusive lock button within the content; no toolbar or resize controls.
+    // Two small PiP controls: lock and play/pause. Chrome owns the native title bar.
 
     const doc=popup.document;
 
@@ -506,11 +508,11 @@ async function togglePiP(){
         @keyframes vt-spin{to{transform:rotate(360deg)}}
 
 
-      /* Native-Chrome inspired dark lock tab, completely invisible at rest. */
+      /* Chrome-dark floating PiP buttons, both invisible when the pointer leaves. */
 
-      .vt-lock{
+      .vt-lock,.vt-play-toggle{
 
-        position:absolute;z-index:4;right:6px;top:50%;
+        position:absolute;z-index:4;right:6px;top:calc(50% - 25px);width:42px;height:42px;
 
         transform:translate(100%,-50%);
 
@@ -534,9 +536,13 @@ async function togglePiP(){
 
       }
 
+      .vt-play-toggle{top:calc(50% + 25px)}
+
       .vt-shell.is-pointer-in .vt-lock,
 
-      .vt-lock:hover{
+      .vt-shell.is-pointer-in .vt-play-toggle,
+
+      .vt-lock:hover,.vt-play-toggle:hover{
 
         transform:translate(0,-50%);
 
@@ -546,11 +552,11 @@ async function togglePiP(){
 
       }
 
-      .vt-lock:hover{background:#303134}
+      .vt-lock:hover,.vt-play-toggle:hover{background:#303134}
 
-      .vt-lock:focus-visible{outline:2px solid #b9bdc5;outline-offset:-3px}
+      .vt-lock:focus-visible,.vt-play-toggle:focus-visible{outline:2px solid #b9bdc5;outline-offset:-3px}
 
-      .vt-lock svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;
+      .vt-lock svg,.vt-play-toggle svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;
 
         stroke-linejoin:round;stroke-linecap:round;pointer-events:none;flex:none}
 
@@ -562,15 +568,27 @@ async function togglePiP(){
 
       .vt-shell.locked .vt-lock .vt-locked-icon{display:block}
 
+      .vt-play-toggle .vt-pause-icon{display:none}
+
+      .vt-shell.is-playing .vt-play-toggle .vt-play-icon{display:none}
+
+      .vt-shell.is-playing .vt-play-toggle .vt-pause-icon{display:block}
+
+      #vt-control-warning{position:absolute;z-index:6;bottom:10px;left:10px;
+        max-width:calc(100% - 72px);padding:7px 10px;background:#202124ed;
+        color:#e8eaed;font-size:11px;border:1px solid #53565b;border-radius:8px;
+        pointer-events:none;opacity:0;visibility:hidden;transition:opacity .2s,visibility .2s}
+      #vt-control-warning.visible{opacity:1;visibility:visible}
+
       @media(hover:none){
 
         /* Touch users need an accessible unlock control. */
 
-        .vt-lock{transform:translate(0,-50%);opacity:1;visibility:visible;pointer-events:auto;width:40px;height:52px;transition:none}
+        .vt-lock,.vt-play-toggle{transform:translate(0,-50%);opacity:1;visibility:visible;pointer-events:auto;width:42px;height:42px;transition:none}
 
       }
 
-      @media(prefers-reduced-motion:reduce){.vt-lock{transition:none!important}}
+      @media(prefers-reduced-motion:reduce){.vt-lock,.vt-play-toggle{transition:none!important}}
 
     `;
 
@@ -593,13 +611,18 @@ async function togglePiP(){
 
         <svg class="vt-locked-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="10" width="14" height="11" rx="2.5"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path><path d="M12 15v2"></path></svg>
 
+      </button>
+
+      <div id="vt-control-warning" role="status" aria-live="polite"></div>
+
+      <button class="vt-play-toggle" id="vt-play-toggle" type="button" title="Phát video" aria-label="Phát video" aria-pressed="false">
+        <svg class="vt-play-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5 19 12 8 18.5Z"/></svg>
+        <svg class="vt-pause-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
       </button>`;
 
     doc.body.append(shell);
 
     const relay=doc.getElementById('vt-relay');
-
-    relay.src=pipUrl(current);
 
     pipRelay=relay;
       let pipLoadingTimer=null,pipLoadSerial=0,pipMinTime=0;
@@ -643,6 +666,95 @@ async function togglePiP(){
 
     });
 
+    // PiP and pip-player.html share the HTTPS origin. Calling its exported
+    // function SYNCHRONOUSLY inside this click handler retains Chrome's
+    // user-activation for playVideo(). postMessage is only a backup.
+    const playBtn=doc.getElementById('vt-play-toggle');
+    let isPlaying=false;
+    let relayReady=false;
+    let queuedAction=null;
+    let playbackWarningTimer=null;
+
+    function setPiPPlaying(value){
+      isPlaying=Boolean(value);
+      shell.classList.toggle('is-playing',isPlaying);
+      playBtn.title=isPlaying?'Tạm dừng video':'Phát video';
+      playBtn.setAttribute('aria-label',playBtn.title);
+      playBtn.setAttribute('aria-pressed',String(isPlaying));
+    }
+
+    function announcePiPProblem(text){
+      // Only errors appear; locking never overlays the video.
+      const el=doc.getElementById('vt-control-warning');
+      el.textContent=text;
+      el.classList.add('visible');
+      clearTimeout(playbackWarningTimer);
+      playbackWarningTimer=setTimeout(()=>el.classList.remove('visible'),3300);
+    }
+
+    function directPlaybackStatus(){
+      try{
+        const fn=relay.contentWindow?.vistubePiPStatus;
+        if(typeof fn!=='function')return false;
+        const state=fn();
+        if(!state||state.videoId!==current||state.version!==4)return false;
+        relayReady=Boolean(state.ready);
+        if(typeof state.playing==='boolean'&&state.state>=0)setPiPPlaying(state.playing);
+        return true;
+      }catch(err){
+        console.warn('Không đọc được trạng thái PiP:',err);
+        return false;
+      }
+    }
+
+    function sendPlaybackCommand(action){
+      // Do NOT await, setTimeout, or postMessage first: keep user activation.
+      try{
+        const fn=relay.contentWindow?.vistubePiPControl;
+        if(typeof fn==='function'){
+          const result=fn(action);
+          if(result?.ok){
+            relayReady=!!result.ready;
+            queuedAction=null;
+            return true;
+          }
+          if(result?.message)announcePiPProblem(result.message);
+        }
+      }catch(err){console.warn('PiP direct control failed:',err)}
+
+      // Relay still loading or hosting old build; retry when it finishes.
+      queuedAction=action;
+      try{relay.contentWindow?.postMessage({
+        type:'vistube-pip-command',videoId:current,action
+      },location.origin)}catch{}
+      return false;
+    }
+
+    function resetPiPPlayback(){
+      relayReady=false;
+      queuedAction=null;
+      setPiPPlaying(false);
+    }
+    popup.vistubeResetPlayback=resetPiPPlayback;
+    resetPiPPlayback();
+
+    playBtn.addEventListener('click',()=>{
+      // Query status first when ready, but never place a promise in this path.
+      directPlaybackStatus();
+      const action=isPlaying?'pause':'play';
+      const sent=sendPlaybackCommand(action);
+      if(sent)setPiPPlaying(action==='play');
+      else announcePiPProblem('Đang kết nối trình phát. Thử bấm lại sau khi video tải xong.');
+    });
+
+    relay.addEventListener('load',()=>{
+      // Also picks up cached commands if the user clicked while loading.
+      if(queuedAction){
+        const action=queuedAction;
+        if(sendPlaybackCommand(action))setPiPPlaying(action==='play');
+      }
+    });
+
     // Only reveal when the pointer is over PiP. Nothing (not even a thin rail)
 
     // remains visible after the pointer exits the PiP content area.
@@ -654,6 +766,7 @@ async function togglePiP(){
       shell.classList.remove('is-pointer-in');
 
       lockBtn.blur();
+      playBtn.blur();
 
     };
 
@@ -669,22 +782,30 @@ async function togglePiP(){
 
     popup.addEventListener('blur',concealLock);
 
-    // The relay reports its video time without exposing YouTube credentials.
-
-    popup.addEventListener('message',(e)=>{
-
+    // API state is authoritative; do not trust an optimistic click forever.
+    popup.addEventListener('message',e=>{
       if(e.origin!==location.origin||e.source!==relay.contentWindow)return;
-
       const x=e.data;
-
-      if(x?.type==='vistube-pip-position'&&x.videoId===current&&typeof x.seconds==='number'&&Number.isFinite(x.seconds)&&x.seconds>=0){
-
+      if(!x||x.videoId!==current)return;
+      if(x.type==='vistube-pip-ready'){
+        relayReady=true;
+        setPiPPlaying(x.playing);
+        if(queuedAction){
+          const action=queuedAction;
+          if(sendPlaybackCommand(action))setPiPPlaying(action==='play');
+        }
+      }else if(x.type==='vistube-pip-state'){
+        relayReady=!!x.ready;
+        setPiPPlaying(x.playing);
+      }else if(x.type==='vistube-pip-position'&&typeof x.seconds==='number'&&Number.isFinite(x.seconds)&&x.seconds>=0){
         playSeconds=x.seconds;
-
         playSecondsVideoId=current;
-
+      }else if(x.type==='vistube-pip-error'){
+        console.warn('YouTube PiP error:',x.code);
+        if(x.code==='blocked')announcePiPProblem('Chrome đang chặn phát video. Hãy bấm Play trong YouTube một lần.');
+        else if(x.code==='api-load')announcePiPProblem('Không tải được YouTube API. Kiểm tra tiện ích chặn quảng cáo.');
+        else announcePiPProblem('Không điều khiển được video YouTube (lỗi '+String(x.code)+').');
       }
-
     });
 
     popup.addEventListener('pagehide',()=>{
@@ -705,6 +826,7 @@ async function togglePiP(){
 
     },{once:true});
 
+    relay.src=pipUrl(current); // Ready/error listeners are now installed.
     loadingSerial++;stopLoading();frame.src='about:blank'; // Do not play two copies at once.
 
     $('pip-away').classList.remove('hidden');
@@ -749,7 +871,7 @@ $('next').onclick=()=>{const i=data.queue.findIndex(x=>x.id===current);if(i>=0&&
 
 $('favorite').onclick=()=>{if(!current)return;const has=data.favorites.some(x=>x.id===current);data.favorites=has?data.favorites.filter(x=>x.id!==current):insert(data.favorites,current,true);save();currentInfo();renderList();message(has?'Đã bỏ yêu thích':'Đã thêm vào yêu thích')};
 
-$('reload').onclick=()=>{if(current){playSeconds=0;if(pipWin&&!pipWin.closed&&pipRelay){if(typeof pipWin.vistubeStartLoading==='function')pipWin.vistubeStartLoading();pipRelay.src=pipUrl(current,0)}else{beginLoading(current,'Đang tải lại video từ đầu...');frame.src=embed(current)}hideMenu();message('Đã phát lại video')}};
+$('reload').onclick=()=>{if(current){playSeconds=0;if(pipWin&&!pipWin.closed&&pipRelay){if(typeof pipWin.vistubeStartLoading==='function')pipWin.vistubeStartLoading();if(typeof pipWin.vistubeResetPlayback==='function')pipWin.vistubeResetPlayback();pipRelay.src=pipUrl(current,0)}else{beginLoading(current,'Đang tải lại video từ đầu...');frame.src=embed(current)}hideMenu();message('Đã phát lại video')}};
 
 $('copy').onclick=async()=>{if(!current)return;const url=watch(current);try{await navigator.clipboard.writeText(url);message('Đã sao chép liên kết')}catch{const temp=document.createElement('textarea');temp.value=url;document.body.append(temp);temp.select();let ok=false;try{ok=document.execCommand('copy')}catch{}temp.remove();message(ok?'Đã sao chép liên kết':'Không sao chép được; dùng nút Mở YouTube')}};
 

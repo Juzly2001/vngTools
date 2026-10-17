@@ -20,37 +20,112 @@ a{color:#b6a9ff}
 (()=>{'use strict';
 const params=new URLSearchParams(location.search);
 const id=params.get('v');
+const video=document.getElementById('youtube');
 if(!/^[A-Za-z0-9_-]{11}$/.test(id||'')){
-  document.getElementById('youtube').remove();
-  document.getElementById('error').style.display='block';
-  return;
+  video.remove();document.getElementById('error').style.display='block';return;
 }
-const start=Math.max(0,Math.min(24*60*60,Number(params.get('start'))||0));
+const start=Math.max(0,Math.min(86400,Number(params.get('start'))||0));
 const autoplay=params.get('autoplay')==='0'?'0':'1';
 const mute=params.get('mute')==='1'?'1':'0';
 const loop=params.get('loop')==='1'?'1':'0';
 const qs=new URLSearchParams({autoplay,mute,loop,rel:'0',playsinline:'1',enablejsapi:'1',origin:location.origin});
 if(loop==='1')qs.set('playlist',id);
 if(start>=2)qs.set('start',String(Math.floor(start)));
-const video=document.getElementById('youtube');
 video.src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+qs;
-// The relay is loaded from the actual Vercel HTTPS domain. Unlike an
-// about:blank PiP document, it supplies a real HTTP Referer to YouTube.
-video.addEventListener('load',()=>{
-  try{video.contentWindow.postMessage(JSON.stringify({event:'listening',id:'vistube-pip'}),'https://www.youtube.com')}catch{}
+
+let player=null,ready=false,lastState=-1,queuedAction=null;
+const playing=()=>lastState===1||lastState===3;
+const notify=payload=>{
+  if(window.parent!==window)window.parent.postMessage({videoId:id,...payload},location.origin);
+};
+const reportState=()=>notify({type:'vistube-pip-state',state:lastState,playing:playing(),ready});
+
+// Accessible directly from the same-origin Document PiP click handler. This
+// avoids an asynchronous message hop before triggering YouTube playback.
+window.vistubePiPStatus=()=>({version:4,videoId:id,ready,state:lastState,playing:playing()});
+function postRawCommand(action){
+  try{
+    video.contentWindow.postMessage(JSON.stringify({event:'command',func:action==='play'?'playVideo':'pauseVideo',args:[]}), 'https://www.youtube.com');
+  }catch(e){console.warn('YouTube iframe command failed:',e)}
+}
+function runAction(action){
+  if(action!=='play'&&action!=='pause')return {ok:false,message:'Lệnh điều khiển không hợp lệ'};
+  if(ready&&player){
+    try{
+      if(action==='play')player.playVideo();
+      else player.pauseVideo();
+      queuedAction=null;
+      return {ok:true,ready:true,via:'YT.Player'};
+    }catch(e){console.warn('YouTube Player API control failed:',e)}
+  }
+  // While API is loading, try the iframe protocol immediately AND keep one
+  // command queued for onReady. This is best effort, not a fake success state.
+  queuedAction=action;
+  postRawCommand(action);
+  return {ok:true,ready:false,via:'iframe-fallback'};
+}
+window.vistubePiPControl=runAction;
+
+// Legacy postMessage remains as a compatibility fallback for older index.html.
+window.addEventListener('message',event=>{
+  if(event.source!==window.parent||event.origin!==location.origin)return;
+  const data=event.data;
+  if(!data||typeof data!=='object'||data.videoId!==id)return;
+  if(data.type==='vistube-pip-command')runAction(data.action);
+  else if(data.type==='vistube-pip-query')reportState();
 });
-window.addEventListener('message',(e)=>{
-  if(e.origin!=='https://www.youtube.com'||e.source!==video.contentWindow)return;
-  let msg=e.data;
+
+// Accept YouTube's infoDelivery even if its external iframe_api script is
+// blocked. It also makes the lock/play icon follow manual player clicks.
+window.addEventListener('message',event=>{
+  if(event.origin!=='https://www.youtube.com'&&event.origin!=='https://www.youtube-nocookie.com')return;
+  if(event.source!==video.contentWindow)return;
+  let msg=event.data;
   if(typeof msg==='string'){try{msg=JSON.parse(msg)}catch{return}}
   if(!msg||typeof msg!=='object')return;
+  const state=(typeof msg.info==='number'&&msg.event==='onStateChange')?msg.info:msg.info?.playerState;
+  if(typeof state==='number'&&state!==lastState){lastState=state;reportState()}
   const seconds=msg.info?.currentTime;
-  if(typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>=0){
-    window.parent.postMessage({type:'vistube-pip-position',videoId:id,seconds},location.origin);
-  }
+  if(typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>=0)notify({type:'vistube-pip-position',seconds});
 });
+video.addEventListener('load',()=>{
+  try{video.contentWindow.postMessage(JSON.stringify({event:'listening',id:'vistube-pip-4'}),'https://www.youtube.com')}catch{}
+});
+
+window.onYouTubeIframeAPIReady=()=>{
+  try{
+    player=new YT.Player('youtube',{
+      events:{
+        onReady(event){
+          player=event.target;
+          ready=true;
+          try{lastState=player.getPlayerState()}catch{}
+          notify({type:'vistube-pip-ready',playing:playing()});
+          reportState();
+          if(queuedAction){const action=queuedAction;queuedAction=null;runAction(action)}
+        },
+        onStateChange(event){lastState=event.data;reportState()},
+        onAutoplayBlocked(){notify({type:'vistube-pip-error',code:'blocked'});reportState()},
+        onError(event){notify({type:'vistube-pip-error',code:event.data})}
+      }
+    });
+  }catch(e){console.warn('YouTube API initialization failed:',e);notify({type:'vistube-pip-error',code:'init'})}
+};
+const api=document.createElement('script');
+api.src='https://www.youtube.com/iframe_api';
+api.async=true;
+api.onerror=()=>notify({type:'vistube-pip-error',code:'api-load'});
+document.head.appendChild(api);
+
 setInterval(()=>{
-  try{video.contentWindow.postMessage(JSON.stringify({event:'command',func:'getCurrentTime',args:[]}),'https://www.youtube.com')}catch{}
+  if(ready&&player){
+    try{
+      const seconds=player.getCurrentTime();
+      if(typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>=0)notify({type:'vistube-pip-position',seconds});
+    }catch{}
+  }else {
+    try{video.contentWindow.postMessage(JSON.stringify({event:'command',func:'getCurrentTime',args:[]}), 'https://www.youtube.com')}catch{}
+  }
 },1200);
 })();
 </script>
