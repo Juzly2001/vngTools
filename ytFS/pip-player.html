@@ -84,7 +84,7 @@ window.addEventListener('message',event=>{
   if(typeof msg==='string'){try{msg=JSON.parse(msg)}catch{return}}
   if(!msg||typeof msg!=='object')return;
   const state=(typeof msg.info==='number'&&msg.event==='onStateChange')?msg.info:msg.info?.playerState;
-  if(typeof state==='number'&&state!==lastState){lastState=state;reportState()}
+  if(typeof state==='number'&&state!==lastState){lastState=state;reportState();if(state===0)notify({type:'vistube-pip-ended'})}
   const seconds=msg.info?.currentTime;
   if(typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>=0)notify({type:'vistube-pip-position',seconds});
 });
@@ -104,7 +104,7 @@ window.onYouTubeIframeAPIReady=()=>{
           reportState();
           if(queuedAction){const action=queuedAction;queuedAction=null;runAction(action)}
         },
-        onStateChange(event){lastState=event.data;reportState()},
+        onStateChange(event){lastState=event.data;reportState();if(event.data===0)notify({type:'vistube-pip-ended'})},
         onAutoplayBlocked(){notify({type:'vistube-pip-error',code:'blocked'});reportState()},
         onError(event){notify({type:'vistube-pip-error',code:event.data})}
       }

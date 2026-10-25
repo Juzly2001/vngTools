@@ -242,7 +242,9 @@
 
       <label class="setting"><span><div class="setting-title">Lặp video hiện tại</div><div class="setting-desc">Tự phát lại cùng một video</div></span><input type="checkbox" id="loop"></label>
 
-      <label class="setting"><span><div class="setting-title">Lưu lịch sử</div><div class="setting-desc">Ghi nhớ các video đã mở trên thiết bị này</div></span><input type="checkbox" id="save-history" checked></label>
+      <label class="setting"><span><div class="setting-title">Ghi nhớ vị trí xem</div><div class="setting-desc">Tự tiếp tục từ đoạn xem dở của từng video, kể cả PiP</div></span><input type="checkbox" id="remember-position" checked></label>
+
+       <label class="setting"><span><div class="setting-title">Lưu lịch sử</div><div class="setting-desc">Ghi nhớ các video đã mở trên thiết bị này</div></span><input type="checkbox" id="save-history" checked></label>
 
       <div class="pane-title">Quản lý dữ liệu</div>
 
@@ -274,7 +276,7 @@ const $=id=>document.getElementById(id);
 
 const form=$('form'),input=$('url'),landing=$('landing'),player=$('player'),frame=$('frame'),frameHolder=$('frame-holder'),drawer=$('drawer'),edge=$('edge');
 
-const STORE='vistube-plus-v1';const defaults={queue:[],history:[],favorites:[],settings:{autoplay:true,mute:false,loop:false,saveHistory:true}};
+const STORE='vistube-plus-v1';const POSITION_STORE='vistube-positions-v1';const defaults={queue:[],history:[],favorites:[],settings:{autoplay:true,mute:false,loop:false,saveHistory:true,rememberPosition:true}};
 
 let data;
 
@@ -283,6 +285,27 @@ try{const x=JSON.parse(localStorage.getItem(STORE)||'{}');data={queue:Array.isAr
 let current=null,open=false,activePane='control',listType='queue',closeTimer=null,toastTimer=null,reopenAfter=0;
 
 let pipWin=null,pipRelay=null,pipBusy=false,playSeconds=0,playSecondsVideoId=null;
+let positions={};
+try{const stored=JSON.parse(localStorage.getItem(POSITION_STORE)||'{}');if(stored&&typeof stored==='object'&&!Array.isArray(stored))positions=stored}catch{}
+function storedPosition(id){const v=positions[id];return data.settings.rememberPosition&&Number.isFinite(v)&&v>=2?Math.floor(v):0}
+function persistPosition(id,seconds,force=false){
+  if(!data.settings.rememberPosition||!valid(id)||!Number.isFinite(seconds)||seconds<0)return;
+  // Ignore the transient zero reported when a YouTube iframe initializes.
+  if(seconds<2&&!force)return;
+  positions[id]=Math.floor(seconds);
+  try{localStorage.setItem(POSITION_STORE,JSON.stringify(positions))}catch{}
+}
+function updatePosition(seconds){
+  if(!current||!Number.isFinite(seconds)||seconds<0||playSecondsVideoId!==current)return;
+  playSeconds=seconds;
+  if(data.settings.rememberPosition&&seconds>=2&&Date.now()-lastPositionWrite>4000){lastPositionWrite=Date.now();persistPosition(current,seconds)}
+}
+let lastPositionWrite=0;
+function flushPosition(){if(current&&playSecondsVideoId===current)persistPosition(current,playSeconds)}
+function markFinished(id){if(!data.settings.rememberPosition||!valid(id))return;positions[id]=0;try{localStorage.setItem(POSITION_STORE,JSON.stringify(positions))}catch{};if(id===current)playSeconds=0}
+window.addEventListener('pagehide',flushPosition);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushPosition()});
+
 
 const valid=id=>typeof id==='string'&&/^[\w-]{11}$/.test(id);
 
@@ -348,15 +371,15 @@ function finishLoading(serial=loadingSerial){
 function play(id){
   if(!valid(id)||window.matchMedia('(max-width: 767px)').matches)return;
   const switching=!!current&&current!==id;
-  current=id;playSeconds=0;playSecondsVideoId=id;
+  flushPosition();current=id;playSeconds=storedPosition(id);playSecondsVideoId=id;lastPositionWrite=0;
   if(pipWin&&!pipWin.closed&&pipRelay){
     stopLoading();
     if(typeof pipWin.vistubeStartLoading==='function')pipWin.vistubeStartLoading();
     if(typeof pipWin.vistubeResetPlayback==='function')pipWin.vistubeResetPlayback();
-    pipRelay.src=pipUrl(id);frame.src='about:blank';
+    pipRelay.src=pipUrl(id,playSeconds);frame.src='about:blank';
   }else{
     beginLoading(id,switching?'Đang chuyển sang video bạn chọn...':'Đang kết nối với YouTube để mở video của bạn...');
-    frame.src=embed(id);
+    frame.src=embed(id,playSeconds);
   }
   landing.classList.add('hidden');player.classList.add('active');
   if(!data.queue.some(x=>x.id===id))data.queue=insert(data.queue,id);
@@ -364,7 +387,7 @@ function play(id){
   save();currentInfo();renderList();resumeButton();hideMenu();
 }
 
-function goHome(){loadingSerial++;stopLoading();hideMenu();player.classList.remove('active');if(pipWin&&!pipWin.closed)pipWin.close();frame.src='about:blank';landing.classList.remove('hidden');if(current)input.value=watch(current);resumeButton();input.focus()}
+function goHome(){flushPosition();loadingSerial++;stopLoading();hideMenu();player.classList.remove('active');if(pipWin&&!pipWin.closed)pipWin.close();frame.src='about:blank';landing.classList.remove('hidden');if(current)input.value=watch(current);resumeButton();input.focus()}
 
 
 
@@ -425,7 +448,9 @@ function handleYTMessage(event){
 
   const t=payload.info?.currentTime;
 
-  if(typeof t==='number'&&Number.isFinite(t)&&t>=0&&playSecondsVideoId===current)playSeconds=t;
+  if(typeof t==='number'&&Number.isFinite(t)&&t>=0)updatePosition(t);
+  const state=payload.info?.playerState;
+  if(state===0&&playSecondsVideoId===current)markFinished(current);
 
 }
 
@@ -798,8 +823,9 @@ async function togglePiP(){
         relayReady=!!x.ready;
         setPiPPlaying(x.playing);
       }else if(x.type==='vistube-pip-position'&&typeof x.seconds==='number'&&Number.isFinite(x.seconds)&&x.seconds>=0){
-        playSeconds=x.seconds;
-        playSecondsVideoId=current;
+        updatePosition(x.seconds);
+      }else if(x.type==='vistube-pip-ended'){
+        markFinished(current);
       }else if(x.type==='vistube-pip-error'){
         console.warn('YouTube PiP error:',x.code);
         if(x.code==='blocked')announcePiPProblem('Chrome đang chặn phát video. Hãy bấm Play trong YouTube một lần.');
@@ -857,7 +883,7 @@ pipStatus();
 
 function selectList(name){listType=name;document.querySelectorAll('[data-list]').forEach(b=>b.classList.toggle('selected',b.dataset.list===name));renderList()}
 
-function renderList(){const list=data[listType],out=$('video-list');out.replaceChildren();$('list-heading').textContent=({queue:'Hàng đợi phát',history:'Video đã xem',favorites:'Video yêu thích'})[listType];$('list-count').textContent=list.length+' video';$('shuffle').style.display=listType==='queue'?'':'none';$('clear-list').textContent=({queue:'Xóa hàng đợi',history:'Xóa lịch sử',favorites:'Xóa yêu thích'})[listType];if(!list.length){const el=document.createElement('div');el.className='empty';el.textContent=({queue:'Chưa có video nào. Dán link bên trên để thêm vào hàng đợi.',history:'Chưa có lịch sử xem video.',favorites:'Chưa lưu video yêu thích nào.'})[listType];out.append(el);return}for(const entry of list){if(!valid(entry.id))continue;const row=document.createElement('div');row.className='list-item'+(current===entry.id?' current':'');const im=document.createElement('img');im.className='list-thumb';im.src=thumb(entry.id);im.alt='';im.loading='lazy';const info=document.createElement('div');info.className='list-info';const btn=document.createElement('button');btn.className='list-title';btn.textContent='Video '+entry.id;btn.title='Bấm để phát video';btn.onclick=()=>play(entry.id);const small=document.createElement('div');small.className='list-meta';small.textContent=current===entry.id?'● Đang xem':(entry.at?new Date(entry.at).toLocaleDateString('vi-VN'):'YouTube');info.append(btn,small);const del=document.createElement('button');del.className='remove';del.type='button';del.textContent='×';del.title='Xóa khỏi danh sách';del.setAttribute('aria-label','Xóa video '+entry.id);del.onclick=()=>{data[listType]=data[listType].filter(x=>x.id!==entry.id);save();renderList();currentInfo();resumeButton()};row.append(im,info,del);out.append(row)}}
+function renderList(){const list=data[listType],out=$('video-list');out.replaceChildren();$('list-heading').textContent=({queue:'Hàng đợi phát',history:'Video đã xem',favorites:'Video yêu thích'})[listType];$('list-count').textContent=list.length+' video';$('shuffle').style.display=listType==='queue'?'':'none';$('clear-list').textContent=({queue:'Xóa hàng đợi',history:'Xóa lịch sử',favorites:'Xóa yêu thích'})[listType];if(!list.length){const el=document.createElement('div');el.className='empty';el.textContent=({queue:'Chưa có video nào. Dán link bên trên để thêm vào hàng đợi.',history:'Chưa có lịch sử xem video.',favorites:'Chưa lưu video yêu thích nào.'})[listType];out.append(el);return}for(const entry of list){if(!valid(entry.id))continue;const row=document.createElement('div');row.className='list-item'+(current===entry.id?' current':'');const im=document.createElement('img');im.className='list-thumb';im.src=thumb(entry.id);im.alt='';im.loading='lazy';const info=document.createElement('div');info.className='list-info';const btn=document.createElement('button');btn.className='list-title';btn.textContent='Video '+entry.id;btn.title='Bấm để phát video';btn.onclick=()=>play(entry.id);const small=document.createElement('div');small.className='list-meta';small.textContent=(current===entry.id?'● Đang xem':(entry.at?new Date(entry.at).toLocaleDateString('vi-VN'):'YouTube'))+(storedPosition(entry.id)?' · Tiếp tục '+Math.floor(storedPosition(entry.id)/60)+':'+String(storedPosition(entry.id)%60).padStart(2,'0'):'');info.append(btn,small);const del=document.createElement('button');del.className='remove';del.type='button';del.textContent='×';del.title='Xóa khỏi danh sách';del.setAttribute('aria-label','Xóa video '+entry.id);del.onclick=()=>{data[listType]=data[listType].filter(x=>x.id!==entry.id);save();renderList();currentInfo();resumeButton()};row.append(im,info,del);out.append(row)}}
 
 form.addEventListener('submit',e=>{e.preventDefault();const id=parseVideo(input.value);if(!id){$('error').textContent='Link không hợp lệ. Hãy nhập link YouTube, Shorts hoặc youtu.be.';return}$('error').textContent='';play(id)});
 
@@ -871,7 +897,7 @@ $('next').onclick=()=>{const i=data.queue.findIndex(x=>x.id===current);if(i>=0&&
 
 $('favorite').onclick=()=>{if(!current)return;const has=data.favorites.some(x=>x.id===current);data.favorites=has?data.favorites.filter(x=>x.id!==current):insert(data.favorites,current,true);save();currentInfo();renderList();message(has?'Đã bỏ yêu thích':'Đã thêm vào yêu thích')};
 
-$('reload').onclick=()=>{if(current){playSeconds=0;if(pipWin&&!pipWin.closed&&pipRelay){if(typeof pipWin.vistubeStartLoading==='function')pipWin.vistubeStartLoading();if(typeof pipWin.vistubeResetPlayback==='function')pipWin.vistubeResetPlayback();pipRelay.src=pipUrl(current,0)}else{beginLoading(current,'Đang tải lại video từ đầu...');frame.src=embed(current)}hideMenu();message('Đã phát lại video')}};
+$('reload').onclick=()=>{if(current){markFinished(current);playSeconds=0;if(pipWin&&!pipWin.closed&&pipRelay){if(typeof pipWin.vistubeStartLoading==='function')pipWin.vistubeStartLoading();if(typeof pipWin.vistubeResetPlayback==='function')pipWin.vistubeResetPlayback();pipRelay.src=pipUrl(current,0)}else{beginLoading(current,'Đang tải lại video từ đầu...');frame.src=embed(current)}hideMenu();message('Đã phát lại video')}};
 
 $('copy').onclick=async()=>{if(!current)return;const url=watch(current);try{await navigator.clipboard.writeText(url);message('Đã sao chép liên kết')}catch{const temp=document.createElement('textarea');temp.value=url;document.body.append(temp);temp.select();let ok=false;try{ok=document.execCommand('copy')}catch{}temp.remove();message(ok?'Đã sao chép liên kết':'Không sao chép được; dùng nút Mở YouTube')}};
 
@@ -885,7 +911,7 @@ $('clear-history').onclick=()=>{if(!data.history.length){message('Lịch sử đ
 
 document.querySelectorAll('[data-pane]').forEach(b=>b.onclick=()=>showPane(b.dataset.pane));document.querySelectorAll('[data-list]').forEach(b=>b.onclick=()=>selectList(b.dataset.list));
 
-for(const [id,key] of [['autoplay','autoplay'],['mute','mute'],['loop','loop'],['save-history','saveHistory']]){const el=$(id);el.checked=!!data.settings[key];el.addEventListener('change',()=>{data.settings[key]=el.checked;save();if(key!=='saveHistory')message('Sẽ áp dụng khi mở hoặc tải lại video')})}
+for(const [id,key] of [['autoplay','autoplay'],['mute','mute'],['loop','loop'],['save-history','saveHistory'],['remember-position','rememberPosition']]){const el=$(id);el.checked=!!data.settings[key];el.addEventListener('change',()=>{data.settings[key]=el.checked;save();if(key!=='saveHistory'&&key!=='rememberPosition')message('Sẽ áp dụng khi mở hoặc tải lại video')})}
 
 // Menu remains above the YouTube iframe. Pointer exit closes it without an extra click.
 
