@@ -117,6 +117,11 @@
 @keyframes loading-glow{0%,100%{opacity:.4;transform:translate(-50%,-50%) scale(.85)}50%{opacity:1;transform:translate(-50%,-50%) scale(1.08)}}
 @media(prefers-reduced-motion:reduce){.loading-mark:before,.loading-mark:after,.loading-line:after,.loading-ambient:after{animation:none!important}}
 
+
+/* Vistube Plus 2 — upgraded home and tools */
+.landing{display:block;padding:0 24px 55px;min-height:100dvh;background:radial-gradient(ellipse 46% 48% at 52% 10%,#242146,transparent),radial-gradient(ellipse 40% 37% at 95% 78%,#112642,transparent),var(--bg)}
+.wrap{width:min(100%,1050px);margin:auto}.home-top{display:flex;justify-content:space-between;align-items:center;padding:33px 0 52px;gap:12px}.home-top .brand{justify-content:flex-start;margin:0}.home-top .mark{width:42px;height:42px}.home-top .brand-name{font-size:24px}.home-version{font-size:11px;border:1px solid #494267;color:#c1baff;border-radius:99px;padding:7px 12px}.hero{max-width:720px;margin:0 auto 36px;text-align:center}.hero .sub{margin:17px auto 0}.landing .card{max-width:760px;margin:auto}.landing .foot{margin-top:19px}.home-actions{margin:25px auto 0}.home-shelves{margin-top:48px}.home-shelf{margin-top:29px}.home-shelf-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.home-shelf h2{font-size:18px;letter-spacing:-.4px;margin:0}.home-hint{color:#98a6c0;font-size:12px}.home-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}.home-video{border:1px solid #394562;text-align:left;background:#172137;color:#eff2ff;border-radius:15px;padding:10px;cursor:pointer;min-width:0;transition:transform .15s,border-color .15s}.home-video:hover{transform:translateY(-2px);border-color:#9686ff}.home-video img{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:9px;background:#0a101d}.home-video strong{display:block;font-size:12px;margin:10px 2px 5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.home-video small{display:block;margin:0 2px 6px;color:#a8b5cf;font-size:11px}.progress-track{height:4px;background:#3e4a62;border-radius:3px;overflow:hidden;margin-top:2px}.progress-fill{height:100%;background:linear-gradient(90deg,#8c79ff,#66c1ff);border-radius:3px}.home-empty{color:#8f9eb8;border:1px dashed #3b4864;border-radius:14px;padding:22px;text-align:center;font-size:12px}.home-footnote{padding:36px 0 0;text-align:center;color:#7b8ca6;font-size:12px}.switch-group{display:flex;flex-wrap:wrap;gap:7px}.chip{border:1px solid #4c5572;border-radius:10px;background:#252f49;color:#dee4f7;padding:8px 11px;font-size:11px}.chip:hover{border-color:#9d8cff;background:#39365f}.chip.selected{background:#554b91;border-color:#aa9eff;color:white}.tool-block{margin-top:18px}.tool-block-title{font-weight:750;color:#e6ecff;font-size:12px;margin-bottom:10px}.tool-sub{font-size:11px;color:#9eaec7;margin:8px 0}.tool-input-row{display:flex;gap:7px}.tool-input-row .field{padding:10px 11px;font-size:12px;min-width:0}.tool-input-row button{padding:9px 11px}.bookmark-list{display:flex;flex-direction:column;gap:7px;margin-top:10px}.bookmark-item{display:flex;gap:7px;align-items:center;padding:8px;background:#202b43;border:1px solid #394762;border-radius:10px}.bookmark-item .mark-jump{min-width:0;flex:1;text-align:left;background:none;border:none;color:#f1eeff;font-size:12px;padding:4px}.bookmark-item .mark-jump:hover{color:#bcb1ff}.bookmark-item small{display:block;color:#9dacbf;margin-top:3px}.bookmark-item .remove{flex:none}.tool-note{font-size:11px;color:#9cacc6;margin-top:9px;line-height:1.55}.timer-readout{color:#c6baff;font-size:12px;min-height:19px;margin-top:9px;font-variant-numeric:tabular-nums}.video-progress-info{font-size:11px;color:#b6c3df;margin-top:7px}.list-progress{height:3px;background:#364058;border-radius:3px;margin-top:7px;overflow:hidden}.list-progress>span{display:block;height:100%;background:#9e8dff}.home-video:focus-visible{outline:2px solid #a9a0ff}.data-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.data-actions>button{flex:1;min-width:120px}.visually-hidden-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;pointer-events:none}
+@media(max-width:700px){.landing{padding:0 16px 38px}.home-top{padding:23px 0 45px}.home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.home-video{padding:7px}.home-shelves{margin-top:30px}}
 </style>
 
 </head>
@@ -136,19 +141,21 @@
   </div>
 </section>
 
-<main class="landing" id="landing"><div class="wrap"><div class="brand"><img src="favicon.svg" class="mark" alt="Logo Vistube"><div class="brand-name">Vis<span>tube</span></div></div><p class="tag">YOUR SCREEN. YOUR VIDEO.</p><h1 class="headline">YouTube, <em>trọn khung hình.</em></h1>
-<p class="sub">
-  <!-- Dán liên kết để xem video chiếm trọn cửa sổ. Rê chuột sát mép trái để mở menu công cụ. -->
-</p>
-<section class="card"><label class="label" for="url">Liên kết video YouTube</label><form id="form" class="input-row"><input id="url" class="url" type="url" required autocomplete="url" placeholder="https://www.youtube.com/watch?v=..." aria-describedby="error"><button class="primary home-play" type="submit">▶ &nbsp;Phát video</button></form><p id="error" class="error" role="alert"></p></section>
-<div class="foot">
-  <span>Full screen</span>
-  <span>Shorts</span>
-  <span>Picture-in-Picture</span>
-  <span>Multitasking menu</span>
-  <span>Save favorites & history</span>
-</div>
-<div class="home-actions"><button class="secondary hidden" id="resume" type="button" style="border-radius:11px;padding:11px 15px">▶ Tiếp tục video gần đây</button></div><p class="tiny">Vistube là trình phát nhúng độc lập, không liên kết với YouTube. Video có thể có quảng cáo.</p></div></main>
+<main class="landing" id="landing">
+ <div class="wrap">
+  <div class="home-top"><div class="brand"><img src="favicon.svg" class="mark" alt="Logo Vistube"><div class="brand-name">Vis<span>tube</span></div></div><div class="home-version">PLUS 2.0 · VIDEO SPACE</div></div>
+  <div class="hero"><p class="tag">YOUR SCREEN. YOUR VIDEO.</p><h1 class="headline">YouTube, <em>trọn khung hình.</em></h1><p class="sub">Xem liền mạch, ghi nhớ từng khoảnh khắc và đưa video ra cửa sổ nổi khi cần.</p></div>
+  <section class="card"><label class="label" for="url">Dán liên kết YouTube để bắt đầu</label><form id="form" class="input-row"><input id="url" class="url" type="url" required autocomplete="url" placeholder="https://www.youtube.com/watch?v=..." aria-describedby="error"><button class="primary home-play" type="submit">▶ &nbsp;Phát video</button></form><p id="error" class="error" role="alert"></p></section>
+  <div class="foot"><span>Toàn màn hình</span><span>PiP</span><span>Tự phát tiếp</span><span>Đánh dấu mốc</span><span>Ghi nhớ vị trí</span></div>
+  <div class="home-actions"><button class="secondary hidden" id="resume" type="button" style="border-radius:11px;padding:11px 17px">▶ Tiếp tục video gần đây</button></div>
+  <div class="home-shelves">
+    <section class="home-shelf" aria-label="Tiếp tục xem"><div class="home-shelf-top"><h2>↪ Tiếp tục xem</h2><span class="home-hint">Tự động ghi nhớ đoạn xem dở</span></div><div class="home-grid" id="home-continue"></div></section>
+    <section class="home-shelf" aria-label="Video gần đây"><div class="home-shelf-top"><h2>◷ Gần đây</h2><span class="home-hint">Lịch sử trên trình duyệt này</span></div><div class="home-grid" id="home-recent"></div></section>
+    <section class="home-shelf" aria-label="Video yêu thích"><div class="home-shelf-top"><h2>☆ Yêu thích</h2><span class="home-hint">Truy cập nhanh</span></div><div class="home-grid" id="home-favorites"></div></section>
+  </div>
+  <p class="home-footnote">Vistube là trình phát YouTube nhúng độc lập, không liên kết với YouTube. Video có thể có quảng cáo. Dữ liệu được lưu trên trình duyệt của bạn.</p>
+ </div>
+</main>
 
 <section id="player" class="player" aria-label="Trình phát YouTube"><div id="frame-holder" class="frame-holder"><iframe id="frame" title="YouTube video" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
 <div id="video-loading" class="video-loading" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
@@ -188,6 +195,7 @@
 
       <div class="now-card"><img id="current-thumb" class="thumb" alt="Ảnh xem trước video"><div><div class="now-label">YouTube video</div><div class="now-title" id="current-name">Chưa chọn video</div><div class="video-id" id="current-id"></div></div></div>
 
+      <div class="video-progress-info" id="playback-meta">Vị trí: 0:00</div>
       <div class="pane-title">Chuyển video</div>
 
       <div class="actions"><button class="action" id="prev" type="button"><span class="ico">⏮</span>Video trước</button><button class="action accent" id="next" type="button"><span class="ico">⏭</span>Tiếp theo</button></div>
@@ -209,7 +217,12 @@
       </div>
 
       <div class="section-line"></div>
-
+      <div class="tool-block"><div class="tool-block-title">⏱ Hẹn giờ dừng phát</div><div class="switch-group" id="timer-options">
+        <button type="button" class="chip" data-timer="15">15 phút</button><button type="button" class="chip" data-timer="30">30 phút</button><button type="button" class="chip" data-timer="60">60 phút</button><button type="button" class="chip" data-timer="end">Hết video</button><button type="button" class="chip" data-timer="off">Tắt</button>
+      </div><div id="timer-readout" class="timer-readout" role="status">Chưa hẹn giờ</div></div>
+      <div class="section-line"></div>
+      <div class="tool-block"><div class="tool-block-title">🔖 Đánh dấu khoảnh khắc</div><div class="tool-input-row"><input id="bookmark-label" class="field" type="text" maxlength="70" placeholder="Tên đoạn (không bắt buộc)" aria-label="Tên mốc thời gian"><button id="bookmark-add" class="primary" type="button">+ Lưu mốc</button></div><p class="tool-note">Lưu mốc tại giây đang phát. Nhấn một mốc bên dưới để quay lại.</p><div class="bookmark-list" id="bookmark-list"></div></div>
+      <div class="section-line"></div>
       <div class="help-box">💡 <strong>Mẹo:</strong> Trong cửa sổ PiP có hai nút <strong>khóa thao tác</strong> và <strong>phát/tạm dừng</strong> ở mép phải video. Khi khóa, không hiện bất kỳ thông báo nào che video. Vẫn có thể đổi kích thước bằng viền cửa sổ. Bấm <strong>Ghim video (PiP)</strong> để mở cửa sổ nổi thật. Video có thể tải lại khi chuyển giữa hai cửa sổ. Để dùng PiP video gốc, nhấn chuột phải hai lần lên video rồi chọn <strong>Hình trong hình</strong>. Khi chọn một video, menu sẽ tự thu lại.</div>
 
     </section>
@@ -240,7 +253,8 @@
 
       <label class="setting"><span><div class="setting-title">Mặc định tắt tiếng</div><div class="setting-desc">Giúp tự động phát dễ hoạt động hơn</div></span><input type="checkbox" id="mute"></label>
 
-      <label class="setting"><span><div class="setting-title">Lặp video hiện tại</div><div class="setting-desc">Tự phát lại cùng một video</div></span><input type="checkbox" id="loop"></label>
+      <label class="setting"><span><div class="setting-title">Lặp video hiện tại</div><div class="setting-desc">Lặp video được ưu tiên hơn phát video tiếp theo</div></span><input type="checkbox" id="loop"></label>
+      <label class="setting"><span><div class="setting-title">Tự động phát video tiếp theo</div><div class="setting-desc">Khi video kết thúc, chuyển sang video kế trong hàng đợi (kể cả PiP)</div></span><input type="checkbox" id="auto-next"></label>
 
       <label class="setting"><span><div class="setting-title">Ghi nhớ vị trí xem</div><div class="setting-desc">Tự tiếp tục từ đoạn xem dở của từng video, kể cả PiP</div></span><input type="checkbox" id="remember-position" checked></label>
 
@@ -249,10 +263,11 @@
       <div class="pane-title">Quản lý dữ liệu</div>
 
       <button type="button" class="action full" id="clear-history">🗑 Xóa lịch sử đã xem</button>
+      <div class="tool-block"><div class="tool-block-title">Sao lưu & khôi phục</div><div class="tool-note">Lưu hàng đợi, yêu thích, lịch sử, vị trí xem, mốc đánh dấu và cài đặt vào một tệp JSON. Khi nhập dữ liệu, dữ liệu trên thiết bị sẽ được thay thế sau khi xác nhận.</div><div class="data-actions"><button type="button" class="action" id="export-data">↓ Xuất JSON</button><button type="button" class="action" id="import-data">↑ Nhập JSON</button></div><input type="file" accept="application/json,.json" class="visually-hidden-input" id="import-file" aria-label="Chọn tệp sao lưu Vistube"></div>
 
       <div class="pane-title">Trợ giúp</div>
 
-      <div class="help-box">Đưa chuột đến <strong>mép trái</strong> để mở menu công cụ và đưa chuột ra ngoài để tự đóng. Có thể bấm <strong>Tiếp tục xem</strong> hoặc <strong>Trang chủ</strong> ở cuối menu.<br><br>Phím <strong>Esc</strong> chỉ hoạt động khi trang Vistube nhận bàn phím; YouTube iframe có thể giữ phím. Cài đặt phát áp dụng cho video mở tiếp theo. <strong>PiP với khóa thao tác</strong> cần Chrome/Edge hiện đại và địa chỉ HTTPS hoặc localhost.</div>
+      <div class="help-box"><strong>Phím tắt khi Vistube nhận bàn phím:</strong> Space/K: Phát – dừng · ←/→: Tua 5 giây · J/L: Tua 10 giây · N: Tiếp theo · B: Lưu mốc · P: PiP · M: Menu · Esc: Trang chủ. Nếu đang thao tác trực tiếp trong YouTube iframe, hãy bấm ra ngoài khung video hoặc mở menu để Vistube nhận phím.<br><br>Đưa chuột đến <strong>mép trái</strong> để mở menu công cụ và đưa chuột ra ngoài để tự đóng. Có thể bấm <strong>Tiếp tục xem</strong> hoặc <strong>Trang chủ</strong> ở cuối menu.<br><br>Phím <strong>Esc</strong> chỉ hoạt động khi trang Vistube nhận bàn phím; YouTube iframe có thể giữ phím. Cài đặt phát áp dụng cho video mở tiếp theo. <strong>PiP với khóa thao tác</strong> cần Chrome/Edge hiện đại và địa chỉ HTTPS hoặc localhost.</div>
 
     </section>
 
@@ -276,33 +291,39 @@ const $=id=>document.getElementById(id);
 
 const form=$('form'),input=$('url'),landing=$('landing'),player=$('player'),frame=$('frame'),frameHolder=$('frame-holder'),drawer=$('drawer'),edge=$('edge');
 
-const STORE='vistube-plus-v1';const POSITION_STORE='vistube-positions-v1';const defaults={queue:[],history:[],favorites:[],settings:{autoplay:true,mute:false,loop:false,saveHistory:true,rememberPosition:true}};
+const STORE='vistube-plus-v1';const POSITION_STORE='vistube-positions-v1';const defaults={queue:[],history:[],favorites:[],bookmarks:{},durations:{},settings:{autoplay:true,mute:false,loop:false,saveHistory:true,rememberPosition:true,autoNext:true}};
 
+function cleanBookmarks(raw){const out={};if(!raw||typeof raw!=='object'||Array.isArray(raw))return out;for(const [id,list] of Object.entries(raw).slice(0,150)){if(!/^[\w-]{11}$/.test(id)||!Array.isArray(list))continue;out[id]=list.filter(v=>v&&Number.isFinite(v.time)&&v.time>=0&&v.time<=864000&&typeof v.label==='string').slice(0,80).map(v=>({time:Math.floor(v.time),label:v.label.slice(0,70),at:Number(v.at)||Date.now()}))}return out}
+function cleanDurations(raw){const out={};if(!raw||typeof raw!=='object'||Array.isArray(raw))return out;for(const [id,n] of Object.entries(raw).slice(0,200)){if(/^[\w-]{11}$/.test(id)&&Number.isFinite(n)&&n>0&&n<864000)out[id]=n}return out}
 let data;
 
-try{const x=JSON.parse(localStorage.getItem(STORE)||'{}');data={queue:Array.isArray(x.queue)?x.queue.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],history:Array.isArray(x.history)?x.history.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],favorites:Array.isArray(x.favorites)?x.favorites.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],settings:{...defaults.settings,...(x.settings||{})}}}catch{data=JSON.parse(JSON.stringify(defaults))}
+try{const x=JSON.parse(localStorage.getItem(STORE)||'{}');data={queue:Array.isArray(x.queue)?x.queue.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],history:Array.isArray(x.history)?x.history.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],favorites:Array.isArray(x.favorites)?x.favorites.filter(v=>v&&/^[\w-]{11}$/.test(v.id)).slice(0,150):[],bookmarks:cleanBookmarks(x.bookmarks),durations:cleanDurations(x.durations),settings:{...defaults.settings,...(x.settings||{})}}}catch{data=JSON.parse(JSON.stringify(defaults))}
 
 let current=null,open=false,activePane='control',listType='queue',closeTimer=null,toastTimer=null,reopenAfter=0;
+let timerDeadline=0,timerMode='off',endingHandled=false,hasPlayed=false,lastKnownState=-1,mainYT=null,mainYTReady=false,mainFrameSerial=0;
 
-let pipWin=null,pipRelay=null,pipBusy=false,playSeconds=0,playSecondsVideoId=null;
+let pipWin=null,pipRelay=null,pipBusy=false,pipWasPlaying=true,pipHasReportedPlayback=false,playSeconds=0,playSecondsVideoId=null;
 let positions={};
 try{const stored=JSON.parse(localStorage.getItem(POSITION_STORE)||'{}');if(stored&&typeof stored==='object'&&!Array.isArray(stored))positions=stored}catch{}
 function storedPosition(id){const v=positions[id];return data.settings.rememberPosition&&Number.isFinite(v)&&v>=2?Math.floor(v):0}
+const stamp=n=>{const t=Math.max(0,Math.floor(Number(n)||0));return (t>=3600?Math.floor(t/3600)+':':'')+String(Math.floor(t/60)%60).padStart(t>=3600?2:1,'0')+':'+String(t%60).padStart(2,'0')};
 function persistPosition(id,seconds,force=false){
   if(!data.settings.rememberPosition||!valid(id)||!Number.isFinite(seconds)||seconds<0)return;
   // Ignore the transient zero reported when a YouTube iframe initializes.
   if(seconds<2&&!force)return;
   positions[id]=Math.floor(seconds);
   try{localStorage.setItem(POSITION_STORE,JSON.stringify(positions))}catch{}
+  if(document.visibilityState==='visible')renderHome();
 }
 function updatePosition(seconds){
-  if(!current||!Number.isFinite(seconds)||seconds<0||playSecondsVideoId!==current)return;
+  if(!current||endingHandled||!Number.isFinite(seconds)||seconds<0||playSecondsVideoId!==current)return;
   playSeconds=seconds;
   if(data.settings.rememberPosition&&seconds>=2&&Date.now()-lastPositionWrite>4000){lastPositionWrite=Date.now();persistPosition(current,seconds)}
+  updatePlaybackMeta();
 }
 let lastPositionWrite=0;
 function flushPosition(){if(current&&playSecondsVideoId===current)persistPosition(current,playSeconds)}
-function markFinished(id){if(!data.settings.rememberPosition||!valid(id))return;positions[id]=0;try{localStorage.setItem(POSITION_STORE,JSON.stringify(positions))}catch{};if(id===current)playSeconds=0}
+function markFinished(id){if(!valid(id))return;positions[id]=0;try{localStorage.setItem(POSITION_STORE,JSON.stringify(positions))}catch{};if(id===current)playSeconds=0;renderHome()}
 window.addEventListener('pagehide',flushPosition);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flushPosition()});
 
@@ -311,7 +332,7 @@ const valid=id=>typeof id==='string'&&/^[\w-]{11}$/.test(id);
 
 function parseVideo(raw){try{const u=new URL(raw.trim());if(!['http:','https:'].includes(u.protocol))return null;const host=u.hostname.toLowerCase();let id=null;if(host==='youtu.be'||host==='www.youtu.be')id=u.pathname.split('/')[1];else if(['youtube.com','www.youtube.com','m.youtube.com','music.youtube.com','youtube-nocookie.com','www.youtube-nocookie.com'].includes(host)){if(u.pathname==='/watch')id=u.searchParams.get('v');else id=u.pathname.match(/^\/(?:embed|shorts|live)\/([^/?]+)/)?.[1]}return valid(id)?id:null}catch{return null}}
 
-function save(){try{localStorage.setItem(STORE,JSON.stringify(data))}catch{}}
+function save(){try{localStorage.setItem(STORE,JSON.stringify(data))}catch{};renderHome()}
 
 function insert(arr,id,front=false){const out=arr.filter(x=>x&&valid(x.id)&&x.id!==id);const record={id,at:Date.now()};front?out.unshift(record):out.push(record);return out.slice(0,150)}
 
@@ -319,15 +340,15 @@ const thumb=id=>'https://i.ytimg.com/vi/'+encodeURIComponent(id)+'/mqdefault.jpg
 
 const watch=id=>'https://www.youtube.com/watch?v='+encodeURIComponent(id);
 
-function embed(id,seconds=0){const p=new URLSearchParams({autoplay:data.settings.autoplay?'1':'0',mute:data.settings.mute?'1':'0',loop:data.settings.loop?'1':'0',playsinline:'1',rel:'0',enablejsapi:'1'});if(data.settings.loop)p.set('playlist',id);if(seconds>=2)p.set('start',String(Math.floor(seconds)));if(location.origin!=='null'&&/^https?:$/.test(location.protocol))p.set('origin',location.origin);return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+p.toString()}
+function embed(id,seconds=0,autoplay=data.settings.autoplay){const p=new URLSearchParams({autoplay:autoplay?'1':'0',mute:data.settings.mute?'1':'0',loop:data.settings.loop?'1':'0',playsinline:'1',rel:'0',enablejsapi:'1'});if(data.settings.loop)p.set('playlist',id);if(seconds>=2)p.set('start',String(Math.floor(seconds)));if(location.origin!=='null'&&/^https?:$/.test(location.protocol))p.set('origin',location.origin);return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+p.toString()}
 
 function message(msg){const t=$('toast');t.textContent=msg;t.classList.remove('hidden');clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.add('hidden'),2300)}
 
 function currentInfo(){if(!current)return;const pos=data.queue.findIndex(x=>x.id===current);$('current-thumb').src=thumb(current);$('current-name').textContent='Video '+current;$('current-id').textContent='ID: '+current;$('queue-position').textContent=pos<0?'Ngoài hàng đợi':`${pos+1} / ${data.queue.length}`;$('prev').disabled=pos<=0;$('next').disabled=pos<0||pos>=data.queue.length-1;const isFav=data.favorites.some(x=>x.id===current);$('fav-label').textContent=isFav?'Bỏ yêu thích':'Thêm yêu thích';$('favorite').querySelector('.ico').textContent=isFav?'★':'☆'}
 
-function resumeButton(){const id=data.history[0]?.id||data.queue.at(-1)?.id;$('resume').classList.toggle('hidden',!id)}
+function resumeButton(){const resumed=[...data.history,...data.queue].find(x=>storedPosition(x.id)>0);const id=resumed?.id||data.history[0]?.id||data.queue.at(-1)?.id;$('resume').classList.toggle('hidden',!id);$('resume').textContent=resumed?'▶ Tiếp tục tại '+stamp(storedPosition(id)):'▶ Mở video gần đây'}
 
-function showPane(name){activePane=name;document.querySelectorAll('[data-pane]').forEach(b=>{const s=b.dataset.pane===name;b.classList.toggle('active',s);b.setAttribute('aria-selected',String(s))});document.querySelectorAll('.pane').forEach(p=>p.hidden=p.id!=='pane-'+name);$('drawer-content').scrollTop=0;if(name==='library')renderList()}
+function showPane(name){activePane=name;document.querySelectorAll('[data-pane]').forEach(b=>{const s=b.dataset.pane===name;b.classList.toggle('active',s);b.setAttribute('aria-selected',String(s))});document.querySelectorAll('.pane').forEach(p=>p.hidden=p.id!=='pane-'+name);$('drawer-content').scrollTop=0;if(name==='library')renderList();if(name==='control'){renderBookmarks();updateTimerUI();updatePlaybackMeta()}}
 
 function showMenu(){clearTimeout(closeTimer);if(!player.classList.contains('active')||Date.now()<reopenAfter)return; if(open)return;open=true;drawer.classList.add('open');drawer.removeAttribute('inert');drawer.setAttribute('aria-hidden','false');currentInfo();renderList()}
 
@@ -371,7 +392,7 @@ function finishLoading(serial=loadingSerial){
 function play(id){
   if(!valid(id)||window.matchMedia('(max-width: 767px)').matches)return;
   const switching=!!current&&current!==id;
-  flushPosition();current=id;playSeconds=storedPosition(id);playSecondsVideoId=id;lastPositionWrite=0;
+  flushPosition();current=id;playSeconds=storedPosition(id);playSecondsVideoId=id;lastPositionWrite=0;endingHandled=false;hasPlayed=false;lastKnownState=-1;mainYTReady=false;mainFrameSerial++;
   if(pipWin&&!pipWin.closed&&pipRelay){
     stopLoading();
     if(typeof pipWin.vistubeStartLoading==='function')pipWin.vistubeStartLoading();
@@ -384,10 +405,10 @@ function play(id){
   landing.classList.add('hidden');player.classList.add('active');
   if(!data.queue.some(x=>x.id===id))data.queue=insert(data.queue,id);
   if(data.settings.saveHistory)data.history=insert(data.history,id,true);
-  save();currentInfo();renderList();resumeButton();hideMenu();
+  save();currentInfo();renderList();resumeButton();renderBookmarks();updatePlaybackMeta();hideMenu();
 }
 
-function goHome(){flushPosition();loadingSerial++;stopLoading();hideMenu();player.classList.remove('active');if(pipWin&&!pipWin.closed)pipWin.close();frame.src='about:blank';landing.classList.remove('hidden');if(current)input.value=watch(current);resumeButton();input.focus()}
+function goHome(){flushPosition();clearSleepTimer();loadingSerial++;stopLoading();hideMenu();player.classList.remove('active');if(pipWin&&!pipWin.closed)pipWin.close();frame.src='about:blank';landing.classList.remove('hidden');if(current)input.value=watch(current);resumeButton();renderHome();input.focus()}
 
 
 
@@ -405,7 +426,7 @@ function pipStatus(){
 
 }
 
-function pipUrl(id,seconds=playSeconds){
+function pipUrl(id,seconds=playSeconds,autoplay=data.settings.autoplay){
 
   const u=new URL('pip-player.html',document.baseURI);
 
@@ -414,7 +435,7 @@ function pipUrl(id,seconds=playSeconds){
 
   u.searchParams.set('start',String(Math.max(0,Math.floor(seconds))));
 
-  u.searchParams.set('autoplay',data.settings.autoplay?'1':'0');
+  u.searchParams.set('autoplay',autoplay?'1':'0');
 
   u.searchParams.set('mute',data.settings.mute?'1':'0');
 
@@ -447,20 +468,37 @@ function handleYTMessage(event){
   if(!payload||typeof payload!=='object')return;
 
   const t=payload.info?.currentTime;
-
   if(typeof t==='number'&&Number.isFinite(t)&&t>=0)updatePosition(t);
-  const state=payload.info?.playerState;
-  if(state===0&&playSecondsVideoId===current)markFinished(current);
+  const duration=payload.info?.duration;
+  if(typeof duration==='number'&&Number.isFinite(duration)&&duration>0)recordDuration(duration);
+  const state=(payload.event==='onStateChange'&&typeof payload.info==='number')?payload.info:payload.info?.playerState;
+  if(typeof state==='number')handlePlayerState(state,'main');
 
 }
 
 window.addEventListener('message',handleYTMessage);
+function recordDuration(seconds){if(!current||!Number.isFinite(seconds)||seconds<=0||seconds>864000)return;
+ if(Math.abs((data.durations[current]||0)-seconds)>1){data.durations[current]=Math.floor(seconds);save();updatePlaybackMeta()}}
+function updatePlaybackMeta(){if(!current)return;const d=data.durations[current];$('playback-meta').textContent='Vị trí '+stamp(playSeconds)+(d?' / '+stamp(d):'')+(pipWin&&!pipWin.closed?' · Đang xem PiP':'')}
+function handlePlayerState(state,source){if(source==='main'&&pipWin&&!pipWin.closed)return;if(source==='pip'&&(!pipWin||pipWin.closed))return;
+ if(state===lastKnownState)return;lastKnownState=state;
+ if(state===1||state===3){if(endingHandled)endingHandled=false;hasPlayed=true}
+ if(state===0&&hasPlayed)handleEnded();}
+function handleEnded(){if(!current||endingHandled)return;endingHandled=true;const id=current;markFinished(id);
+ if(timerMode==='end'){clearSleepTimer();message('Video đã kết thúc — hẹn giờ đã hoàn tất');return}
+ if(data.settings.loop){return}
+ if(data.settings.autoNext){const pos=data.queue.findIndex(v=>v.id===id);if(pos>=0&&pos<data.queue.length-1){message('Đang phát video tiếp theo');play(data.queue[pos+1].id);return}}
+ message('Video đã kết thúc');}
+// YouTube IFrame API: best effort in addition to iframe postMessage fallback.
+window.onYouTubeIframeAPIReady=()=>{try{mainYT=new YT.Player('frame',{events:{onReady(e){mainYT=e.target;mainYTReady=true;try{recordDuration(mainYT.getDuration())}catch{}},onStateChange(e){handlePlayerState(e.data,'main')},onError(e){console.warn('Lỗi video YouTube',e.data)},onAutoplayBlocked(){message('Trình duyệt đang chặn tự động phát. Hãy nhấn phát trong video.')}}})}catch(e){console.warn('YouTube IFrame API:',e)}};
+const mainAPI=document.createElement('script');mainAPI.src='https://www.youtube.com/iframe_api';mainAPI.async=true;document.head.appendChild(mainAPI);
+
 
 frame.addEventListener('load',()=>{
 
   if(frame.getAttribute('src')==='about:blank')return;
   finishLoading();
-
+  mainYTReady=false;
   try{frame.contentWindow.postMessage(JSON.stringify({event:'listening',id:'vistube'}),'https://www.youtube.com')}catch{}
 
 });
@@ -470,6 +508,7 @@ setInterval(()=>{
   if(!current||!player.classList.contains('active')||(pipWin&&!pipWin.closed))return;
 
   try{frame.contentWindow?.postMessage(JSON.stringify({event:'command',func:'getCurrentTime',args:[]}),'https://www.youtube.com')}catch{}
+  if(mainYT&&mainYTReady){try{updatePosition(mainYT.getCurrentTime());recordDuration(mainYT.getDuration())}catch{}}
 
 },1200);
 
@@ -494,6 +533,8 @@ async function togglePiP(){
     popup=await documentPictureInPicture.requestWindow({width:530,height:320});
 
     pipWin=popup;
+    pipHasReportedPlayback=false;
+    pipWasPlaying=(lastKnownState===2)?false:data.settings.autoplay;
 
     popup.document.title='Vistube · Picture-in-Picture';
 
@@ -813,6 +854,7 @@ async function togglePiP(){
       const x=e.data;
       if(!x||x.videoId!==current)return;
       if(x.type==='vistube-pip-ready'){
+        pipWasPlaying=!!x.playing;pipHasReportedPlayback=true;
         relayReady=true;
         setPiPPlaying(x.playing);
         if(queuedAction){
@@ -820,12 +862,14 @@ async function togglePiP(){
           if(sendPlaybackCommand(action))setPiPPlaying(action==='play');
         }
       }else if(x.type==='vistube-pip-state'){
+        if(typeof x.state==='number'&&x.state>=0){pipWasPlaying=!!x.playing;pipHasReportedPlayback=true}
         relayReady=!!x.ready;
         setPiPPlaying(x.playing);
       }else if(x.type==='vistube-pip-position'&&typeof x.seconds==='number'&&Number.isFinite(x.seconds)&&x.seconds>=0){
         updatePosition(x.seconds);
       }else if(x.type==='vistube-pip-ended'){
-        markFinished(current);
+        handlePlayerState(0,'pip');
+      }else if(x.type==='vistube-pip-duration'){recordDuration(x.duration);
       }else if(x.type==='vistube-pip-error'){
         console.warn('YouTube PiP error:',x.code);
         if(x.code==='blocked')announcePiPProblem('Chrome đang chặn phát video. Hãy bấm Play trong YouTube một lần.');
@@ -842,7 +886,7 @@ async function togglePiP(){
 
       pipRelay=null;
 
-      if(player.classList.contains('active')&&current){beginLoading(current,'Đang đưa video trở lại Vistube...');frame.src=embed(current,playSeconds);}
+      if(player.classList.contains('active')&&current){beginLoading(current,'Đang đưa video trở lại Vistube...');frame.src=embed(current,playSeconds,pipHasReportedPlayback?pipWasPlaying:data.settings.autoplay);}
 
       else frame.src='about:blank';
 
@@ -852,7 +896,7 @@ async function togglePiP(){
 
     },{once:true});
 
-    relay.src=pipUrl(current); // Ready/error listeners are now installed.
+    relay.src=pipUrl(current,playSeconds,pipWasPlaying); // Ready/error listeners are now installed.
     loadingSerial++;stopLoading();frame.src='about:blank'; // Do not play two copies at once.
 
     $('pip-away').classList.remove('hidden');
@@ -881,15 +925,61 @@ pipStatus();
 
 
 
+// Features: shelves, playback, sleep timer, timestamps and portable backups.
+function renderHome(){
+ const shelves=[['home-continue',[...new Map([...data.history,...data.queue,...data.favorites].filter(v=>valid(v.id)&&storedPosition(v.id)>0).map(v=>[v.id,v])).values()].sort((a,b)=>(b.at||0)-(a.at||0)).slice(0,8),'Chưa có video xem dở. Hãy phát một video để Vistube ghi nhớ.'],
+  ['home-recent',data.history.slice(0,4),'Video bạn mở gần đây sẽ xuất hiện tại đây.'],
+  ['home-favorites',data.favorites.slice(0,4),'Chưa có video yêu thích. Hãy nhấn ☆ trong menu phát.']];
+ for(const [name,items,empty] of shelves){const out=$(name);if(!out)return;out.replaceChildren();if(!items.length){const note=document.createElement('div');note.className='home-empty';note.textContent=empty;out.append(note);continue}
+ for(const v of items){if(!valid(v.id))continue;const btn=document.createElement('button');btn.type='button';btn.className='home-video';btn.title='Mở video '+v.id;
+ const im=document.createElement('img');im.src=thumb(v.id);im.loading='lazy';im.alt='Ảnh xem trước video';const nameText=document.createElement('strong');nameText.textContent='Video '+v.id;
+ const small=document.createElement('small');const at=storedPosition(v.id),dur=data.durations[v.id];small.textContent=at?'Tiếp tục từ '+stamp(at)+(dur?' / '+stamp(dur):''):'Mở video';
+ btn.append(im,nameText,small);if(at&&dur){const track=document.createElement('div');track.className='progress-track';const fill=document.createElement('div');fill.className='progress-fill';fill.style.width=Math.min(100,Math.round(at/dur*100))+'%';track.append(fill);btn.append(track)}btn.onclick=()=>play(v.id);out.append(btn)}}
+}
+function sendMainCommand(func,args=[]){if(!current||pipWin&&!pipWin.closed)return false;
+ try{if(mainYT&&mainYTReady&&typeof mainYT[func]==='function'){mainYT[func](...args);return true}}catch(e){console.warn('IFrame API command:',e)}
+ try{frame.contentWindow?.postMessage(JSON.stringify({event:'command',func,args}), 'https://www.youtube.com');return true}catch{return false}}
+function pipCall(method,...args){try{const fn=pipRelay?.contentWindow?.[method];if(typeof fn==='function')return fn(...args)}catch{}return null}
+function sendPiPCommand(action){const result=pipCall('vistubePiPControl',action);if(result?.ok)return true;try{pipRelay?.contentWindow?.postMessage({type:'vistube-pip-command',videoId:current,action},location.origin);return true}catch{return false}}
+function pausePlayback(){if(pipWin&&!pipWin.closed)return sendPiPCommand('pause');return sendMainCommand('pauseVideo')}
+function togglePlayback(){if(!current)return; if(pipWin&&!pipWin.closed){const status=pipCall('vistubePiPStatus');sendPiPCommand(status?.playing?'pause':'play');return}
+ if(lastKnownState===1){sendMainCommand('pauseVideo')}else{sendMainCommand('playVideo')}}
+function seekTo(seconds){if(!current)return;const duration=data.durations[current]||864000;const t=Math.max(0,Math.min(duration-1,Math.floor(seconds)));if(pipWin&&!pipWin.closed){const result=pipCall('vistubePiPSeek',t);if(!result?.ok){message('PiP đang tải. Hãy thử tua lại sau.');return}}
+ else sendMainCommand('seekTo',[t,true]);updatePosition(t);persistPosition(current,t,true);updatePlaybackMeta()}
+function showBookmarksEmpty(out){const d=document.createElement('div');d.className='tool-note';d.textContent='Chưa có mốc nào trong video này.';out.append(d)}
+function renderBookmarks(){const out=$('bookmark-list');out.replaceChildren();if(!current){showBookmarksEmpty(out);return}
+ const all=(data.bookmarks[current]||[]).slice().sort((a,b)=>a.time-b.time);if(!all.length){showBookmarksEmpty(out);return}
+ for(const mark of all){const item=document.createElement('div');item.className='bookmark-item';const jump=document.createElement('button');jump.className='mark-jump';jump.type='button';jump.textContent='↪ '+stamp(mark.time)+' · '+mark.label;jump.title='Tua tới '+stamp(mark.time);jump.onclick=()=>{seekTo(mark.time);hideMenu()};const del=document.createElement('button');del.type='button';del.className='remove';del.textContent='×';del.title='Xóa dấu mốc';del.onclick=()=>{data.bookmarks[current]=(data.bookmarks[current]||[]).filter(x=>x!==mark);save();renderBookmarks()};item.append(jump,del);out.append(item)}}
+function addBookmark(){if(!current)return;const time=Math.max(0,Math.floor(playSeconds)),label=$('bookmark-label').value.trim().slice(0,70)||'Mốc '+stamp(time);if(!Array.isArray(data.bookmarks[current]))data.bookmarks[current]=[];
+ if(data.bookmarks[current].length>=80){message('Mỗi video lưu tối đa 80 mốc');return}data.bookmarks[current].push({time,label,at:Date.now()});save();$('bookmark-label').value='';renderBookmarks();message('Đã lưu mốc '+stamp(time))}
+function clearSleepTimer(){timerMode='off';timerDeadline=0;updateTimerUI()}
+function updateTimerUI(){document.querySelectorAll('[data-timer]').forEach(b=>b.classList.toggle('selected',b.dataset.timer===timerMode));let msg='Chưa hẹn giờ';if(timerMode==='end')msg='Sẽ dừng khi video hiện tại kết thúc';else if(timerDeadline){const remain=Math.max(0,Math.ceil((timerDeadline-Date.now())/1000));msg='Dừng sau '+stamp(remain)}$('timer-readout').textContent=msg}
+function configureTimer(value){if(value==='off'){clearSleepTimer();message('Đã tắt hẹn giờ');return}if(!current){message('Hãy phát video trước khi hẹn giờ');return}
+ if(value==='end'){timerMode='end';timerDeadline=0}else{timerMode=value;timerDeadline=Date.now()+Number(value)*60000}updateTimerUI();message('Đã đặt hẹn giờ')}
+setInterval(()=>{if(timerDeadline&&Date.now()>=timerDeadline){clearSleepTimer();pausePlayback();message('Đã hết thời gian hẹn giờ — tạm dừng phát')}else if(timerMode!=='off')updateTimerUI()},1000);
+function exportData(){flushPosition();const backup={format:'vistube-backup',version:2,createdAt:new Date().toISOString(),data:{queue:data.queue,history:data.history,favorites:data.favorites,bookmarks:data.bookmarks,durations:data.durations,settings:data.settings},positions};const blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});const u=URL.createObjectURL(blob);const a=document.createElement('a');a.href=u;a.download='vistube-backup-'+new Date().toISOString().slice(0,10)+'.json';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),3000);message('Đã xuất tệp sao lưu')}
+function cleanList(a){return Array.isArray(a)?a.filter(v=>v&&valid(v.id)).slice(0,150).map(v=>({id:v.id,at:Number.isFinite(v.at)?v.at:Date.now()})):[]}
+function cleanPositions(obj){const o={};if(obj&&typeof obj==='object'&&!Array.isArray(obj)){for(const [id,v] of Object.entries(obj).slice(0,300)){if(valid(id)&&Number.isFinite(v)&&v>=0&&v<864000)o[id]=Math.floor(v)}}return o}
+async function importData(file){if(!file)return;try{if(file.size>1024*1024){message('Tệp quá lớn (tối đa 1 MB)');return}const raw=JSON.parse(await file.text());if(!raw||raw.format!=='vistube-backup'||raw.version!==2||!raw.data||typeof raw.data!=='object'||Array.isArray(raw.data))throw Error('Tệp sao lưu không đúng định dạng Vistube Plus 2');
+ const d=raw.data;const next={queue:cleanList(d.queue),history:cleanList(d.history),favorites:cleanList(d.favorites),bookmarks:cleanBookmarks(d.bookmarks),durations:cleanDurations(d.durations),settings:{...defaults.settings}};
+ for(const key of Object.keys(defaults.settings))if(typeof d.settings?.[key]==='boolean')next.settings[key]=d.settings[key];
+ const newPositions=cleanPositions(raw.positions);
+ if(!confirm('Khôi phục bản sao lưu? Hàng đợi, lịch sử, vị trí và đánh dấu hiện tại trên trình duyệt sẽ bị thay thế.'))return;
+ if(pipWin&&!pipWin.closed)closePiP();frame.src='about:blank';player.classList.remove('active');landing.classList.remove('hidden');current=null;playSeconds=0;playSecondsVideoId=null;lastKnownState=-1;clearSleepTimer();
+ data=next;positions=newPositions;localStorage.setItem(STORE,JSON.stringify(data));localStorage.setItem(POSITION_STORE,JSON.stringify(positions));
+ for(const [id,key] of [['autoplay','autoplay'],['mute','mute'],['loop','loop'],['save-history','saveHistory'],['remember-position','rememberPosition'],['auto-next','autoNext']])$(id).checked=!!data.settings[key];
+ renderList();renderBookmarks();renderHome();resumeButton();message('Đã khôi phục dữ liệu thành công')
+ }catch(err){console.warn('Backup import:',err);message('Không nhập được dữ liệu: '+(err?.message||'JSON không hợp lệ'))}}
+
 function selectList(name){listType=name;document.querySelectorAll('[data-list]').forEach(b=>b.classList.toggle('selected',b.dataset.list===name));renderList()}
 
-function renderList(){const list=data[listType],out=$('video-list');out.replaceChildren();$('list-heading').textContent=({queue:'Hàng đợi phát',history:'Video đã xem',favorites:'Video yêu thích'})[listType];$('list-count').textContent=list.length+' video';$('shuffle').style.display=listType==='queue'?'':'none';$('clear-list').textContent=({queue:'Xóa hàng đợi',history:'Xóa lịch sử',favorites:'Xóa yêu thích'})[listType];if(!list.length){const el=document.createElement('div');el.className='empty';el.textContent=({queue:'Chưa có video nào. Dán link bên trên để thêm vào hàng đợi.',history:'Chưa có lịch sử xem video.',favorites:'Chưa lưu video yêu thích nào.'})[listType];out.append(el);return}for(const entry of list){if(!valid(entry.id))continue;const row=document.createElement('div');row.className='list-item'+(current===entry.id?' current':'');const im=document.createElement('img');im.className='list-thumb';im.src=thumb(entry.id);im.alt='';im.loading='lazy';const info=document.createElement('div');info.className='list-info';const btn=document.createElement('button');btn.className='list-title';btn.textContent='Video '+entry.id;btn.title='Bấm để phát video';btn.onclick=()=>play(entry.id);const small=document.createElement('div');small.className='list-meta';small.textContent=(current===entry.id?'● Đang xem':(entry.at?new Date(entry.at).toLocaleDateString('vi-VN'):'YouTube'))+(storedPosition(entry.id)?' · Tiếp tục '+Math.floor(storedPosition(entry.id)/60)+':'+String(storedPosition(entry.id)%60).padStart(2,'0'):'');info.append(btn,small);const del=document.createElement('button');del.className='remove';del.type='button';del.textContent='×';del.title='Xóa khỏi danh sách';del.setAttribute('aria-label','Xóa video '+entry.id);del.onclick=()=>{data[listType]=data[listType].filter(x=>x.id!==entry.id);save();renderList();currentInfo();resumeButton()};row.append(im,info,del);out.append(row)}}
+function renderList(){const list=data[listType],out=$('video-list');out.replaceChildren();$('list-heading').textContent=({queue:'Hàng đợi phát',history:'Video đã xem',favorites:'Video yêu thích'})[listType];$('list-count').textContent=list.length+' video';$('shuffle').style.display=listType==='queue'?'':'none';$('clear-list').textContent=({queue:'Xóa hàng đợi',history:'Xóa lịch sử',favorites:'Xóa yêu thích'})[listType];if(!list.length){const el=document.createElement('div');el.className='empty';el.textContent=({queue:'Chưa có video nào. Dán link bên trên để thêm vào hàng đợi.',history:'Chưa có lịch sử xem video.',favorites:'Chưa lưu video yêu thích nào.'})[listType];out.append(el);return}for(const entry of list){if(!valid(entry.id))continue;const row=document.createElement('div');row.className='list-item'+(current===entry.id?' current':'');const im=document.createElement('img');im.className='list-thumb';im.src=thumb(entry.id);im.alt='';im.loading='lazy';const info=document.createElement('div');info.className='list-info';const btn=document.createElement('button');btn.className='list-title';btn.textContent='Video '+entry.id;btn.title='Bấm để phát video';btn.onclick=()=>play(entry.id);const small=document.createElement('div');small.className='list-meta';small.textContent=(current===entry.id?'● Đang xem':(entry.at?new Date(entry.at).toLocaleDateString('vi-VN'):'YouTube'))+(storedPosition(entry.id)?' · Tiếp tục '+stamp(storedPosition(entry.id)):'');info.append(btn,small);if(storedPosition(entry.id)&&data.durations[entry.id]){const p=document.createElement('div');p.className='list-progress';const bar=document.createElement('span');bar.style.width=Math.min(100,storedPosition(entry.id)/data.durations[entry.id]*100)+'%';p.append(bar);info.append(p)}const del=document.createElement('button');del.className='remove';del.type='button';del.textContent='×';del.title='Xóa khỏi danh sách';del.setAttribute('aria-label','Xóa video '+entry.id);del.onclick=()=>{data[listType]=data[listType].filter(x=>x.id!==entry.id);save();renderList();currentInfo();resumeButton()};row.append(im,info,del);out.append(row)}}
 
 form.addEventListener('submit',e=>{e.preventDefault();const id=parseVideo(input.value);if(!id){$('error').textContent='Link không hợp lệ. Hãy nhập link YouTube, Shorts hoặc youtu.be.';return}$('error').textContent='';play(id)});
 
 $('add-form').addEventListener('submit',e=>{e.preventDefault();const id=parseVideo($('add-url').value);if(!id){$('add-error').textContent='Link chưa hợp lệ.';return}$('add-error').textContent='';data.queue=insert(data.queue,id);save();$('add-url').value='';selectList('queue');currentInfo();resumeButton();message('Đã thêm video vào hàng đợi')});
 
-$('resume').onclick=()=>{const id=data.history[0]?.id||data.queue.at(-1)?.id;if(id)play(id)};
+$('resume').onclick=()=>{const id=[...data.history,...data.queue].find(x=>storedPosition(x.id)>0)?.id||data.history[0]?.id||data.queue.at(-1)?.id;if(id)play(id)};
 
 $('prev').onclick=()=>{const i=data.queue.findIndex(x=>x.id===current);if(i>0)play(data.queue[i-1].id)};
 
@@ -911,7 +1001,7 @@ $('clear-history').onclick=()=>{if(!data.history.length){message('Lịch sử đ
 
 document.querySelectorAll('[data-pane]').forEach(b=>b.onclick=()=>showPane(b.dataset.pane));document.querySelectorAll('[data-list]').forEach(b=>b.onclick=()=>selectList(b.dataset.list));
 
-for(const [id,key] of [['autoplay','autoplay'],['mute','mute'],['loop','loop'],['save-history','saveHistory'],['remember-position','rememberPosition']]){const el=$(id);el.checked=!!data.settings[key];el.addEventListener('change',()=>{data.settings[key]=el.checked;save();if(key!=='saveHistory'&&key!=='rememberPosition')message('Sẽ áp dụng khi mở hoặc tải lại video')})}
+for(const [id,key] of [['autoplay','autoplay'],['mute','mute'],['loop','loop'],['save-history','saveHistory'],['remember-position','rememberPosition'],['auto-next','autoNext']]){const el=$(id);el.checked=!!data.settings[key];el.addEventListener('change',()=>{data.settings[key]=el.checked;save();if(key!=='saveHistory'&&key!=='rememberPosition')message('Sẽ áp dụng khi mở hoặc tải lại video')})}
 
 // Menu remains above the YouTube iframe. Pointer exit closes it without an extra click.
 
@@ -925,11 +1015,18 @@ $('close-menu').onclick=hideMenu;$('hide-menu').onclick=hideMenu;$('home').oncli
 
 document.addEventListener('pointerdown',e=>{if(open&&!drawer.contains(e.target)&&e.target!==edge)hideMenu();});
 
-window.addEventListener('keydown',e=>{if(!player.classList.contains('active'))return;if(e.key==='Escape'){e.preventDefault();if(open)hideMenu();else goHome()}else if(e.key.toLowerCase()==='m'&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){e.preventDefault();open?hideMenu():showMenu()}});
+window.addEventListener('keydown',e=>{if(!player.classList.contains('active')||e.ctrlKey||e.metaKey||e.altKey)return;
+ const tag=document.activeElement?.tagName;if(['INPUT','TEXTAREA','SELECT'].includes(tag)||document.activeElement?.isContentEditable)return;
+ if(e.key==='Escape'){e.preventDefault();if(open)hideMenu();else goHome();return}
+ const key=e.key.toLowerCase();if(![' ','k','arrowleft','arrowright','j','l','n','b','p','m'].includes(key))return;
+ e.preventDefault();if(key==='m')open?hideMenu():showMenu();else if(key===' '||key==='k')togglePlayback();else if(key==='arrowleft'||key==='j')seekTo(playSeconds-(key==='j'?10:5));else if(key==='arrowright'||key==='l')seekTo(playSeconds+(key==='l'?10:5));else if(key==='n')$('next').click();else if(key==='b')addBookmark();else if(key==='p')togglePiP();});
+$('bookmark-add').onclick=addBookmark;
+document.querySelectorAll('[data-timer]').forEach(b=>b.onclick=()=>configureTimer(b.dataset.timer));
+$('export-data').onclick=exportData;$('import-data').onclick=()=>$('import-file').click();$('import-file').addEventListener('change',e=>{importData(e.target.files?.[0]).finally(()=>{e.target.value=''})});
 
 
 
-resumeButton();renderList();
+resumeButton();renderList();renderHome();renderBookmarks();updateTimerUI();
 
 })();
 

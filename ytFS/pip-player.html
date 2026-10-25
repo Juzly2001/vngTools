@@ -65,6 +65,13 @@ function runAction(action){
   return {ok:true,ready:false,via:'iframe-fallback'};
 }
 window.vistubePiPControl=runAction;
+// Seek synchronously from the PiP parent (same-origin relay), preserving its window.
+window.vistubePiPSeek=seconds=>{
+  if(!Number.isFinite(seconds)||seconds<0)return {ok:false};
+  const target=Math.floor(seconds);
+  if(ready&&player){try{player.seekTo(target,true);return {ok:true,via:'YT.Player'}}catch(e){console.warn('PiP seek failed:',e)}}
+  try{video.contentWindow.postMessage(JSON.stringify({event:'command',func:'seekTo',args:[target,true]}),'https://www.youtube.com');return {ok:true,via:'iframe-fallback'}}catch{return {ok:false}}
+};
 
 // Legacy postMessage remains as a compatibility fallback for older index.html.
 window.addEventListener('message',event=>{
@@ -85,6 +92,8 @@ window.addEventListener('message',event=>{
   if(!msg||typeof msg!=='object')return;
   const state=(typeof msg.info==='number'&&msg.event==='onStateChange')?msg.info:msg.info?.playerState;
   if(typeof state==='number'&&state!==lastState){lastState=state;reportState();if(state===0)notify({type:'vistube-pip-ended'})}
+  const duration=msg.info?.duration;
+  if(typeof duration==='number'&&Number.isFinite(duration)&&duration>0)notify({type:'vistube-pip-duration',duration});
   const seconds=msg.info?.currentTime;
   if(typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>=0)notify({type:'vistube-pip-position',seconds});
 });
@@ -102,6 +111,7 @@ window.onYouTubeIframeAPIReady=()=>{
           try{lastState=player.getPlayerState()}catch{}
           notify({type:'vistube-pip-ready',playing:playing()});
           reportState();
+          try{const duration=player.getDuration();if(Number.isFinite(duration)&&duration>0)notify({type:'vistube-pip-duration',duration})}catch{}
           if(queuedAction){const action=queuedAction;queuedAction=null;runAction(action)}
         },
         onStateChange(event){lastState=event.data;reportState();if(event.data===0)notify({type:'vistube-pip-ended'})},
@@ -122,6 +132,8 @@ setInterval(()=>{
     try{
       const seconds=player.getCurrentTime();
       if(typeof seconds==='number'&&Number.isFinite(seconds)&&seconds>=0)notify({type:'vistube-pip-position',seconds});
+      const duration=player.getDuration();
+      if(typeof duration==='number'&&Number.isFinite(duration)&&duration>0)notify({type:'vistube-pip-duration',duration});
     }catch{}
   }else {
     try{video.contentWindow.postMessage(JSON.stringify({event:'command',func:'getCurrentTime',args:[]}), 'https://www.youtube.com')}catch{}
