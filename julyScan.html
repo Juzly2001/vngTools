@@ -194,7 +194,38 @@
             box-shadow: 0 0 0 3px rgba(0,123,255,.12);
 
         }
+        
+        .link-v2 {
+        position: relative;
+        color: #2563eb; /* Màu xanh chủ đạo */
+        font-family: 'Segoe UI', sans-serif;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        padding-bottom: 2px;
+        transition: color 0.2s ease;
+        }
 
+        /* Tạo đường gạch chân ẩn ban đầu */
+        .link-v2::after {
+        content: '';
+        position: absolute;
+        width: 0;
+        height: 2px;
+        bottom: 0;
+        left: 0;
+        background-color: #2563eb;
+        transition: width 0.3s ease;
+        }
+
+        .link-v2:hover {
+        color: #1d4ed8;
+        }
+
+        /* Khi hover thì đường gạch chân hiện ra */
+        .link-v2:hover::after {
+        width: 100%;
+        }
 
 
         .options-group {
@@ -1564,7 +1595,7 @@
                         <span>Tạo và in mã vạch, mã QR dễ dàng</span>
                     </div>
                 </div>
-                <span class="top-tip">⚙ Cài đặt ở thanh bên trái</span>
+                <span class="top-tip"><a href="https://july27.vercel.app/QrCode/index.html" class="link-v2">⚙ Click để sang phiên bản v2.0</a></span>
             </div>
 
             <label class="input-heading" for="barcode-inputs">Danh sách mã cần tạo</label>

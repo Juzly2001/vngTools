@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="vi" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f6f8fc">
+  <meta name="description" content="QrCode Pro – Tạo, quản lý, in và xuất hàng loạt mã vạch CODE128 hoặc mã QR.">
+  <title>QrCode Pro</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <!-- SVG sprite: chạy không cần thư viện icon. -->
+  <svg class="icon-sprite" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="ic-qr" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M17 14h-3v3h3v-3Zm4 0v4h-4m-3 3h3m4 0v-3m-14-12h0m11 0h0M6 17h0"/></symbol>
+    <symbol id="ic-barcode" viewBox="0 0 24 24"><path d="M3 4v16m3-16v16M9 4v16m2-16v16m3-16v16m3-16v16m4-16v16"/></symbol>
+    <symbol id="ic-settings" viewBox="0 0 24 24"><path d="M4 7h16M4 17h16"/><circle cx="9" cy="7" r="2"/><circle cx="16" cy="17" r="2"/></symbol>
+    <symbol id="ic-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></symbol>
+    <symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="ic-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></symbol>
+    <symbol id="ic-print" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v7H6z"/></symbol>
+    <symbol id="ic-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 17v3h16v-3"/></symbol>
+    <symbol id="ic-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15M10 10v7m4-7v7"/></symbol>
+    <symbol id="ic-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></symbol>
+    <symbol id="ic-moon" viewBox="0 0 24 24"><path d="M20 15a8 8 0 0 1-11-11A8 8 0 1 0 20 15Z"/></symbol>
+    <symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4M2 12h2m16 0h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+    <symbol id="ic-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+    <symbol id="ic-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+    <symbol id="ic-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+    <symbol id="ic-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+    <symbol id="ic-check" viewBox="0 0 24 24"><path d="m4 12 5 5L20 6"/></symbol>
+    <symbol id="ic-alert" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 7v6m0 4h.01"/></symbol>
+    <symbol id="ic-max" viewBox="0 0 24 24"><path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/></symbol>
+    <symbol id="ic-filter" viewBox="0 0 24 24"><path d="M4 7h16M7 12h10m-7 5h4"/></symbol>
+    <symbol id="ic-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 11v6m0-10h.01"/></symbol>
+  </svg>
+
+  <div class="app-layout">
+    <div id="sidebarBackdrop" class="sidebar-backdrop" hidden></div>
+    <aside class="sidebar" id="sidebar" aria-label="Cài đặt tạo mã">
+      <div class="side-top">
+        <div class="brand"><div class="brand-mark"><svg class="icon" aria-hidden="true"><use href="#ic-qr"/></svg></div><div><strong>QrCode <span>Pro</span></strong><small>Barcode & QR Studio</small></div></div>
+        <button class="icon-btn mobile-only" id="closeSidebar" type="button" aria-label="Đóng cài đặt"><svg class="icon"><use href="#ic-x"/></svg></button>
+      </div>
+      <div class="side-content">
+        <div class="side-caption"><svg class="icon"><use href="#ic-settings"/></svg> THIẾT LẬP MÃ</div>
+        <section class="settings-section">
+          <div class="setting-label">Loại mã</div>
+          <div class="type-choice" role="radiogroup" aria-label="Chọn loại mã">
+            <label class="type-option"><input type="radio" name="code-type" value="barcode" checked><span class="type-icon"><svg class="icon"><use href="#ic-barcode"/></svg></span><span><b>Mã vạch</b><small>CODE128</small></span><span class="radio-dot"></span></label>
+            <label class="type-option"><input type="radio" name="code-type" value="qrcode"><span class="type-icon"><svg class="icon"><use href="#ic-qr"/></svg></span><span><b>Mã QR</b><small>QR Code</small></span><span class="radio-dot"></span></label>
+          </div>
+        </section>
+        <section class="settings-section">
+          <label class="setting-label" for="codeSize">Kích thước hiển thị</label>
+          <select id="codeSize" class="field"><option value="small">Nhỏ</option><option value="medium" selected>Vừa — khuyên dùng</option><option value="large">Lớn</option></select>
+          <label class="setting-label field-label" for="inputFormat">Định dạng danh sách</label>
+          <select id="inputFormat" class="field"><option value="lines">Mỗi mã một dòng</option><option value="horizontal">Các mã cách nhau bằng dấu cách</option></select>
+        </section>
+        <section class="settings-section">
+          <div class="setting-label">Tùy chọn tạo mã</div>
+          <label class="toggle-line"><span><b>Hiện nội dung mã</b><small>In chữ dưới barcode / QR</small></span><input type="checkbox" id="showLabel" checked><span class="switch" aria-hidden="true"></span></label>
+          <label class="toggle-line"><span><b>Tự loại mã trùng</b><small>Chỉ tạo một mã cho mỗi giá trị</small></span><input type="checkbox" id="autoDedup"><span class="switch" aria-hidden="true"></span></label>
+        </section>
+        <section class="settings-section">
+          <div class="setting-label">Khổ giấy in <span class="muted">(mm)</span></div>
+          <div class="size-fields"><label>Chiều rộng<input class="field" id="paperWidth" type="number" inputmode="numeric" min="10" max="300" value="40"></label><label>Chiều cao<input class="field" id="paperHeight" type="number" inputmode="numeric" min="10" max="300" value="40"></label></div>
+          <div class="preset-group" role="group" aria-label="Khổ giấy có sẵn">
+            <button class="preset active" type="button" data-width="40" data-height="40">40 × 40</button><button class="preset" type="button" data-width="40" data-height="30">40 × 30</button><button class="preset" type="button" data-width="50" data-height="30">50 × 30</button><button class="preset" type="button" data-width="60" data-height="40">60 × 40</button><button class="preset" type="button" data-width="100" data-height="50">100 × 50</button>
+          </div>
+          <p class="setting-hint">Mỗi mã được in trên một tem riêng. Chọn cùng kích thước trong cài đặt máy in.</p>
+        </section>
+      </div>
+      <div class="side-bottom"><svg class="icon"><use href="#ic-check"/></svg> Cài đặt được lưu trên trình duyệt</div>
+    </aside>
+
+    <div class="main-shell">
+      <header class="topbar">
+        <div class="topbar-left"><button id="openSidebar" class="icon-btn mobile-only" type="button" aria-label="Mở cài đặt" aria-expanded="false" aria-controls="sidebar"><svg class="icon"><use href="#ic-panel"/></svg></button><span class="crumb"><a href="https://july27.vercel.app/">WORKSPACE</a></span><span class="crumb-separator">/</span><span class="crumb-current">Qr & Barcode</span></div>
+        <div class="topbar-right"><span class="topbar-status"><span class="status-dot"></span> Hoạt động trên trình duyệt</span><button class="icon-btn theme-btn" id="themeBtn" type="button" title="Chuyển giao diện sáng / tối" aria-label="Chuyển giao diện sáng / tối"><svg class="icon" id="themeIcon"><use href="#ic-moon"/></svg></button></div>
+      </header>
+      <main class="main-content">
+        <div class="page-heading"><div><div class="eyebrow">WORKSPACE <span></span> QR & BARCODE</div>
+        <!-- <h1>Tạo mã nhanh, quản lý dễ dàng<span class="heading-dot">.</span></h1> -->
+        <p>Nhập danh sách một lần, tạo mã hàng loạt và xuất bản in chỉ trong vài thao tác.</p></div><span class="version-chip">QrCode Pro <span>v2.0</span></span></div>
+
+        <section class="stats" aria-label="Thống kê danh sách">
+          <div class="stat-card"><span class="stat-caption">TỔNG SỐ MÃ</span><div class="stat-number" id="countTotal">0</div><span class="stat-footer"><span class="metric-bullet bullet-blue"></span> Đã nhập</span></div>
+          <div class="stat-card"><span class="stat-caption">MÃ KHÔNG TRÙNG</span><div class="stat-number" id="countUnique">0</div><span class="stat-footer"><span class="metric-bullet bullet-green"></span> Duy nhất</span></div>
+          <div class="stat-card"><span class="stat-caption">MÃ TRÙNG LẶP</span><div class="stat-number" id="countDuplicate">0</div><span class="stat-footer"><span class="metric-bullet bullet-amber"></span> Có thể lọc</span></div>
+          <div class="stat-card"><span class="stat-caption">ĐANG HIỂN THỊ</span><div class="stat-number" id="countPreview">0</div><span class="stat-footer"><span class="metric-bullet bullet-violet"></span> Trong kết quả</span></div>
+        </section>
+
+        <div class="workspace">
+          <section class="panel editor-panel" aria-labelledby="inputTitle">
+            <div class="panel-heading"><div><div class="panel-overline">BƯỚC 01</div><h2 id="inputTitle">Nhập danh sách mã</h2></div><div class="panel-icon"><svg class="icon"><use href="#ic-barcode"/></svg></div></div>
+            <p class="panel-description">Dán mã vận đơn, mã sản phẩm hoặc đường dẫn. Ngăn cách bằng dấu phẩy, dấu cách hoặc xuống dòng.</p>
+            <label class="input-top-label" for="barcodeInputs">Nội dung mã <span id="inputCountBadge">0 mã</span></label>
+            <textarea id="barcodeInputs" spellcheck="false" placeholder="VD:&#10;PKG-000001&#10;PKG-000002&#10;PKG-000003" aria-describedby="inputHelp"></textarea>
+            <div class="input-helper" id="inputHelp"><span><svg class="icon"><use href="#ic-info"/></svg> Tự động lưu nội dung</span><button class="link-button" type="button" id="sampleBtn">Dùng dữ liệu mẫu</button></div>
+            <div class="editor-divider"></div>
+            <button id="generateBtn" class="btn btn-primary btn-wide" type="button"><svg class="icon"><use href="#ic-plus"/></svg> Tạo mã ngay <span class="shortcut">Ctrl + Enter</span></button>
+            <div class="editor-actions"><button id="dedupBtn" class="btn btn-secondary" type="button"><svg class="icon"><use href="#ic-filter"/></svg> Lọc trùng</button><button id="clearBtn" class="btn btn-secondary danger-text" type="button"><svg class="icon"><use href="#ic-trash"/></svg> Xóa tất cả</button></div>
+            <p class="editor-tip">Mẹo: Nội dung được xử lý trong trình duyệt, không cần tải danh sách lên máy chủ.</p>
+          </section>
+
+          <section class="panel preview-panel" aria-labelledby="previewTitle">
+            <div class="preview-head"><div><div class="panel-overline">BƯỚC 02</div><h2 id="previewTitle">Xem trước & xuất mã <span class="count-pill" id="previewPill">0</span></h2></div><div class="export-buttons"><button id="printBtn" class="btn btn-secondary" type="button" disabled><svg class="icon"><use href="#ic-print"/></svg> In mã</button><button id="zipBtn" class="btn btn-dark" type="button" disabled><svg class="icon"><use href="#ic-download"/></svg> Tải ZIP</button></div></div>
+            <div class="preview-toolbar"><label class="search-box"><svg class="icon"><use href="#ic-search"/></svg><input id="searchPreview" type="search" placeholder="Tìm theo nội dung mã..." aria-label="Tìm mã đang hiển thị"></label><span class="preview-help" id="previewStatus" aria-live="polite">Sẵn sàng tạo mã</span></div>
+            <div id="previewGrid" class="preview-grid" aria-live="polite"><div class="empty-state"><div class="empty-art"><svg class="icon"><use href="#ic-qr"/></svg></div><h3>Chưa có mã nào</h3><p>Nhập danh sách ở bên trái và chọn <b>Tạo mã ngay</b> để xem kết quả tại đây.</p></div></div>
+            <div class="preview-footer"><span><svg class="icon"><use href="#ic-info"/></svg> Chọn một mã để phóng to. Dùng nút <b>•••</b> để sao chép, tải ảnh hoặc xóa.</span><span id="previewSummary">0 mã</span></div>
+          </section>
+        </div>
+        <footer class="app-footer">QrCode Pro <span>•</span> Tạo mã vạch và mã QR trực tiếp trên thiết bị của bạn.</footer>
+      </main>
+    </div>
+  </div>
+
+  <div id="contextMenu" class="context-menu" role="menu" aria-label="Thao tác với mã" hidden>
+    <div class="context-title" id="contextTitle"></div>
+    <button type="button" role="menuitem" data-context-action="copy"><svg class="icon"><use href="#ic-copy"/></svg> Sao chép nội dung</button>
+    <button type="button" role="menuitem" data-context-action="download"><svg class="icon"><use href="#ic-download"/></svg> Tải ảnh PNG</button>
+    <button type="button" role="menuitem" data-context-action="delete" class="danger-text"><svg class="icon"><use href="#ic-trash"/></svg> Xóa mã này</button>
+  </div>
+
+  <div id="codeModal" class="modal-layer" hidden>
+    <div class="modal-overlay" data-close-modal></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head"><div><span class="panel-overline">XEM CHI TIẾT MÃ</span><h2 id="modalTitle">Chi tiết mã</h2></div><button id="modalClose" class="icon-btn" type="button" aria-label="Đóng"><svg class="icon"><use href="#ic-x"/></svg></button></div>
+      <div class="modal-code-box"><button id="modalPrev" class="icon-btn modal-arrow" type="button" aria-label="Mã trước"><svg class="icon"><use href="#ic-left"/></svg></button><div id="modalCodePreview" class="modal-code-render"></div><button id="modalNext" class="icon-btn modal-arrow" type="button" aria-label="Mã tiếp theo"><svg class="icon"><use href="#ic-right"/></svg></button></div>
+      <div class="modal-bottom"><div><span id="modalCodeCounter" class="modal-counter">1 / 1</span><div id="modalCodeValue" class="modal-value"></div></div><div class="modal-actions"><button class="btn btn-secondary" id="modalCopy" type="button"><svg class="icon"><use href="#ic-copy"/></svg> Sao chép</button><button class="btn btn-primary" id="modalDownload" type="button"><svg class="icon"><use href="#ic-download"/></svg> Tải PNG</button></div></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <div id="printSheet" aria-hidden="true"></div>
+  <style id="dynamicPrintStyle">@media print { @page { size: 40mm 40mm; margin: 0; } }</style>
+</body>
+</html>
