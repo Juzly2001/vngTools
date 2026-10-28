@@ -1,0 +1,24 @@
+
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+
+  <!-- Nền tím bo góc, không có viền đen -->
+  <rect width="64" height="64" rx="18" fill="#8190FF"></rect>
+
+  <!-- QR trên trái -->
+  <rect x="17" y="18" width="12" height="12" rx="1.5" fill="none" stroke="white" stroke-width="2.5"></rect>
+  <rect x="21" y="22" width="4" height="4" rx=".5" fill="white"></rect>
+
+  <!-- QR trên phải -->
+  <rect x="35" y="18" width="12" height="12" rx="1.5" fill="none" stroke="white" stroke-width="2.5"></rect>
+  <rect x="39" y="22" width="4" height="4" rx=".5" fill="white"></rect>
+
+  <!-- QR dưới trái -->
+  <rect x="17" y="36" width="12" height="12" rx="1.5" fill="none" stroke="white" stroke-width="2.5"></rect>
+  <rect x="21" y="40" width="4" height="4" rx=".5" fill="white"></rect>
+
+  <!-- Họa tiết QR dưới phải -->
+  <path d="M35 36 H40 V41 H35 Z
+           M45 36 V46 H41
+           M35 46 H39
+           M41 42 H45" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
