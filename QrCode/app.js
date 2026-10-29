@@ -275,7 +275,7 @@
     grid.replaceChildren();
 
     if (!parseCodes().length) {
-      showEmpty('Chưa có mã nào', 'Nhập danh sách ở bên trái và nhấn “Tạo mã ngay” để bắt đầu.');
+      showEmpty('Chưa có mã nào', 'Nhập danh sách và nhấn “Tạo mã ngay” để bắt đầu.');
       if (notify) showToast('Hãy nhập ít nhất một mã trước khi tạo.');
       return;
     }
