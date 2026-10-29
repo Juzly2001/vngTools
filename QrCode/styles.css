@@ -1531,7 +1531,7 @@ h1 {
     flex: 1;
   }
 
-  #printBtn, #zipBtn {
+  #printBtn, #zipBtn, #previewSummary, .editor-tip {
     display: none;
   }
 }
